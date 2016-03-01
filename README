@@ -1,39 +1,5 @@
-Baratine(tm) 0.10 README
-=======================
-
-BINARIES
-
-  bin/baratine            - Baratine command-line
-
-LIBRARIES
-
-  lib/baratine.jar        - full Baratine distribution
-  lib/baratine-api.jar    - compile-time Baratine APIs
-
-RUNNING
-
-  $ bin/baratine help                           # command-line list
-  $ bin/baratine start                          # starts
-  $ bin/baratine start --deploy my-service.jar  # starts and (re)deploy a service
-  $ bin/baratine shutdown                       # shutdown baratine daemon
-  
-DEPLOY
-
-  $ bin/baratine deploy examples/hello.jar      # deploy a service to a pod
-  $ bin/baratine undeploy pod
-
-PACKAGED JAR EXECUTABLE
-
-  $ bin/baratine package -o my-hello.jar examples/hello.jar
-  $ java -jar my-hello.jar start
-  $ java -jar my-hello.jar shutdown
-
-EXAMPLES
-
-  $ bin/baratine start --deploy examples/hello.jar
-  $ java -jar examples/hello.jar
-  $ curl "http://localhost:8085/s/pod/hello?m=hello&p0=World"
-  $ bin/baratine jamp-query /hello hello World
+Baratine(tm)
+============
 
 GITHUB EXAMPLES
 
