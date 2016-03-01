@@ -1,0 +1,51 @@
+<project name="baratine" default="compile" basedir=".">
+  <property environment="env"/>
+  
+  <property file="local.properties"/>
+  
+  <property name="product" value="Baratine"/>
+  <property name="shortproduct" value="baratine"/>
+  
+  <property name="version.base" value="0.10"/>
+  
+  <property name="version.baratine" value="0.10-SNAPSHOT"/>
+  <property name="version" value="${version.baratine}"/>
+
+  <property name="base.dir" value="${basedir}"/>
+  <property name="baratine.dir" value="${base.dir}"/>
+
+  <property name="javac" value="javac"/>
+  <property name="javac.verbose" value="off"/>
+  <property name="javac.debug" value="on"/>
+  <property name="javac.optimize" value="off"/>
+  <property name="javac.deprecation" value="off"/>
+  <property name="javac.nowarn" value="on"/>
+  <property name="javac.memoryMaximumSize" value="512m"/>
+
+  <property name="javac.source" value="1.8"/>
+  <property name="javac.target" value="1.8"/>
+
+  <property name="jar.compress" value="false"/>
+  <property name="jar.update" value="true"/>
+  
+  <import file="make/build-common.xml"/>
+  
+  <import file="make/build-compile.xml"/>
+  
+  <import file="make/build-dist.xml"/>
+  <import file="make/build-dist-baratine.xml"/>
+  
+  <import file="make/build-file.xml"/>
+  <import file="make/build-init.xml"/>
+  
+  <import file="make/build-javadoc.xml"/>
+  
+  <import file="make/build-maven.xml"/>
+  <import file="make/build-native.xml"/>
+  
+  <property name="jar.update" value="true"/>
+
+  <property name="shell" value="bash"/>
+
+</project>
+

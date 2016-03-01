@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<script>
+var canvas;
+var context;
+var canvasX;
+var canvasY;
+
+var pointDates = new Array();
+var pointCount = 0;
+
+var sum = 0;
+var min = Number.MAX_VALUE;
+var max = 0;
+
+function init() {
+  canvas = document.getElementById("canvas");
+  context = canvas.getContext("2d");
+
+  var rect = canvas.getBoundingClientRect();
+  canvasX = rect.left;
+  canvasY = rect.top;
+}
+
+function track(event) {
+  var x = event.clientX - canvasX;
+  var y  = event.clientY - canvasY;
+
+  drawRemote(x, y);
+}
+
+function draw(x, y, color) {
+  context.fillStyle = color;
+  context.fillRect(x, y, 3, 3);
+}
+
+var websocket;
+  
+function drawRemote(x, y) {
+  if (! ("WebSocket" in window)) {
+    alert("WebSocket NOT supported by your Browser!");
+
+    return;
+  }
+
+  if (! websocket) {
+    var server = location.hostname;
+    if (! server)
+     server = "localhost";
+
+    websocket = new WebSocket("ws://" + server + ":8085/s/pod/", "jamp");
+
+    websocket.onmessage = function (evt)
+    {
+      var result = JSON.parse(evt.data)
+      var idx = result[3];
+
+      var mouse = result[4];
+
+      updateAvg(idx);
+
+      draw(mouse._x, mouse._y, "#00FF00");
+    };
+
+    websocket.onopen = function()
+     {
+      draw(x, y, "#FF0000");
+      drawAndSend(websocket, x, y);
+     };
+
+     websocket.onclose = function(evt)
+     {
+       websocket = null;
+     };
+   } else if (websocket.readyState == 1) {
+     try {
+       drawAndSend(websocket, x, y);
+     } catch (e) {
+       console.log(e);
+     }
+   }
+}
+
+function drawAndSend(websocket, x, y) {
+  draw(x, y, "#FF0000");
+
+  var idx = pointCount++;
+
+  pointDates[idx] = Date.now();
+
+  var mouse = "{\"_x\":" + x +",\"_y\":"+y+"}";
+  var message = "[\"query\", {}, \"x\", " + idx + ", \"/mouse-tracker\", \"track\", "+mouse+"]";
+
+  websocket.send(message);
+}
+
+function updateAvg(idx) {
+  var now = Date.now();
+  var pointDate = pointDates[idx];
+
+  var delay = now - pointDate;
+
+  sum = sum + delay;
+
+  if (delay < min)
+    min = delay;
+  if (delay > max)
+    max = delay;
+
+  var avg = sum / (idx + 1);
+
+  document.getElementById("min").textContent = min;
+  document.getElementById("max").textContent = max;
+  document.getElementById("avg").textContent = Math.round(avg);
+  document.getElementById("points").textContent = Math.round(idx);
+}
+
+</script>
+
+<body onload="init()">
+<div>
+    <canvas id="canvas" width="500" height="500"
+            style="border:1px solid #000000; location: center"
+            onmousemove="track(event)">
+    </canvas>
+</div>
+<div>
+    <table>
+        <tr>
+            <th>Min(ms)</th>
+            <th>Max(ms)</th>
+            <th>Avg(ms)</th>
+            <th>Points</th>
+        </tr>
+        <tr>
+            <td id="min"></td>
+            <td id="max"></td>
+            <td id="avg"></td>
+            <td id="points"></td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

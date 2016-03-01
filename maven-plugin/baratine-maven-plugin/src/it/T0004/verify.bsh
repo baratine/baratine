@@ -1,0 +1,32 @@
+import java.io.*;
+import java.util.*;
+import java.util.jar.*;
+import org.codehaus.plexus.util.*;
+
+boolean result = true;
+
+try
+{
+    File target = new File( basedir, "foo/target" );
+    if ( !target.exists() || ! target.isDirectory() )
+    {
+        System.err.println( "target " + target + " is missing or not a directory." );
+        return false;
+    }
+
+    File artifact = new File( target, "executable-foo-1.0-SNAPSHOT.jar" );
+    if ( !artifact.exists() || artifact.isDirectory() )
+    {
+        System.err.println( "artifact file " + artifact + " is missing or a directory." );
+        return false;
+    }
+
+   return true;
+}
+catch( Throwable e )
+{
+    e.printStackTrace();
+    result = false;
+}
+
+return result;

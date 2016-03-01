@@ -1,0 +1,24 @@
+WebSocket Readme
+================
+
+This simple app demonstrates using WebSocket with Baratine(tm) service.
+
+To run the service start Baratine(tm) with --deploy websocket.jar.
+
+$ bin/baratine start --deploy examples/websocket.jar
+
+Open page index.html in a browser with WebSocket support.
+
+Move your mouse over canvas. As the mouse passes over the canvas a red dot is
+drawn and mouse coordinates are sent to /mouse-tracker service deployed from
+websocket.jar. Service /mouse-tracker echoes the coordinates back to the page
+and as soon as the page receives the message with coordinates it draws a green
+dot using the echoed coordinates. Deployed locally one may never see the red
+dots.
+
+Code used to send the coordinates can be found in method drawAndSend().
+
+Code used to receive and extract the echoed coordinates is in .onmessage()
+handler of the WebSocket.
+
+When opened from file system the page opens WebSocket at localhost port 8085.

@@ -1,0 +1,28 @@
+<!DOCTYPE>
+
+<html>
+
+<script src="baratine-js.js"></script>
+
+<script>
+  function execute()
+  {
+    var client = new Jamp.BaratineClient("http://localhost:8085/s/${artifactId}", true);
+
+    client.query("/echo", "echo", ["Hello World"], function (data)
+    {
+      var out = document.getElementById("output");
+
+      out.innerText = data;
+    });
+  }
+</script>
+
+<body style="padding: 1em;">
+
+<input id="btn" name="btn" type="button" onclick="execute()"
+       value="Echo 'Hello World!'">
+
+<span id="output" style="padding-left: 1em;"></span>
+</body>
+</html>

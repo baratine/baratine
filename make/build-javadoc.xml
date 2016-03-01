@@ -1,0 +1,66 @@
+<project basedir="." xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+  <property environment="env"/>
+
+  <property file="local.properties"/>
+  <property name="version.javadoc" value="${version}"/>
+
+  <target name="javadoc" depends="init">
+    <delete quiet="true" file="${dist}/javadoc-${version.javadoc}.war"/>
+
+    <delete quiet="true" dir="$build/javadoc"/>
+
+    <mkdir dir="build/javadoc/web-app"/>
+
+    <javadoc destdir="build/javadoc/web-app/" 
+      maxmemory="1024m"
+      use="true" 
+      author="true"
+      version="true"
+      windowtitle="Baratine ${version}"
+      source="1.8"
+      splitindex="yes">
+      <!--
+      overview="modules/baratine/src/overview.html"
+      -->
+
+      <packageset dir="modules/baratine-api/src"/>
+    <!-- For any linked documents here, the href="xxx" must be matched
+       - by an <api id="xxx"/> in web.xml
+    <link href="${jdkapi.href}"/>
+      -->
+    </javadoc>
+
+    <mkdir dir="${dist}"/>
+
+    <jar 
+      jarfile="${dist}/javadoc-${version.javadoc}.war"
+      basedir="build/javadoc/web-app"
+      compress="true"
+      index="false">
+      <exclude name="**/timestamp"/>
+      <exclude name="**/WEB-INF/lib"/>
+
+      <exclude name="**/work"/>
+      <exclude name="**/tmp"/>
+      <exclude name="**/.*"/>
+      <exclude name="**/.svn"/>
+      <exclude name="**/debug.log"/>
+    </jar>
+
+    <jar 
+      jarfile="${dist}/javadoc-api-${version.javadoc}.war"
+      basedir="build/javadoc/web-app"
+      compress="true"
+      index="false">
+      <exclude name="**/timestamp"/>
+      <exclude name="**/WEB-INF/lib"/>
+
+      <exclude name="**/work"/>
+      <exclude name="**/tmp"/>
+      <exclude name="**/.*"/>
+      <exclude name="**/.svn"/>
+      <exclude name="**/debug.log"/>
+    </jar>
+
+  </target>
+</project>

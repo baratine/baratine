@@ -1,0 +1,72 @@
+import java.io.*;
+import java.util.*;
+import java.util.jar.*;
+import org.codehaus.plexus.util.*;
+
+boolean result = true;
+
+try
+{
+    File target = new File( basedir, "target" );
+    if ( !target.exists() || ! target.isDirectory() )
+    {
+        System.err.println( "target file is missing or not a directory." );
+        return false;
+    }
+
+    File artifact = new File( target, "T0000-1.0-SNAPSHOT.bar" );
+    if ( !artifact.exists() || artifact.isDirectory() )
+    {
+        System.err.println( "artifact file is missing or a directory." );
+        return false;
+    }
+
+    String []expectedEntries = {"META-INF/",
+        "META-INF/MANIFEST.MF", 
+        "classes/", 
+        "classes/META-INF/", 
+        "classes/qa/", 
+        "classes/qa/T0000.class", 
+        "META-INF/baratine/", 
+        "META-INF/baratine/config/", 
+        "META-INF/baratine/config/pods/", 
+        "META-INF/baratine/config/pods/T0000.cf", 
+        "META-INF/maven/", 
+        "META-INF/maven/io.baratine/", 
+        "META-INF/maven/io.baratine/T0000/", 
+        "META-INF/maven/io.baratine/T0000/pom.xml", 
+        "META-INF/maven/io.baratine/T0000/pom.properties"};
+
+    JarFile jar = new JarFile( artifact );
+    Enumeration jarEntries = jar.entries();
+    ArrayList entryList = new ArrayList();
+    while ( jarEntries.hasMoreElements() )
+    {
+        JarEntry entry = (JarEntry) jarEntries.nextElement();
+        entryList.add(entry.getName());
+    }
+
+    String []entries = new String[entryList.size()];
+    entryList.toArray(entries);
+
+    Arrays.sort(entries);
+    Arrays.sort(expectedEntries);
+
+
+    for (int i = 0; i < expectedEntries.length; i++) {
+      if (! entries[i].equals(expectedEntries[i])) {
+        System.err.println("expected entry " + expectedEntries[i] + " but found entry : " +  entries[i]);
+
+        return false;
+      }
+    }
+
+   return true;
+}
+catch( Throwable e )
+{
+    e.printStackTrace();
+    result = false;
+}
+
+return result;

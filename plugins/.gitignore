@@ -1,0 +1,6 @@
+/bin/
+/build/
+/target/
+*\.project
+*\.classpath
+*\.settings

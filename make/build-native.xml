@@ -1,0 +1,98 @@
+<project basedir=".">
+
+  <target name="dist.configure.make" depends="dist">
+    <exec dir="${dist.dir}/${dist.name}" executable="./configure">
+      <arg value="--prefix=/opt/baratine"/>
+    </exec>
+
+    <exec dir="${dist}/${dist.name}" executable="make"/>
+  </target>
+
+  <target name="configure-native" depends="init">
+     <copy tofile="configure.ac"
+	   file="make/configure.ac.in"
+           overwrite="true">
+        <filterset>
+          <filter token="PROGRAM_NAME" value="${shortproduct}"/>
+          <filter token="PROGRAM_DISPLAY" value="${product}"/>
+          <filter token="PROGRAM_VERSION" value="${version}"/>
+        </filterset>
+     </copy>
+
+     <!--
+     <mkdir dir="automake"/>
+
+     -->
+
+     <!--
+     <exec executable="libtoolize">
+        <arg line="-f -c"/>
+     </exec>
+     -->
+     <exec executable="aclocal" dir="make"/>
+     
+     <exec executable="automake" dir="make">
+        <arg line="--add-missing --copy --foreign"/>
+     </exec>
+
+     <exec executable="autoreconf"/>
+  </target>
+  
+  <target name="native" depends="init, configure">
+    <exec executable="./configure">
+      <arg line="--prefix=${dist}"/>
+    </exec>
+    <exec executable="make">
+      <arg line="install-native"/>
+    </exec>
+
+    <copy todir="${native.dir}"
+          preservelastmodified="true"
+          overwrite="true">
+      <fileset dir="${base.dir}/native"/>
+    </copy>
+      
+  </target>
+
+  <target name="win32" if="win32">
+    <mkdir dir="${install}/win32"/>
+    <!--
+    <mkdir dir="${install}/win32/apache-1.3"/>
+    -->
+    <mkdir dir="${install}/win32/apache-2.0"/>
+    <mkdir dir="${install}/win32/apache-2.2"/>
+    <!--
+    <copy todir="${install}/win32/apache-1.3"
+          file="${win32}/baratine/modules/c/src/apache1/Apache136/mod_caucho.dll"/>
+    <copy todir="${install}/win32"
+          file="${win32}/baratine/modules/c/src/baratine_os/Release/baratine_os.dll"/>
+    <copy todir="${install}/win64"
+          file="${win32}/baratine/modules/c/src/baratine_os_64/Release/baratine_os.dll"/>
+	  -->
+    <copy todir="${install}/win32"
+          file="${win32}/baratine/modules/c/src/baratinessl/Release/baratinessl.dll"/>
+    <copy todir="${install}/win64"
+          file="${win32}/baratine/modules/c/src/baratinessl_64/Release/baratinessl.dll"/>
+    <copy todir="${install}"
+          file="${win32}/baratine/modules/csharp/src/baratine/bin/Release/baratine.exe"/>
+    <copy todir="${install}"
+          file="${win32}/baratine/modules/csharp/src/setup/bin/Release/setup.exe"/>
+    <copy todir="${install}/win32"
+          file="${win32}/baratine/modules/c/src/isapi_srun/Release/isapi_srun.dll"/>
+    <copy todir="${install}/win64"
+          file="${win32}/baratine/modules/c/src/isapi_64/Release/isapi_srun.dll"/>
+    <copy todir="${install}/win32/apache-2.2"
+          file="${win32}/baratine/modules/c/src/apache22/Release/mod_caucho.dll"/>
+    <copy todir="${install}/win32/apache-2.0"
+          file="${win32}/baratine/modules/c/src/apache2/Release/mod_caucho.dll"/>
+
+    <chmod perm="ugo+rx">
+      <fileset dir="${install}">
+        <include name="*.exe"/>
+        <include name="win32/*.dll"/>
+        <include name="win64/*.dll"/>
+      </fileset>
+    </chmod>
+  </target>
+
+</project>

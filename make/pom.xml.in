@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.baratine</groupId>
+  <artifactId>@ARTIFACT_ID@</artifactId>
+  <version>@VERSION@</version>
+  
+  <packaging>jar</packaging>
+  <name>Baratine</name>
+  <description>A distributed Java service platform.</description>
+  <url>http://baratine.io</url>
+  
+  <licenses>
+    <license>
+      <name>GPLv2</name>
+      <url>http://www.gnu.org/licenses/gpl-2.0.html</url>
+    </license>
+  </licenses>
+  
+  <developers>
+    <developer>
+      <name>Caucho Technology</name>
+      <email>nam@caucho.com</email>
+      <organization>Caucho Technology</organization>
+      <organizationUrl>https://www.caucho.com</organizationUrl>
+    </developer>
+  </developers>
+  
+  <scm>
+    <connection>scm:git:git@github.com:baratine/baratine.git</connection>
+    <developerConnection>scm:git:git@github.com:baratine/baratine.git</developerConnection>
+    <url>git@github.com:baratine/baratine.git</url>
+  </scm>
+</project>
+

@@ -1,0 +1,54 @@
+Summary: Baratine in-memory service container
+Name: baratine
+Version: @VERSION@
+Release: 1
+License: Caucho
+Group: Application/Web
+Source0: %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+Provides: baratine-pro
+Requires: openssl-devel, glibc-devel, shadow-utils
+AutoReqProv: no
+
+%description
+
+%prep
+%setup -q
+
+%build
+
+%install
+rm -rf $RPM_BUILD_ROOT
+mkdir m4
+DESTDIR="$RPM_BUILD_ROOT" ./configure
+DESTDIR="$RPM_BUILD_ROOT" make rpm-dist
+DESTDIR="$RPM_BUILD_ROOT" make install
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%files
+%defattr(-,root,root,-)
+%config(noreplace) /etc/baratine/*
+%config(noreplace) /etc/init.d/baratine
+%attr(-,baratine,baratine) %config(noreplace) /var/baratine
+/usr/local/share/*
+/var/log/baratine
+/usr/bin/*
+
+%pre
+/usr/bin/getent group baratine || /usr/sbin/groupadd -r baratine
+/usr/bin/getent passwd baratine || /usr/sbin/useradd -r -s /bin/false -g baratine baratine
+
+%post
+/sbin/chkconfig baratine reset
+/usr/bin/baratine start
+exit
+%doc
+
+
+%changelog
+* Thu Oct 27 2011  <caucho@centos6-64> - 
+- Initial build.
+

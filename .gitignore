@@ -1,0 +1,13 @@
+*~
+*.o
+*.lo
+*.dylib
+*.jnilib
+#*#
+baratine.iml
+modules/*/dist
+modules/*/classes
+\.DS_Store
+*\.classpath
+*\.project
+*\.settings

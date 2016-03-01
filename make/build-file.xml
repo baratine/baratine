@@ -1,0 +1,64 @@
+<project basedir=".">
+
+  <!--
+     - baratine-files top
+    -->
+  <target name="baratine-files" depends="init, files-bin, files-app-default, files-cf"/>
+
+  <target name="files-app-default" depends="init">
+    <copy tofile="conf/app-default.cf.orig"
+          file="modules/baratine/src/META-INF/baratine/app-default.cf"
+          preservelastmodified="true"
+          overwrite="true">
+    </copy>
+  </target>
+
+  <!--
+     - files-bin
+    -->
+  <target name="files-bin" depends="init">
+    <copy tofile="bin/baratine"
+          file="bin/baratine-dist.in"
+          preservelastmodified="true">
+      <filterset>
+        <filter token="JAVA_EXE" value="java"/>
+        <filter token="JAVA_ARGS" value=""/>
+        <filter token="home_dir" value=""/>
+        <filter token="root_dir" value=""/>
+        <filter token="conf_dir" value=""/>
+        <filter token="log_dir" value=""/>
+      </filterset>
+    </copy>
+    
+    <chmod perm="ugo+rx">
+      <fileset dir="${install}">
+        <include name="bin/baratine"/>
+      </fileset>
+    </chmod>
+  </target>
+
+  <!--
+     - filese-cf
+    -->
+  <target name="files-cf" depends="init">
+    
+    <copy tofile="modules/baratine/src/manifest"
+          file="modules/baratine/src/manifest.in"
+          preservelastmodified="true"
+          overwrite="true">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+      </filterset>
+    </copy>
+    
+    <copy tofile="modules/baratine/src/manifest.dist"
+          file="modules/baratine/src/manifest.dist.in"
+          preservelastmodified="true"
+          overwrite="true">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+      </filterset>
+    </copy>
+  </target>
+  
+</project>

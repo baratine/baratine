@@ -1,0 +1,29 @@
+case "$1" in
+
+    --cflags) echo "@CFLAGS@";;
+    
+    --libexec) echo "@LIBEXEC@";;
+    
+    --log-dir) echo "@log_dir@";;
+    
+    --home-dir) echo "@home_dir@";;
+    
+    --root-dir) echo "@root_dir@";;
+    
+    --conf-dir) echo "@conf_dir@";;
+    
+    --build-dir) echo "@build_dir@";;
+    
+    --usr-share) echo "@usr_share@";;
+    
+    --init-d) echo "@initd@";;
+    
+    --init-d-dir) echo "@initd_dir@";;
+    
+    --setuid_user) echo "@setuid_user@";;
+    
+    --setuid_group) echo "@setuid_group@";;
+    
+    *) echo "unknown";
+    
+esac

@@ -1,0 +1,24 @@
+dependencies {
+  compile project(':api')
+  compile project(':core')
+  compile project(':web')
+//  compile project(':hessian')
+  compile project(':framework')
+
+  compile 'javax.mail:mail:1.4.1'
+  compile 'junit:junit:4.+'
+
+  // views
+  compile 'org.freemarker:freemarker:2.3.23'
+  compile 'com.github.spullara.mustache.java:compiler:0.9.1'
+  compile 'org.apache.velocity:velocity:1.7'
+  compile 'org.thymeleaf:thymeleaf:2.1.4.RELEASE'
+  compile 'de.neuland-bfi:jade4j:1.1.4'
+  compile 'com.github.subchen:jetbrick-template:2.1.0'
+
+  // gradle/maven
+  compile 'org.gradle:gradle-core:2.5'
+  compile 'org.gradle:gradle-base-services:2.5'
+  compile 'org.codehaus.groovy:groovy:2.4.5'
+  compile 'org.gradle:gradle-plugins:0.9-preview-3'
+}

@@ -1,0 +1,596 @@
+namespace resin "com.caucho.v5.resin";
+namespace health "com.caucho.v5.health";
+
+#
+# Health monitoring system default configuration
+#
+health:HealthSystem {
+  enabled true;
+  startup-delay 15m;
+  period 5m;
+  recheck-period 30s;
+  recheck-max 5;
+  check-timeout 5m;
+}
+  
+health:Restart {
+  health:IfHealthFatal;
+}
+
+#
+# Save jmx information on start.
+#
+health:DumpJmx async="true" {
+  health:OnStart;
+}
+
+#
+# Background profile
+#
+
+#health:ProfileCpu {
+#  background-period "1s";
+#}  
+
+#
+# Take snapshot on abnormal stop
+#
+#health:Snapshot {
+#  health:OnAbnormalStop;
+#}
+    
+#
+# Restart on critical if the problem persists for 5 min.
+#
+health:ActionSequence {
+  health:IfHealthCritical time="2m";
+
+  health:FailSafeRestart timeout="10m";
+  health:DumpJmx;
+  health:DumpThreads;
+  health:ReportScoreboard;
+#  health:StartProfiler active-time="2m" wait="true";
+  health:DumpHeap;
+  health:DumpHeap hprof="true"
+                  hprof-path="${resin.logDirectory}/heap.hprof";
+  health:Restart;
+}
+
+#
+# Checks for JVM-detected deadlocks.
+#
+health:JvmDeadlockHealthCheck;
+
+#
+# Heap memory checks
+#
+health:MemoryTenuredHealthCheck {
+  memory-free-min 1m;
+}
+  
+#
+# Dump heap if memory pools are critically low 
+#
+health:DumpHeap {
+  health:Or {
+    health:IfHealthCritical healthCheck="${memoryTenuredHealthCheck}";
+  }
+  health:IfNotRecent time="30m";
+}
+  
+#
+# Dump active threads if cpu usage is critically high
+#
+health:CpuHealthCheck {
+  warning-threshold 95;
+  #  critical-threshold 99;</critical-threshold> -->
+}
+  
+health:DumpThreads {
+  health:Or {
+    health:IfHealthWarning healthCheck="${cpuHealthCheck}" time="2m";
+    health:IfHealthEvent regexp="caucho.thread";
+  }
+    
+  health:IfNotRecent time="15m";
+}
+  
+#
+# Check cluster heartbeats
+#
+health:HeartbeatHealthCheck;
+
+#
+# Log connection pool limits reached
+#
+#health:ConnectionPoolHealthCheck;
+  
+#
+# Log transaction manager commit failures 
+#
+#health:TransactionHealthCheck;
+  
+#
+# Restart if any health checks are frozen or threads are hung 
+#
+health:HealthSystemHealthCheck;
+  
+#
+# HTTP Ping Check
+#
+health:HttpStatusHealthCheck {
+  url-list ${http_ping_urls};
+}
+  
+#
+# JMX Meters - for graphing and anomaly detection 
+#
+health:JmxMeter "Caucho|Uptime|Uptime"
+                "caucho:type=Server"
+                Uptime;
+   
+# 
+# Meters: operating system metrics 
+#
+health:JmxMeter "OS|CPU|Unix Load Avg"
+                "caucho:type=Server"
+                CpuLoadAvg;
+
+health:JmxMeter "OS|Memory|Physical Memory Free"
+                "java.lang:type=OperatingSystem"
+                FreePhysicalMemorySize;
+
+health:JmxMeter "OS|Memory|Swap Free"
+                "java.lang:type=OperatingSystem"
+                FreeSwapSpaceSize;
+
+health:JmxMeter "OS|Process|File Descriptor Count"
+                "java.lang:type=OperatingSystem"
+                OpenFileDescriptorCount
+                optional=true;
+
+#
+# Meters: memory metrics
+#
+health:JmxMeter "JVM|Memory|Heap Memory Used"
+                "caucho:type=Server"
+                RuntimeMemory;
+   
+health:JmxMeter "JVM|Memory|Heap Memory Free"
+                "caucho:type=Server"
+                RuntimeMemoryFree;
+
+#health:JmxMeter "JVM|Memory|Tenured Memory Used"
+#                "caucho:type=Memory"
+#                TenuredUsed;
+
+#health:JmxMeter "JVM|Memory|Tenured Memory Free"
+#                "caucho:type=Memory"
+#                TenuredFree;
+
+#
+# Meters: classloading and compilation 
+#
+health:JmxMeter "JVM|Memory|Loaded Classes"
+                "java.lang:type=ClassLoading"
+                LoadedClassCount;
+  
+health:JmxDeltaMeter "JVM|Compilation|Compilation Time"
+                     "java.lang:type=Compilation"
+                     TotalCompilationTime;
+  
+#
+# Meters: jvm thread metrics 
+#
+health:JmxMeter "JVM|Thread|JVM Thread Count"
+                "java.lang:type=Threading"
+                ThreadCount;
+
+#health:JmxMeter "JVM|Thread|JVM Runnable Count"
+#                "caucho:type=JvmThreads"
+#                RunnableCount;
+
+#health:JmxMeter "JVM|Thread|JVM Native Count"
+#                "caucho:type=JvmThreads"
+#                NativeCount;
+  
+#health:JmxMeter "JVM|Thread|JVM Waiting Count"
+#                "caucho:type=JvmThreads"
+#                WaitingCount;
+
+#health:JmxMeter "JVM|Thread|JVM Blocked Count"
+#                "caucho:type=JvmThreads"
+#                BlockedCount;
+
+#
+# Meters: baratine thread-pool metrics 
+#
+health:JmxMeter "Caucho|Thread|Thread Count"
+                "caucho:type=ThreadPool"
+                ThreadCount;
+
+health:JmxMeter "Caucho|Thread|Thread Active Count"
+                "caucho:type=ThreadPool"
+                ThreadActiveCount;
+
+health:JmxMeter "Caucho|Thread|Thread Idle Count"
+                "caucho:type=ThreadPool"
+                ThreadIdleCount;
+
+health:JmxMeter "Caucho|Thread|Thread Starting Count"
+                "caucho:type=ThreadPool"
+                ThreadStartingCount;
+
+health:JmxMeter "Caucho|Thread|Thread Wait Count"
+                "caucho:type=ThreadPool"
+                ThreadWaitCount;
+
+health:JmxMeter "Caucho|Thread|Thread Task Queue"
+                "caucho:type=ThreadPool"
+                ThreadTaskQueueSize;
+
+health:JmxMeter "Caucho|Thread|Thread Priority Queue"
+                "caucho:type=ThreadPool"
+                ThreadPriorityQueueSize;
+  
+health:JmxDeltaMeter "Caucho|Thread|Thread Create Count"
+                     "caucho:type=ThreadPool"
+                     ThreadCreateCountTotal;
+  
+health:JmxDeltaMeter "Caucho|Thread|Thread Overflow Count"
+                     "caucho:type=ThreadPool"
+                     ThreadOverflowCountTotal;
+
+#
+# Meters: AMP/Clustering
+#
+health:JmxDeltaMeter "Caucho|Cluster|Message Read Count"
+                     "caucho:type=AmpSystem"
+                     ExternalMessageReadCount;
+  
+health:JmxDeltaMeter "Caucho|Cluster|Message Write Count"
+                     "caucho:type=AmpSystem"
+                     ExternalMessageWriteCount;
+  
+#
+# Meters: block manager 
+#
+#health:JmxDeltaMeter "Caucho|Block Cache|Block Read Count"
+#                     "caucho:type=BlockManager"
+#                     BlockReadCountTotal;
+
+#health:JmxDeltaMeter "Caucho|Block Cache|Block Write Count"
+#                     "caucho:type=BlockManager"
+#                     BlockWriteCountTotal;
+
+#health:JmxDeltaMeter "Caucho|Block Cache|Block Miss Count"
+#                     "caucho:type=BlockManager"
+#                     MissCountTotal;
+
+#health:JmxCalculationMeter "Caucho|Block Cache|Miss Rate" {
+#  rate {
+#     delta objectName="caucho:type=BlockManager"
+#           attribute="MissCountTotal";
+#     delta objectName="caucho:type=BlockManager"
+#           attribute="HitCountTotal";
+#  }
+#}
+
+#health:JmxMeter "Caucho|Cache Store|Mnode Count"
+#                "caucho:type=CacheStore"
+#                MnodeCount;
+
+#health:JmxMeter "Caucho|Cache Store|Data Count"
+#                "caucho:type=CacheStore"
+#                DataCount;
+
+#health:JmxDeltaMeter "Caucho|Cache Store|Mnode Count|Delta"
+#                     "caucho:type=CacheStore"
+#                     MnodeCount;
+
+#health:JmxDeltaMeter "Caucho|Cache Store|Data Count|Delta"
+#                     "caucho:type=CacheStore"
+#                     DataCount;
+  
+#
+# Meters: http cache 
+#
+health:JmxDeltaMeter "Caucho|Http Cache|Hit Count"
+                     "caucho:type=HttpCache"
+                     HitCountTotal
+                     optional=true;
+
+health:JmxDeltaMeter "Caucho|Http Cache|Miss Count"
+                     "caucho:type=HttpCache"
+                     MissCountTotal
+                     optional=true;
+
+health:JmxCalculationMeter "Caucho|Http Cache|Miss Rate" {
+  rate {
+     delta objectName="caucho:type=HttpCache" 
+           attribute="MissCountTotal"
+           optional="true";
+     delta objectName="caucho:type=HttpCache" 
+           attribute="HitCountTotal"
+           optional="true";
+  }
+}
+
+health:JmxDeltaMeter "Caucho|Http Cache|Invocation Miss Count"
+                     "caucho:type=HttpCache"
+                     InvocationMissCountTotal
+                     optional=true;
+
+health:JmxDeltaMeter "Caucho|Http Cache|Invocation Hit Count"
+                     "caucho:type=HttpCache"
+                     InvocationHitCountTotal
+                     optional=true;
+
+health:JmxCalculationMeter "Caucho|Http Cache|Cacheable Rate" {
+  ratio {
+    add {
+      delta objectName="caucho:type=HttpCache"
+            attribute="HitCountTotal"
+            optional="true";
+      delta objectName="caucho:type=HttpCache"
+            attribute="MissCountTotal"
+             optional="true";
+    }
+    add {
+      delta objectName="caucho:type=HttpCache"
+            attribute="InvocationHitCountTotal"
+            optional="true";
+      delta objectName="caucho:type=HttpCache"
+            attribute="InvocationMissCountTotal"
+            optional="true";
+   }
+ }
+}
+
+# 
+# Anomaly analyzers 
+#
+health:AnomalyAnalyzer "OS|Process|File Descriptor Count" {
+  min-deviation 4;
+}
+
+health:AnomalyAnalyzer "JVM|Thread|JVM Thread Count" {
+  health-event "caucho.thread.anomaly.jvm-thread";
+  min-deviation 4;
+}
+
+health:AnomalyAnalyzer "JVM|Thread|JVM Runnable Count" {
+  health-event "caucho.thread.anomaly.jvm-runnable";
+  min-deviation 4;
+}
+
+health:AnomalyAnalyzer "JVM|Thread|JVM Waiting Count" {
+  health-event "caucho.thread.anomaly.jvm-waiting";
+  min-deviation 4;
+}
+  
+health:AnomalyAnalyzer "JVM|Thread|JVM Blocked Count" {
+  health-event "caucho.thread.anomaly.jvm-blocked";
+  min-deviation 4;
+}
+  
+health:AnomalyAnalyzer "Caucho|Thread|Thread Active Count" {
+  health-event "caucho.thread.anomaly.resin-active";
+  min-deviation 4;
+}
+  
+health:AnomalyAnalyzer "Caucho|Http|Request Time";
+
+health:AnomalyAnalyzer "Caucho|Http|Ping Time Max";
+
+health:AnomalyAnalyzer "Caucho|Port|Throttle Disconnect Count";
+
+health:AnomalyAnalyzer "Caucho|Http|400";
+
+health:AnomalyAnalyzer "Caucho|Http|5xx";
+
+health:AnomalyAnalyzer "Caucho|Cluster|Message Read Count";
+
+health:AnomalyAnalyzer "Caucho|Cluster|Message Write Count";
+
+#
+# Meter graphs pages: for resin-admin and PDF reports -->
+#
+health:MeterGraphPage Snapshot columns=3 {
+  # row 1
+
+  section "Requests" {
+
+    graph "Request Active" {
+      meter "Caucho|Http|Request Active";
+      meter "Caucho|Port|Request Suspend Active";
+      meter "Caucho|Port|Keepalive Thread Active";
+      meter "Caucho|Port|Keepalive Async Active";
+    }
+
+    graph "Request Count" {
+      meter "Caucho|Http|Request Count";
+      meter "Caucho|Port|Request Suspend Count";
+      meter "Caucho|Port|Keepalive Thread Count";
+      meter "Caucho|Port|Keepalive Async Count";
+      meter "Caucho|Http|Session Save Count";
+    }
+      
+    graph "Request Time" {
+      meter "Caucho|Http|Request Time";
+      meter "Caucho|Http|Request Time Max";
+    }
+
+    graph "Request Errors" {
+      meter "Caucho|Http|400";
+      meter "Caucho|Http|404";
+      meter "Caucho|Http|4xx";
+      meter "Caucho|Http|500";
+      meter "Caucho|Http|503";
+      meter "Caucho|Http|5xx";
+    }
+
+    graph "Throttle Disconnect" {
+      meter "Caucho|Port|Throttle Disconnect Count";
+    }
+
+    graph "Http Ping Time" {
+      meter "Caucho|Http|Ping Time";
+      meter "Caucho|Http|Ping Time Max";
+    }
+  }
+    
+  #- row 2
+  section "Network/CPU" {
+      
+   graph "Netstat" {
+     meter "OS|Network|tcp-established";
+     meter "OS|Network|tcp-listen";
+     meter "OS|Network|tcp-close";
+     meter "OS|Network|tcp-close-wait";
+     meter "OS|Network|tcp-fin-wait1";
+     meter "OS|Network|tcp-fin-wait2";
+     meter "OS|Network|tcp-last-ack";
+     meter "OS|Network|tcp-syn-recv";
+     meter "OS|Network|tcp-syn-sent";
+    }
+
+    graph "CPU" {
+      meter "OS|CPU|CPU Active";
+    }
+
+    graph "Load Avg" {
+      meter "OS|CPU|Unix Load Avg";
+    }
+
+    graph "CPU Context Switch" {
+      meter "OS|CPU|Context Switch Count";
+    }
+    
+  }
+
+  section "Memory" {
+    # row 3
+    
+    graph "JVM Memory" {
+      meter "JVM|Memory|Heap Memory Used";
+      meter "JVM|Memory|Heap Memory Free";
+      meter "JVM|Memory|Tenured Memory Used";
+      meter "JVM|Memory|Tenured Memory Free";
+    }
+      
+    graph "Physical Memory" {
+      meter "OS|Memory|Physical Memory Free";
+      meter "OS|Memory|Swap Free";
+    }
+
+    graph "File Descriptors" {
+      meter "OS|Process|File Descriptor Count";
+    }
+
+    graph "Class Loading" {
+      meter "JVM|Memory|Loaded Classes";
+      meter "JVM|Compilation|Compilation Time";
+    }
+
+    graph "Garbage Collection Time" {
+      meter "JVM|Memory|GC Time|PS MarkSweep";
+      meter "JVM|Memory|GC Time|PS Scavenge";
+      meter "JVM|Memory|GC Time|ParNew";
+      meter "JVM|Memory|GC Time|ConcurrentMarkSweep";
+    }
+
+    graph "Log Warnings" {
+      meter "Caucho|Log|Warning";
+      meter "Caucho|Log|Severe";
+    }
+  }
+    
+  section "Threads" {
+  
+    graph "JVM Threads" {
+      meter "JVM|Thread|JVM Thread Count";
+      meter "JVM|Thread|JVM Runnable Count";
+      meter "JVM|Thread|JVM Blocked Count";
+      meter "JVM|Thread|JVM Native Count";
+      meter "JVM|Thread|JVM Waiting Count";
+    }
+
+    graph "Caucho Thread Pool" {
+      meter "Caucho|Thread|Thread Count";
+      meter "Caucho|Thread|Thread Active Count";
+      meter "Caucho|Thread|Thread Wait Count";
+      meter "Caucho|Thread|Thread Overflow Count";
+      meter "Caucho|Thread|Thread Starting Count";
+    }
+    
+    graph "Caucho Task Queue" {
+      meter "Caucho|Thread|Thread Priority Queue";
+      meter "Caucho|Thread|Thread Task Queue";
+    }
+
+  }
+    
+  section "Clustering" {
+
+    graph "Cluster Messages" {
+      meter "Caucho|Cluster|Message Read Count";
+      meter "Caucho|Cluster|Message Write Count";
+    }
+    
+  }
+      
+  section "Caching" {
+      
+    graph "Http Cache Hit/Miss" {
+      meter "Caucho|Http Cache|Hit Count";
+      meter "Caucho|Http Cache|Miss Count";
+    }
+
+    graph "Http Cache Miss Rate" {
+      meter "Caucho|Http Cache|Miss Rate";
+    }
+      
+    graph "Invocation Hit/Miss" {
+      meter "Caucho|Http Cache|Invocation Hit Count";
+      meter "Caucho|Http Cache|Invocation Miss Count";
+    }
+
+    graph "Http Cache Cacheable Rate" {
+      meter "Caucho|Http Cache|Cacheable Rate";
+    }
+    
+  }
+}
+    
+#
+# Automatic PDF reports
+#
+#health:PdfReport {
+#  path "classpath:com/caucho/php/admin/pdf-gen.php";
+#  report Summary;
+#  period 7D;
+#  snapshot;
+#  mail-to ${email};
+#  mail-from ${email_from};
+  # profile-time 60s;
+    
+#  health:IfCron "0 0 * * 0";
+#}
+
+#health:PdfReport {
+#  path "bfs://local/system/report/cron/%a-%H.pdf";
+#  report Summary;
+#  period "6h";
+#  health:IfCron "0 */6 * * *";
+#  health:OnStart;
+#}
+
+#health:PdfReport {
+#  path "classpath:com/caucho/php/admin/pdf-gen.php";
+#  report Restart;
+#  period 2h;
+#  mail-to ${email};
+#  mail-from ${email_from};
+#  health:OnRestart;
+#}

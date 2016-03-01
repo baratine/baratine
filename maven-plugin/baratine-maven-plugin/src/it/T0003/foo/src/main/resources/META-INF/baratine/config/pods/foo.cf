@@ -1,0 +1,3 @@
+pod foo {
+  archive "/usr/lib/pods/foo.bar";
+}

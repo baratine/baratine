@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<localization>
+<!-- Application -->
+<message>
+  <key>web.xml is missing top-level web-app</key>
+  <value>web.xml is missing top-level web-app</value>
+</message>
+<message>
+  <key>unknown element `{0}' in {1}</key>
+  <value>unknown element `{0}' in {1}</value>
+</message>
+<message>
+  <key>&lt;{0}> expects `{1}'</key>
+  <value>&lt;{0}> expects `{1}'</value>
+</message>
+<message>
+  <key>duplicate servlet `{0}'</key>
+  <value>duplicate servlet `{0}'</value>
+</message>
+<message>
+  <key>&lt;{0}> expects `{1}' or `{2}'</key>
+  <value>&lt;{0}> expects `{1}' or `{2}'</value>
+</message>
+<message>
+  <key>form login expects `{0}'</key>
+  <value>form login expects `{0}'</value>
+</message>
+<message>
+  <key>error loading authenticator {0}</key>
+  <value>error loading authenticator {0}</value>
+</message>
+<message>
+  <key>error initializing authenticator {0}</key>
+  <value>error initializing authenticator {0}</value>
+</message>
+<message>
+  <key>can't load servlet `{0}'</key>
+  <value>can't load servlet `{0}'</value>
+</message>
+<message>
+  <key>path must be absolute: `{0}'</key>
+  <value>path must be absolute: `{0}'</value>
+</message>
+<message>
+  <key>still unavailable</key>
+  <value>still unavailable</value>
+</message>
+
+</localization>

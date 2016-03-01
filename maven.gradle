@@ -1,0 +1,134 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+ext {
+  isReleaseVersion = ! version.endsWith("SNAPSHOT")
+
+  ossrhUsername = project.hasProperty('ossrhUsername') ? project.ossrhUsername : ''
+  ossrhPassword = project.hasProperty('ossrhPassword') ? project.ossrhPassword : ''
+}
+
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from subprojects.sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from subprojects.javadoc
+}
+
+subprojects {
+  task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+  }
+  
+  task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+  }
+}
+
+allprojects {
+  apply plugin: 'maven'
+  apply plugin: 'signing'
+  
+  artifacts {
+    archives javadocJar, sourcesJar
+  }
+  
+  signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+  }
+  
+  install.repositories.mavenInstaller {
+    configurations.archives.artifacts.removeAll { it.getType() != 'jar' }
+
+    addFilter('all') {artifact, file ->
+      artifact.name != 'plugins'
+    }.whenConfigured {
+      // remove all baratine dependencies
+      pom -> pom.dependencies.removeAll { it.groupId == 'io.baratine' }
+    }
+
+    addFilter('plugins') {artifact, file ->
+      artifact.name == 'plugins'
+    }.whenConfigured {
+      // remove all BUT baratine dependencies
+      pom -> pom.dependencies.removeAll { it.groupId != 'io.baratine' }
+    }
+  }
+  
+  uploadArchives {
+    repositories {
+      mavenDeployer {
+        beforeDeployment { MavenDeployment deployment ->
+          
+          signing.signPom(deployment)
+          
+          deployment.getArtifacts().findAll{ it.getType() == 'jar' }.each {
+            def signature = signing.sign(it).singleSignature
+
+            deployment.addArtifact(signature)
+          }
+        }
+        
+        configurations.archives.artifacts.removeAll { it.getType() != 'jar' }
+        
+        repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+          authentication(userName: ossrhUsername, password: ossrhPassword)
+        }
+        
+        Closure pomProject = {
+          name 'Baratine'
+          packaging 'jar'
+          description 'A reactive Java web server.'
+          url 'http://baratine.io'
+  
+          scm {
+            connection 'scm:git://git.caucho.com/baratine.git'
+            developerConnection 'scm:git://git.caucho.com/baratine.git'
+            url 'git://git.caucho.com/baratine.git'
+          }
+  
+          licenses {
+            license {
+              name 'GPLv2'
+              url 'http://www.gnu.org/licenses/gpl-2.0.html'
+            }
+          }
+  
+          developers {
+            developer {
+              name 'Nam Nguyen'
+              email 'nam@caucho.com'
+              // https://issues.gradle.org/browse/GRADLE-1200
+              organization = 'Caucho Technology' 
+              organizationUrl 'https://www.caucho.com'
+            }
+          }
+        }
+        
+        addFilter('api') {artifact, file ->
+          artifact.name == 'api'
+        }.whenConfigured {
+          pom -> pom.dependencies.removeAll { it.groupId == 'io.baratine' }
+        }.project(pomProject)
+        
+        addFilter('baratine') {artifact, file ->
+          artifact.name == 'baratine'
+        }.whenConfigured {
+          pom -> pom.dependencies.removeAll { it.groupId == 'io.baratine' }
+        }.project(pomProject)
+        
+        snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+          authentication(userName: ossrhUsername, password: ossrhPassword)
+        }
+        
+        
+      }
+    }
+  }
+}

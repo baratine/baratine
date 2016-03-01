@@ -1,0 +1,429 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>example.auction.Auction example</title>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+</head>
+
+<body>
+<div>URL: <input type="text" id="baseUrl" size="40" value="http://localhost:8085/s/pod"></div>
+
+<br>
+
+<div>
+  <form id="login">
+    <h3>Log In</h3>
+    <div>User ID: <input id="loginID" type="text"></div>
+    <div>User Email: <input id="loginEmail" type="text"></div>
+    <div><input type="submit" value="Log in"></div>
+  </form>
+</div>
+
+<hr>
+
+<div>
+  <form id="callService">
+    <h3>Call Service</h3>
+    <div>Service: <input id="callServiceName" type="text"></div>
+    <div>Method: <input id="callServiceMethod" type="text"></div>
+    <div>Args: <input id="callServiceArgs" type="text"></div>
+    <div>ID: <input id="callServiceID" type="text"></div>
+    <div><input type="submit" value="Submit"></div>
+  </form>
+  <div id="callServiceResponse"></div>
+</div>
+
+<hr>
+
+<div>
+  <form id="createAuction">
+    <h3>Create Auction</h3>
+    <div>Starting price: $<input type="text" id="createPrice"></div>
+    <div>Duration: 
+      <select id="createDuration">
+        <option value="300000">5 min</option>
+        <option value="3600000">1 hour</option>
+        <option value="86400000">1 day</option>
+      </select>
+    </div>
+    <div>Title <input type="text" id="createTitle"></div>
+    <div><textarea rows="10" cols="60" id="createDescription"></textarea></div>
+    <input type="submit" value="Create Auction">
+  </form>
+</div>
+
+<hr>
+
+<div>
+  <h3>Auction List</h3>
+  <table id="auctionList" border="1">
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Seller</th>
+      <th>Bids</th>
+      <th>Buyer</th>
+      <th>Price</th>
+    </tr>
+  </table>
+</div>
+
+
+<script type="text/javascript">
+function sendRequest(service, method, args, id)
+{
+  var url = $("#baseUrl").val();
+
+  url += "/" + service;
+
+  if (id != null) {
+    url += "/" + id;
+  }
+
+  url += "?m=" + method;
+  
+  if (args != null) {
+    for (var i = 0; i < args.length; i++) {
+      url += "&p" + i + "=" + args[i];
+    }
+  }
+  
+  url += "&jsoncallback=?";
+  
+  return $.getJSON(url);
+}
+
+function updateAuction(auctionId)
+{
+  sendRequest("query", "getAuction", [auctionId])
+    .done(function(data) {
+      var auction = new Auction(data);
+      
+      $("#" + auctionId + " td[name='title']").text(auction.getTitle());
+      $("#" + auctionId + " td[name='endingTime']").text(formatDate(auction.getEndingTimeMs()));
+      $("#" + auctionId + " td[name='bidCount']").text(auction.getBidCount());
+      $("#" + auctionId + " td[name='topBidder']").text(formatString(auction.getTopBidder()));
+      $("#" + auctionId + " td[name='price']").text(formatMoney(auction.getCurrentPrice()));
+      
+      $("#" + auctionId).animate({
+        opacity: 0.2
+      }, 300, function() {
+        $("#" + auctionId).animate({
+          opacity: 1.0
+        }, 300);
+      });
+    })
+    .fail(function(error) {
+      console.log(error);
+    });
+}
+
+function updateAuctionList()
+{
+  sendRequest("query", "getAuctions")
+    .done(function(data) {
+      var array = data;
+      
+      var i = 0;
+      array.forEach(function(entry) {
+        var auction = new Auction(entry);
+      
+        var html = '<tr id="' + auction.getId() + '">'
+                 +   '<td name="id">' + auction.getId() + '</td>'
+                 +   '<td name="title">' + auction.getTitle() + "</td>"
+                 +   '<td name="startTime">' + formatDate(auction.getStartTimeMs()) + "</td>"
+                 +   '<td name="endingTime">' + formatDate(auction.getEndingTimeMs()) + "</td>"
+                 +   '<td name="userId">' + auction.getUserId() + "</td>"
+                 +   '<td name="bidCount">' + auction.getBidCount() + "</td>"
+                 +   '<td name="topBidder">' + formatString(auction.getTopBidder()) + "</td>"
+                 +   '<td name="price">' + formatMoney(auction.getCurrentPrice()) + "</td>"
+                 +   '<td>'
+                 +     '<form class="bidForm">'
+                 +       '<input name="auctionId" type="hidden" value="' + auction.getId() + '">'
+                 +       '<span>$<input name="auctionPrice" type="text" size="4"><input type="submit" value="Bid"></span>'
+                 +     '</form>'
+                 +   '</td>'
+                 + "</tr>";
+      
+        $("#auctionList").append(html);
+      });
+      
+      $(".bidForm").each(function(index, element) {  
+        $(this).submit(function(event) {
+          event.preventDefault();
+          
+          if (! isLoggedIn()) {
+            alert("not logged in");
+            
+            return;
+          }
+          
+          var auctionId = $(element).find("input[name='auctionId']").val();
+          var price = $(element).find("input[name='auctionPrice']").val();
+          
+          price = moneyToLong(price);
+          
+          sendRequest("auction", "addBid", [price, _userId], auctionId)
+            .done(function(data) {
+              var isSuccessful = data[0];
+              
+              if (isSuccessful) {
+                console.log("bid successful: " + price);
+                
+                updateAuction(auctionId);
+              }
+            })
+            .fail(function(error) {
+              console.log("bid failed: " + price);
+            })
+        });
+      });
+    })
+    .fail(function(error) {
+      console.log("updateAuctionList error: " + JSON.stringify(error));
+    })
+    .always(function() {
+    });
+}
+
+function formatMoney(moneyAsLong)
+{
+  var dollars = parseInt(moneyAsLong / 100);
+  var cents = moneyAsLong % 100;
+  
+  var centsPrefix = cents > 10 ? "" : "0";
+  
+  return "$" + dollars + "." + centsPrefix + cents;
+}
+
+function moneyToLong(money)
+{
+  return Math.floor(money * 100);
+}
+
+function formatDate(time)
+{
+  if (time <= 0) {
+    return "";
+  }
+
+  var d = new Date(time);
+  
+  return d.toLocaleDateString() + " " + d.toLocaleTimeString();
+}
+
+function formatString(str)
+{
+  if (str == null) {
+    return "";
+  }
+  else {
+    return str;
+  }
+}
+
+var _userId;
+var _userEmail;
+
+function isLoggedIn()
+{
+  return _userId != null;
+}
+
+function logout()
+{
+  _userId = null;
+  _userEmail = null;
+}
+
+function hashUserId(id)
+{
+  var hash = 0;
+  
+  for (var i = 0; i < id.length; i++) {
+    var chr = id.charCodeAt(i);
+    
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  
+  return hash;
+}
+
+function login(id, email)
+{
+  var hash = hashUserId(id);
+
+  sendRequest("user", "login", [id, email], hash)
+    .done(function(data) {
+      var isSuccessful = data[0];
+    
+      if (isSuccessful) {
+        console.log("logged in as: " + id);
+       
+        _userId = id;
+        _userEmail = email;
+      }
+      else {
+        console.log("failed to log in as: " + id);
+        
+        createUser(id, email);
+      }
+    })
+    .fail(function(error) {
+      console.log("failed to log in: " + error);
+    })
+    .always(function() {
+    });
+}
+
+function createUser(id, email)
+{
+  var hash = hashUserId(id);
+
+  sendRequest("user", "create", [id, email], hash)
+    .done(function(data) {
+      var isSuccessful = data[0];
+    
+      if (isSuccessful) {
+        console.log("created user: " + id);
+       
+        _userId = id;
+        _userEmail = email;
+      }
+      else {
+        console.log("failed to create user: " + id);
+      }
+    })
+    .fail(function(error) {
+      console.log("failed to create user: " + error);
+    })
+    .always(function() {
+    });
+}
+
+var Auction = function(map) {
+  this._id = map._id;
+  
+  this._userId = map._userId;
+
+  this._startTimeMs = map["_startTimeMs"];
+  this._endTimeMs = map["_endTimeMs"];
+  this._durationMs = map["_durationMs"];
+    
+  this._startPrice = map["_startPrice"];
+    
+  this._title = map["_title"];
+  this._description = map["_description"];
+    
+  this._bidList = map["_bidList"];
+  
+  this.getId = function() {
+    return this._id;
+  };
+  
+  this.getStartPrice = function() {
+    return this._startPrice;
+  };
+  
+  this.getCurrentPrice = function() {
+    var topPrice = this._startPrice;
+    
+    this._bidList.forEach(function(bid) {
+      if (bid._price > topPrice) {
+        topPrice = bid._price;
+      }
+    });
+    
+    return topPrice;
+  };
+  
+  this.getUserId = function() {
+    return this._userId;
+  };
+  
+  this.getStartTimeMs = function() {
+    return this._startTimeMs;
+  };
+  
+  this.getEndTimeMs = function() {
+    return this._endTimeMs;
+  };
+  
+  this.getEndingTimeMs = function() {
+    return this._startTimeMs + this._durationMs;
+  };
+  
+  this.getTitle = function() {
+    return this._title;
+  };
+  
+  this.getBidCount = function() {
+    return this._bidList.length;
+  };
+  
+  this.getTopBidder = function() {
+    if (this._bidList.length == 0) {
+      return null;
+    }
+    
+    return this._bidList[this._bidList.length - 1]._userId;
+  }
+}
+
+$(function() {
+  $("#login").submit(function(event) {
+    event.preventDefault();
+    
+    var userId = $("#loginID").val();
+    var userEmail = $("#loginEmail").val();
+    
+    login(userId, userEmail);
+  });
+
+  $("#createAuction").submit(function(event) {
+    event.preventDefault();
+    
+    if (! isLoggedIn()) {
+      alert("not logged in");
+      
+      return;
+    }
+    
+    var title = $("#createTitle").val();
+    var description = $("#createDescription").val();
+    var price = Math.floor($("#createPrice").val() * 100);
+    var duration = $("#createDuration").val();
+    
+    sendRequest("query", "createAuction", [_userId, duration, price, title, description]);
+  });
+  
+  $("#callService").submit(function(event) {
+    event.preventDefault();
+    
+    var serviceName = $("#callServiceName").val();
+    var methodName = $("#callServiceMethod").val();
+    var args = $("#callServiceArgs").val();
+    var id = $("#callServiceID").val();
+    
+    if (id.length == 0) {
+      id = null;
+    }
+    
+    if (args.length == 0) {
+      args = "[]";
+    }
+    
+    sendRequest(serviceName, methodName, JSON.parse(args), id);
+  });
+  
+  updateAuctionList();
+});
+
+</script>
+</body>
+</html>
+

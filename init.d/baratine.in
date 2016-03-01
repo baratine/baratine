@@ -1,0 +1,160 @@
+#!@BASH@
+
+### BEGIN INIT INFO
+# Provides:          baratine
+# Required-Start:    $remote_fs $network
+# Required-Stop:     $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: The Baratine Server
+### END INIT INFO
+#
+### BEGIN Fedora SysV
+#
+# chkconfig: 2345 90 10
+# description: The Baratine Server
+#
+### END Fedora SysV
+#
+# To install, configure this file as needed and copy init.baratine
+# to /etc/rc.d/init.d as baratine.  Then use "# /sbin/chkconfig baratine reset"
+#
+
+JAVA_HOME="@JAVA_HOME@"
+BARATINE_HOME="@baratine_home@"
+CONSOLE="@baratine_log@/console.log"
+
+export JAVA_HOME BARATINE_HOME
+
+JAVA="@JAVA_EXE@"
+
+if test -z "$JAVA_EXE"; then
+  JAVA_EXE="$JAVA"
+fi
+
+if test ! -x "$JAVA_EXE"; then
+  if test -n "$JAVA_HOME"; then
+    JAVA_EXE="$JAVA_HOME/bin/java"
+  fi
+fi
+
+if test ! -x "${JAVA_EXE}"; then
+  JAVA_EXE=java
+fi
+
+BARATINE_EXE="${BARATINE_HOME}/bin/baratine"
+
+if ! test -f "${BARATINE_EXE}"; then
+  BARATINE_EXE="${JAVA_EXE} -jar ${BARATINE_HOME}/lib/baratine.jar"
+fi
+
+#
+# Set to the server id to start and use "start" command instead of
+# "start-all"
+#
+#SERVER="--server-id app-a"
+#START_CMD="start"
+
+START_CMD="start"
+
+#
+# -d /var/lib/baratine         -- the main data directory
+#
+#BARATINE_ROOT="-d @baratine_root@"
+#
+# -conf /etc/baratine/baratine.xml   -- the main configuration file
+#
+#BARATINE_CONF="--conf @baratine_conf@/baratine.xml"
+# 
+# Licenses for Baratine. TODO in progress
+# BARATINE_LICENSE=" --license-dir @baratine_conf@/licenses "
+#
+# -log-directory /var/log/baratine -- the main log directory
+#
+#BARATINE_LOG="--log-dir @baratine_log@"
+#
+# --cluster app-tier        -- elastic servers
+#
+#JOIN_CLUSTER="--cluster app-tier"
+
+ARGS="$ARGS $BARATINE_CONF $BARATINE_LOG $BARATINE_ROOT $BARATINE_LICENSE"
+ARGS="$ARGS $JOIN_CLUSTER $SERVER"
+
+#START_ARGS="$START_ARGS --elastic-ip"
+
+if test -r /lib/lsb/init-functions; then
+  . /lib/lsb/init-functions
+fi
+
+type log_daemon_msg 1> /dev/null 2> /dev/null
+if test "$?" != 0; then
+  log_daemon_msg () {
+      if [ -z "$1" ]; then
+          return 1
+      fi
+
+      if [ -z "$2" ]; then
+          echo -n "$1:"
+          return
+      fi
+    
+      echo -n "$1: $2"
+  }
+fi  
+
+type log_end_msg 1> /dev/null 2> /dev/null
+if test "$?" != 0; then
+  log_end_msg () {
+      [ -z "$1" ] && return 1
+
+      if [ $1 -eq 0 ]; then
+        echo " ."
+      else
+        echo " failed!"
+      fi
+    
+    return $1
+  }
+
+fi
+
+case "$1" in
+  start)
+	log_daemon_msg "Starting baratine"
+	if test -n "$USER"; then
+  	  su $USER -c """$BARATINE_EXE $ARGS $START_ARGS $START_CMD""" 1>> $CONSOLE 2>> $CONSOLE
+	else
+	    errors=`$BARATINE_EXE $ARGS $START_CMD 2>&1`
+	    if [ $? != 0 ]; then
+		log_daemon_msg $errors
+	    fi
+	fi
+
+	log_end_msg $?
+	;;
+  stop)
+	log_daemon_msg "Stopping baratine"
+	if test -n "$USER"; then
+  	  su $USER -c """$BARATINE_EXE $ARGS shutdown""" 1>> $CONSOLE 2>> $CONSOLE
+	else
+	    errors=`$BARATINE_EXE $ARGS shutdown 2>&1`
+	    if [ $? != 0 ]; then
+		log_daemon_msg $errors
+	    fi
+	fi
+	
+	log_end_msg $?
+	;;
+  status)
+        $BARATINE_EXE $ARGS status || exit 3
+	;;
+  restart)
+	$0 stop
+	$0 start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|status|restart}"
+	exit 1
+esac
+
+exit 0

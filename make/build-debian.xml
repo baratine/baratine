@@ -1,0 +1,264 @@
+<project basedir=".">
+  
+  <!--
+     - debian-libexec
+    -->
+  <target name="debian-libexec" depends="init">
+    <property name="libexec" value="${dist.build}/libexec${bits}"/>
+    
+    <delete dir="${libexec}"/>
+    <mkdir dir="${libexec}"/>
+    
+    <copy todir="${libexec}" preservelastmodified="true">
+      <fileset dir="${baratinedir}">
+	<include name="automake/*"/>
+	<include name="configure.ac"/>
+	<include name="configure"/>
+	<include name="Makefile.am"/>
+	<include name="Makefile.in"/>
+	<include name="aclocal.m4"/>
+
+	<include name="init.d/baratine.in"/>
+        
+	<include name="bin/baratine-dist.in"/>
+	
+	<include name="modules/c/src/Makefile.in"/>
+	
+	<include name="modules/c/src/apache2/*.c"/>
+	<include name="modules/c/src/apache2/*.h"/>
+	<include name="modules/c/src/apache2/Makefile.in"/>
+	
+	<include name="modules/c/src/common/*.c"/>
+	<include name="modules/c/src/common/*.h"/>
+	<include name="modules/c/src/common/Makefile.in"/>
+	
+	<include name="modules/c/src/baratine/*.c"/>
+	<include name="modules/c/src/baratine/*.h"/>
+	<include name="modules/c/src/baratine/Makefile.in"/>
+	
+	<include name="modules/c/src/baratinessl/*.c"/>
+	<include name="modules/c/src/baratinessl/*.h"/>
+	<include name="modules/c/src/baratinessl/Makefile.in"/>
+      </fileset>
+
+      <fileset dir="${basedir}">
+	<include name="modules/c/src/baratine/*.c"/>
+	<include name="modules/c/src/baratine/*.h"/>
+        
+	<include name="modules/c/src/baratine/Makefile.in"/>
+      </fileset>
+
+    </copy>
+    
+    <chmod perm="ugo+rx">
+      <fileset dir="${libexec}">
+        <include name="configure"/>
+      </fileset>
+    </chmod>
+
+    <exec dir="${libexec}" executable="/bin/sh">
+      <arg value="configure"/>
+      <arg value="--prefix=${libexec}"/>
+      <arg value="--with-check-skip=baratine_sh"/>
+    </exec>
+    
+    <exec dir="${libexec}" executable="make">
+    </exec>
+    
+    <exec dir="${libexec}" executable="make">
+      <arg value="install"/>
+    </exec>
+  </target>
+
+  <target name="debian-compile" depends="init,configure,dist">
+    <delete dir="dist-debian"/>
+    <delete dir="build-debian"/>
+
+    <mkdir dir="build-debian"/>
+
+    <copy tofile="build-debian/${shortproduct}-${version}.tar.gz"
+          file="${dist}/${shortproduct}-${version}.tar.gz">
+    </copy>
+
+    <exec executable="tar" dir="build-debian">
+      <arg value="-zxf"/>
+      <arg value="${shortproduct}-${version}.tar.gz"/>
+    </exec>
+    
+    <exec executable="./configure"
+          dir="build-debian/${shortproduct}-${version}">
+    </exec>
+    
+    <exec executable="make"
+          dir="build-debian/${shortproduct}-${version}">
+      <env key="DESTDIR" value="${basedir}/dist-debian"/>
+    </exec>
+    
+    <exec executable="make"
+          dir="build-debian/${shortproduct}-${version}">
+      <env key="DESTDIR" value="${basedir}/dist-debian"/>
+      <arg value="rpm-dist"/>
+    </exec>
+    
+    <exec executable="make"
+          dir="build-debian/${shortproduct}-${version}">
+      <env key="DESTDIR" value="${basedir}/dist-debian"/>
+      <arg value="install"/>
+    </exec>
+          
+  </target>
+
+  <target name="debian-clean" depends="init,debian-perm">
+    <!--
+    <exec executable="${basedir}/debian-perm">
+      <arg value="-r"/>
+    </exec>
+    -->
+    
+    <delete dir="dist-debian"/>
+    <delete dir="build-debian"/>
+  </target>
+
+  <target name="debian" depends="init,debian-compile">
+    <exec executable="lsb_release" outputproperty="debian.stability">
+      <arg value="-c"/>
+      <arg value="-s"/>
+    </exec>
+    
+    <echo>Ubuntu '${debian.stability}'</echo>
+    
+    <exec executable="uname" outputproperty="debian.architecture">
+      <arg value="-m"/>
+ 
+      <redirector>
+        <outputfilterchain>
+          <replacestring from="i486" to="i386"/>
+          <replacestring from="i586" to="i386"/>
+          <replacestring from="i686" to="i386"/>
+          <replacestring from="x86_64" to="amd64"/>
+        </outputfilterchain>
+      </redirector>
+    </exec>
+
+    <copy file="${install}/debian/control.in"
+          tofile="dist-debian/DEBIAN/control">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+        <filter token="ARCHITECTURE" value="${debian.architecture}"/>
+      </filterset>
+    </copy>
+
+    <copy file="${install}/debian/conffiles"
+          tofile="dist-debian/DEBIAN/conffiles"/>
+
+    <copy file="${install}/debian/postinst"
+          tofile="dist-debian/DEBIAN/postinst"/>
+
+    <chmod perm="755" file="dist-debian/DEBIAN/postinst"/>
+
+    <copy file="${install}/debian/prerm"
+          tofile="dist-debian/DEBIAN/prerm"/>
+
+    <chmod perm="755" file="dist-debian/DEBIAN/prerm"/>
+
+    <!--
+    <exec executable="${basedir}/debian-perm"/>
+    -->
+
+    <!--
+    <exec executable="dpkg">
+      <arg value="-b"/>
+      <arg value="dist-debian"/>
+      <arg value="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}/${shortproduct}_${version}-${debian.architecture}.deb"/>
+    </exec>
+    -->
+
+    <delete dir="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}"
+            failonerror="false"/>
+
+    <mkdir dir="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}"/>
+
+    <mkdir dir="/home/caucho/git/download/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}"/>
+
+    <apply executable="ln"
+           dest="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}"
+           dir="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}">
+      <arg value="-s"/>
+      <mapper type="flatten"/>
+      <fileset dir="/home/caucho/git/download/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}" includes="*.deb"/>
+    </apply>
+
+    <delete dir="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}/${shortproduct}_${version}-${debian.architecture}.deb"
+            failonerror="false"/>
+    
+    <exec executable="fakeroot">
+      <arg value="dpkg"/>
+      <arg value="-b"/>
+      <arg value="dist-debian"/>
+      <arg value="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}/${shortproduct}_${version}-${debian.architecture}.deb"/>
+    </exec>
+
+    <exec executable="dpkg-scanpackages"
+          dir="${dist}/debian"
+          output="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}/Packages"
+          logError="true">
+      <arg value="--multiversion"/>
+      <arg value="dists/${debian.stability}/${debian.component}/binary-${debian.architecture}"/>
+    </exec>
+
+    <exec executable="gzip">
+      <arg value="${dist}/debian/dists/${debian.stability}/${debian.component}/binary-${debian.architecture}/Packages"/>
+    </exec>
+  </target>
+
+  <target name="debian-src" depends="init">
+    <delete dir="dist-debian-src"/>
+    
+    <mkdir dir="dist-debian-src/usr/local/share/baratine"/>
+    
+    <copy todir="dist-debian-src/usr/local/share/baratine"
+          preservelastmodified="true"
+          overwrite="true">
+      <fileset dir="${baratinedir}">
+        <exclude name="**/classes/**"/>
+        <exclude name="**/dist/**"/>
+        <exclude name="**/*~"/>
+        <exclude name="**/*.class"/>
+        <exclude name="**/.svn/*"/>
+
+        <include name="modules/**"/>
+        <include name="conf/**"/>
+        <include name="artifacts/**"/>
+      </fileset>
+    </copy>
+
+    <copy file="${install}/debian/control"
+          tofile="dist-debian-src/DEBIAN/control"/>
+    
+    <exec executable="${basedir}/debian-perm"/>
+        
+    <exec executable="dpkg">
+      <arg value="-b"/>
+      <arg value="dist-debian-src"/>
+      <arg value="${dist}/${shortproduct}-src_${version}-i386.deb"/>
+    </exec>
+  </target>
+
+  <target name="debian-perm" depends="init">
+    <copy file="c/debian-perm.c.in"
+          tofile="c/debian-perm.c"
+          preservelastmodified="true"
+          overwrite="true">
+      <filterset>
+        <filter token="BARATINE_ROOT" value="baratine-${version}"/>
+      </filterset>
+    </copy>
+
+    <exec executable="cc">
+      <arg value="-o"/>
+      <arg value="debian-perm"/>
+      <arg value="c/debian-perm.c"/>
+    </exec>
+  </target>
+
+</project>

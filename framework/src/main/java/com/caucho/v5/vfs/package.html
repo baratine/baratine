@@ -1,0 +1,62 @@
+<html>
+<body>
+Resin's Virtual File System.  Resin's VFS combines and simplifies the morass
+in Java I/O.  The core classes are:
+<ul>
+<li><code>Path</code> -- API similar to File, but supports URLs as well as
+paths.
+<li><code>ReadStream</code> -- buffered read stream handing both
+byte and character input
+<li><code>WriteStream</code> -- buffered write stream handling both
+byte and character output
+</ul>
+
+<h3>Virtual Paths</h3>
+
+<p>Path access is based on standard URLs.  The following URL schemes are
+predefined.
+<ul>
+<li><b>file:</b> -- the standard filesystem
+<li><b>http:</b> -- the http filesystem
+<li><b>mailto:</b> -- sending mail
+<li><b>stdout:</b> -- standard output (System.out)
+<li><b>stderr:</b> -- standard error (System.err)
+<li><b>tcp:</b> -- TCP socket pair
+<li><b>null:</b> -- /dev/null
+<li><b>log:</b> -- debug logging (controlled by resin.conf)
+</ul>
+
+<h3>Reading a File</h3>
+
+<code>ReadStream</code> implements <code>InputStream</code> so it can be
+used wherever an <code>InputStream</code> is appropriate.
+
+<p>The <code>Vfs</code> facade is convenient for opening files.
+
+<code><pre>
+ReadStream rs = Vfs.openRead("http://www.yahoo.com");
+int ch;
+
+while ((ch = rs.read()) >= 0)
+  System.out.print((char) ch);
+</pre></code>
+
+<h3>Writing a File</h3>
+
+<code>WriteStream</code> implements <code>OutputStream</code> so it can be
+used wherever an <code>OutputStream</code> is appropriate.  It also implements
+the familiar <code>print()</code> methods from <code>PrintStream</code>,
+although they do throw IOExceptions.
+
+<p>The <code>Vfs</code> facade is convenient for opening files.
+
+<code><pre>
+WriteStream ws = Vfs.openWrite("mailto:user@foo.com");
+ws.setAttribute("subject", "hi, there");
+
+ws.println("Just a little hello, world message");
+ws.close();
+</pre></code>
+
+</body>
+</html>

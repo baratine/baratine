@@ -1,0 +1,3 @@
+pod pod {
+  archive "/usr/lib/pods/T0000.bar";
+}

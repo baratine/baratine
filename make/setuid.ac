@@ -1,0 +1,35 @@
+#
+# --with-setuid
+#
+setuid_user=baratine
+setuid_group=baratine
+
+AC_ARG_WITH(setuid,
+[AS_HELP_STRING([--with-setuid=user],
+                [configure default setuid user])],
+[
+setuid_user=${withval} 
+setuid_set=true
+])
+
+#
+# --with-setgid
+#
+
+AC_ARG_WITH(setgid,
+[AS_HELP_STRING([--with-setgid=group],
+                [configure default setgid group])],
+[
+setuid_group=${withval}; 
+setuid_set=true
+])
+
+AC_SUBST(setuid_user)
+AC_SUBST(setuid_group)
+AC_SUBST(setuid_set)
+
+user_add=`which useradd`
+group_add=`which groupadd`
+
+AC_SUBST(user_add)
+AC_SUBST(group_add)

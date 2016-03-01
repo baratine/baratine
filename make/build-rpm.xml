@@ -1,0 +1,50 @@
+<project basedir=".">
+  
+  <target name="rpm" depends="init">
+    <copy tofile="${user.home}/rpmbuild/SOURCES/${shortproduct}-${version}.tar.gz"
+          file="${dist}/${shortproduct}-${version}.tar.gz"
+          overwrite="true"/>
+
+    <copy file="make/baratine.spec.in"
+          tofile="${dist}/baratine.spec"
+          overwrite="true">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+      </filterset>
+    </copy>
+
+    <exec executable="rpmbuild">
+      <arg line="-bb baratine.spec"/>
+    </exec>
+  </target>
+  
+  <target name="rpm-sign" depends="init">
+    <copy tofile="${user.home}/rpmbuild/SOURCES/${shortproduct}-${version}.tar.gz"
+          file="${dist}/${shortproduct}-${version}.tar.gz"/>
+
+    <copy file="baratine.spec.in"
+          tofile="baratine.spec"
+          overwrite="true">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+      </filterset>
+    </copy>
+
+    <exec executable="rpmbuild">
+      <arg line="-bb baratine.spec --sign"/>
+    </exec>
+  </target>
+
+  <target name="dist.rpm" depends="dist.configure.make">
+    <exec dir="${dist}/${dist.name}" executable="checkinstall">
+      <arg line="-R --install=no --fstrans=yes -y" />
+    </exec>
+
+    <copy todir="${dist}">
+      <fileset dir="${dist}/RPMS">
+        <include name="**/*.rpm"/>
+      </fileset>
+    </copy>
+  </target>
+
+</project>

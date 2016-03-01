@@ -1,0 +1,154 @@
+jni_socket.c:104:  conn->fd = -1;
+jni_socket.c:105:  conn->client_sin = (struct sockaddr *) conn->client_data;
+jni_socket.c:106:  conn->server_sin = (struct sockaddr *) conn->server_data;
+jni_socket.c:108:  conn->ops = &std_ops;
+jni_socket.c:111:  // conn->event = WSACreateEvent();
+jni_socket.c:143:  int fd = conn->fd;
+jni_socket.c:157:  int fd = conn->fd;
+jni_socket.c:161:  if (! conn->tcp_cork || conn->is_cork) {
+jni_socket.c:165:  conn->is_cork = 1;
+jni_socket.c:180:  int fd = conn->fd;
+jni_socket.c:184:  if (! conn->tcp_cork || ! conn->is_cork) {
+jni_socket.c:188:  conn->is_cork = 0;
+jni_socket.c:213:  if (! conn || conn->fd < 0 || ! buf) {
+jni_socket.c:217:  conn->jni_env = env;
+jni_socket.c:224:  sublen = conn->ops->read(conn, buffer, sublen, (int) timeout_ms);
+jni_socket.c:252:  if (! conn || conn->fd < 0 || ! buf)
+jni_socket.c:255:  conn->jni_env = env;
+jni_socket.c:262:  sublen = conn->ops->read_nonblock(conn, buffer, sublen);
+jni_socket.c:289:  if (! conn || conn->fd < 0 || ! j_buf) {
+jni_socket.c:293:  conn->jni_env = env;
+jni_socket.c:309:    result = conn->ops->write(conn, buffer, sublen);
+jni_socket.c:342:  int fd = conn->fd;
+jni_socket.c:352:  if (conn->pipe[0] <= 0) {
+jni_socket.c:353:    if (pipe(conn->pipe) < 0) {
+jni_socket.c:358:  sublen = vmsplice(conn->pipe[1], &io, 1, SPLICE_F_MOVE);
+jni_socket.c:375:    result = splice(conn->pipe[0], 0, fd, 0, delta,
+jni_socket.c:381:                result, conn->pipe[0], fd, mmap_address, errno);
+jni_socket.c:400:  return conn->ops->write(conn, 
+jni_socket.c:425:  if (! conn || conn->fd < 0) {
+jni_socket.c:429:  conn->jni_env = env;
+jni_socket.c:535:  if (! conn || conn->fd < 0 || conn->ssl_bits) {
+jni_socket.c:546:  conn->jni_env = env;
+jni_socket.c:559:  if (conn->ssl_context) {
+jni_socket.c:563:  result = sendfile(conn->fd, fd, &sendfile_offset, file_length);
+jni_socket.c:598:  if (! conn || conn->fd < 0) {
+jni_socket.c:602:  conn->jni_env = env;
+jni_socket.c:620:    result = conn->ops->write(conn, buffer, sublen);
+jni_socket.c:662:  if (! conn || conn->fd < 0 || ! byte_buffer) {
+jni_socket.c:668:  conn->jni_env = env;
+jni_socket.c:685:    result = conn->ops->write(conn, ptr + offset, sublen);
+jni_socket.c:691:      result = conn->ops->write(conn, ptr + offset, sublen);
+jni_socket.c:735:  if (! conn || conn->fd < 0 || ! buf1 || ! buf2)
+jni_socket.c:740:  conn->jni_env = env;
+jni_socket.c:747:    sublen = conn->ops->write(conn, buffer, sublen);
+jni_socket.c:773:    result = conn->ops->write(conn, buffer, buffer_offset + sublen);
+jni_socket.c:801:  fd = conn->fd;
+jni_socket.c:824:    fd = conn->fd;
+jni_socket.c:825:    conn->fd = -1;
+jni_socket.c:845:  if (conn && conn->fd >= 0) {
+jni_socket.c:846:    conn->jni_env = env;
+jni_socket.c:850:    conn->ops->close(conn);
+jni_socket.c:861:  if (conn && conn->fd >= 0) {
+jni_socket.c:864:    result = shutdown(conn->fd, SHUT_WR);
+jni_socket.c:894:    if (conn->fd >= 0) {
+jni_socket.c:895:      conn->jni_env = env;
+jni_socket.c:897:      conn->ops->close(conn);
+jni_socket.c:902:    if (conn->event)
+jni_socket.c:903:      WSACloseEvent(conn->event);
+jni_socket.c:921:  return conn->ssl_sock != 0 && conn->ssl_cipher != 0;
+jni_socket.c:931:  if (! conn || ! conn->ssl_sock || ! conn->ssl_cipher)
+jni_socket.c:934:  return (*env)->NewStringUTF(env, conn->ssl_cipher);
+jni_socket.c:944:  if (! conn || ! conn->ssl_sock)
+jni_socket.c:947:    return conn->ssl_bits;
+jni_socket.c:964:  fd = conn->fd;
+jni_socket.c:1688:    jboolean is_secure = conn->ssl_sock != 0 && conn->ssl_cipher != 0;
+jni_socket.c:1695:    get_address(conn->server_sin, temp_buf, 16);
+jni_socket.c:1703:    sin = (struct sockaddr_in *) conn->server_sin;
+jni_socket.c:1705:      sin6 = (struct sockaddr_in6 *) conn->server_sin;
+jni_socket.c:1716:    get_address(conn->client_sin, temp_buf, 16);
+jni_socket.c:1724:    sin = (struct sockaddr_in *) conn->client_sin;
+jni_socket.c:1726:      sin6 = (struct sockaddr_in6 *) conn->server_sin;
+jni_socket.c:1752:  if (conn->fd >= 0) {
+jni_socket.c:1762:  conn->ss = ss;
+jni_socket.c:1765:  conn->ops->init(conn);
+jni_socket.c:1791:  ss = conn->ss;
+jni_socket.c:1802:  conn->ops->init(conn);
+jni_socket.c:1841:  if (conn->fd >= 0) {
+jni_socket.c:1873:  conn->fd = sock;
+jni_socket.c:1876:  conn->socket_timeout = ss->conn_socket_timeout;
+jni_socket.c:1879:  if (conn->socket_timeout == 0) {
+jni_socket.c:1880:    conn->socket_timeout = 120000;
+jni_socket.c:1884:  timeout.tv_sec = conn->socket_timeout / 1000;
+jni_socket.c:1885:  timeout.tv_usec = conn->socket_timeout % 1000 * 1000;
+jni_socket.c:1889:    conn->is_recv_timeout = 1;
+jni_socket.c:1890:    conn->recv_timeout = conn->socket_timeout;
+jni_socket.c:1893:  timeout.tv_sec = conn->socket_timeout / 1000;
+jni_socket.c:1894:  timeout.tv_usec = conn->socket_timeout % 1000 * 1000;
+jni_socket.c:1925:  if (conn->fd >= 0) {
+jni_socket.c:1956:  conn->fd = sock;
+jni_socket.c:1959:  conn->socket_timeout = ss->conn_socket_timeout;
+jni_socket.c:1962:  timeout.tv_sec = conn->socket_timeout / 1000;
+jni_socket.c:1963:  timeout.tv_usec = conn->socket_timeout % 1000 * 1000;
+jni_socket.c:1967:    conn->is_recv_timeout = 1;
+jni_socket.c:1968:    conn->recv_timeout = conn->socket_timeout;
+jni_socket.c:1971:  timeout.tv_sec = conn->socket_timeout / 1000;
+jni_socket.c:1972:  timeout.tv_usec = conn->socket_timeout % 1000 * 1000;
+jni_socket.c:1999:  sublen = conn->ops->read_client_certificate(conn, buffer, sublen);
+jni_socket.c:2020:    return conn->fd;
+std.c:67:    if (conn->jni_env) {
+std.c:68:      resin_printf_exception(conn->jni_env, "com/caucho/vfs/ClientDisconnectException",
+std.c:69:			     "timeout fd=%d errno=%d\n", conn->fd, error);
+std.c:75:    if (conn->jni_env) {
+std.c:76:      resin_printf_exception(conn->jni_env, "com/caucho/vfs/ClientDisconnectException",
+std.c:78:			     conn->fd, error);
+std.c:105:  int fd = conn->fd;
+std.c:129:  fd = conn->fd;
+std.c:244:  fd = conn->fd;
+std.c:246:  if (fd < 0 || conn->is_read_shutdown) {
+std.c:254:    poll_timeout = conn->socket_timeout;
+std.c:257:  if (conn->is_recv_timeout) {
+std.c:258:    if (conn->recv_timeout != poll_timeout) {
+std.c:259:      conn->recv_timeout = poll_timeout;
+std.c:287:      poll_result = poll_read(fd, conn->socket_timeout);
+std.c:320:  fd = conn->fd;
+std.c:326:  conn->sent_data = 1;
+std.c:328:  if (! conn->is_recv_timeout && poll_write(fd, conn->socket_timeout) == 0) {
+std.c:342:      poll_result = poll_write(fd, conn->socket_timeout);
+std.c:368:  fd = conn->fd;
+std.c:394:  fd = conn->fd;
+std.c:395:  conn->fd = -1;
+std.c:397:  pipe0 = conn->pipe[0];
+std.c:398:  pipe1 = conn->pipe[1];
+std.c:400:  conn->pipe[0] = 0;
+std.c:401:  conn->pipe[1] = 0;
+std.c:438:  if (conn->fd > 0) {
+std.c:451:  sin_len = sizeof(conn->client_data);
+std.c:452:  memset(conn->client_data, 0, sin_len);
+std.c:453:  conn->client_sin = (struct sockaddr *) &conn->client_data;
+std.c:454:  sock = accept(fd, conn->client_sin, &sin_len);
+std.c:464:  conn->ss = ss;
+std.c:465:  conn->fd = sock;
+std.c:473:  server_socket_t *ss = conn->ss;
+std.c:474:  int sock = conn->fd;
+std.c:478:  conn->socket_timeout = ss->conn_socket_timeout;
+std.c:486:  conn->tcp_cork = 0;
+std.c:493:    conn->tcp_cork = 1;
+std.c:506:  conn->is_recv_timeout = 0;
+std.c:509:  timeout.tv_sec = conn->socket_timeout / 1000;
+std.c:510:  timeout.tv_usec = conn->socket_timeout % 1000 * 1000;
+std.c:514:    conn->is_recv_timeout = 1;
+std.c:515:    conn->recv_timeout = conn->socket_timeout;
+std.c:517:    timeout.tv_sec = conn->socket_timeout / 1000;
+std.c:518:    timeout.tv_usec = conn->socket_timeout % 1000 * 1000;
+std.c:525:  conn->ssl_lock = &ss->ssl_lock;
+std.c:526:  conn->ssl_sock = 0;
+std.c:528:  conn->ops = &std_ops;
+std.c:532:  conn->client_sin = (struct sockaddr *) &conn->client_data;
+std.c:533:  memcpy(conn->client_sin, sin, sizeof(conn->client_data));
+std.c:535:  conn->is_init = 0;
+std.c:537:  conn->server_sin = (struct sockaddr *) &conn->server_data;
+std.c:538:  sin_len = sizeof(conn->server_data);
+std.c:539:  getsockname(sock, conn->server_sin, &sin_len);
+std.c:541:  conn->ssl_cipher = 0;
+std.c:542:  conn->ssl_bits = 0;

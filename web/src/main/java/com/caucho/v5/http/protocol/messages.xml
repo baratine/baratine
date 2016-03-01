@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<localization>
+<k>&lt;{0}> expects `{1}'</k>
+<v>&lt;{0}> expects `{1}'</v>
+
+<k>&lt;{0}> expects `{1}' or `{2}'</k>
+<v>&lt;{0}> expects `{1}' or `{2}'</v>
+
+<k>&lt;{0}> expects a parameter</k>
+<v>&lt;{0}> expects a parameter</v>
+
+<k>&lt;{0}> expects two parameters</k>
+<v>&lt;{0}> expects two parameters</v>
+
+<k>unknown element `{0}' in {1}</k>
+<v>unknown element `{0}' in {1}</v>
+
+<k>unknown servlet filter `{0}'</k>
+<v>unknown servlet filter `{0}'</v>
+
+<k>session is invalid</k>
+<v>session is invalid</v>
+</localization>

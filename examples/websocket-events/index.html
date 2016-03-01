@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<script>
+
+function init() {
+  var server = location.hostname;
+
+  if (! server)
+   server = "localhost";
+
+  var websocket = new WebSocket("ws://" + server + ":8085/s/pod/", "jamp");
+
+  websocket.onmessage = function(evt)
+  {
+    var m = JSON.parse(evt.data);
+
+    if ("send" === m[0]) {
+      var message = m[4];
+
+      var p = document.getElementById("data");
+
+      p.innerHTML = message;
+    } else {
+      console.log(evt.data);
+    }
+  };
+
+  websocket.onopen = function()
+  {
+    var message = '["query", {}, "/from", 0, "/events", "setListener", "/reply"]';
+
+    websocket.send(message);
+  };
+}
+</script>
+
+<body onload="init()">
+<p id="data">
+</p>
+</body>
+</html>

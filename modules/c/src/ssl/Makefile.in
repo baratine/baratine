@@ -1,0 +1,48 @@
+CC=@CC@
+CFLAGS_SHLIB=@jni_cflags_shlib@
+CFLAGS_OPENSSL=@CFLAGS_OPENSSL@
+LD=@LD@
+OS=@OS@
+SO=@SO@
+CPU=@CPU@
+LDFLAGS=@jni_ldflags@
+LDFLAGS_SHLIB=@jni_ldflags_shlib@
+PROXY_LIBS=@PROXY_LIBS@ @SSL_LIBS@
+LIBEXEC=@LIBEXEC@
+build_dir=@build_dir@
+native_dir=@native_dir@
+
+
+JNI_INCLUDE=@JNI_INCLUDE@
+INCLUDES = @INCLUDES@ $(JNI_INCLUDE) -I../common -I../baratine
+CFLAGS = @CFLAGS@ $(INCLUDES) -DCPU=\"$(CPU)\" -DOS=$(OS) @jni_cflags@ @jni_cflags_shlib@ @CFLAGS_OPENSSL@
+OBJ=@SSL_OBJ@ ../baratine/memory.o ../baratine/std.o ../baratine/java.o
+
+all	: libbaratinessl.$(SO) @BAR_SSL_LIBS@
+
+libbaratinessl.so	: $(OBJ) ssl_npn_stub.o
+	$(CC) $(LDFLAGS_SHLIB) -o $@ $(OBJ) ssl_npn_stub.o $(PROXY_LIBS)
+
+libbaratinessl.dylib	: $(OBJ) ssl_npn_stub.o
+	$(CC) $(LDFLAGS_SHLIB) -framework JavaVM -o $@ $(OBJ) ssl_npn_stub.o $(PROXY_LIBS)
+
+libbaratinessl_npn	: libbaratinessl_npn.$(SO)
+
+libbaratinessl_npn.so	: $(OBJ) ssl_npn.o
+	$(CC) $(LDFLAGS_SHLIB) -o $@ $(OBJ) ssl_npn.o $(PROXY_LIBS) @NPN_LIBS@
+
+libbaratinessl_npn.dylib	: $(OBJ) ssl_npn.o
+	$(CC) $(LDFLAGS_SHLIB) -framework JavaVM -o $@ $(OBJ) ssl_npn.o $(PROXY_LIBS) @NPN_LIBS@
+
+$(OBJ)		: ../baratine/baratine_os.h Makefile
+ssl_npn.o	: ../baratine/baratine_os.h Makefile
+ssl_npn_stub.o	: ../baratine/baratine_os.h Makefile
+
+clean	:
+	- rm -f *.o *.$(SO)
+
+install	: libbaratinessl.$(SO) @BAR_SSL_LIBS@
+	@ echo "Installing baratinessl"
+	@ - mkdir -p $(build_dir)/$(native_dir)
+	cp libbaratinessl.$(SO) $(build_dir)/$(native_dir)
+	- cp libbaratinessl_npn.$(SO) $(build_dir)/$(native_dir)

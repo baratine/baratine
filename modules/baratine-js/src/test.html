@@ -1,0 +1,57 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="jamp.js"></script>
+  <script src="jamp-channel.js"></script>
+  <script src="jamp-websocket.js"></script>
+</head>
+
+
+<body>
+
+<script type="text/javascript">
+var msg = Jamp.unserialize('["query",{},"me",11,"/foo","getUserCount"]');
+console.log(msg.serialize());
+
+msg = Jamp.unserialize('["reply",{},"me",0,123]');
+console.log(msg.serialize());
+
+msg = Jamp.unserialize('["error",{},"me",4,"UNKNOWN","\'/foo2\' is an unknown service","io.baratine.core.ServiceNotFoundException"]');
+console.log(msg.serialize());
+
+msg = Jamp.unserialize('["send",{},"/foo","getUserCount", 1, 2]');
+console.log(msg.serialize());
+
+var myFun = function(data) {
+	console.log("myFun0: " + data);
+}
+
+var url = "ws://localhost:8080/makaiService-1.0.0-SNAPSHOT/jamp";
+
+var channel = new Jamp.WebSocketChannel(url);
+
+var promise;
+
+/*
+promise = channel.query("/foo", "addUser", ["d@hell.com", "A", "B"]);
+
+promise.then(function(data) {
+	console.log("promise0: " + data);
+}, function(error) {
+	console.log("promise1: " + error)
+});
+*/
+promise = channel.query("/foo", "getUserCount");
+
+promise.then(function(data) {
+  console.log("promise0: " + data);
+}, function(error) {
+  console.log("promise1: " + error)
+});
+
+
+</script>
+
+</body>
+
+</html>

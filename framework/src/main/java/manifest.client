@@ -1,0 +1,4 @@
+Implementation-Vendor: Caucho Technology, Inc.
+Implementation-Version: snap
+Main-Class: com.caucho.v5.hamp.HampClientMain
+

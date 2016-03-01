@@ -1,0 +1,3 @@
+version: @VERSION@
+full_version: Baratine/@VERSION@ (built @DATE@)
+version_date: @VERSION_DATE@

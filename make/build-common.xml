@@ -1,0 +1,42 @@
+<project xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+  
+  <property name="install.dir" location="${base.dir}/"/>
+
+  <property name="modules.dir" location="${base.dir}/modules"/>
+
+  <property name="ext.dir" location="${base.dir}/modules/ext"/>
+
+  <property name="build.dir" location="${base.dir}/build"/>
+
+  <property name="lib.dir" location="${base.dir}/lib"/>
+  
+  <property name="native.dir" location="${base.dir}/native"/>
+
+  <property name="dist.dir" location="${base.dir}/dist"/>
+
+  <property name="shell" value="bash"/>
+
+  <target name="clean" depends="init">
+    <delete dir="${build.dir}"/>
+    <delete dir="${dist.dir}"/>
+    <delete dir="${base.dir}/native"/>
+    <delete>
+      <fileset dir="${modules.dir}">
+        <include name="*/classes/**"/>
+        <include name="*/dist/**"/>
+      </fileset>
+    </delete>
+    <delete>
+      <fileset dir="${base.dir}">
+        <include name="lib/**/*.jar"/>
+      </fileset>
+    </delete>
+    <delete>
+      <fileset dir=".">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+  </target>
+
+</project>
+

@@ -1,0 +1,241 @@
+<project basedir=".">
+
+  <!--
+     - baratine top
+    -->
+  <target name="baratine" depends="init, baratine-api, baratine-module, version"/>
+
+  <!--
+     - baratine-api
+    -->
+  <target name="baratine-api" depends="init">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="baratine-api"/>
+      <param name="module.dist.dir" value="${lib.dir}"/>
+    </antcall>
+  </target>
+
+  <!--
+     - baratine-module
+    -->
+  <target name="baratine-module" depends="init">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="baratine"/>
+      <param name="module.dist.dir" value="${lib.dir}"/>
+    </antcall>
+  </target>
+
+  <!--
+     - cdi
+    -->
+  <target name="cdi" depends="init, inject, servlet">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="cdi"/>
+      <param name="module.jar" value="cdi-7.jar"/>
+      <param name="module.dist.dir" value="${lib.dir}"/>
+    </antcall>
+  </target>
+
+  <target name="baratine-js" depends="init">
+    <mkdir dir="${basedir}/modules/baratine-js/out"/>
+
+    <concat destfile="${basedir}/modules/baratine-js/out/baratine-js.js" encoding="utf-8">
+      <filelist dir="${basedir}/modules/baratine-js/src"
+                files="baratine-client.js jamp.js jamp-client.js transport-http.js transport-websocket.js transport-http-rpc.js"/>
+    </concat>
+  </target>
+
+  <target name="junit" depends="baratine">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="junit"/>
+      <param name="module.dist.dir" value="${lib.dir}"/>
+      <param name="module.jar" value="baratine-junit.jar"/>
+    </antcall>
+  </target>
+
+  <!--
+     - compile top
+    -->
+  <target name="compile"
+          depends="init, baratine-api, hessian, javaee, baratine, baratine-js, javaee-ext, plugins, junit">
+  </target>
+
+  <!--
+     - ext
+    -->
+  <target name="ext" depends="init, baratine">
+    <copy todir="${install.dir}/lib" preservelastmodified="true">
+      <fileset dir="${ext.dir}">
+      </fileset>
+    </copy>
+  </target>
+
+  <!--
+     - hessian
+    -->
+  <target name="hessian" depends="init, servlet">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="hessian"/>
+      <param name="module.jar" value="hessian.jar"/>
+      <param name="module.dist.dir" value="${lib.dir}"/>
+    </antcall>
+  </target>
+
+  <!--
+     - inject
+    -->
+  <target name="inject" depends="init">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="inject"/>
+      <param name="module.jar" value="inject-7.jar"/>
+    </antcall>
+  </target>
+
+  <!--
+     - javaee
+    -->
+  <target name="javaee" depends="inject, servlet, websocket">
+    <!--
+       - javaee-7.jar
+      -->
+    <jar destfile="${lib.dir}/javaee-7.jar">
+      <fileset dir="${modules.dir}/inject/classes">
+        <exclude name="**/.*"/>
+      </fileset>
+      
+      <fileset dir="${modules.dir}/servlet/classes">
+        <exclude name="**/.*"/>
+        <exclude name="javax/servlet/descriptor"/>
+        <exclude name="javax/servlet/jsp"/>
+        <exclude name="javax/el"/>
+      </fileset>
+
+      <fileset dir="${modules.dir}/websocket/classes">
+        <exclude name="**/.*"/>
+      </fileset>
+    </jar>
+  </target>
+
+  <!--
+     - javaee-ext
+    -->
+  <target name="javaee-ext" depends="javaee, cdi">
+  </target>
+
+  <!--
+     - module
+    -->
+  <target name="module">
+    <property name="module.src.dir" value="${modules.dir}/${module.name}/src"/>
+    <property name="module.build.dir" value="${modules.dir}/${module.name}/classes"/>
+    <property name="module.dist.dir" value="${modules.dir}/${module.name}/dist"/>
+    <property name="module.jar" value="${module.name}.jar"/>
+
+    <property file="${module.src.dir}/module.properties"/>
+
+    <mkdir dir="${module.build.dir}" />
+
+    <copy todir="${module.build.dir}"
+          preservelastmodified="true"
+          overwrite="true">
+      <fileset dir="${module.src.dir}">
+        <include name="**/*.afm"/>
+        <include name="**/namespace"/>
+        <include name="META-INF/**"/>
+      </fileset>
+    </copy>
+
+    <javac srcdir="${module.src.dir}"
+           destdir="${module.build.dir}"
+           executable="${javac}"
+           fork="true" 
+           verbose="${javac.verbose}" 
+           debug="${javac.debug}" optimize="${javac.optimize}"
+           deprecation="${javac.deprecation}" nowarn="${javac.nowarn}"
+           source="${javac.source}"
+           target="${javac.target}"
+           excludes="**/.svn/**"
+           includeantruntime="false"
+           memoryMaximumSize="${javac.memoryMaximumSize}">
+      <compilerarg value="-XDignore.symbol.file"/>
+      <classpath>
+        <dirset dir="${modules.dir}">
+           <include name="*/classes"/>
+        </dirset>
+        <fileset dir="${ext.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+    </javac>
+
+    <mkdir dir="${module.dist.dir}" />
+
+    <jar jarfile="${module.dist.dir}/${module.jar}"
+         compress="${jar.compress}"
+         index="${jar.index}"
+         update="${jar.update}"
+         manifest="${module.src.dir}/manifest">
+      <fileset dir="${module.build.dir}">
+      </fileset>
+    </jar>
+  </target>
+
+  <!--
+     - plugins
+    -->
+  <target name="plugins" depends="init, baratine, javaee-ext">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="plugins"/>
+      <param name="module.jar" value="plugins.jar"/>
+      <param name="module.dist.dir" value="${lib.dir}"/>
+    </antcall>
+  </target>
+
+  <!--
+     - servlet
+    -->
+  <target name="servlet" depends="init">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="servlet"/>
+      <param name="module.jar" value="servlet-7.jar"/>
+    </antcall>
+  </target>
+
+  <!--
+     - json
+    -->
+  <!--
+  <target name="json" depends="init">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="json"/>
+      <param name="module.jar" value="json-7.jar"/>
+    </antcall>
+  </target>
+  -->
+
+  <!--
+     - websocket
+    -->
+  <target name="websocket" depends="init">
+    <antcall target="module" inheritRefs="true">
+      <param name="module.name" value="websocket"/>
+      <param name="module.jar" value="websocket-7.jar"/>
+    </antcall>
+  </target>
+
+  <!--
+     - version
+    -->
+  <target name="version" depends="init">
+    <copy tofile="${modules.dir}/baratine/src/META-INF/caucho/version"
+          file="${modules.dir}/baratine/src/META-INF/caucho/version.in"
+          overwrite="true">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+        <filter token="DATE" value="${date}"/>
+        <filter token="VERSION_DATE" value="${vdate}"/>
+      </filterset>
+    </copy>
+  </target>
+  
+</project>

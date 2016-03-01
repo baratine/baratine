@@ -1,0 +1,99 @@
+apply plugin: 'application'
+
+mainClassName = 'com.caucho.v5.cli.baratine.BaratineCommandLine'
+
+allprojects {
+  group="io.baratine"
+  version="0.11-SNAPSHOT"
+  
+  apply plugin: 'java'
+  apply plugin: 'eclipse'
+
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+
+  repositories {
+    mavenCentral();
+    
+    maven {
+      url "http://repo.gradle.org/gradle/libs-releases-local"
+    }
+  }
+
+  javadoc.options.links("http://docs.oracle.com/javase/8/docs/api/");
+  javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+  
+  eclipse.project {
+    natures 'org.eclipse.buildship.core.gradleprojectnature'
+  }
+}
+
+apply from: 'maven.gradle'
+
+project(':core') {
+  dependencies {
+    compile project(':api')
+  }
+}
+
+project(':web') {
+  dependencies {
+    compile project(':api')
+    compile project(':core')
+  }
+}
+
+project(':framework') {
+  apply plugin: 'application'
+
+  dependencies {
+    compile project(':api')
+    compile project(':core')
+    compile project(':web')
+//    compile project(':hessian')
+  }
+
+  mainClassName = 'com.caucho.v5.cli.baratine.BaratineCommandLine'
+}
+
+configurations {
+  provided
+  compile.extendsFrom provided
+}
+
+distributions.each {
+  def copySpec = it.contents
+  
+  copySpec.filesMatching('*.jar', {
+    // exclude all non-baratine dependencies
+    if (! it.file.parent.endsWith('build/libs')) {
+      it.exclude()
+    }
+    
+    // only include baratine.jar for now
+    if (! it.name.equals('baratine-' + version + '.jar')) {
+      it.exclude()
+    }
+  })
+}
+  
+dependencies {
+  compile project(':api')
+  compile project(':core')
+  compile project(':web')
+//  compile project(':hessian')
+  compile project(':framework')
+  compile project(':plugins')
+}
+
+jar {
+  dependsOn configurations.compile
+
+  from subprojects.jar.source exclude 'MANIFEST.MF'
+
+  manifest {
+    attributes "Main-Class" : mainClassName,
+               "Implementation-Version" : version
+  }
+}
+

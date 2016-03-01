@@ -1,0 +1,55 @@
+<project basedir=".">
+
+  <!--
+     - init
+    -->
+  <target name="init" depends="tstamp">
+
+    <!-- auto-version assignment -->
+    <property name="version" value="${version.base}.s${snapshotdate}"/>
+    
+    <property name="dist.name" value="${shortproduct}-${version}"/>
+    
+    <property name="dir.dist.build" location="${dist}/${dist.name}"/>
+    
+    <property name="dist.build.files" location="${dist.build}/files"/>
+
+    <!-- native/os names -->
+    <exec executable="perl" outputproperty="native.name">
+      <arg value="make/scan_revision.pl"/>
+    </exec>
+
+    <condition property="unix">
+      <os family="unix"/>
+    </condition>
+    
+    <property name="bits" value=""/>
+
+    <condition property="bits" value="64">
+      <equals arg1="${sun.arch.data.model}" arg2="64"/>
+    </condition>
+
+    <!-- eclipse plugin -->
+    <condition property="nversion" value="${version}">
+      <isset property="version"/>
+    </condition>
+    <property name="nversion" value="${version.base}.${snapshotdate}"/>
+  </target>
+
+  <!--
+     - tstamp
+    -->
+  <target name="tstamp">
+    <tstamp/>
+    <tstamp>
+      <format property="date" pattern="EEE, dd MMM yyyy HH:mm:ss zzz"/>
+    </tstamp>
+    <tstamp>
+      <format property="vdate" pattern="yyyyMMdd'T'hhmmss"/>
+    </tstamp>
+    <tstamp>
+      <format property="snapshotdate" pattern="yyMMdd"/>
+    </tstamp>
+  </target>
+
+</project>

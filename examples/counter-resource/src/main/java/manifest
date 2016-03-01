@@ -1,0 +1,2 @@
+Class-Path: baratine.jar ../lib/baratine.jar
+Main-Class: example.counter2.CounterResourceClientMain

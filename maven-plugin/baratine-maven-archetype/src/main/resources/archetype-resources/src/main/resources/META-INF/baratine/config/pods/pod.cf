@@ -1,0 +1,5 @@
+pod ${artifactId} {
+  archive "/usr/lib/pods/${artifactId}.bar";
+
+  web "/" "web";
+}

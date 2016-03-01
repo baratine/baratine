@@ -1,0 +1,20 @@
+SHELL=@SHELL@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+plugins=baratine @plugins@
+
+all	: plugins
+
+plugins	:
+	for dir in $(plugins); do (cd $$dir; $(MAKE)); done
+
+clean	:
+	for dir in common $(plugins); do \
+	  (cd $$dir; $(MAKE) clean); \
+        done
+
+install	:
+	@ echo "Installing configured Baratine plugins $(plugins)"
+	@ for dir in $(plugins); do \
+	  (cd $$dir; $(MAKE) install); \
+	done

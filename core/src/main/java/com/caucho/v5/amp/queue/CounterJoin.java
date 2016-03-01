@@ -1,0 +1,82 @@
+/*
+ * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ *
+ * This file is part of Baratine(TM)(TM)
+ *
+ * Each copy or derived work must preserve the copyright notice and this
+ * notice unmodified.
+ *
+ * Baratine is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Baratine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, or any warranty
+ * of NON-INFRINGEMENT.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Baratine; if not, write to the
+ *
+ *   Free Software Foundation, Inc.
+ *   59 Temple Place, Suite 330
+ *   Boston, MA 02111-1307  USA
+ *
+ * @author Scott Ferguson
+ */
+
+package com.caucho.v5.amp.queue;
+
+/**
+ * Abstract counter for a multi-processor queue.
+ */
+public final class CounterJoin implements CounterActor
+{
+  private final CounterActor []_prev;
+  
+  CounterJoin(CounterActor []prev)
+  {
+    _prev = prev;
+  }
+
+  @Override
+  public final long get()
+  {
+    long min = Long.MAX_VALUE;
+    
+    for (CounterActor prev : _prev) {
+      min = Math.min(min, prev.get());
+    }
+    
+    return min;
+  }
+
+  @Override
+  public final void set(final long value)
+  {
+    // XXX: implemented for init, but doesn't make sense otherwise
+    for (CounterActor prev : _prev) {
+      prev.set(value);
+    }
+  }
+
+  @Override
+  public final void setLazy(final long value)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  @Override
+  public final boolean compareAndSet(final long oldValue, final long newValue)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
+  @Override
+  public CounterActor getTail()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+}

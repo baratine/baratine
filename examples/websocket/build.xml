@@ -1,0 +1,11 @@
+<project default="compile" basedir=".">
+  
+  <property name="name" value="websocket"/>
+  <property name="src" location="src"/>
+  <property name="build" location="build"/>
+
+  <target name="compile">
+    <ant dir=".." target="compile"/>
+  </target>
+  
+</project>

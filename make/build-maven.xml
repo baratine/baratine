@@ -1,0 +1,130 @@
+<project basedir=".">
+  <target name="maven.init">
+    <condition property="mvn.version" value="${version}" else="${version.base}-SNAPSHOT">
+      <isset property="version"/>
+    </condition>
+    
+    <condition property="ossrh.url" value="https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                                    else="https://oss.sonatype.org/content/repositories/snapshots/">
+      <isset property="version"/>
+    </condition>
+    
+    <property name="mvn.root" value="${dist}/m2"/>
+
+    <!-- server id defined in ~/.m2/settings.xml -->
+    <property name="ossrh-server-id" value="ossrh" />
+  </target>
+
+  <target name="maven" depends="init,maven.init,dist.jar,dist.sources,javadoc">
+  <!-- <target name="maven" depends="dist.jar,dist.js,javadoc"> -->
+    
+    <antcall target="maven.deploy.helper" inheritRefs="true">
+      <param name="mvn.artifact.id" value="baratine"/>
+      <param name="mvn.file" value="${dist}/baratine-${version}/lib/baratine.jar"/>
+      <param name="mvn.javadoc" value="${dist}/javadoc-${version}.war"/>
+      <param name="mvn.sources" value="${dist}/baratine-src-${version}/baratine/baratine-sources.jar"/>
+      <param name="mvn.packaging" value="jar"/>
+    </antcall>
+    
+    <antcall target="maven.deploy.helper" inheritRefs="true">
+      <param name="mvn.artifact.id" value="baratine-api"/>
+      <param name="mvn.file" value="${dist}/baratine-${version}/lib/baratine-api.jar"/>
+      <param name="mvn.javadoc" value="${dist}/javadoc-api-${version}.war"/>
+      <param name="mvn.sources" value="${dist}/baratine-src-${version}/baratine-api/baratine-api-sources.jar"/>
+      <param name="mvn.packaging" value="jar"/>
+    </antcall>
+    
+    <!--
+    <antcall target="maven.deploy.helper" inheritRefs="true">
+      <param name="mvn.artifact.id" value="baratine-js"/>
+      <param name="mvn.file" value="${install}/baratine-js.js"/>
+      <param name="mvn.packaging" value="js"/>
+    </antcall>
+    -->
+    
+    <!-- <delete quiet="true" dir="${mvn.root}/tmp"/> -->
+  </target>
+  
+  <target name="maven.stage" depends="init,maven.init,dist.jar,dist.sources,javadoc">
+    <antcall target="maven.deploy.helper" inheritRefs="true">
+      <param name="mvn.artifact.id" value="baratine"/>
+      <param name="mvn.file" value="${dist}/baratine-${version}/lib/baratine.jar"/>
+      <param name="mvn.javadoc" value="${dist}/javadoc-${version}.war"/>
+      <param name="mvn.sources" value="${dist}/baratine-src-${version}/baratine/baratine-sources.jar"/>
+      <param name="mvn.packaging" value="jar"/>
+      <param name="mvn.stage" value="true"/>
+    </antcall>
+  </target>
+  
+  <target name="maven.deploy.helper">
+    <!-- param: mvn.artifact.id, mvn.file, mvn.packaging, mvn.root -->
+    <!-- param: mvn.javadoc, mvn.sources -->
+ 
+    <property name="mvn.tmpdir" value="${mvn.root}/tmp/${mvn.artifact.id}"/>
+    <property name="mvn.file.prefix" value="${mvn.artifact.id}-${mvn.version}"/>
+
+    <delete quiet="true" dir="${mvn.root}/tmp/${mvn.artifact.id}"/>
+    <mkdir dir="${mvn.root}/tmp/${mvn.artifact.id}"/>
+
+    <antcall target="maven.pom" inheritRefs="true">
+      <param name="mvn.pom" value="${mvn.tmpdir}/${mvn.file.prefix}.pom"/>
+    </antcall>
+    
+    <copy file="${mvn.file}" tofile="${mvn.tmpdir}/${mvn.file.prefix}.jar"/>
+    <copy file="${mvn.javadoc}" tofile="${mvn.tmpdir}/${mvn.file.prefix}-javadoc.jar"/>
+    <copy file="${mvn.sources}" tofile="${mvn.tmpdir}/${mvn.file.prefix}-sources.jar"/>
+    
+    <exec executable="mvn">
+      <arg value="deploy:deploy-file"/>
+      <arg value="-Durl=file:///${mvn.root}"/>
+      <arg value="-Dfile=${mvn.file}"/>
+      <arg value="-Djavadoc=${mvn.javadoc}"/>
+      <arg value="-Dsources=${mvn.sources}"/>
+      <arg value="-DrepositoryId=io.baratine"/>
+      <arg value="-Dpackaging=${mvn.packaging}"/>
+      <arg value="-DpomFile=${mvn.root}/tmp/${mvn.artifact.id}/${mvn.file.prefix}.pom"/>
+    </exec>
+    
+    <exec executable="mvn">
+      <arg value="install:install-file"/>
+      <arg value="-Dfile=${mvn.file}"/>
+      <arg value="-Djavadoc=${mvn.javadoc}"/>
+      <arg value="-Dsources=${mvn.sources}"/>
+      <arg value="-DrepositoryId=io.baratine"/>
+      <arg value="-Dpackaging=${mvn.packaging}"/>
+      <arg value="-DpomFile=${mvn.root}/tmp/${mvn.artifact.id}/${mvn.file.prefix}.pom"/>
+    </exec>
+    
+    <antcall target="maven.stage.helper" inheritRefs="true">
+    </antcall>
+    
+  </target>
+  
+  <target name="maven.stage.helper" if="${mvn.stage}">
+    <exec executable="mvn">
+      <arg value="gpg:sign-and-deploy-file" />
+      <arg value="-Durl=${ossrh.url}" />
+      <arg value="-DrepositoryId=${ossrh-server-id}" />
+      <arg value="-DpomFile=${mvn.tmpdir}/${mvn.file.prefix}.pom" />
+      <arg value="-Dfile=${mvn.tmpdir}/${mvn.file.prefix}.jar" />
+      <arg value="-Dsources=${mvn.tmpdir}/${mvn.file.prefix}-sources.jar"/>
+      <arg value="-Djavadoc=${mvn.tmpdir}/${mvn.file.prefix}-javadoc.jar"/>
+    </exec>
+  </target>
+  
+  <target name="maven.pom">
+    <!-- param: mvn.pom, mvn.artifact.id, mvn.version, base.dir-->
+  
+    <copy tofile="${mvn.pom}"
+          file="${base.dir}/make/pom.xml.in"
+          preservelastmodified="true"
+          overwrite="true">
+      <filterset>
+        <filter token="ARTIFACT_ID" value="${mvn.artifact.id}"/>
+        <filter token="VERSION" value="${mvn.version}"/>
+      </filterset>
+    </copy>
+  </target>
+
+</project>
+

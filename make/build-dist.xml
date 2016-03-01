@@ -1,0 +1,6 @@
+<project basedir=".">
+
+  <property name="http" value="8085"/>
+  <property name="https" value="8485"/>
+
+</project>

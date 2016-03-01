@@ -1,0 +1,5 @@
+Class-Path: baratine-api.jar javaee-7.jar hessian.jar
+Implementation-Vendor: Caucho Technology, Inc.
+Implementation-Version: 7.0.s130926
+Main-Class: com.caucho.v5.cli.baratine.BaratineCommandLine
+

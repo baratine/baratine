@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.baratine</groupId>
+  <artifactId>T0002</artifactId>
+  <name>T0002</name>
+  <version>1.0-SNAPSHOT</version>
+  <url>http://maven.apache.org</url>
+  <packaging>bar</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.baratine</groupId>
+      <artifactId>baratine</artifactId>
+      <version>[0.10,)</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>io.baratine</groupId>
+        <artifactId>baratine-maven-plugin</artifactId>
+        <version>${VERSION}</version>
+        <extensions>true</extensions>
+
+        <configuration>
+          <port>8086</port>
+          <workDir>/tmp/baratine-T0002</workDir>
+          <script>
+            ls /proc
+
+            ls /proc/pods
+
+            cat /proc/servers
+
+            jamp-query /T0002 test
+
+            stop
+
+            exit
+
+          </script>
+        </configuration>
+
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

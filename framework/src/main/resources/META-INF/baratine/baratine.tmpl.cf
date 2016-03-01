@@ -1,0 +1,112 @@
+namespace bar "com.caucho.baratine";
+
+watchdog_port = 6700;
+
+log_pattern = "[%d] %p{-5} {%t} %c{1}: %m";
+
+log-handler name="" level="all" path="stdout:"
+            pattern=${log_pattern};
+
+#cluster {
+
+#log-handler name="" level="all" path="stdout:"
+#            pattern="[%d] %p %c{1}: %m";
+   
+#logger name="" level="${log_level}";
+
+#logger config "com.caucho.java";
+#logger config "com.caucho.loader";
+#}  
+#XXX: resin:import path="${__DIR__}/health.xml" optional="true";
+
+#
+# Remote management requires at least one enabled admin user.
+#
+
+#resin:AdminAuthenticator {
+#  user name="${admin_user}" password="${admin_password}";
+    
+#XXX:  resin:import path="${__DIR__}/admin-users.xml" optional="true";
+#}
+#
+# For clustered systems, create a password in as cluster_system_key
+
+
+cluster-system-key ${cluster_system_key};
+
+# For production sites, change dependency-check-interval to something
+# like 600s, so it only checks for updates every 10 minutes.
+
+#dependency-check-interval ${dependency_check_interval?:'2s'};
+
+# Configures the main application cluster.  Load-balancing configurations
+# will also have a web cluster.
+
+cluster-default {
+#  bar:DeployService;
+
+#  if ${remote_admin_enable} {
+#    resin:RemoteAdminService;
+#  }
+  
+#  bar:AdminServices;
+#  import "${__DIR__}/health.cf" optional="true";
+
+  server-default {
+    watchdog-port $watchdog_port;
+  }
+
+  pod-default {
+    class-loader {
+      compiling-loader path="classes";
+      tree-loader path="lib";
+    }
+
+    import "META-INF/pod.cf" optional="true";
+    # module-deploy "modules";
+  }
+    
+  # creates the baratine pods directory for .bar expansion
+  pod-deploy path="${server.data}/pods";
+
+  web-app-default {
+    class-loader {
+      compiling-loader "${ide_classes}";
+      library-loader "${ide_lib}";
+      
+      compiling-loader "WEB-INF/classes";
+      library-loader "WEB-INF/lib";
+    }
+      
+#    route "/" "com.caucho.v5.servlets.FileServlet";
+
+    index-file index.html;
+
+#    mime-mapping ".html" "text/html";
+#    mime-mapping ".js" "application/x-javascript";
+#    mime-mapping ".css" "text/css";
+
+#    import "WEB-INF/web.xml" optional="true";
+#    import "WEB-INF/resin-web.xml" optional="true";
+  }
+  
+#  host-default {
+    
+    # creates the baratine services directory for .bar expansion
+#    web-app-deploy "webapps";
+#  }
+
+  # auto virtual host deployment in hosts/foo.example.com/webapps
+#  host-deploy "${server.data}/hosts" {
+#    host-default {
+#      resin:import path="host.xml" optional="true";
+#    }
+#  }
+
+#  host root-directory="${server.data}/hosts/host" {
+  host {
+    web-app id="/s" {
+      route  "/*" "com.caucho.v5.jamp.RouteJampPods";
+    }
+  }
+}

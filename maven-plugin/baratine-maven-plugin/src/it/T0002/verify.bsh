@@ -1,0 +1,40 @@
+import java.io.*;
+import java.util.*;
+import java.util.jar.*;
+import org.codehaus.plexus.util.*;
+
+boolean result = true;
+
+try
+{
+    File target = new File( basedir, "target" );
+    if ( !target.exists() || ! target.isDirectory() )
+    {
+        System.err.println( "target file is missing or not a directory." );
+        return false;
+    }
+
+    File artifact = new File( target, "T0002.bar" );
+    if ( !artifact.exists() || artifact.isDirectory() )
+    {
+        System.err.println( "artifact file is missing or a directory." );
+        return false;
+    }
+
+    File baratineDir = new File("/tmp/baratine-T0002");
+
+    if (!target.exists() || !target.isDirectory()) {
+        System.err.println( "target file " + baratineDir + " is missing or not a directory." );
+
+        return false;
+    }
+
+   return true;
+}
+catch( Throwable e )
+{
+    e.printStackTrace();
+    result = false;
+}
+
+return result;

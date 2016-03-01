@@ -1,0 +1,12 @@
+WebSocket Events Readme
+=======================
+
+This simple app demonstrates using WebSocket Events with Baratine(tm) service.
+
+To run the service start Baratine(tm) with --deploy websocket-events.jar.
+
+$ bin/baratine start --deploy examples/websocket-events.jar
+
+Open page index.html in a browser with WebSocket support.
+
+The page should display current time receiving the updates from the server.

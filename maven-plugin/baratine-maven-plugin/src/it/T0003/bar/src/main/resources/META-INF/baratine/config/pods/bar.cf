@@ -1,0 +1,3 @@
+pod bar {
+  archive "/usr/lib/pods/bar.bar";
+}

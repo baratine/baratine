@@ -1,0 +1,11 @@
+; resinssl.def : Declares the module parameters for the DLL.
+
+LIBRARY      "resinssl"
+DESCRIPTION  'resinssl Windows Dynamic Link Library'
+
+EXPORTS
+	Java_com_caucho_vfs_OpenSSLFactory_initConfig
+	Java_com_caucho_vfs_OpenSSLFactory_setVerify
+	Java_com_caucho_vfs_OpenSSLFactory_setSessionCache
+	Java_com_caucho_vfs_OpenSSLFactory_nativeInit
+	Java_com_caucho_vfs_OpenSSLFactory_open

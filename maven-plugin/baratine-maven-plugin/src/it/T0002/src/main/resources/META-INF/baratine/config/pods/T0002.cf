@@ -1,0 +1,5 @@
+pod pod {
+  archive "/usr/lib/pods/T0002.bar";
+
+  web "/" "web";
+}

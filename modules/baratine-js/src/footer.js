@@ -1,0 +1,1 @@
+exports.Jamp = Jamp;

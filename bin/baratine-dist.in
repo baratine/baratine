@@ -1,0 +1,66 @@
+#! /bin/sh
+#
+# See init.d/baratine for /etc/rc.d/init.d startup script
+#
+# baratine start my-service.jar       -- starts baratine and deploys a service
+# baratine shutdown                   -- shutsdown baratine
+# baratine store-dump -o store.bak    -- saves the persistent store
+# baratine store-restore -i store.bak -- retstores the persistent store
+#
+# baratine will return a status code if the wrapper detects an error, but
+# some errors, like bind exceptions or Java errors, are not detected.
+#
+# To install, you'll need to configure JAVA_HOME and BARATINE_HOME and
+# copy contrib/init.baratine to /etc/rc.d/init.d/baratine.  Then
+# use "unix# /sbin/chkconfig baratine on"
+
+JAVA="@JAVA_EXE@"
+JAVA_ARGS="@JAVA_ARGS@"
+BARATINE_HOME="@home_dir@"
+root_dir="@root_dir@"
+conf_dir="@conf_dir@"
+log_dir="@log_dir@"
+
+if test -d "${root_dir}"; then
+  args="$args -root-directory $root_dir"
+fi
+
+if test -r "${conf_dir}/baratine.xml"; then
+  args="$args -conf $conf_dir/baratine.xml"
+  #args="$args -license-directory $root_dir/licenses"
+fi
+
+if test -d "${log_dir}"; then
+  args="$args -log-directory $log_dir"
+fi
+
+if test -z "$JAVA_EXE"; then
+  JAVA_EXE="$JAVA"
+fi
+
+if test ! -x "$JAVA_EXE"; then
+  if test -n "$JAVA_HOME"; then
+    JAVA_EXE="$JAVA_HOME/bin/java"
+  fi
+fi
+
+if test ! -x "${JAVA_EXE}"; then
+  JAVA_EXE=java
+fi
+
+#
+# trace script and simlinks to find the wrapper
+#
+if test -z "${BARATINE_HOME}"; then
+  script=`/bin/ls -l $0 | awk '{ print $NF; }'`
+
+  while test -h "$script"
+  do
+    script=`/bin/ls -l $script | awk '{ print $NF; }'`
+  done
+
+  bin=`dirname $script`
+  BARATINE_HOME="$bin/.."
+fi  
+
+exec $JAVA_EXE $JAVA_ARGS -jar ${BARATINE_HOME}/lib/baratine.jar $args $*

@@ -1,0 +1,242 @@
+#
+# build-dir
+#
+
+AC_SUBST(build_dir)
+
+build_dir="${abs_builddir}"
+
+if test -z "${build_dir}"; then
+  build_dir=`pwd`
+fi
+
+#
+# home-dir
+#
+
+AC_SUBST(pkg_version)
+AC_SUBST(usr_share)
+AC_SUBST(home_dir)
+
+pkg_version="${program_name}-${PACKAGE_VERSION}"
+
+if test "$prefix" == "NONE"; then
+  usr_share="$ac_default_prefix"
+  home_dir="$ac_default_prefix/$pkg_version"
+else
+  home_dir="$prefix"
+fi
+
+#
+# --with-root-dir
+#
+AC_SUBST(root_dir)
+
+AC_ARG_WITH(root-dir,
+[AS_HELP_STRING([--with-root-dir=DIR],
+                [root data directory])],
+[root_dir=${withval}])
+
+if test -z "$root_dir"; then
+  if test "$prefix" == "NONE"; then
+    root_dir="/var/lib/${program_name}"
+  else
+    root_dir="$prefix"
+  fi
+fi
+
+#
+# --with-conf-dir
+#
+AC_SUBST(conf_dir)
+
+AC_ARG_WITH(conf-dir,
+[AS_HELP_STRING([--with-conf-dir=DIR],
+                [configuration directory])],
+[conf_dir=${withval}])
+
+if test -z "$conf_dir"; then
+  if test "$prefix" == "NONE"; then
+    conf_dir="/etc/${program_name}"
+  else
+    conf_dir="$prefix/conf"
+  fi
+fi
+
+#
+# --with-log-dir
+#
+
+AC_SUBST(log_dir)
+
+AC_ARG_WITH(log-dir,
+[AS_HELP_STRING([--with-log-dir=DIR],
+                [log directory])],
+[log_dir=${withval}])
+
+if test -z "$log_dir"; then
+  if test "$prefix" == "NONE"; then
+    log_dir="/var/log/${program_name}"
+  else
+    log_dir="$prefix/log"
+  fi
+fi
+
+#
+# --with-init.d
+#
+
+AC_SUBST(initd)
+AC_SUBST(initd_dir)
+
+if test -d "/etc/init.d/rc.d"; then
+  initd_dir="/etc/init.d/rc.d"
+  initd="${initd_dir}/${program_name}"
+elif test -d "/etc/init.d"; then
+  initd_dir="/etc/init.d"
+  initd="${initd_dir}/${program_name}"
+elif test -d "/etc/rc.d"; then
+  initd_dir="/etc/rc.d"
+  initd="${initd_dir}/${program_name}"
+fi
+
+AC_ARG_WITH(initd,
+[AS_HELP_STRING([--with-initd=PATH],
+                [startup (init.d) script path])],
+[
+case "${withval}" in
+  no)  
+    initd=
+    initd_dir= 
+    ;;
+  *)
+    initd=${withval}
+    initd_dir=`dirname $initd`
+    ;;
+esac
+])
+
+#
+# --with-java-home
+#
+
+AC_SUBST(JAVA_HOME)
+AC_SUBST(JAVA_EXE)
+AC_SUBST(JAVA_ARGS)
+
+AC_ARG_WITH(java-home,
+[AS_HELP_STRING([--with-java-home=DIR],
+                [java home])],
+[JAVA_HOME=${withval}])
+
+if test -n "$JAVA_HOME"; then
+  JAVA_EXE="$JAVA_HOME/bin/java"
+elif test -x "/usr/libexec/java_home"; then
+  JAVA_HOME=`/usr/libexec/java_home`
+else
+  java=`which java 2>/dev/null`
+  if test -x "$java"; then
+    while test -h "$java"
+    do
+      head=`dirname $java`
+      tail=`/bin/ls -l $java | awk '{ print $NF; }'`
+      if test -f "$tail"; then
+        java=$tail
+      else
+        java=$head/$tail
+      fi
+    done
+
+    JAVA_BIN=`dirname $java`
+    JAVA_BIN_PARENT=`dirname $JAVA_BIN`
+
+    # we're in $JAVA_HOME/jre
+    if test -f "$JAVA_BIN_PARENT/include/jni.h"; then
+      JAVA_HOME="$JAVA_BIN_PARENT"
+    elif test -f "$JAVA_BIN/include/jni.h"; then
+      JAVA_HOME=$JAVA_BIN
+    elif test -f "$JAVA_BIN/../../include/jni.h"; then
+      JAVA_HOME="$JAVA_BIN/../.."
+    elif test -f "/System/Library/Frameworks/JavaVM.framework"; then
+      JAVA_HOME="/System/Library/Frameworks/JavaVM.framework"
+    elif test -d "/etc/alternatives/java_sdk"; then
+      JAVA_HOME="/etc/alternatives/java_sdk"
+    elif test -f "$JAVA_BIN/lib/rt.jar"; then
+      JAVA_HOME=`cd $JAVA_BIN/..; pwd`
+    elif test -f "/usr/lib/jvm/java-7-openjdk/include/jni.h"; then
+      JAVA_HOME="/usr/lib/jvm/java-7-openjdk"
+    elif test -f "/usr/lib/jvm/java-openjdk/include/jni.h"; then
+      JAVA_HOME="/usr/lib/jvm/java-openjdk"
+    elif test -f "/usr/lib/jvm/java/include/jni.h"; then
+      JAVA_HOME="/usr/lib/jvm/java"
+    elif test -d "/usr/java"; then
+      JAVA_HOME=/usr/java
+    else
+      JAVA_HOME="$JAVA_BIN"
+    fi
+  elif test -d "/usr/java"; then
+    JAVA_HOME=/usr/java
+  elif test -f "/System/Library/Frameworks/JavaVM.framework"; then
+    JAVA_HOME="/System/Library/Frameworks/JavaVM.framework"
+  fi
+fi
+
+echo $ac_n "checking for JAVA_HOME... $JAVA_HOME"
+
+if test ! -d "$JAVA_HOME"; then
+  AC_MSG_ERROR([Can't find valid JAVA_HOME ${JAVA_HOME}])
+fi
+
+if test -z "$JAVA_EXE"; then
+  java=`which java 2>/dev/null`
+  if test -x "$java"; then
+    JAVA_EXE="$java"
+  fi
+fi
+
+if test -z "$JAVA_EXE"; then
+  JAVA_EXE="$JAVA_HOME/bin/java"
+fi
+
+JAVA_ARGS=
+
+$JAVA_EXE -d64 -version 1>/dev/null 2>/dev/null
+if test $? = "0"; then
+  JAVA_ARGS="-d64"
+fi
+
+#
+# Check if cp accepts -u
+#
+CP=`which cp`
+echo $ECHO_N "checking if $CP accepts -u... "
+
+touch /tmp/cp.test.$$.src
+$CP -u /tmp/cp.test.$$.src /tmp/cp.test.$$.dest 1>/dev/null 2>/dev/null
+if test $? = "0"; then
+  CP_U_FLAG=-u
+  AC_SUBST(CP_U_FLAG)
+  echo "yes"
+else
+  echo "no"
+fi
+rm -f /tmp/cp.test.$$.src /tmp/cp.test.$$.dest
+
+#
+# Find bash. FreeBSD has bash in /usr/local/bin
+#
+
+AC_SUBST(BASH)
+BASH=`which bash`
+
+#
+# --with-perl
+#
+
+AC_SUBST(PERL)
+PERL="perl"
+
+AC_ARG_WITH(perl,
+[AS_HELP_STRING([--with-perl=DIR],
+                [Perl binary location])],
+[PERL=${withval}])

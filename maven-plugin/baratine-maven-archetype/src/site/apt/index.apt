@@ -1,0 +1,60 @@
+ ------
+ Introduction
+ ------
+ Author
+ ------
+ YYYY-MM-DD
+ ------
+
+
+Baratine Maven Archetype
+
+  The archetype complements Baratine™ Platform by providing support for building
+  a java project with baratine packaging.
+
+  Baratine packaging requires specific layout of files in the archive (jar file).
+
+  The resulting archive will be assigned '.bar' extension to denote that it is a
+  Baratine archive.
+
+* Usage
+
+----------------------------------------
+mvn archetype:generate -DarchetypeGroupId=io.baratine -DarchetypeArtifactId=baratine-maven-archetype \
+-DgroupId=org.acme -DartifactId=MyApp -DarchetypeVersion=0.10.2 -DinteractiveMode=false
+----------------------------------------
+
+  That should create a maven project
+
+----------------------------------------
+.
+├── pom.xml
+└── src
+    ├── main
+    │   ├── java
+    │   │   └── org
+    │   │       └── acme
+    │   │           ├── EchoServiceImpl.java
+    │   │           └── EchoService.java
+    │   └── resources
+    └── test
+        ├── java
+        │   └── org
+        │       └── acme
+        │           ├── EchoServiceSync.java
+        │           └── EchoTest.java
+        └── resources
+
+----------------------------------------
+
+* Notes
+
+  If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our
+  {{{https://github.com/baratine/baratine-maven-plugin/issues}issue tracker}}
+
+  When creating a new issue, please provide a comprehensive description of your
+  concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
+  entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
+  Of course, patches are welcome, too. Contributors can check out the project from our
+  {{{https://github.com/baratine/baratine-maven-plugin}source repository}} and will find supplementary information in the
+  {{{http://maven.apache.org/guides/development/guide-helping.html}guide to helping with Maven}}.

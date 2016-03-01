@@ -1,0 +1,481 @@
+<project basedir=".">
+  <property environment="env"/>
+
+  <property file="local.properties"/>
+
+  <property name="dist" value="${base.dir}/dist"/>
+  <property name="dist.dir" value="${base.dir}/dist"/>
+
+  <target name="dist" depends="clean,dist.clean,version,compile,ext,dist.build,dist.jar,dist.examples,dist.js,dist.package"/>
+
+  <target name="dist.clean">
+    <delete dir="${dist.dir}"/>
+  </target>
+
+  <!--
+     - configure
+    -->
+  <target name="configure" depends="init">
+    <ant dir="${base.dir}" target="configure-native">
+         <!-- useNativeBasedir="true"> -->
+      <property name="shortproduct" value="${shortproduct}"/>
+      <property name="product" value="${product}"/>
+    </ant>
+  </target>
+  
+  <!--
+     - dist.build
+    -->
+
+  <target name="dist.build" depends="init,configure,compile,native">
+    <property name="dist.name" value="baratine-${version.baratine}"/>
+    <property name="install" value="${dist}/${dist.name}"/>
+    
+    <mkdir dir="${install}"/>
+
+    <!--
+    <copy todir="${install}/build/baratine/META-INF/baratine"
+          preservelastmodified="true"
+          overwrite="true">
+      <fileset dir="${modules.dir}/baratine/src/META-INF/baratine">
+        <include name="*.cf"/>
+      </fileset>
+    </copy>
+    -->
+
+    <copy todir="${install}"
+          preservelastmodified="true"
+          overwrite="true">
+      <fileset dir="${baratine.dir}">
+        <exclude name="**/.*/**"/>
+        <exclude name="**/*~"/>
+
+        <!--
+        <include name="make/**"/>
+        -->
+        
+        <include name="init.d/**"/>
+
+        <!--
+        <include name="modules/**/src/**"/>
+        <include name="modules/ext/activation.jar"/>
+        <include name="modules/ext/javamail-141.jar"/>
+        
+        <include name="win32/**"/>
+        <include name="win64/**"/>
+        -->
+
+	<!--
+        <include name="lib/activation.jar"/>
+        <include name="lib/activation.LICENSE"/>
+
+        <include name="lib/javamail-141.jar"/>
+        <include name="lib/javamail-14.LICENSE"/>
+        -->
+
+        <!--
+        <include name="keys/README"/>
+        <include name="licenses/README"/>
+        -->
+
+        <include name="LICENSE"/>
+        <include name="README"/>
+        <!--
+        <include name="configure.ac"/>
+        <include name="configure"/>
+        <include name="Makefile.in"/>
+        <include name="install.sh.in"/>
+        -->
+      </fileset>
+    </copy>
+
+    <mkdir dir="${native.dir}"/>
+    
+    <copy todir="${install}/native/com/caucho/native"
+          preservelastmodified="true"
+          overwrite="true">
+      <fileset dir="${native.dir}">
+        <exclude name="**/.*/**"/>
+      </fileset>
+    </copy>
+
+    <copy todir="${install}"
+          preservelastmodified="true"
+          overwrite="true">
+      <fileset dir="${basedir}">
+        <exclude name="**/.*/**"/>
+        <exclude name="**/*~"/>
+
+        <include name="bin/baratine"/>
+        <include name="bin/baratine-dist.in"/>
+        <include name="bin/*.bat"/>
+      </fileset>
+    </copy>
+    
+    <copy tofile="${install}/bin/baratine"
+          file="${install}/bin/baratine-dist.in"
+          preservelastmodified="true"
+          overwrite="true">
+      <filterset>
+        <filter token="JAVA_EXE" value="java"/>
+        <filter token="JAVA_ARGS" value=""/>
+        <filter token="home_dir" value=""/>
+        <filter token="root_dir" value=""/>
+        <filter token="conf_dir" value=""/>
+        <filter token="log_dir" value=""/>
+      </filterset>
+    </copy>
+
+    <chmod perm="ugo+rx">
+      <fileset dir="${install}">
+        <include name="configure"/>
+        <include name="bin/baratine-dist.in"/>
+        <include name="bin/baratine"/>
+
+        <include name="automake/missing"/>
+        <include name="automake/install-sh"/>
+        <include name="automake/config.sub"/>
+        <include name="automake/config.guess"/>
+        <include name="automake/mkinstalldirs"/>
+
+      </fileset>
+    </chmod>
+  </target>
+
+  <!--
+     - dist.jar
+    -->
+	  
+  <target name="dist.jar"
+          depends="init,compile,dist.build">
+    <property name="dist.name" value="baratine-${version}"/>
+    <property name="install" value="${dist.dir}/${dist.name}"/>
+    
+    <mkdir dir="${install}/lib"/>
+
+    <!--
+       - javaee-7.jar
+      -->  	
+   <antcall target="dist.jar.javaee" inheritRefs="true">
+     <param name="jar" value="${install}/lib/javaee-7.jar"/>
+   </antcall>
+
+    <!--
+       - baratine-api.jar
+      -->
+    <antcall target="dist.jar.baratine.api" inheritRefs="true">
+      <param name="jar" value="${install}/lib/baratine-api.jar"/>
+    </antcall>
+  	
+    <!--
+       - baratine.jar
+      -->
+    <antcall target="dist.jar.baratine" inheritRefs="true">
+      <param name="jar" value="${install}/lib/baratine.jar"/>
+      <param name="javaee.jar" value="${install}/lib/javaee-7.jar"/>
+      <param name="baratine.build" value="${install}/build/baratine"/>
+    </antcall>
+  </target>
+	
+  <target name="dist.jar.javaee" depends="init">
+    <!-- param: jar -->
+    <property name="folder" value="classes"/>
+		
+    <jar destfile="${jar}">
+      <fileset dir="${modules.dir}/servlet/${folder}">
+        <exclude name="**/.*"/>
+        <exclude name="javax/el/**"/>
+        <exclude name="javax/servlet/jsp/**"/>
+      </fileset>
+
+      <!--
+      <fileset dir="${modules.dir}/json/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+      -->
+
+      <!--
+      <fileset dir="${modules.dir}/cdi/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+      -->
+      
+      <fileset dir="${modules.dir}/inject/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+      
+      <fileset dir="${modules.dir}/websocket/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+    </jar>
+  </target>
+	
+  <target name="dist.jar.baratine.api" depends="init">
+    <!-- param: jar -->
+    <property name="folder" value="classes"/>
+		
+    <jar destfile="${jar}">
+      <fileset dir="${modules.dir}/baratine-api/${folder}">
+	<exclude name="**/.*"/>
+      </fileset>
+    </jar>
+  </target>
+	
+  <target name="dist.jar.baratine" depends="init">
+    <!-- param: jar -->
+    <!-- param: javaee.jar -->
+    <!-- param: baratine.build -->
+		
+    <property name="install" value="${dist}/${dist.name}"/>
+    <property name="folder" value="classes"/>
+    <property name="erroronmissingdir" value="true"/>
+		
+    <jar destfile="${jar}"
+         manifest="${modules.dir}/baratine/src/manifest.dist">
+      <zipfileset src="${javaee.jar}"/>
+      
+      <fileset dir="${modules.dir}/baratine/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+      
+      <fileset dir="${modules.dir}/hessian/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+      
+      <fileset dir="${modules.dir}/baratine-api/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+      
+      <fileset dir="${modules.dir}/junit/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+      
+      <fileset dir="${modules.dir}/plugins/${folder}">
+        <exclude name="**/.*"/>
+      </fileset>
+      
+      <fileset dir="${install}/native">
+        <exclude name="**/.*"/>
+      </fileset>
+    </jar>
+</target>
+	
+	<!--
+	   - dist.sources
+	  -->
+	
+  <target name="dist.sources" depends="init">
+    <property name="dest" value="${dist}/baratine-src-${version}"/>
+   
+    <!--
+       - javaee-7-sources.jar
+      -->   
+    <antcall target="dist.jar.javaee" inheritRefs="true">
+      <param name="jar" value="${dest}/javaee/javaee-7-sources.jar"/>
+      <param name="folder" value="src"/>
+    </antcall>
+  	
+    <!--
+       - dist.jar.baratine
+      -->
+    <antcall target="dist.jar.baratine" inheritRefs="true">
+      <param name="jar" value="${dest}/baratine/baratine-sources.jar"/>
+      <param name="javaee.jar" value="${dest}/javaee/javaee-7-sources.jar"/>
+      <param name="baratine.build" value="${dest}/build/baratine"/>
+      <param name="folder" value="src"/>
+      <param name="erroronmissingdir" value="false"/>
+   </antcall>
+  	
+    <!--
+       - dist.jar.baratine.api
+      -->
+    <antcall target="dist.jar.baratine.api" inheritRefs="true">
+      <param name="jar" value="${dest}/baratine-api/baratine-api-sources.jar"/>
+    	<param name="folder" value="src"/>
+    </antcall>
+  </target>
+  
+  <!--
+     - dist.examples
+    -->
+
+  <target name="dist.examples" depends="init,dist.jar">
+    <property name="dist.name" value="baratine-${version}"/>
+    <property name="install" value="${dist}/${dist.name}"/>
+    
+    <mkdir dir="${install}"/>
+    
+    <copy todir="${install}"
+          preservelastmodified="true"
+          overwrite="true">
+      <fileset dir="${basedir}">
+        <exclude name="**/.*/**"/>
+        <exclude name="**/*~"/>
+        <exclude name="examples/hello-journal/**"/>
+        <exclude name="examples/auction/**"/>
+
+        <include name="examples/**"/>
+      </fileset>
+    </copy>
+
+    <ant dir="${install}/examples" inheritAll="false"/>
+    
+  </target>
+
+  <target name="dist.js" depends="init">
+    <property name="dist.name" value="baratine-${version}"/>
+    <property name="install" value="${dist}/${dist.name}"/>
+    <copy file="${basedir}/modules/baratine-js/out/baratine-js.js"
+          tofile="${install}/baratine-js.js"/>
+  </target>
+
+  <!--
+     - dist.package.baratine
+    -->
+  
+  <target name="dist.package" depends="init">
+    <patternset id="dist">
+      <exclude name="**/Makefile"/>
+      <exclude name="**/*.o"/>
+      <exclude name="**/*.so"/>
+      <exclude name="**/*.jnilib"/>
+      <exclude name="**/*.dylib"/>
+      <exclude name="**/*.pdf"/>
+      <exclude name="**/*.graffle"/>
+      <exclude name="**/*.lo"/>
+      <exclude name="**/*.svnignore"/>
+      <exclude name="**/*.svn"/>
+      <exclude name="**/.*/**"/>
+      <exclude name="**/.cvsignore"/>
+      <exclude name="**/*.swp"/>
+      <exclude name="**/WEB-INF/work/**"/>
+      <exclude name="**/WEB-INF/pre_work/**"/>
+      <exclude name="**/WEB-INF/tmp/**"/>
+      <exclude name="**/WEB-INF/db/**"/>
+      <exclude name="**/*~"/>
+
+      <include name="${dist.name}/automake/**"/>
+      <include name="${dist.name}/admin/**"/>
+      
+      <include name="${dist.name}/endorsed/**"/>
+      
+      <include name="${dist.name}/examples/**/build.xml"/>
+      <include name="${dist.name}/examples/**/*.html"/>
+      <include name="${dist.name}/examples/**/README"/>
+      <include name="${dist.name}/examples/**/manifest"/>
+      <include name="${dist.name}/examples/**/*.jar"/>
+      <include name="${dist.name}/examples/**/*.java"/>
+
+      <include name="${dist.name}/baratine-js.js"/>
+
+      <include name="${dist.name}/init.d/**"/>
+
+      <!--
+      <include name="${dist.name}/lib/activation.jar"/>
+      <include name="${dist.name}/lib/activation.LICENSE"/>
+      -->
+      <include name="${dist.name}/lib/baratine.jar"/>
+      <include name="${dist.name}/lib/baratine-api.jar"/>
+      <!--
+      <include name="${dist.name}/lib/javamail-141.jar"/>
+      <include name="${dist.name}/lib/javamail-14.LICENSE"/>
+      -->
+      
+
+      <include name="${dist.name}/LICENSE"/>
+      <include name="${dist.name}/README"/>
+      <!--
+      <include name="${dist.name}/Makefile.am"/>
+      -->
+      <include name="${dist.name}/Makefile.in"/>
+      <include name="${dist.name}/install.sh.in"/>
+      <!--
+      <include name="${dist.name}/aclocal.m4"/>
+      -->
+
+      <exclude name="${dist.name}/modules/c/src/apache*/**"/>
+      <exclude name="${dist.name}/modules/c/src/isapi*/**"/>
+      
+      <include name="${dist.name}/modules/c/src/**"/>
+    </patternset>
+
+    <patternset id="dist.bin">
+      <include name="${dist.name}/**/*.dll"/>
+      <include name="${dist.name}/**/*.exe"/>
+      <include name="${dist.name}/bin/baratine"/>
+      <include name="${dist.name}/bin/baratine-dist.in"/>
+      <include name="${dist.name}/bin/*.bat"/>
+      <!--
+      <include name="${dist.name}/configure"/>
+        -->
+    </patternset>
+
+    <patternset id="dist.src">
+      <include name="${dist.name}/**"/>
+      
+      <include name="${dist.name}/lib/activation.jar"/>
+      <include name="${dist.name}/lib/javamail-14.jar"/>
+      <include name="${dist.name}/lib/${jsf.jar}"/>
+
+      <exclude name="${dist.name}/webapps/*.war"/>
+      <!--
+      <exclude name="${dist.name}/lib/**"/>
+      -->
+      <exclude name="**/*.lo"/>
+      <exclude name="**/*.o"/>
+      <exclude name="**/*.so"/>
+      <exclude name="**/*.jnilib"/>
+      <exclude name="**/*.pdf"/>
+      <exclude name="**/*.graffle"/>
+    </patternset>
+
+    <delete file="${dist}/${dist.name}.zip"/>
+    <delete file="${dist}/${dist.name}-src.zip"/>
+    <delete file="${dist}/${dist.name}.tar.gz"/>
+    <delete file="${dist}/${dist.name}-src.tar.gz"/>
+
+    <zip destfile="${dist}/${dist.name}.zip">
+      <zipfileset dir="${dist}">
+        <patternset refid="dist"/>
+      </zipfileset>
+      
+      <zipfileset dir="${dist}" filemode="775">
+        <patternset refid="dist.bin"/>
+      </zipfileset>
+    </zip>
+
+    <zip destfile="${dist}/${dist.name}-src.zip"
+         basedir="${dist}">
+      <patternset refid="dist.src"/>
+    </zip>
+
+    <tar destfile="${dist}/${dist.name}.tar.gz"
+         longfile="gnu" compression="gzip">
+      <tarfileset dir="${dist}">
+        <patternset refid="dist"/>
+      </tarfileset>
+      <tarfileset dir="${dist}" mode="775">
+        <patternset refid="dist.bin"/>
+      </tarfileset>
+    </tar>
+
+    <tar destfile="${dist}/${dist.name}-src.tar.gz"
+         basedir="${dist}" longfile="gnu" compression="gzip">
+      <patternset refid="dist.src"/>
+    </tar>
+
+    <copy tofile="${dist}/${shortproduct}-0_8-snap.zip"
+          file="${dist}/${dist.name}.zip"/>
+
+    <copy tofile="${dist}/${shortproduct}-0_8-snap.tar.gz"
+          file="${dist}/${dist.name}.tar.gz"/>
+
+    <copy tofile="${dist}/${shortproduct}-0_8-snap-src.zip"
+          file="${dist}/${dist.name}-src.zip"/>
+
+    <copy tofile="${dist}/${shortproduct}-0_8-snap-src.tar.gz"
+          file="${dist}/${dist.name}-src.tar.gz"/>
+  </target>
+	
+</project>
+
