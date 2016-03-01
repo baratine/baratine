@@ -287,6 +287,15 @@ public class SerializerH3Java<T> extends SerializerH3Base<T>
                                            exn.toString()),
                                        exn);
     }
+    
+    @Override
+    public String toString()
+    {
+      return (getClass().getSimpleName()
+             + "[" + _field.getDeclaringClass().getSimpleName()
+             + "." + name()
+             + "]");
+    }
   }
 
   /**
@@ -721,7 +730,7 @@ public class SerializerH3Java<T> extends SerializerH3Base<T>
     void read(Object bean, InRawH3 is, InH3Amp in)
     {
       try {
-        float value = is.readFloat();
+        Object value = in.readObject();
         
         _fieldSet.invokeExact(bean, value);
       } catch (Throwable e) {
