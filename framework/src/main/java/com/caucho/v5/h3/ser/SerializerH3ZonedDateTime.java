@@ -52,7 +52,7 @@ public class SerializerH3ZonedDateTime extends SerializerH3Base<ZonedDateTime>
     int month = (int) ((l & 0x0000FF0000000000L) >> 40);
     int day = (int) ((l & 0x000000FF00000000L) >> 32);
 
-    int t = (int) (l & 0x00000000FFFFFFFFL);
+    int t = (int) l;
 
     int hour = t / 60 / 60;
     int minute = (t - hour * 60 * 60) / 60;
