@@ -19,7 +19,6 @@
 package com.caucho.v5.h3.ser;
 
 import java.lang.reflect.Type;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -46,9 +45,27 @@ public class SerializerH3ZonedDateTime extends SerializerH3Base<ZonedDateTime>
   @Override
   public ZonedDateTime readObject(InRawH3 is, InH3Amp in)
   {
-    Instant instant = Instant.ofEpochSecond(is.readLong(), is.readLong());
+    long l = is.readLong();
+    int nano = (int) is.readLong();
 
-    return ZonedDateTime.ofInstant(instant, ZoneId.of(is.readString()));
+    int year = (int) ((l & 0xFFFF000000000000L) >> 48);
+    int month = (int) ((l & 0x0000FF0000000000L) >> 40);
+    int day = (int) ((l & 0x000000FF00000000L) >> 32);
+
+    int t = (int) l;
+
+    int hour = t / 60 / 60;
+    int minute = (t - hour * 60 * 60) / 60;
+    int second = (t - hour * 60 * 60 - minute * 60);
+
+    return ZonedDateTime.of(year,
+                            month,
+                            day,
+                            hour,
+                            minute,
+                            second,
+                            nano,
+                            ZoneId.of(is.readString()));
   }
 
   @Override
@@ -59,10 +76,18 @@ public class SerializerH3ZonedDateTime extends SerializerH3Base<ZonedDateTime>
   {
     os.writeObject(typeSequence());
 
-    Instant instant = time.toInstant();
+    long l = time.getYear() << 8;
 
-    os.writeLong(instant.getEpochSecond());
-    os.writeLong(instant.getNano());
+    l |= time.getMonthValue();
+    l <<= 8;
+
+    l |= time.getDayOfMonth();
+    l <<= 32;
+
+    l |= (time.getHour() * 60 * 60 + time.getMinute() * 60 + time.getSecond());
+
+    os.writeLong(l);
+    os.writeLong(time.getNano());
 
     os.writeString(time.getZone().getId());
   }
