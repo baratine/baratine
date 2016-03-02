@@ -68,42 +68,6 @@ package com.caucho.v5.h3.io;
  *   uint - type
  *   object - data
  * 
- * 0x00 - 0x7f - int
- * 0x80 - 0x9f - string fin
- * 0xa0 - 0xaf - binary fin
- * 0xb0 - 0xbf - object fin
- * 0xc0 - 0xcf - array fin
- * 0xd0 - 0xdf - map fin
- * 
- * 0xe0 - string fin
- * 0xe1 - string part
- * 0xe2 - binary fin
- * 0xe3 - binary part
- * 0xe4 - map fin
- * 0xe5 - map part
- * 0xe6 - map part one
- * 0xe7 - array fin
- * 0xe8 - array part
- * 0xe9 - array part one
- * 0xea - typed object
- * 0xeb - typed array
- * 
- * 0xf0 - null
- * 0xf1 - false
- * 0xf2 - true
- * 0xf3 - double
- * 0xf4 - float
- * 0xf5 - double as long
- * 0xf5 - ref
- * 0xf6 - graph-next
- * 0xf7 - graph-all
- * 0xf8 - object def flat
- * 0xf9 - object def graph
- * 0xfa - array def flat
- * 0xfb - array def graph
- * 0xfc - 0xfe - reserved
- * 0xff - error
- * 
  * predef types:
  * 1: byte, 2: short, 3: int, 4: double  
  */
