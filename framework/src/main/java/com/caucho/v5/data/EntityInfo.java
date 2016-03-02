@@ -163,7 +163,7 @@ class EntityInfo<ID,T>
     ColumnVault objColumn = _type.getAnnotation(ColumnVault.class);
 
     if (objColumn != null) {
-      fields.add(new FieldObject(_type, objColumn));
+      fields.add(new FieldInfoObject(_type, objColumn));
     }
 
     FieldInfo[] fieldsArray = fields.toArray(new FieldInfo[fields.size()]);
@@ -440,7 +440,7 @@ class EntityInfo<ID,T>
   {
     Objects.requireNonNull(cursor);
 
-    FieldObject fieldObject = null;
+    FieldInfoObject fieldObject = null;
 
     int index = 0;
     for (int i = 0; i < _fields.length; i++) {
@@ -449,8 +449,8 @@ class EntityInfo<ID,T>
       if (! field.isId() || isInitPk)
         index++;
 
-      if (field instanceof FieldObject) {
-        fieldObject = (FieldObject) field;
+      if (field instanceof FieldInfoObject) {
+        fieldObject = (FieldInfoObject) field;
         break;
       }
     }

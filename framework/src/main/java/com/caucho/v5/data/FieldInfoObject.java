@@ -35,12 +35,12 @@ import java.util.Objects;
 
 import com.caucho.v5.kraken.info.TableInfo;
 
-class FieldObject implements FieldInfo
+class FieldInfoObject implements FieldInfo
 {
   private ColumnVault _column;
   private Class<?> _type;
 
-  public FieldObject(Class<?> type, ColumnVault column)
+  public FieldInfoObject(Class<?> type, ColumnVault column)
   {
     Objects.requireNonNull(type);
     Objects.requireNonNull(column);

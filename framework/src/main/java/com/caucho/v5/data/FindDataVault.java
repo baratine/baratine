@@ -38,6 +38,7 @@ import java.util.function.Function;
 
 import com.caucho.v5.convert.bean.FieldInt;
 import com.caucho.v5.convert.bean.FieldLong;
+import com.caucho.v5.convert.bean.FieldObject;
 import com.caucho.v5.convert.bean.FieldString;
 
 import io.baratine.db.Cursor;
@@ -183,7 +184,7 @@ class FindDataVault<ID,T,V>
       return (FieldData<V>) fun.apply(field);
     }
     else {
-      throw new UnsupportedOperationException(type.getName() + " is an unsupported value for field " + field);
+      return new FieldDataObject(field);
     }
   }
   
@@ -350,6 +351,26 @@ class FindDataVault<ID,T,V>
     public void set(T bean, Object value)
     {
       setString(bean, String.valueOf(value));
+    }
+  }
+  private static class FieldDataObject<T> extends FieldObject<T>
+    implements FieldData<T>
+  {
+    FieldDataObject(Field field)
+    {
+      super(field);
+    }
+  
+    @Override
+    public void set(T bean, Cursor cursor, int index)
+    {
+      setObject(bean, cursor.getObject(index));
+    }
+  
+    @Override
+    public void set(T bean, Object value)
+    {
+      setObject(bean, value);
     }
   }
   
