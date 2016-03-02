@@ -615,7 +615,7 @@ public class ArgsBase
   
   private static class VerboseInfo extends VerboseBase
   {
-    public String getName()
+    public String name()
     {
       return "verbose";
     }
@@ -646,7 +646,7 @@ public class ArgsBase
   
   private static class VerboseFine extends VerboseBase
   {
-    public String getName()
+    public String name()
     {
       return "verbose";
     }
@@ -677,7 +677,7 @@ public class ArgsBase
   private static class VerboseFiner extends VerboseBase
   {
     @Override
-    public String getName()
+    public String name()
     {
       return "verbose-finer";
     }
@@ -708,7 +708,7 @@ public class ArgsBase
   private static class VerboseFinest extends VerboseBase
   {
     @Override
-    public String getName()
+    public String name()
     {
       return "verbose-finest";
     }

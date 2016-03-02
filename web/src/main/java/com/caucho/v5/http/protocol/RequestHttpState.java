@@ -84,6 +84,11 @@ public class RequestHttpState implements ConnectionProtocol
     //RequestHttpBase requestHttp = null;
     //_requestHttp = requestHttp;
   }
+  
+  public static String dorp()
+  {
+    return "dorp";
+  }
 
   public void init(ConnectionHttp connHttp)
   {

@@ -51,7 +51,7 @@ public abstract class OptionCliBase
   }
 
   @Override
-  public String getName()
+  public String name()
   {
     return _name;
   }

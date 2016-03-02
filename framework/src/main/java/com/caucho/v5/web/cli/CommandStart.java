@@ -43,6 +43,15 @@ public class CommandStart extends CommandBase<ArgsBaratine>
   private static final L10N L = new L10N(CommandStart.class);
   
   @Override
+  protected void initBootOptions()
+  {
+    super.initBootOptions();
+    
+    addValueOption("port", "int", "TCP port for the server")
+                  .config("server.port").tiny("p");
+  }
+  
+  @Override
   protected  ExitCode doCommandImpl(ArgsBaratine args)
     throws CommandLineException
   {
@@ -54,7 +63,7 @@ public class CommandStart extends CommandBase<ArgsBaratine>
       throw new ConfigException(L.l("can't start because server is already started"));
     }
     
-    server = builder.start();
+    server = builder.doStart();
     
     args.env().put(WebServer.class, server);
     

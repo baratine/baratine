@@ -184,7 +184,7 @@ abstract public class CommandBase<A extends ArgsBase>
   public OptionCli<? super A>
   option(OptionCli<? super A> option)
   {
-    String name = option.getName();
+    String name = option.name();
 
     if (! name.startsWith("-")) {
       name = "--" + name;
@@ -196,7 +196,7 @@ abstract public class CommandBase<A extends ArgsBase>
   public OptionCli<? super A>
   addTinyOption(OptionCli<? super A> option)
   {
-    String name = option.getName();
+    String name = option.name();
 
     if (! name.startsWith("-")) {
       name = "-" + name;
@@ -345,7 +345,7 @@ abstract public class CommandBase<A extends ArgsBase>
           return cmp;
         }
 
-        return a.getName().compareTo(b.getName());
+        return a.name().compareTo(b.name());
       }
     });
 
@@ -356,7 +356,7 @@ abstract public class CommandBase<A extends ArgsBase>
       String usage = option.usage(args);
 
       if (usage != null) {
-        if (lastOption != null && option.getName().equals(lastOption.getName())) {
+        if (lastOption != null && option.name().equals(lastOption.name())) {
           continue;
         }
 

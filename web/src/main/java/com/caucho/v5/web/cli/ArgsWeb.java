@@ -43,30 +43,18 @@ public class ArgsWeb extends ArgsBase
    */
   protected ArgsWeb()
   {
-    //commandDefault(COMMAND_DEFAULT);
   }
 
   public ArgsWeb(String[] argv)
   {
     super(argv);
-    //commandDefault(COMMAND_DEFAULT);
   }
   
   public ArgsWeb(EnvCli env, String[] argv)
   {
     super(env, argv);
-    //commandDefault(COMMAND_DEFAULT);
   }
   
-  
-
-  /*
-  public Command<?> commandDefault()
-  {
-    return new DefaultCommand();
-  }
-  */
-
   @Override
   public CommandManager<?> getCommandManager()
   {
@@ -77,8 +65,8 @@ public class ArgsWeb extends ArgsBase
   protected void initCommands(CommandManager<?> manager)
   {
     super.initCommands(manager);
-
-    //manager.addCommand(new VersionCommand());
+    
+    manager.command(new CommandPackage());
   }
 
   static {

@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -46,6 +45,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
@@ -55,6 +56,7 @@ import java.util.zip.ZipEntry;
  */
 public class BootFile
 {
+  private static final Logger log = Logger.getLogger(BootFile.class.getName());
   private Path _bootPath;
   private int _bootSize;
   private FileChannel _bootChannel;
@@ -126,7 +128,7 @@ public class BootFile
     String path = url.getPath();
     
     JarItem jarItem = _jarMap.get(path);
-    
+
     if (jarItem != null) {
       return jarItem.openConnection(url);
     }
@@ -138,7 +140,7 @@ public class BootFile
   private void readJar()
     throws IOException
   {
-    Supplier<InputStream> factory = ()->new BootInputStream(_bootMap, 0, _bootSize);
+    Supplier<InputStream> factory = ()->new BootInputStream("top", _bootMap, 0, _bootSize);
     
     try (BootZipScanner scanner = new BootZipScanner(factory, _bootSize)) {
       if (! scanner.open()) {
@@ -149,7 +151,7 @@ public class BootFile
         String name = scanner.name();
         int position = scanner.offset();
         int size = scanner.sizeCompressed();
-          
+        
         if (name.endsWith(".jar")) {
           if (scanner.method() != ZipEntry.STORED
                 || size <= 0
@@ -173,6 +175,9 @@ public class BootFile
                                          scanner.method() == ZipEntry.DEFLATED);
         }
       }
+    } catch (Exception e) {
+      e.printStackTrace();;
+      log.log(Level.FINER, _bootPath + " " + e.toString(), e);
     }
   }
   
@@ -206,20 +211,25 @@ public class BootFile
   
   class BootInputStream extends InputStream
   {
+    private String _name;
     private ByteBuffer _buffer;
     private Inflater _inflater;
     
-    BootInputStream(ByteBuffer source, int offset, int size)
+    BootInputStream(String name, 
+                    ByteBuffer source, int offset, int size)
     {
+      _name = name;
+      
       _buffer = source.duplicate();
       _buffer.position(offset);
       _buffer.limit(offset + size);
     }
     
-    BootInputStream(ByteBuffer source, int offset, int size,
+    BootInputStream(String name,
+                    ByteBuffer source, int offset, int size,
                     Inflater inflater)
     {
-      this(source, offset, size);
+      this(name, source, offset, size);
       
       _inflater = inflater;
     }
@@ -317,7 +327,8 @@ public class BootFile
     {
       return _sizeCompressed;
     }
-    
+
+    @Override
     public InputStream read()
       throws IOException
     {
@@ -327,7 +338,7 @@ public class BootFile
         inflater = inflaterAlloc();
       }
       
-      InputStream is = new BootInputStream(_bootMap, dataOffset(), _sizeCompressed, inflater);
+      InputStream is = new BootInputStream(name(), _bootMap, dataOffset(), _sizeCompressed, inflater);
       
       if (! _isCompressed) {
         return is;
@@ -345,7 +356,7 @@ public class BootFile
       throws IOException
     {
       if (_dataOffset <= 0) {
-        try (BootInputStream bis = new BootInputStream(_bootMap, _offset, _sizeCompressed)) {
+        try (BootInputStream bis = new BootInputStream(name(), _bootMap, _offset, _sizeCompressed)) {
           BootZipScanner.skipLocalHeader(bis);
           
           _dataOffset = bis.position();
@@ -367,7 +378,11 @@ public class BootFile
       super(name, offset, sizeCompressed, size, isCompressed);
 
       if (name.endsWith(".jar")) {
-        fillJarMap();
+        try {
+          fillJarMap();
+        } catch (Exception e) {
+          log.log(Level.FINER, name + ": " + e.toString(), e);
+        }
       }
     }
 
@@ -377,7 +392,7 @@ public class BootFile
       int dataPos = dataOffset();
       
       Supplier<InputStream> factory
-        = ()->new BootInputStream(_bootMap, dataPos, sizeCompressed());
+        = ()->new BootInputStream(name(), _bootMap, dataPos, sizeCompressed());
 
       try (BootZipScanner scanner = new BootZipScanner(factory, sizeCompressed())) {
         scanner.open();
@@ -386,14 +401,15 @@ public class BootFile
           String name = scanner.name();
           int pos = scanner.offset();
             
-          JarItemEntry jarEntry = new JarItemEntry(scanner.name(), 
+          JarItemEntry jarEntry = new JarItemEntry(name,
                                                    pos,
                                                    scanner.sizeCompressed(),
                                                    scanner.size(),
                                                    scanner.method() == ZipEntry.DEFLATED);
-            
           _entryMap.put(name, jarEntry);
         }
+      } catch (Exception e) {
+        log.log(Level.FINER, e.toString(), e);
       }
     }
     
@@ -438,6 +454,7 @@ public class BootFile
     }
   }
   
+  /*
   private class BootStreamHandler extends URLStreamHandler
   {
     private JarItem _jar;
@@ -471,6 +488,7 @@ public class BootFile
       }
     }
   }
+  */
   
   private class JarURLConnectionBase extends URLConnection
   {
@@ -506,6 +524,31 @@ public class BootFile
       return _jarItem.size();
     }
     
+    @Override
+    public long getContentLengthLong()
+    {
+      return _jarItem.size();
+    }
+    
+    @Override
+    public long getExpiration()
+    {
+      return super.getExpiration();
+    }
+    
+    @Override
+    public long getLastModified()
+    {
+      return super.getLastModified();
+    }
+    
+    @Override
+    public boolean getUseCaches()
+    {
+      return true;
+    }
+    
+    @Override
     public String toString()
     {
       try {

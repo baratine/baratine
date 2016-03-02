@@ -38,6 +38,8 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -199,6 +201,12 @@ public class IoUtil
     return readLength;
   }
 
+  public static void walk(Path path, Consumer<Path> consumer)
+    throws IOException
+  {
+    Files.walkFileTree(path, new DirConsumer(consumer));
+  }
+
   public static void removeAll(Path dir)
     throws IOException
   {
@@ -237,6 +245,49 @@ public class IoUtil
     {
       Files.delete(dir);
       
+      return FileVisitResult.CONTINUE;
+    }
+  }
+  
+  private static class DirConsumer implements FileVisitor<Path>
+  {
+    private Consumer<Path> _consumer;
+    
+    DirConsumer(Consumer<Path> consumer)
+    {
+      Objects.requireNonNull(consumer);
+      
+      _consumer = consumer;
+    }
+    
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir,
+                                             BasicFileAttributes attrs)
+                                                 throws IOException
+    {
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+      throws IOException
+    {
+      _consumer.accept(file);
+      
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc)
+        throws IOException
+    {
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+        throws IOException
+    {
       return FileVisitResult.CONTINUE;
     }
   }

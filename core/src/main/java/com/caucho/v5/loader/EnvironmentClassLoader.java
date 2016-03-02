@@ -128,7 +128,7 @@ public class EnvironmentClassLoader extends DynamicClassLoader
                                    boolean isRoot)
   {
     super(parent, true, isRoot);
-    
+
     if (id != null) {
       setId(id);
     }

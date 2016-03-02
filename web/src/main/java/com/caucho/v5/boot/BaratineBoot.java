@@ -38,6 +38,7 @@ import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.jar.Manifest;
 
 /**
@@ -71,7 +72,9 @@ public class BaratineBoot
     Thread thread = Thread.currentThread();
     ClassLoader oldLoader = thread.getContextClassLoader();
     
-    try (URLClassLoader bootLoader = new URLClassLoader(urls, oldLoader)) {
+    URLClassLoader bootLoader = new URLClassLoader(urls, oldLoader);
+    
+    try {
       thread.setContextClassLoader(bootLoader);
       
       Manifest manifest = bootFile.manifest();

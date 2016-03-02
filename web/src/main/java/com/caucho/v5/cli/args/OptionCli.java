@@ -36,18 +36,18 @@ import java.util.Objects;
 
 public interface OptionCli<A extends ArgsBase>
 {
-  String getName();
+  String name();
   
-  default String envName(ArgsBase args)
+  default String configName(ArgsBase args)
   {
-    return args.programName() + "." + getName().replace('-', '.');
+    return args.programName() + "." + name().replace('-', '.');
   }
   
   default void property(ArgsBase args, String value)
   {
-    args.property(envName(args), value);
+    args.property(configName(args), value);
   }
-
+  
   int parse(A args, String []argv, int index)
     throws CommandLineException;
 
@@ -73,6 +73,8 @@ public interface OptionCli<A extends ArgsBase>
 
   OptionCli<A> tiny(String name);
 
+  OptionCli<A> config(String name);
+  
   OptionCli<A> type(ArgsType type);
 
   OptionCli<A> deprecated();
@@ -97,11 +99,13 @@ public interface OptionCli<A extends ArgsBase>
     private boolean _isRequired;
 
     private List<String> _tinyNameList;
+    
+    private String _configName;
 
     private ArgsType _type = ArgsType.DEFAULT;
 
     @Override
-    public String getName()
+    public String name()
     {
       StringBuilder sb = new StringBuilder();
 
@@ -124,6 +128,17 @@ public interface OptionCli<A extends ArgsBase>
 
       return sb.toString();
     }
+    
+    @Override
+    public String configName(ArgsBase args)
+    {
+      if (_configName != null) {
+        return _configName;
+      }
+      else {
+        return args.programName() + "." + name().replace('-', '.');
+      }
+    }
 
     @Override
     public ArgsType getType()
@@ -135,6 +150,11 @@ public interface OptionCli<A extends ArgsBase>
     public String getTinyName()
     {
       return null;
+    }
+    
+    public String property()
+    {
+      return _configName;
     }
 
     @Override
@@ -179,7 +199,7 @@ public interface OptionCli<A extends ArgsBase>
         sb.append(" ");
       }
 
-      String name = getName();
+      String name = name();
       sb.append("--").append(name);
 
       String valueDesc = getValueDescription();
@@ -243,6 +263,14 @@ public interface OptionCli<A extends ArgsBase>
       return alias;
     }
 
+  //@Override
+    public OptionCli<X> config(String name)
+    {
+      _configName = name;
+
+      return this;
+    }
+
     @Override
     public OptionCli<X> deprecated()
     {
@@ -291,17 +319,19 @@ public interface OptionCli<A extends ArgsBase>
 
     protected void addStringValue(X args, String value)
     {
-      args.addOption(getName(), new ValueCliArg.ValueString(this, value));
+      args.addOption(name(), new ValueCliArg.ValueString(this, value));
+      
+      property(args, value);
     }
 
     protected void addMultiStringValue(X args, String value)
     {
-      args.addOption(getName(), new ValueCliArg.ValueMultiString(this, value));
+      args.addOption(name(), new ValueCliArg.ValueMultiString(this, value));
     }
 
     protected void addBooleanValue(X args, boolean value)
     {
-      args.addOption(getName(), new ValueCliArg.ValueString(this, String.valueOf(value)));
+      args.addOption(name(), new ValueCliArg.ValueString(this, String.valueOf(value)));
     }
   }
 
@@ -318,7 +348,7 @@ public interface OptionCli<A extends ArgsBase>
     }
 
     @Override
-    public String getName()
+    public String name()
     {
       return _name;
     }
@@ -369,6 +399,12 @@ public interface OptionCli<A extends ArgsBase>
     public OptionCli<X> alias(String name)
     {
       return _delegate.alias(name);
+    }
+
+    @Override
+    public OptionCli<X> config(String name)
+    {
+      return _delegate.config(name);
     }
 
     @Override
@@ -425,7 +461,7 @@ public interface OptionCli<A extends ArgsBase>
     }
 
     @Override
-    public String getName()
+    public String name()
     {
       return _name;
     }
@@ -455,7 +491,7 @@ public interface OptionCli<A extends ArgsBase>
     }
 
     @Override
-    public String getName()
+    public String name()
     {
       return _name;
     }

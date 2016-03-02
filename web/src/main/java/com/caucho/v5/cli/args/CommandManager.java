@@ -108,7 +108,7 @@ public class CommandManager<A extends ArgsBase>
   @Override
   public OptionCli<? super A> option(OptionCli<? super A> option)
   {
-    String name = option.getName();
+    String name = option.name();
     
     if (name.startsWith("-")) {
       return addOption(name, option);
@@ -121,7 +121,7 @@ public class CommandManager<A extends ArgsBase>
   @Override
   public OptionCli<? super A> addTinyOption(OptionCli<? super A> option)
   {
-    String name = option.getName();
+    String name = option.name();
     
     return addOption("-" + name, option);
   }

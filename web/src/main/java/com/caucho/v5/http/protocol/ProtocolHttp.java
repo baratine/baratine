@@ -28,6 +28,8 @@
 
 package com.caucho.v5.http.protocol;
 
+import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -40,6 +42,8 @@ import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.FreeList;
 import com.caucho.v5.util.Version;
+
+import io.baratine.service.Service;
 
 /**
  * ProtocolHttp manages the creation of http protocol connections.

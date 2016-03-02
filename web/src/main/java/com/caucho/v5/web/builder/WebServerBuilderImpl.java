@@ -39,6 +39,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
@@ -272,7 +273,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     if (argv == null) {
       argv = new String[0];
     }
-    
+
     _args = createArgs(argv);
     
     //_args.commandDefault(config().get("baratine.command", "start-console"));
@@ -504,6 +505,18 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       _server = webServerFactory().build(this);
     }
     
+    _server.start();
+    
+    return _server;
+  }
+  
+  //@Override
+  public synchronized WebServer doStart()
+  {
+    if (_server == null || _server.isClosed()) {
+      _server = webServerFactory().build(this);
+    }
+
     _server.start();
     
     return _server;
