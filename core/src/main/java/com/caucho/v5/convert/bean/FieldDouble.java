@@ -35,40 +35,40 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 
 /**
- * long field getter/setter
+ * double field getter/setter
  */
-public class FieldLong<T> extends FieldBase<T>
+public class FieldDouble<T> extends FieldBase<T>
 {
   private MethodHandle _getter;
   private MethodHandle _setter;
 
-  public FieldLong(Field field)
+  public FieldDouble(Field field)
   {
     super(field);
     
     try {
       MethodHandle getter = MethodHandles.lookup().unreflectGetter(field);
-      _getter = getter.asType(MethodType.methodType(long.class, Object.class));
+      _getter = getter.asType(MethodType.methodType(double.class, Object.class));
     
       MethodHandle setter = MethodHandles.lookup().unreflectSetter(field);
-      _setter = setter.asType(MethodType.methodType(void.class, Object.class, long.class));
+      _setter = setter.asType(MethodType.methodType(void.class, Object.class, double.class));
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
   }
   
   @Override
-  public final long getLong(T bean)
+  public final double getDouble(T bean)
   {
     try {
-      return (long) _getter.invokeExact((Object) bean);
+      return (double) _getter.invokeExact((Object) bean);
     } catch (Throwable e) {
       throw error(e);
     }
   }
   
   @Override
-  public final void setLong(T bean, long value)
+  public final void setDouble(T bean, double value)
   {
     try {
       _setter.invokeExact((Object) bean, value);

@@ -74,7 +74,7 @@ public class TableManagerVault<ID,T>
   public TableInfo initializeSchema()
   {
     TableInfo tableInfo = tableInfo();
-    
+
     if (tableInfo != null) {
       return tableInfo;
     }
@@ -185,7 +185,7 @@ public class TableManagerVault<ID,T>
     String location = initLocation();
     
     String pathName = location + "/" + type.getSimpleName() + ".json";
-    
+
     Json json = Json.newSerializer().build();
     
     Path path = Vfs.path(pathName);
@@ -258,7 +258,7 @@ public class TableManagerVault<ID,T>
       
       if (map.size() > 0) {
         ID id = _entityDesc.nextId();
-        
+
         _db.exec(sql, id, map);
       }
     }

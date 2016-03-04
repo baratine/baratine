@@ -35,43 +35,43 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 
 /**
- * long field getter/setter
+ * boolean field getter/setter
  */
-public class FieldLong<T> extends FieldBase<T>
+public class FieldBoolean<T> extends FieldBase<T>
 {
   private MethodHandle _getter;
   private MethodHandle _setter;
 
-  public FieldLong(Field field)
+  public FieldBoolean(Field field)
   {
     super(field);
     
     try {
       MethodHandle getter = MethodHandles.lookup().unreflectGetter(field);
-      _getter = getter.asType(MethodType.methodType(long.class, Object.class));
+      _getter = getter.asType(MethodType.methodType(boolean.class, Object.class));
     
       MethodHandle setter = MethodHandles.lookup().unreflectSetter(field);
-      _setter = setter.asType(MethodType.methodType(void.class, Object.class, long.class));
+      _setter = setter.asType(MethodType.methodType(void.class, Object.class, boolean.class));
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
   }
   
   @Override
-  public final long getLong(T bean)
+  public final boolean getBoolean(T bean)
   {
     try {
-      return (long) _getter.invokeExact((Object) bean);
+      return (boolean) _getter.invokeExact((Object) bean);
     } catch (Throwable e) {
       throw error(e);
     }
   }
   
   @Override
-  public final void setLong(T bean, long value)
+  public final void setBoolean(T bean, boolean value)
   {
     try {
-      _setter.invokeExact((Object) bean, value);
+      _setter.invokeExact((Object) bean, (boolean) value);
     } catch (Throwable e) {
       throw error(e);
     }

@@ -30,10 +30,7 @@
 package com.caucho.v5.data;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 import com.caucho.v5.convert.bean.FieldBoolean;
@@ -49,255 +46,26 @@ import com.caucho.v5.convert.bean.FieldString;
 
 import io.baratine.db.Cursor;
 
-class FindDataVault<ID,T,V>
+class FieldDataBase
 {
-  private VaultDriverDataImpl<ID,T> _driver;
-  private Class<V> _dataClass;
-
-  private DataFieldItem<V>[] _fields;
-
-  private int _docIndex;
-
-  FindDataVault(VaultDriverDataImpl<ID,T> driver, 
-                Class<V> dataClass)
-  {
-    _driver = driver;
-    _dataClass = dataClass;
-    
-    introspect();
-  }
+  private static HashMap<Class<?>,Function<Field,FieldData<?>>> _fieldTypeMap
+    = new HashMap<>();
   
-  private void introspect()
+  public static FieldData getField(Field field)
   {
-    if (Modifier.isAbstract(_dataClass.getModifiers())) {
-      throw new IllegalArgumentException(_dataClass.getName());
-    }
-    
-    ArrayList<DataFieldItem<V>> fieldList = new ArrayList<>();
-    
-    int index = 0;
-    
-    index = introspect(fieldList, _dataClass, index);
-
-    _fields = new DataFieldItem[fieldList.size()];
-    fieldList.toArray(_fields);
-
-    boolean isDoc = false;
-    for (DataFieldItem item : _fields) {
-      if (item.isDocument()) {
-        isDoc = true;
-      }
-    }
-    
-    if (isDoc) {
-      _docIndex = index + 1;
-    }
-  }
-  
-  String select()
-  {
-    StringBuilder sb = new StringBuilder();
-    
-    boolean isDoc = false;
-    
-    for (DataFieldItem item : _fields) {
-      item.select(sb);
-    }
-    
-    if (sb.length() == 0) {
-      sb.append("__doc");
-    }
-    else if (_docIndex > 0) {
-      sb.append(", __doc");
-    }
-
-    return sb.toString();
-  }
-  
-  V get(Cursor cursor)
-  {
-    if (cursor == null) {
-      return null;
-    }
-    
-    V bean = newInstance();
-    
-    Map<String,Object> doc;
-    
-    if (_docIndex > 0) {
-      doc = (Map) cursor.getObject(_docIndex);
-    }
-    else {
-      doc = null;
-    }
-    
-    for (DataFieldItem<V> field : _fields) {
-      field.get(bean, cursor, doc);
-    }
-    
-    return bean;
-  }
-  
-  private V newInstance()
-  {
-    try {
-      return _dataClass.newInstance();
-    } catch (Exception e) {
-      throw new IllegalStateException(_dataClass.getSimpleName() + ": " + e, e);
-    }
-  }
-  
-  private int introspect(ArrayList<DataFieldItem<V>> fieldList, 
-                         Class<?> type,
-                         int index)
-  {
-    if (type == null) {
-      return index;
-    }
-    
-    index = introspect(fieldList, type.getSuperclass(), index);
-    
-    for (Field field : type.getDeclaredFields()) {
-      FieldInfo fieldInfo = _driver.entityInfo().field(field.getName());
-      
-      if (fieldInfo == null) {
-        continue;
-      }
-      
-      FieldData<V> fieldData = FieldDataBase.getField(field);
-      
-      if (fieldInfo.isColumn()) {
-        fieldList.add(new DataFieldColumn<>(fieldInfo, fieldData, ++index));
-      }
-      else {
-        fieldList.add(new DataFieldDoc<>(fieldInfo, fieldData));
-      }
-    }
-    
-    return index;
-  }
-
-  /*
-  private FieldData<V> fieldData(Field field)
-  {
-    Class<?> type = field.getType();
-    
-    Function<Field,FieldData<?>> fun = _fieldTypeMap.get(type);
+    Function<Field,FieldData<?>> fun = _fieldTypeMap.get(field.getType());
     
     if (fun != null) {
-      return (FieldData<V>) fun.apply(field);
+      return fun.apply(field);
     }
     else {
       return new FieldDataObject(field);
     }
   }
-  */
-  
-  abstract private static class DataFieldItem<T>
-  {
-    public void select(StringBuilder sb)
-    {
-    }
-    
-    public boolean isDocument()
-    {
-      return false;
-    }
 
-    abstract public void get(T bean, Cursor cursor, Map<String, Object> doc);
-  }
-  
-  private static class DataFieldColumn<T> extends DataFieldItem<T>
-  {
-    private FieldInfo _fieldInfo;
-    private FieldData<T> _fieldData;
-    private int _index;
-    
-    DataFieldColumn(FieldInfo fieldInfo, 
-                    FieldData<T> fieldData,
-                    int index)
-    {
-      _fieldInfo = fieldInfo;
-      _fieldData = fieldData;
-      
-      _index = index;
-      
-      if (index <= 0) {
-        throw new IllegalArgumentException();
-      }
-    }
-    
-    public void get(T bean, Cursor cursor, Map<String, Object> doc)
-    {
-      _fieldData.set(bean, cursor, _index);
-    }
-    
-    @Override
-    public void select(StringBuilder sb)
-    {
-      if (sb.length() > 0) {
-        sb.append(", ");
-      }
-      
-      sb.append(_fieldInfo.sqlTerm());
-    }
-    
-    @Override
-    public boolean isDocument()
-    {
-      return ! _fieldInfo.isColumn();
-    }
-
-    private boolean isColumn()
-    {
-      return _fieldInfo.isColumn();
-    }
-    
-    private int index()
-    {
-      return _index;
-    }
-  }
-  
-  private static class DataFieldDoc<T> extends DataFieldItem<T>
-  {
-    private FieldInfo _fieldInfo;
-    private FieldData<T> _fieldData;
-    
-    DataFieldDoc(FieldInfo fieldInfo, FieldData<T> fieldData)
-    {
-      _fieldInfo = fieldInfo;
-      _fieldData = fieldData;
-    }
-    
-    @Override
-    public boolean isDocument()
-    {
-      return true;
-    }
-
-    @Override
-    public void get(T bean, Cursor cursor, Map<String, Object> doc)
-    {
-      Object value = doc.get(_fieldInfo.columnName());
-      
-      _fieldData.set(bean, value);
-    }
-  }
-  
-  /*
-  private interface FieldData<T>
-  {
-    void set(T bean, Cursor cursor, int index);
-    
-    void set(T bean, Object value);
-  }
-  */
-  
   /**
    * boolean fields
    */
-  /*
   private static class FieldDataBoolean<T> extends FieldBoolean<T>
     implements FieldData<T>
   {
@@ -320,12 +88,10 @@ class FindDataVault<ID,T,V>
       }
     }
   }
-  */
   
   /**
    * char fields
    */
-  /*
   private static class FieldDataChar<T> extends FieldChar<T>
     implements FieldData<T>
   {
@@ -343,20 +109,13 @@ class FindDataVault<ID,T,V>
     @Override
     public void set(T bean, Object value)
     {
-      if (value instanceof String) {
-        setString(bean, (String) value);
-      }
-      else {
-        setObject(bean, value);
-      }
+      setObject(bean, value);
     }
   }
-  */
   
   /**
    * byte fields
    */
-  /*
   private static class FieldDataByte<T> extends FieldByte<T>
     implements FieldData<T>
   {
@@ -379,12 +138,10 @@ class FindDataVault<ID,T,V>
       }
     }
   }
-  */
   
   /**
    * short fields
    */
-  /*
   private static class FieldDataShort<T> extends FieldShort<T>
     implements FieldData<T>
   {
@@ -407,12 +164,10 @@ class FindDataVault<ID,T,V>
       }
     }
   }
-  */
   
   /**
    * int fields
    */
-  /*
   private static class FieldDataInt<T> extends FieldInt<T>
     implements FieldData<T>
   {
@@ -435,12 +190,10 @@ class FindDataVault<ID,T,V>
       }
     }
   }
-  */
   
   /**
    * long fields
    */
-  /*
   private static class FieldDataLong<T> extends FieldLong<T>
     implements FieldData<T>
   {
@@ -463,12 +216,10 @@ class FindDataVault<ID,T,V>
       }
     }
   }
-  */
   
   /**
    * float fields
    */
-  /*
   private static class FieldDataFloat<T> extends FieldFloat<T>
     implements FieldData<T>
   {
@@ -491,12 +242,10 @@ class FindDataVault<ID,T,V>
       }
     }
   }
-  */
   
   /**
    * double fields
    */
-  /*
   private static class FieldDataDouble<T> extends FieldDouble<T>
     implements FieldData<T>
   {
@@ -519,9 +268,7 @@ class FindDataVault<ID,T,V>
       }
     }
   }
-  */
   
-  /*
   private static class FieldDataString<T> extends FieldString<T>
     implements FieldData<T>
   {
@@ -542,9 +289,6 @@ class FindDataVault<ID,T,V>
       setString(bean, String.valueOf(value));
     }
   }
-  */
-  
-  /*
   private static class FieldDataObject<T> extends FieldObject<T>
     implements FieldData<T>
   {
@@ -565,9 +309,7 @@ class FindDataVault<ID,T,V>
       setObject(bean, value);
     }
   }
-  */
-
-  /*
+  
   static {
     _fieldTypeMap.put(boolean.class, FieldDataBoolean::new);
     _fieldTypeMap.put(char.class, FieldDataChar::new);
@@ -579,5 +321,4 @@ class FindDataVault<ID,T,V>
     _fieldTypeMap.put(double.class, FieldDataDouble::new);
     _fieldTypeMap.put(String.class, FieldDataString::new);
   }
-  */
 }

@@ -35,45 +35,99 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 
 /**
- * long field getter/setter
+ * char field getter/setter
  */
-public class FieldLong<T> extends FieldBase<T>
+public class FieldChar<T> extends FieldBase<T>
 {
   private MethodHandle _getter;
   private MethodHandle _setter;
 
-  public FieldLong(Field field)
+  public FieldChar(Field field)
   {
     super(field);
     
     try {
       MethodHandle getter = MethodHandles.lookup().unreflectGetter(field);
-      _getter = getter.asType(MethodType.methodType(long.class, Object.class));
+      _getter = getter.asType(MethodType.methodType(char.class, Object.class));
     
       MethodHandle setter = MethodHandles.lookup().unreflectSetter(field);
-      _setter = setter.asType(MethodType.methodType(void.class, Object.class, long.class));
+      _setter = setter.asType(MethodType.methodType(void.class, Object.class, char.class));
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
   }
   
   @Override
-  public final long getLong(T bean)
+  public final int getInt(T bean)
   {
     try {
-      return (long) _getter.invokeExact((Object) bean);
+      return (char) _getter.invokeExact((Object) bean);
     } catch (Throwable e) {
       throw error(e);
     }
   }
   
   @Override
-  public final void setLong(T bean, long value)
+  public final void setInt(T bean, int value)
   {
     try {
-      _setter.invokeExact((Object) bean, value);
+      _setter.invokeExact((Object) bean, (char) value);
     } catch (Throwable e) {
       throw error(e);
+    }
+  }
+  
+  @Override
+  public final String getString(T bean)
+  {
+    try {
+      char ch = (char) _getter.invokeExact((Object) bean);
+      
+      return String.valueOf(ch);
+    } catch (Throwable e) {
+      throw error(e);
+    }
+  }
+  
+  @Override
+  public final void setString(T bean, String value)
+  {
+    try {
+      char ch;
+
+      if (value != null && ! value.isEmpty()) {
+        ch = value.charAt(0);
+      }
+      else {
+        ch = 0;
+      }
+      
+      _setter.invokeExact((Object) bean, ch);
+    } catch (Throwable e) {
+      throw error(e);
+    }
+  }
+  
+  public final void setChar(T bean, char ch)
+  {
+    try {
+      _setter.invokeExact((Object) bean, ch);
+    } catch (Throwable e) {
+      throw error(e);
+    }
+  }
+  
+  @Override
+  public final void setObject(T bean, Object value)
+  {
+    if (value instanceof String) {
+      setString(bean, (String) value);
+    }
+    else if (value instanceof Character) {
+      setChar(bean, (Character) value);
+    }
+    else {
+      setString(bean, String.valueOf(value));
     }
   }
 }

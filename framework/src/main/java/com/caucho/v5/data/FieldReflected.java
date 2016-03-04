@@ -55,7 +55,9 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
 
   private String _sqlType;
 
-  private ValueSetter _setter;
+  //private ValueSetter _setter;
+  
+  private FieldData<T> _fieldData; 
 
   public FieldReflected(Field field, ColumnVault column)
   {
@@ -88,6 +90,8 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
     
     _sqlType = RepositoryImpl.getColumnType(_field.getType());
 
+    _fieldData = FieldDataBase.getField(field);
+    /*
     _field.setAccessible(true);
     
     _setter = reflectiveSetters.get(_field.getType());
@@ -96,6 +100,7 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
       _setter = new ObjectValueSetter();
     }
     Objects.requireNonNull(_setter);
+    */
   }
 
   @Override
@@ -152,12 +157,14 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
   public void setValue(Object bean, Cursor cursor, int index)
     throws IllegalAccessException
   {
-    _setter.setValue(bean, _field, cursor, index);
+    _fieldData.set((T) bean, cursor, index);
   }
 
   @Override
   public void setValue(Object bean, Object value)
   {
+    _fieldData.set((T) bean, value);
+    /*
     try {
       _field.set(bean, value);
     } catch (Exception e) {
@@ -167,6 +174,7 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
                                      e.toString()),
                                  e);
     }
+    */
   }
 
   @Override
@@ -176,8 +184,11 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
       return;
     }
     
+    Object value = docMap.get(columnName());
+    
+    setValue(bean, value);
+    /*
     try {
-      Object value = docMap.get(columnName());
       
       _field.set(bean, value);
     } catch (Exception e) {
@@ -187,6 +198,7 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
                                      e.toString()),
                                  e);
     }
+    */
   }
 
   @Override
@@ -218,15 +230,18 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
   /**
    * Sets the field from the cursor.
    */
+  /*
   private static abstract class ValueSetter
   {
     abstract void setValue(Object target, Field field, Cursor cursor, int index)
       throws IllegalAccessException;
   }
+  */
   
   /**
    * String field.
    */
+  /*
   private static class StringValueSetter extends ValueSetter
   {
     static final StringValueSetter INSTANCE = new StringValueSetter();
@@ -250,11 +265,12 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
       field.setChar(target, cursor.getString(index).charAt(0));
     }
   }
-
+*/
   
   /**
    * Int field.
    */
+  /*
   private static class IntValueSetter extends ValueSetter
   {
     static final IntValueSetter INSTANCE = new IntValueSetter();
@@ -266,10 +282,12 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
       field.setInt(target, cursor.getInt(index));
     }
   }
+  */
 
   /**
    * Long field.
    */
+  /*
   private static class LongValueSetter extends ValueSetter
   {
     static final LongValueSetter INSTANCE = new LongValueSetter();
@@ -281,10 +299,12 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
       field.setLong(target, cursor.getLong(index));
     }
   }
+  */
 
   /**
    * Float field.
    */
+  /*
   private static class FloatValueSetter extends ValueSetter
   {
     static final FloatValueSetter INSTANCE = new FloatValueSetter();
@@ -296,7 +316,9 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
       field.setFloat(target, cursor.getLong(index));
     }
   }
+  */
 
+  /*
   private static class DoubleValueSetter extends ValueSetter
   {
     static final DoubleValueSetter INSTANCE = new DoubleValueSetter();
@@ -318,7 +340,9 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
       field.set(target, cursor.getObject(index));
     }
   }
+  */
 
+  /*
   private final static Map<Class,ValueSetter> reflectiveSetters
     = new HashMap<>();
 
@@ -346,4 +370,5 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
 
     reflectiveSetters.put(String.class, StringValueSetter.INSTANCE);
   }
+  */
 }

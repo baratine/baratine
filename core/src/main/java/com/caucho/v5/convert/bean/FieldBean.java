@@ -34,6 +34,16 @@ package com.caucho.v5.convert.bean;
  */
 public interface FieldBean<T>
 {
+  default boolean getBoolean(T bean)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
+  default void setBoolean(T bean, boolean value)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
   default int getInt(T bean)
   {
     throw new UnsupportedOperationException(getClass().getName());
