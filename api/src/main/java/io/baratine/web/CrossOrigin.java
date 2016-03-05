@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -24,18 +24,35 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
 package io.baratine.web;
 
-@FunctionalInterface
-public interface ServiceWeb
-{
-  default CrossOrigin getCrossOrigin() {
-    return null;
-  }
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-  void handle(RequestWeb request)
-    throws Exception;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Documented
+@Retention(RUNTIME)
+@Target({TYPE, METHOD})
+public @interface CrossOrigin
+{
+  boolean allowCredentials() default false;
+
+  String[] allowHeaders() default {"Content-Type"};
+
+  String[] exposeHeaders() default {};
+
+  long maxAge() default 1800;
+
+  HttpMethod[] allowMethods() default {};
+
+  String[] allowOrigin() default {};
+
+  String[] value() default {};
 }
