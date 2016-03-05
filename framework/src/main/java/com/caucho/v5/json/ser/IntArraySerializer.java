@@ -55,7 +55,7 @@ public class IntArraySerializer extends AbstractJsonArraySerializer<int[]>
   }
 
   @Override
-  public Object read(JsonReader in)
+  public int []read(JsonReader in)
   {
     Event event = in.next();
     

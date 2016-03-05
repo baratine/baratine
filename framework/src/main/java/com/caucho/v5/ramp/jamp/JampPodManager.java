@@ -44,7 +44,7 @@ import com.caucho.v5.amp.remote.ChannelServerFactoryImpl;
 import com.caucho.v5.amp.remote.RegistryAmpServerShared;
 import com.caucho.v5.amp.spi.LookupAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 
 /**
  * Manages the supported pods for the jamp servlet.
@@ -131,9 +131,9 @@ public class JampPodManager
                           */
   }
   
-  private JsonSerializerFactory createJsonFactory()
+  private JsonFactory createJsonFactory()
   {
-    JsonSerializerFactory jsonFactory = new JsonSerializerFactory();
+    JsonFactory jsonFactory = new JsonFactory();
     
     jsonFactory.addSerializer(ServiceRefHandle.class,
                               new JsonSerializerServiceRef());
@@ -159,7 +159,7 @@ public class JampPodManager
     private final RegistryAmp _registryShared;
     //private final ChannelServerJampFactory _sessionRegistryFactory;
     private final ChannelServerFactoryImpl _wsBrokerFactory;
-    private final JsonSerializerFactory _jsonFactory;
+    private final JsonFactory _jsonFactory;
     private final int _podIndex;
     private final QueueJampUnpark _inboxUnpark;
     
@@ -168,7 +168,7 @@ public class JampPodManager
                Supplier<ServiceManagerAmp> ampManagerRef,
                //ChannelServerJampFactory channelRegistryFactory,
                ChannelServerFactoryImpl wsBrokerFactory,
-               JsonSerializerFactory jsonFactory)
+               JsonFactory jsonFactory)
     {
       _podName = podName;
       _ampManagerRef = ampManagerRef;
@@ -217,7 +217,7 @@ public class JampPodManager
       return _registryShared;
     }
 
-    public JsonSerializerFactory getJsonFactory()
+    public JsonFactory getJsonFactory()
     {
       return _jsonFactory;
     }

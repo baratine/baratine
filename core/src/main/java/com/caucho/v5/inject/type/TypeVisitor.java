@@ -39,5 +39,5 @@ import java.util.Map;
 interface TypeVisitor
 {
   TypeRef onClass(Class<?> type, 
-                  Map<String, Type> paramMap);
+                  Map<String, ? extends Type> paramMap);
 }

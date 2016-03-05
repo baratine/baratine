@@ -46,7 +46,7 @@ public class DoubleSerializer extends JsonSerializerBase<Number>
   }
 
   @Override
-  public Object read(JsonReader in)
+  public Double read(JsonReader in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

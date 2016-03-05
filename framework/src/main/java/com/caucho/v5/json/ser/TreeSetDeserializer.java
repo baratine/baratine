@@ -34,10 +34,10 @@ import java.util.TreeSet;
 
 import com.caucho.v5.inject.type.TypeRef;
 
-public class TreeSetDeserializer extends CollectionDeserializer
+public class TreeSetDeserializer extends CollectionSerializer
 {
   TreeSetDeserializer(TypeRef typeRef,
-                         JsonSerializerFactory factory)
+                         JsonFactory factory)
   {
     super(typeRef, factory);
   }

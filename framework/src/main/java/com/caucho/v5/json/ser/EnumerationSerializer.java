@@ -29,22 +29,34 @@
 
 package com.caucho.v5.json.ser;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 
 import com.caucho.v5.inject.type.TypeRef;
+import com.caucho.v5.json.io.JsonReader;
 
-public class EnumerationDeserializer extends ArrayListDeserializer
+public class EnumerationSerializer<T extends Enumeration<V>,V>
+  extends JsonSerializerBase<T>
 {
-  EnumerationDeserializer(TypeRef typeRef,
-                         JsonSerializerFactory factory)
+  private CollectionSerializer<Collection<V>,V> _ser;
+  
+  EnumerationSerializer(TypeRef typeRef,
+                          JsonFactory factory)
   {
-    super(typeRef, factory);
+    TypeRef eltRef = typeRef.to(Enumeration.class).param(0);
+    TypeRef listRef = TypeRef.of(ArrayList.class, eltRef);
+    
+    _ser = (CollectionSerializer) factory.serializer(listRef);
+    //super(typeRef, factory);
   }
 
   @Override
-  protected Object toResult(Object result)
+  public T read(JsonReader in)
   {
-    return Collections.enumeration((Collection) result);
+    Collection<V> result = _ser.read(in);
+    
+    return (T) Collections.enumeration((Collection) result);
   }
 }

@@ -32,7 +32,7 @@ package com.caucho.v5.json.ser;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.util.L10N;
 
-public class EnumDeserializer<T extends Enum<T>> extends JsonDeserializerBase
+public class EnumDeserializer<T extends Enum<T>> extends JsonSerializerBase<T>
 {
   private static final L10N L = new L10N(EnumDeserializer.class);
   private Class<T> _type;
@@ -48,7 +48,7 @@ public class EnumDeserializer<T extends Enum<T>> extends JsonDeserializerBase
   }
 
   @Override
-  public Object read(JsonReader in)
+  public T read(JsonReader in)
   {
     String v = in.readString();
     

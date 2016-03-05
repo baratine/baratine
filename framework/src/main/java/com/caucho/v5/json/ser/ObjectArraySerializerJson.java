@@ -29,25 +29,43 @@
 
 package com.caucho.v5.json.ser;
 
-import java.util.Collection;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 import com.caucho.v5.json.io.InJson.Event;
 import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.util.L10N;
 
-abstract public class CollectionDeserializerBase extends CollectionSerializer
+public class ObjectArraySerializerJson 
+  extends AbstractJsonArraySerializer<Object[]>
 {
-  private static final L10N L = new L10N(CollectionDeserializerBase.class);
+  private static L10N L = new L10N(ObjectArraySerializerJson.class);
   
-  private final JsonDeserializer _elementDeser;
-  
-  CollectionDeserializerBase(JsonDeserializer elementDeser)
+  private Class<?> _elementType;
+  private SerializerJson _elementDeser;
+
+  ObjectArraySerializerJson(Class<?> elementType,
+                            SerializerJson elementDeser)
   {
+    _elementType = elementType;
     _elementDeser = elementDeser;
+  }
+  
+  @Override
+  public void write(JsonWriter out, Object[] value)
+  {
+    out.writeStartArray();
+    
+    for (Object child : value) {
+      out.write(child);
+    }
+    
+    out.writeEndArray();
   }
 
   @Override
-  public Object read(JsonReader in)
+  public Object []read(JsonReader in)
   {
     Event event = in.next();
     
@@ -59,7 +77,7 @@ abstract public class CollectionDeserializerBase extends CollectionSerializer
       throw new JsonException(L.l("expected array at {0}", event));
     }
     
-    Collection<Object> values = newInstance();
+    ArrayList<Object> values = new ArrayList<>();
     
     while ((event = in.peek()) != Event.END_ARRAY && event != null) {
       values.add(_elementDeser.read(in));
@@ -67,13 +85,9 @@ abstract public class CollectionDeserializerBase extends CollectionSerializer
     
     in.next();
     
-    return toResult(values);
+    Object []array = (Object []) Array.newInstance(_elementType, values.size());
+    values.toArray(array);
+    
+    return array;
   }
-  
-  protected Object toResult(Object result)
-  {
-    return result;
-  }
-  
-  abstract protected Collection<Object> newInstance();
 }

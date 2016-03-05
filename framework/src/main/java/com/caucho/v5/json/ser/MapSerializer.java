@@ -36,7 +36,7 @@ import com.caucho.v5.json.io.JsonWriter;
 public class MapSerializer 
   extends JsonObjectSerializerBase<Map<Object, Object>>
 {
-  static final JsonSerializer<?> SER = new MapSerializer();
+  static final SerializerJson<?> SER = new MapSerializer();
 
   @Override
   public void write(JsonWriter out, 

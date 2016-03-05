@@ -56,7 +56,7 @@ public class ShortArraySerializer
   }
 
   @Override
-  public Object read(JsonReader in)
+  public short []read(JsonReader in)
   {
     Event event = in.next();
     

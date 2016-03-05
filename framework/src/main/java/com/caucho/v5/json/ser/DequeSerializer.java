@@ -29,22 +29,22 @@
 
 package com.caucho.v5.json.ser;
 
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Collection;
 
 import com.caucho.v5.inject.type.TypeRef;
 
-public class IterableDeserializer extends CollectionDeserializerBase
+public class DequeSerializer extends CollectionSerializer
 {
-  IterableDeserializer(TypeRef typeRef,
-                         JsonSerializerFactory factory)
+  DequeSerializer(TypeRef typeRef,
+                    JsonFactory factory)
   {
-    super(factory.deserializer(typeRef.to(Iterable.class).param(0).type()));
+    super(typeRef, factory);
   }
-
+  
   @Override
-  protected Collection newInstance()
+  protected Collection<Object> newInstance()
   {
-    return new ArrayList<>();
+    return new ArrayDeque<>();
   }
 }

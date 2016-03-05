@@ -29,16 +29,19 @@
 
 package com.caucho.v5.inject.type;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * TypeRef is an introspected type.
  */
-public interface TypeRef
+public interface TypeRef extends Type
 {
   TypeRef to(Class<?> subclass);
   
@@ -49,10 +52,20 @@ public interface TypeRef
   
   TypeRef param(String name);
   TypeRef param(int index);
+
+  TypeRef child(Type type);
   
   public static TypeRef of(Type type)
   {
-    if (type instanceof Class<?>) {
+    return of(type, Collections.EMPTY_MAP);
+  }
+  
+  public static TypeRef of(Type type, Map<String,TypeRef> paramMap)
+  {
+    if (type instanceof TypeRef) {
+      return (TypeRef) type;
+    }
+    else if (type instanceof Class<?>) {
       return new TypeRefClass((Class<?>) type);
     }
     else if (type instanceof ParameterizedType) {
@@ -62,8 +75,13 @@ public interface TypeRef
       LinkedHashMap<String,Type> map = new LinkedHashMap<>();
       
       for (int i = 0; i < rawType.getTypeParameters().length; i++) {
-        map.put(rawType.getTypeParameters()[i].getName(),
-                pType.getActualTypeArguments()[i]);
+        TypeVariable<?> var = rawType.getTypeParameters()[i];
+        
+        Type val = pType.getActualTypeArguments()[i];
+        
+        val = TypeRef.of(val, paramMap);
+        
+        map.put(var.getName(), val);
       }
       
       return new TypeRefClass(rawType, map);
@@ -71,7 +89,13 @@ public interface TypeRef
     else if (type instanceof TypeVariable) {
       TypeVariable<?> var = (TypeVariable<?>) type;
       
-      // String name = var.getName();
+      String name = var.getName();
+      
+      TypeRef val = paramMap.get(name);
+      
+      if (val != null) {
+        return val;
+      }
       
       TypeRef lowerBound = of(var.getBounds()[0]);
       
@@ -90,6 +114,13 @@ public interface TypeRef
       
       return lowerBound;
     }
+    else if (type instanceof GenericArrayType) {
+      GenericArrayType array = (GenericArrayType) type;
+      
+      TypeRef eltRef = of(array.getGenericComponentType(), paramMap);
+      
+      return new TypeRefArray(eltRef);
+    }
     else {
       System.out.println("TYPE: " + type + " " + type.getClass().getName());
       throw new UnsupportedOperationException(type + " " + type.getClass().getName());
@@ -97,6 +128,20 @@ public interface TypeRef
   }
   
   public static TypeRef of(Class<?> rawType, Class<?> ...param)
+  {
+    LinkedHashMap<String,Type> map = new LinkedHashMap<>();
+    
+    for (int i = 0; i < rawType.getTypeParameters().length; i++) {
+      map.put(rawType.getTypeParameters()[i].getName(),
+              param[i]);
+    }
+    
+    Type type = new ParameterizedTypeImpl(rawType, param);
+    
+    return new TypeRefClass(rawType, map, type);
+  }
+  
+  public static TypeRef of(Class<?> rawType, TypeRef ...param)
   {
     LinkedHashMap<String,Type> map = new LinkedHashMap<>();
     

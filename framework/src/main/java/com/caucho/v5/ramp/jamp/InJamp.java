@@ -63,7 +63,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.ReadStream;
 
@@ -79,7 +79,7 @@ public class InJamp
   private final Object []NULL_ARGS = new Object[0];
 
   private final ChannelAmp _channelIn;
-  private final JsonSerializerFactory _jsonFactory;
+  private final JsonFactory _jsonFactory;
   
   private String _id;
   
@@ -91,16 +91,16 @@ public class InJamp
 
   public InJamp(ChannelAmp channel)
   {
-    this(channel, new JsonSerializerFactory());
+    this(channel, new JsonFactory());
   }
   
-  public InJamp(ChannelAmp channel, JsonSerializerFactory factory)
+  public InJamp(ChannelAmp channel, JsonFactory factory)
   {
     this(channel, factory, null);
   }
   
   public InJamp(ChannelAmp channel, 
-                JsonSerializerFactory factory,
+                JsonFactory factory,
                 OutboxAmp outbox)
   {
     Objects.requireNonNull(channel);

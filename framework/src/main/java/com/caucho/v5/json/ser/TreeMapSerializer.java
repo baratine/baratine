@@ -37,7 +37,7 @@ import com.caucho.v5.util.L10N;
 
 public class TreeMapSerializer extends HashMapSerializer
 {
-  TreeMapSerializer(TypeRef typeRef, JsonSerializerFactory factory)
+  TreeMapSerializer(TypeRef typeRef, JsonFactory factory)
   {
     super(typeRef, factory);
   }

@@ -1,13 +1,11 @@
 package com.caucho.v5.json.ser;
 
-import java.io.IOException;
-
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.util.L10N;
 
 public abstract class JsonSerializerBase<T>
-  implements JsonSerializer<T>, JsonDeserializer
+  implements SerializerJson<T>
 {
   private static final L10N L = new L10N(JsonSerializerBase.class);
   
@@ -49,7 +47,7 @@ public abstract class JsonSerializerBase<T>
   //
   
   @Override
-  public Object read(JsonReader in)
+  public T read(JsonReader in)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -63,5 +61,11 @@ public abstract class JsonSerializerBase<T>
   protected JsonException error(String msg, Object ...args)
   {
     return new JsonException(L.l(msg, args));
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[]";
   }
 }

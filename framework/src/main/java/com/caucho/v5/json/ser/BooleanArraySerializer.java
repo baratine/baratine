@@ -56,7 +56,7 @@ public class BooleanArraySerializer
   }
 
   @Override
-  public Object read(JsonReader in)
+  public boolean []read(JsonReader in)
   {
     Event event = in.next();
     

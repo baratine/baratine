@@ -49,7 +49,7 @@ public class BooleanSerializer extends JsonSerializerBase<Boolean>
   }
 
   @Override
-  public Object read(JsonReader in)
+  public Boolean read(JsonReader in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

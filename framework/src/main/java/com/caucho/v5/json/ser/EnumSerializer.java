@@ -4,7 +4,7 @@ import com.caucho.v5.json.io.JsonWriter;
 
 public class EnumSerializer extends JsonSerializerBase<Enum<?>>
 {
-  static final JsonSerializer<?> SER = new EnumSerializer();
+  static final SerializerJson<?> SER = new EnumSerializer();
 
   /*
   @Override 

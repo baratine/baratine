@@ -39,7 +39,7 @@ public class MapJavaSerializer extends HashMapSerializer
   private Class<?> _rawClass;
 
   MapJavaSerializer(TypeRef typeRef, 
-                    JsonSerializerFactory factory,
+                    JsonFactory factory,
                     Class<?> rawClass)
   {
     super(typeRef, factory);

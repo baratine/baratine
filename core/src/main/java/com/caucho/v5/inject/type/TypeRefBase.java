@@ -49,7 +49,7 @@ abstract class TypeRefBase implements TypeRef
   
   static TypeRef visit(TypeVisitor visitor,
                        Type type,
-                       Map<String,Type> paramMap)
+                       Map<String,? extends Type> paramMap)
   {
     TypeRef value = null;
     
@@ -97,7 +97,7 @@ abstract class TypeRefBase implements TypeRef
   private static TypeRef visitParameterizedType(TypeVisitor visitor,
                                                 Type rawType,
                                                 Type []typeArguments,
-                                                Map<String,Type> parentMap)
+                                                Map<String,? extends Type> parentMap)
   {
     if (rawType instanceof GenericDeclaration) {
       GenericDeclaration decl = (GenericDeclaration) rawType;
@@ -145,7 +145,7 @@ abstract class TypeRefBase implements TypeRef
     
     @Override
     public TypeRef onClass(Class<?> type, 
-                           Map<String,Type> typeMap)
+                           Map<String,? extends Type> typeMap)
     {
       if (type.equals(_target)) {
         return new TypeRefClass(_target, typeMap);

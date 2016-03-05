@@ -38,7 +38,7 @@ public class CharSerializer extends JsonSerializerBase<Character> {
   private CharSerializer() {}
   
   @Override
-  public Object read(JsonReader in)
+  public Character read(JsonReader in)
   {
     String v = in.readString();
     

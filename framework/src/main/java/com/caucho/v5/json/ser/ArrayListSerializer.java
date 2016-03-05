@@ -29,38 +29,22 @@
 
 package com.caucho.v5.json.ser;
 
-import com.caucho.v5.json.io.JsonWriter;
+import java.util.ArrayList;
+import java.util.Collection;
 
-public class ObjectArraySerializer 
-  extends AbstractJsonArraySerializer<Object[]>
+import com.caucho.v5.inject.type.TypeRef;
+
+public class ArrayListSerializer extends CollectionSerializer
 {
-  static final JsonSerializer<?> SER = new ObjectArraySerializer();
-
-  private ObjectArraySerializer() {}
-  
-  /*
-  @Override
-  public void write(JsonWriter out, String name, Object[] value)
+  ArrayListSerializer(TypeRef typeRef,
+                      JsonFactory factory)
   {
-    out.writeStartArray(name);
-    
-    for (Object child : value) {
-      out.writeObject(child);
-    }
-    
-    out.writeEnd();
+    super(typeRef, factory);
   }
-  */
   
   @Override
-  public void write(JsonWriter out, Object[] value)
+  protected Collection<Object> newInstance()
   {
-    out.writeStartArray();
-    
-    for (Object child : value) {
-      out.write(child);
-    }
-    
-    out.writeEndArray();
+    return new ArrayList<>();
   }
 }

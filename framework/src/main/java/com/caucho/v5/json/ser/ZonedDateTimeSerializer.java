@@ -65,7 +65,7 @@ public class ZonedDateTimeSerializer extends JsonSerializerBase<ZonedDateTime>
   }
 
   @Override
-  public Object read(JsonReader in)
+  public ZonedDateTime read(JsonReader in)
   {
     try {
       Event event = in.peek();

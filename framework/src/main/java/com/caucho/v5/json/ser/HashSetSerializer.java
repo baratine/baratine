@@ -29,15 +29,15 @@
 
 package com.caucho.v5.json.ser;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 import com.caucho.v5.inject.type.TypeRef;
 
-public class ArrayListDeserializer extends CollectionDeserializer
+public class HashSetSerializer extends CollectionSerializer
 {
-  ArrayListDeserializer(TypeRef typeRef,
-                         JsonSerializerFactory factory)
+  HashSetSerializer(TypeRef typeRef,
+                         JsonFactory factory)
   {
     super(typeRef, factory);
   }
@@ -45,6 +45,6 @@ public class ArrayListDeserializer extends CollectionDeserializer
   @Override
   protected Collection<Object> newInstance()
   {
-    return new ArrayList<>();
+    return new HashSet<>();
   }
 }

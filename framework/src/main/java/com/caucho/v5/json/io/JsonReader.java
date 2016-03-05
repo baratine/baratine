@@ -33,9 +33,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 
-import com.caucho.v5.json.ser.JsonDeserializer;
 import com.caucho.v5.json.ser.JsonException;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.SerializerJson;
+import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -45,17 +45,17 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
 {
   private static final L10N L = new L10N(JsonReader.class);
   
-  private JsonSerializerFactory _factory;
+  private JsonFactory _factory;
   
   private Reader _is;
   private int _peek = -1;
   
   public JsonReader(Reader is)
   {
-    this(is, new JsonSerializerFactory());
+    this(is, new JsonFactory());
   }
   
-  public JsonReader(Reader is, JsonSerializerFactory factory)
+  public JsonReader(Reader is, JsonFactory factory)
   {
     super(is);
     
@@ -75,7 +75,7 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
   }
   */
 
-  public void parseBeanMap(Object bean, JsonDeserializer deser)
+  public void parseBeanMap(Object bean, SerializerJson deser)
   {
     Event event;
     
@@ -99,7 +99,7 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
 
   public Object readObject(Type type)
   {
-    JsonDeserializer deser = _factory.deserializer(type);
+    SerializerJson deser = _factory.deserializer(type);
 
     return deser.read(this);
   }

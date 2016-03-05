@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.actor.ServiceRefHandle;
 import com.caucho.v5.amp.remote.ChannelServer;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.ramp.jamp.JampPodManager.PodContext;
 import com.caucho.v5.web.webapp.RequestBaratine;
 import com.caucho.v5.web.webapp.RouteBaratine;
@@ -66,7 +66,7 @@ public class RouteJampPodsImpl implements RouteBaratine
   
   private final JampPodManagerPods _podManager;
   
-  private final JsonSerializerFactory _jsonFactory;
+  private final JsonFactory _jsonFactory;
   
   private long _rpcTimeout = 60000;
 
@@ -213,9 +213,9 @@ public class RouteJampPodsImpl implements RouteBaratine
     return null;
   }
   
-  protected JsonSerializerFactory createJsonFactory()
+  protected JsonFactory createJsonFactory()
   {
-    JsonSerializerFactory jsonFactory = new JsonSerializerFactory();
+    JsonFactory jsonFactory = new JsonFactory();
     
     jsonFactory.addSerializer(ServiceRefHandle.class,
                               new JsonSerializerServiceRef());

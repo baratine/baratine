@@ -70,7 +70,7 @@ public class TypeRefClass extends TypeRefBase implements TypeRef
     }
   }
   
-  TypeRefClass(Class<?> type, Map<String,Type> typeMap)
+  TypeRefClass(Class<?> type, Map<String,? extends Type> typeMap)
   {
     Objects.requireNonNull(type);
     _rawClass = type;
@@ -78,7 +78,7 @@ public class TypeRefClass extends TypeRefBase implements TypeRef
     
     LinkedHashMap<String,TypeRef> typeRefMap = new LinkedHashMap<>();
     
-    for (Map.Entry<String, Type> entry : typeMap.entrySet()) {
+    for (Map.Entry<String, ? extends Type> entry : typeMap.entrySet()) {
       String key = entry.getKey();
       Type entryType = entry.getValue();
       typeRefMap.put(key, TypeRef.of(entryType));
@@ -125,7 +125,7 @@ public class TypeRefClass extends TypeRefBase implements TypeRef
     Type superClass = rawClass().getGenericSuperclass();
     
     if (superClass != null) {
-      return TypeRef.of(superClass);
+      return child(superClass); // TypeRef.of(superClass);
     }
     else {
       return null;
@@ -167,9 +167,25 @@ public class TypeRefClass extends TypeRefBase implements TypeRef
     
     TypeVisitor visitor = new ParentVisitor(parentClass); 
     
+    TypeRef typeRef = visit(visitor, _rawClass, _typeRefMap);
+    
+    return typeRef;
+  }
+  
+  @Override
+  public TypeRef child(Type childType)
+  {
+    Objects.requireNonNull(childType);
+    
+    /*
+    TypeVisitor visitor = new ParentVisitor(parentClass); 
+    
     TypeRef typeRef = visit(visitor, _rawClass);
     
     return typeRef;
+    */
+    
+    return TypeRef.of(childType, _typeRefMap);
   }
 
   @Override

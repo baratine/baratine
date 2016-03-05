@@ -37,7 +37,7 @@ import java.lang.reflect.Field;
 /**
  * getter/setter for bean fields.
  */
-public class FieldObject<T> extends FieldBase<T>
+public class FieldObject<T,V> extends FieldBase<T>
 {
   private MethodHandle _getter;
   private MethodHandle _setter;
@@ -58,10 +58,12 @@ public class FieldObject<T> extends FieldBase<T>
   }
   
   @Override
-  public final Object getObject(T bean)
+  public final V getObject(T bean)
   {
     try {
-      return (Object) _getter.invokeExact((Object) bean);
+      Object value = _getter.invokeExact((Object) bean);
+      
+      return (V) value; 
     } catch (Throwable e) {
       throw error(e);
     }

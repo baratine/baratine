@@ -55,7 +55,7 @@ public class FloatArraySerializer extends AbstractJsonArraySerializer<float[]>
   }
 
   @Override
-  public Object read(JsonReader in)
+  public float []read(JsonReader in)
   {
     Event event = in.next();
     

@@ -289,7 +289,7 @@ class FieldDataBase
       setString(bean, String.valueOf(value));
     }
   }
-  private static class FieldDataObject<T> extends FieldObject<T>
+  private static class FieldDataObject<T> extends FieldObject<T,Object>
     implements FieldData<T>
   {
     FieldDataObject(Field field)

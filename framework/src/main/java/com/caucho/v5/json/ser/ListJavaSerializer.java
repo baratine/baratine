@@ -34,12 +34,12 @@ import java.util.Collection;
 
 import com.caucho.v5.inject.type.TypeRef;
 
-public class ListJavaSerializer extends CollectionDeserializer
+public class ListJavaSerializer extends CollectionSerializer
 {
   private Class<?> _rawClass;
 
   ListJavaSerializer(TypeRef typeRef, 
-                    JsonSerializerFactory factory,
+                    JsonFactory factory,
                     Class<?> rawClass)
   {
     super(typeRef, factory);

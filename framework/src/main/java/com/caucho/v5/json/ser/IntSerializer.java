@@ -37,7 +37,7 @@ public class IntSerializer extends LongSerializer
   static final IntSerializer SER = new IntSerializer();
 
   @Override
-  public Object read(JsonReader in)
+  public Number read(JsonReader in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

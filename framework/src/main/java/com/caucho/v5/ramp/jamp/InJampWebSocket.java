@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 
 /**
  * HmtpReader stream handles client packets received from the server.
@@ -56,7 +56,7 @@ public class InJampWebSocket extends InJamp
   public InJampWebSocket(ServiceManagerAmp rampManager,
                              ChannelAmp broker,
                              SessionContextJamp context,
-                             JsonSerializerFactory jsonFactory)
+                             JsonFactory jsonFactory)
   {
     super(broker, jsonFactory);
     

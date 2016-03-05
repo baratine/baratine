@@ -31,7 +31,7 @@ package com.caucho.v5.web.view;
 import java.io.Writer;
 
 import com.caucho.v5.json.io.JsonWriter;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ViewWeb;
@@ -42,7 +42,7 @@ import io.baratine.web.ViewWeb;
 
 public class ViewJsonDefault implements ViewWeb<Object>
 {
-  private JsonSerializerFactory _serializer = new JsonSerializerFactory();
+  private JsonFactory _serializer = new JsonFactory();
   
   @Override
   public boolean render(RequestWeb req, Object value)

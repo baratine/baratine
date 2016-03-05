@@ -66,7 +66,7 @@ public class ByteArraySerializer extends JsonSerializerBase<byte[]>
   }
 
   @Override
-  public Object read(JsonReader in)
+  public byte []read(JsonReader in)
   {
     Event event = in.next();
     

@@ -37,7 +37,7 @@ public class ShortSerializer extends LongSerializer
   static final ShortSerializer SER = new ShortSerializer();
 
   @Override
-  public Object read(JsonReader in)
+  public Number read(JsonReader in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

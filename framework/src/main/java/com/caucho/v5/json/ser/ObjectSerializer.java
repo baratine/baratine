@@ -38,13 +38,13 @@ import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.InJson.Event;
 import com.caucho.v5.util.L10N;
 
-public class ObjectDeserializer extends JsonDeserializerBase
+public class ObjectSerializer extends JsonSerializerBase
 {
-  private static final L10N L = new L10N(ObjectDeserializer.class);
+  private static final L10N L = new L10N(ObjectSerializer.class);
   
-  static final JsonDeserializer DESER = new ObjectDeserializer();
+  static final SerializerJson SER = new ObjectSerializer();
   
-  private ObjectDeserializer() {}
+  private ObjectSerializer() {}
 
   @Override
   public Object read(JsonReader in)

@@ -29,13 +29,13 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import io.baratine.service.ServiceManager;
-
 import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.ser.JsonDeserializerBase;
+import com.caucho.v5.json.ser.JsonSerializerBase;
 
-public class JsonDeserializerServiceRef extends JsonDeserializerBase
+import io.baratine.service.ServiceManager;
+
+public class JsonDeserializerServiceRef extends JsonSerializerBase
 {
   @Override
   public Object read(JsonReader in)

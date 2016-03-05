@@ -34,7 +34,7 @@ import com.caucho.v5.json.io.JsonWriter;
 import java.io.*;
 
 public class NullSerializer extends JsonSerializerBase {
-  static final JsonSerializer SER = new NullSerializer();
+  static final SerializerJson SER = new NullSerializer();
 
   private NullSerializer() {}
   

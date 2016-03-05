@@ -39,33 +39,33 @@ import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.util.L10N;
 
-public class CollectionSerializer<T extends Collection<V>,V> 
-  extends JsonSerializerBase<T>
+public class IterableSerializer<V>
+  extends JsonSerializerBase<Iterable<V>>
 {
-  private static final L10N L = new L10N(CollectionSerializer.class);
+  private static final L10N L = new L10N(IterableSerializer.class);
   
   private SerializerJson<V> _ser;
   
-  CollectionSerializer(TypeRef typeRef,
+  IterableSerializer(TypeRef typeRef,
                        JsonFactory factory)
   {
     Objects.requireNonNull(typeRef);
     
-    _ser = factory.serializer(typeRef.to(Collection.class).param(0));
+    _ser = factory.serializer(typeRef.to(Iterable.class).param(0));
   }
   
   @Override
-  public CollectionSerializer<T,V> withType(TypeRef type, JsonFactory factory)
+  public IterableSerializer<V> withType(TypeRef type, JsonFactory factory)
   {
-    if (getClass() != CollectionSerializer.class) {
+    if (getClass() != IterableSerializer.class) {
       throw new UnsupportedOperationException(getClass().getName());
     }
     
-    return new CollectionSerializer<>(type, factory);
+    return new IterableSerializer<>(type, factory);
   }
 
   @Override
-  public void write(JsonWriter out, T value)
+  public void write(JsonWriter out, Iterable<V> value)
   {
     out.writeStartArray();
     
@@ -77,7 +77,7 @@ public class CollectionSerializer<T extends Collection<V>,V>
   }
 
   @Override
-  public T read(JsonReader in)
+  public Iterable<V> read(JsonReader in)
   {
     Event event = in.next();
     
@@ -89,7 +89,7 @@ public class CollectionSerializer<T extends Collection<V>,V>
       throw new JsonException(L.l("expected array at {0}", event));
     }
     
-    T values = newInstance();
+    ArrayList<V> values = new ArrayList<>();
     
     while ((event = in.peek()) != Event.END_ARRAY && event != null) {
       values.add(_ser.read(in));
@@ -98,16 +98,6 @@ public class CollectionSerializer<T extends Collection<V>,V>
     in.next();
     
     return values;
-  }
-  
-  protected T toResult(T result)
-  {
-    return result;
-  }
-  
-  protected T newInstance()
-  {
-    return (T) new ArrayList<Object>();
   }
   
   @Override

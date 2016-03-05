@@ -36,9 +36,8 @@ import java.io.Writer;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
-import com.caucho.v5.json.ser.JsonDeserializer;
-import com.caucho.v5.json.ser.JsonSerializer;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.SerializerJson;
+import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.vfs.TempCharBuffer;
 
 import io.baratine.web.ServiceWebSocket;
@@ -49,14 +48,14 @@ import io.baratine.web.WebSocket;
  */
 public class WebSocketManagerFramework extends WebSocketManager
 {
-  private JsonSerializerFactory _serializer = new JsonSerializerFactory();
+  private JsonFactory _serializer = new JsonFactory();
   
   @Override
   public <S> void serialize(WebSocket<S> ws, S value)
     throws IOException
   {
     try (WriterWs writer = new WriterWs(ws)) {
-      JsonSerializer<S> ser = (JsonSerializer) _serializer.serializer(value.getClass());
+      SerializerJson<S> ser = (SerializerJson) _serializer.serializer(value.getClass());
       
       try (JsonWriter jsOut = _serializer.out(writer)) {
         ser.writeTop(jsOut, value);
@@ -68,7 +67,7 @@ public class WebSocketManagerFramework extends WebSocketManager
   createSerializer(Class<T> type,
                    ServiceWebSocket<T, S> service)
   {
-    JsonDeserializer ser = _serializer.deserializer(type);
+    SerializerJson ser = _serializer.deserializer(type);
     
     return new ServiceWebSocketJson<T,S>(ser, service); 
   }
@@ -76,9 +75,9 @@ public class WebSocketManagerFramework extends WebSocketManager
   private class ServiceWebSocketJson<T,S> implements ServiceWebSocket<String,S>
   {
     private ServiceWebSocket<T,S> _service;
-    private JsonDeserializer _ser;
+    private SerializerJson _ser;
     
-    ServiceWebSocketJson(JsonDeserializer ser,
+    ServiceWebSocketJson(SerializerJson ser,
                          ServiceWebSocket<T,S> service)
     {
       _ser = ser;

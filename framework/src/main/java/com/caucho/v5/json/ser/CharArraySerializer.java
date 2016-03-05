@@ -32,7 +32,7 @@ package com.caucho.v5.json.ser;
 import com.caucho.v5.json.io.JsonWriter;
 
 public class CharArraySerializer extends JsonSerializerBase<char[]> {
-  static final JsonSerializer<?> SER = new CharArraySerializer();
+  static final SerializerJson<?> SER = new CharArraySerializer();
 
   private CharArraySerializer() {}
   

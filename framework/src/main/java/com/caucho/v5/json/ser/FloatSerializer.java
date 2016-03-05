@@ -32,12 +32,13 @@ package com.caucho.v5.json.ser;
 import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.JsonReader;
 
-public class FloatSerializer extends DoubleSerializer
+public class FloatSerializer extends JsonSerializerBase<Number>
 {
   static final FloatSerializer DESER = new FloatSerializer();
 
+
   @Override
-  public Object read(JsonReader in)
+  public Float read(JsonReader in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

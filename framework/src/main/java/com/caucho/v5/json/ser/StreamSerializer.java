@@ -29,29 +29,53 @@
 
 package com.caucho.v5.json.ser;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.stream.Stream;
 
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.json.io.InJson.Event;
+import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.util.L10N;
 
-public class ObjectArrayDeserializer extends JsonDeserializerBase
+public class StreamSerializer<V>
+  extends JsonSerializerBase<Stream<V>>
 {
-  private static final L10N L = new L10N(ObjectArrayDeserializer.class);
+  private static final L10N L = new L10N(StreamSerializer.class);
   
-  private final Class<?> _elementType;
-  private final JsonDeserializer _elementDeser;
+  private SerializerJson<V> _ser;
   
-  ObjectArrayDeserializer(Class<?> elementType,
-                         JsonDeserializer elementDeser)
+  StreamSerializer(TypeRef typeRef,
+                       JsonFactory factory)
   {
-    _elementType = elementType;
-    _elementDeser = elementDeser;
+    Objects.requireNonNull(typeRef);
+    
+    _ser = factory.serializer(typeRef.to(Stream.class).param(0));
+  }
+  
+  @Override
+  public StreamSerializer<V> withType(TypeRef type, JsonFactory factory)
+  {
+    if (getClass() != StreamSerializer.class) {
+      throw new UnsupportedOperationException(getClass().getName());
+    }
+    
+    return new StreamSerializer<>(type, factory);
   }
 
   @Override
-  public Object read(JsonReader in)
+  public void write(JsonWriter out, Stream<V> value)
+  {
+    out.writeStartArray();
+    
+    value.forEach(child->_ser.write(out, child));
+    
+    out.writeEndArray();
+  }
+
+  @Override
+  public Stream<V> read(JsonReader in)
   {
     Event event = in.next();
     
@@ -63,17 +87,20 @@ public class ObjectArrayDeserializer extends JsonDeserializerBase
       throw new JsonException(L.l("expected array at {0}", event));
     }
     
-    ArrayList<Object> values = new ArrayList<>();
+    ArrayList<V> values = new ArrayList<>();
     
     while ((event = in.peek()) != Event.END_ARRAY && event != null) {
-      values.add(_elementDeser.read(in));
+      values.add(_ser.read(in));
     }
     
     in.next();
     
-    Object []array = (Object []) Array.newInstance(_elementType, values.size());
-    values.toArray(array);
-    
-    return array;
+    return values.stream();
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _ser + "]";
   }
 }

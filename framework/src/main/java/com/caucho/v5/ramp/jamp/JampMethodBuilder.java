@@ -38,7 +38,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.spi.MethodRefAmp;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -56,7 +56,7 @@ class JampMethodBuilder
 
   private Type _genericType;
   private Annotation []_methodAnnotations;
-  private JsonSerializerFactory _factory;
+  private JsonFactory _factory;
 
   JampMethodBuilder(MethodRefAmp method)
   {
@@ -176,20 +176,20 @@ class JampMethodBuilder
     return new JampMethodStandard(this);
   }
 
-  public void setJsonFactory(JsonSerializerFactory factory)
+  public void setJsonFactory(JsonFactory factory)
   {
     Objects.requireNonNull(factory);
 
     _factory = factory;
   }
 
-  public JsonSerializerFactory getJsonFactory()
+  public JsonFactory getJsonFactory()
   {
     if (_factory != null) {
       return _factory;
     }
     else {
-      return new JsonSerializerFactory();
+      return new JsonFactory();
     }
   }
 

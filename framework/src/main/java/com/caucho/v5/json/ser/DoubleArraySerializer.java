@@ -56,7 +56,7 @@ public class DoubleArraySerializer
   }
 
   @Override
-  public Object read(JsonReader in)
+  public double []read(JsonReader in)
   {
     Event event = in.next();
     

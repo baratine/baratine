@@ -36,7 +36,7 @@ import com.caucho.v5.json.io.JsonWriter;
 public class AtomicIntegerSerializer
   extends JsonSerializerBase<AtomicInteger>
 {
-  static final JsonSerializer<?> SER = new AtomicIntegerSerializer();
+  static final SerializerJson<?> SER = new AtomicIntegerSerializer();
 
   private AtomicIntegerSerializer()
   {

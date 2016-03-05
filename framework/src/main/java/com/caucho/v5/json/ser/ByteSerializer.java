@@ -37,7 +37,7 @@ public class ByteSerializer extends LongSerializer
   static final ByteSerializer SER = new ByteSerializer();
 
   @Override
-  public Object read(JsonReader in)
+  public Byte read(JsonReader in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

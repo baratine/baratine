@@ -34,7 +34,7 @@ import java.util.List;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.bartender.pod.PodRef;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 
 import io.baratine.web.WebSocket;
 
@@ -44,7 +44,7 @@ import io.baratine.web.WebSocket;
 public class OutJampWebSocket extends OutJamp
   implements OutAmpWebSocket
 {
-  public OutJampWebSocket(JsonSerializerFactory jsonFactory)
+  public OutJampWebSocket(JsonFactory jsonFactory)
   {
     super(jsonFactory);
   }

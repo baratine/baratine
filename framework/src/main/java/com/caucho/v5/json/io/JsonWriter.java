@@ -32,8 +32,8 @@ package com.caucho.v5.json.io;
 import java.io.Writer;
 import java.util.Objects;
 
-import com.caucho.v5.json.ser.JsonSerializer;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.SerializerJson;
+import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.vfs.WriteStream;
 
 /**
@@ -51,21 +51,21 @@ import com.caucho.v5.vfs.WriteStream;
  */
 public class JsonWriter extends OutJsonImpl
 {
-  private final JsonSerializerFactory _factory;
+  private final JsonFactory _factory;
   
   public JsonWriter()
   {
-    this(new JsonSerializerFactory());
+    this(new JsonFactory());
   }
   
-  public JsonWriter(JsonSerializerFactory factory)
+  public JsonWriter(JsonFactory factory)
   {
     Objects.requireNonNull(factory);
     
     _factory = factory;
   }
   
-  public JsonWriter(Writer out, JsonSerializerFactory factory)
+  public JsonWriter(Writer out, JsonFactory factory)
   {
     this(factory);
     
@@ -93,7 +93,7 @@ public class JsonWriter extends OutJsonImpl
       return;
     }
 
-    JsonSerializer ser = _factory.serializer(value.getClass());
+    SerializerJson ser = _factory.serializer(value.getClass());
 
     ser.write(this, value);
   }
@@ -108,7 +108,7 @@ public class JsonWriter extends OutJsonImpl
 
     writeKey(name);
     
-    JsonSerializer ser = _factory.serializer(value.getClass());
+    SerializerJson ser = _factory.serializer(value.getClass());
     //ser.write(this, name, value);
     ser.write(this, value);
   }
@@ -120,7 +120,7 @@ public class JsonWriter extends OutJsonImpl
       return;
     }
 
-    JsonSerializer ser = _factory.serializer(value.getClass());
+    SerializerJson ser = _factory.serializer(value.getClass());
     ser.write(this, value);
   }
 
@@ -132,7 +132,7 @@ public class JsonWriter extends OutJsonImpl
       return;
     }
     
-    JsonSerializer ser = _factory.serializer(value.getClass());
+    SerializerJson ser = _factory.serializer(value.getClass());
 
     ser.writeTop(this, value);
   }

@@ -47,11 +47,11 @@ import com.caucho.v5.json.value.JsonValue;
 import com.caucho.v5.json.value.JsonValueBase;
 import com.caucho.v5.util.L10N;
 
-public class JsonValueDeserializer extends JsonDeserializerBase
+public class JsonValueDeserializer extends JsonSerializerBase
 {
   private static final L10N L = new L10N(JsonValueDeserializer.class);
   
-  static final JsonDeserializer DESER = new JsonValueDeserializer();
+  static final SerializerJson DESER = new JsonValueDeserializer();
   
   private JsonValueDeserializer() {}
 

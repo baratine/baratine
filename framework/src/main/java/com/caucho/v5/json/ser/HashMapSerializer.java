@@ -42,9 +42,9 @@ public class HashMapSerializer extends MapSerializer
 {
   private static final L10N L = new L10N(HashMapSerializer.class);
   
-  private final JsonDeserializer _valueDeser;
+  private final SerializerJson _valueDeser;
   
-  HashMapSerializer(TypeRef typeRef, JsonSerializerFactory factory)
+  HashMapSerializer(TypeRef typeRef, JsonFactory factory)
   {
     Objects.requireNonNull(typeRef);
     
@@ -55,7 +55,7 @@ public class HashMapSerializer extends MapSerializer
   }
 
   @Override
-  public Object read(JsonReader in)
+  public Map<Object,Object> read(JsonReader in)
   {
     Event event = in.next();
     

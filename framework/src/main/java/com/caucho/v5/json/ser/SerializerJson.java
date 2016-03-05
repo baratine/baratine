@@ -29,11 +29,20 @@
 
 package com.caucho.v5.json.ser;
 
+import com.caucho.v5.inject.type.TypeRef;
+import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
 
-import java.io.*;
-
-public interface JsonSerializer<T> {
+public interface SerializerJson<T>
+{
+  /**
+   * Specialize the serializer with a given type-ref. 
+   */
+  default SerializerJson<T> withType(TypeRef typeRef, JsonFactory factory)
+  {
+    return this;
+  }
+  
   /**
    * Writing a JSON value in an array context.
    * 
@@ -60,4 +69,19 @@ public interface JsonSerializer<T> {
     */
 
   void writeTop(JsonWriter jsonWriter, T value);
+  
+  default T read(JsonReader in)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  default void readField(JsonReader in, Object bean, String fieldName)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  default Class<?> rawClass()
+  {
+    return Object.class;
+  }
 }

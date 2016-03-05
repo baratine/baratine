@@ -37,7 +37,7 @@ public class JsonBuilderImpl implements JsonBuilder
   @Override
   public Json build()
   {
-    JsonSerializerFactory factory = new JsonSerializerFactory();
+    JsonFactory factory = new JsonFactory();
     
     return new JsonImpl(factory);
   }

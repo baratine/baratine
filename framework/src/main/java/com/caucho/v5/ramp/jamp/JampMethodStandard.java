@@ -52,7 +52,7 @@ import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.InJson.Event;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 
 /**
  * Method introspected using jaxrs
@@ -62,7 +62,7 @@ public class JampMethodStandard extends JampMethodRest
   private static final Logger log
     = Logger.getLogger(JampMethodStandard.class.getName());
 
-  private final JsonSerializerFactory _factory;
+  private final JsonFactory _factory;
 
   private MethodRefAmp _methodRef;
   private JampArg []_params;

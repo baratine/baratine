@@ -37,7 +37,7 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 
 /**
  * JampServlet responds to JAMP websocket connections.
@@ -45,12 +45,12 @@ import com.caucho.v5.json.ser.JsonSerializerFactory;
 public class JampRestServerSkeleton
 {
   private ServiceRefAmp _serviceRef;
-  private final JsonSerializerFactory _factory;
+  private final JsonFactory _factory;
   
   private HashMap<String,JampMethodRest> _methodMap = new HashMap<>();
     
   public JampRestServerSkeleton(ServiceRefAmp service,
-                                JsonSerializerFactory factory)
+                                JsonFactory factory)
   {
     Objects.requireNonNull(factory);
     

@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -58,95 +59,114 @@ import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.json.value.JsonValue;
 import com.caucho.v5.reflect.ClassImpl;
-import com.caucho.v5.reflect.TypeFactoryReflect;
 
-public class JsonSerializerFactory
+public class JsonFactory
 {
-  private static final HashMap<Class<?>,JsonSerializer> _staticSerMap
+  private static final HashMap<Class<?>,SerializerJson<?>> _staticSerMap
     = new HashMap<>();
     
-  private static final HashMap<Class<?>,JsonSerializer> _staticSerInterfaceMap
+  private static final HashMap<Class<?>,SerializerJson<?>> _staticSerInterfaceMap
     = new HashMap<>();
 
-  private static final HashMap<Class<?>,JsonDeserializer> _staticDeserMap
+  private static final HashMap<Class<?>,SerializerJson> _staticDeserMap
     = new HashMap<>();
   
   private static final HashMap<Class<?>,CollectionFunction> _factoryMap
     = new HashMap<>();
 
-  /*
-  private final ConcurrentHashMap<Class<?>,JsonSerializer> _serMap
-    = new ConcurrentHashMap<>();
-    */
-  
-  private final ClassValue<JsonSerializer<?>> _serMap
+  private final ClassValue<SerializerJson<?>> _serMap
     = new SerializerClassValue();
+
+  private final ConcurrentHashMap<Type,SerializerJson<?>> _serTypeMap
+    = new ConcurrentHashMap<>();
+
+  private final ConcurrentHashMap<Type,SerializerJson> _deserMap
+    = new ConcurrentHashMap<>();
     
-  private final HashMap<Class<?>,JsonSerializer> _serInterfaceMap
+  private final HashMap<Class<?>,SerializerJson<?>> _serInterfaceMap
     = new HashMap<>();
 
-  private final TypeFactoryReflect _typeFactory = new TypeFactoryReflect();
+  //private final TypeFactoryReflect _typeFactory = new TypeFactoryReflect();
 
-  private final ConcurrentHashMap<Type,JsonDeserializer> _deserMap
-    = new ConcurrentHashMap<>();
-
-  public JsonSerializerFactory()
+  public JsonFactory()
   {
   }
 
+  /*
   public TypeFactoryReflect getTypeFactory()
   {
     return _typeFactory;
   }
+  */
   
   //
   // serializers
   //
 
-  public final <T> JsonSerializer<T> serializer(Class<T> cl)
+  /**
+   * The serializer for the given class.
+   */
+  public final <T> SerializerJson<T> serializer(Class<T> cl)
   {
-    return (JsonSerializer) _serMap.get(cl);
-    /*
-    JsonSerializer ser = _serMap.get(cl);
-
-    if (ser == null) {
-      ser = createSerializer(cl);
-
-      _serMap.putIfAbsent(cl, ser);
-    }
-
-    return ser;
-    */
+    return (SerializerJson) _serMap.get(cl);
   }
   
-  public <T> void addInterfaceSerializer(Class<T> cl, JsonSerializer<T> ser)
+  /**
+   * The serializer for the given type.
+   */
+  public final <T> SerializerJson<T> serializer(Type type)
+  {
+    SerializerJson<T> ser = (SerializerJson<T>) _serTypeMap.get(type);
+    
+    if (ser == null) {
+      TypeRef typeRef = TypeRef.of(type);
+      Class<T> rawClass = (Class<T>) typeRef.rawClass();
+      
+      ser = serializer(rawClass).withType(typeRef, this);
+      
+      _serTypeMap.putIfAbsent(type, ser);
+      
+      ser = (SerializerJson<T>) _serTypeMap.get(type);
+    }
+    
+    return ser;
+  }
+  
+  public <T> void addInterfaceSerializer(Class<T> cl, SerializerJson<T> ser)
   {
     _serInterfaceMap.put(cl, ser);
   }
 
+  /**
+   * addSerializer adds a custom serializer, overriding the defaults.
+   */
   public <T> void addSerializer(Class<T> cl,
-                                JsonSerializer<T> ser)
+                                SerializerJson<T> ser)
   {
     System.out.println("ADDSER: " + cl + " " + ser);
     //_serMap.put(cl, ser);
   }
 
   public void addDeserializer(Class<?> cl,
-                              JsonDeserializer deser)
+                              SerializerJson deser)
   {
     _deserMap.put(cl, deser);
   }
 
-  protected JsonSerializer<?> createSerializer(Class<?> cl)
+  protected SerializerJson<?> createSerializer(Class<?> cl)
   {
-    JsonSerializer<?> ser = _staticSerMap.get(cl);
+    SerializerJson<?> ser = _staticSerMap.get(cl);
 
     if (ser != null) {
       return ser;
     }
 
+    TypeRef typeRef = TypeRef.of(cl);
+    
     if (cl.isArray()) {
-      return ObjectArraySerializer.SER;
+      Class<?> eltType = cl.getComponentType();
+      
+      return new ObjectArraySerializerJson(eltType, serializer(eltType));
     }
     
     Method methodReplaceObject = findWriteReplace(cl);
@@ -156,7 +176,7 @@ public class JsonSerializerFactory
     }
     
     if (Collection.class.isAssignableFrom(cl)) {
-      return CollectionSerializer.SER;
+      return new CollectionSerializer(typeRef, this);
     }
 
     if (Map.class.isAssignableFrom(cl)) {
@@ -177,16 +197,16 @@ public class JsonSerializerFactory
       return EnumSerializer.SER;
     }
 
-    return new JavaSerializer(cl, this);
+    return new JavaSerializerJson(typeRef, this);
   }
   
-  protected JsonSerializer<?> findInterfaceSerializer(Class<?> cl)
+  protected SerializerJson<?> findInterfaceSerializer(Class<?> cl)
   {
     if (cl == null) {
       return null;
     }
 
-    JsonSerializer<?> ser;
+    SerializerJson<?> ser;
     
     if (cl.isInterface()) {
       ser = _serInterfaceMap.get(cl);
@@ -222,7 +242,7 @@ public class JsonSerializerFactory
   // deserializers
   //
 
-  public JsonDeserializer deserializer(Type type)
+  public SerializerJson deserializer(Type type)
   {
     Objects.requireNonNull(type);
 
@@ -230,7 +250,7 @@ public class JsonSerializerFactory
       type = ((ClassImpl) type).getTypeClass();
     }
 
-    JsonDeserializer deser = _deserMap.get(type);
+    SerializerJson deser = _deserMap.get(type);
 
     if (deser == null) {
       deser = createDeserializer(type);
@@ -241,9 +261,9 @@ public class JsonSerializerFactory
     return deser;
   }
 
-  protected JsonDeserializer createDeserializer(Type type)
+  protected SerializerJson createDeserializer(Type type)
   {    
-    JsonDeserializer deser = _staticDeserMap.get(type);
+    SerializerJson deser = _staticDeserMap.get(type);
 
     if (deser != null) {
       return deser;
@@ -345,14 +365,14 @@ public class JsonSerializerFactory
         compType = eltType;
       }
 
-      JsonDeserializer compDeser = deserializer(compType);
+      SerializerJson compDeser = deserializer(compType);
 
-      deser = new ObjectArrayDeserializer(eltType, compDeser);
+      deser = new ObjectArraySerializerJson(eltType, compDeser);
 
       return deser;
     }
     
-    JavaDeserializer javaDeser = new JavaDeserializer(typeImpl);
+    JavaSerializerJson javaDeser = new JavaSerializerJson(typeImpl, this);
 
     // early put for circular
     _deserMap.putIfAbsent(type, javaDeser);
@@ -378,7 +398,7 @@ public class JsonSerializerFactory
     return findWriteReplace(cl.getSuperclass());
   }
 
-  protected JsonDeserializer createDeserializerGeneric(Type type)
+  protected SerializerJson createDeserializerGeneric(Type type)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -403,10 +423,10 @@ public class JsonSerializerFactory
     return in;
   }
   
-  private class SerializerClassValue extends ClassValue<JsonSerializer<?>>
+  private class SerializerClassValue extends ClassValue<SerializerJson<?>>
   {
     @Override
-    protected JsonSerializer<?> computeValue(Class<?> type)
+    protected SerializerJson<?> computeValue(Class<?> type)
     {
       return createSerializer(type);
     }
@@ -414,7 +434,7 @@ public class JsonSerializerFactory
   
   interface CollectionFunction
   {
-    JsonSerializerBase<?> apply(TypeRef type, JsonSerializerFactory factory);
+    JsonSerializerBase<?> apply(TypeRef type, JsonFactory factory);
   }
 
   static {
@@ -443,6 +463,7 @@ public class JsonSerializerFactory
     _staticSerMap.put(Double.class, DoubleSerializer.SER);
 
     _staticSerMap.put(String.class, StringSerializer.SER);
+    _staticSerMap.put(Object.class, ObjectSerializer.SER);
 
     _staticSerMap.put(boolean[].class, BooleanArraySerializer.SER);
     _staticSerMap.put(byte[].class, ByteArraySerializer.SER);
@@ -488,7 +509,7 @@ public class JsonSerializerFactory
     _staticDeserMap.put(Double.class, DoubleSerializer.SER);
 
     _staticDeserMap.put(String.class, StringSerializer.SER);
-    _staticDeserMap.put(Object.class, ObjectDeserializer.DESER);
+    _staticDeserMap.put(Object.class, ObjectSerializer.SER);
 
     _staticDeserMap.put(boolean[].class, BooleanArraySerializer.SER);
     _staticDeserMap.put(byte[].class, ByteArraySerializer.SER);
@@ -508,14 +529,15 @@ public class JsonSerializerFactory
     _factoryMap.put(SortedMap.class, TreeMapSerializer::new);
     _factoryMap.put(NavigableMap.class, TreeMapSerializer::new);
     
-    _factoryMap.put(Collection.class, ArrayListDeserializer::new);
-    _factoryMap.put(List.class, ArrayListDeserializer::new);
-    _factoryMap.put(Queue.class, DequeDeserializer::new);
-    _factoryMap.put(Deque.class, DequeDeserializer::new);
-    _factoryMap.put(Enumeration.class, EnumerationDeserializer::new);
-    _factoryMap.put(Iterable.class, IterableDeserializer::new);
-    _factoryMap.put(Stream.class, StreamDeserializer::new);
-    _factoryMap.put(Set.class, HashSetDeserializer::new);
+    _factoryMap.put(Collection.class, ArrayListSerializer::new);
+    _factoryMap.put(List.class, ArrayListSerializer::new);
+    _factoryMap.put(Iterable.class, ArrayListSerializer::new);
+    _factoryMap.put(Queue.class, DequeSerializer::new);
+    _factoryMap.put(Deque.class, DequeSerializer::new);
+    _factoryMap.put(Enumeration.class, EnumerationSerializer::new);
+    _factoryMap.put(Iterable.class, IterableSerializer::new);
+    _factoryMap.put(Stream.class, StreamSerializer::new);
+    _factoryMap.put(Set.class, HashSetSerializer::new);
     _factoryMap.put(SortedSet.class, TreeSetDeserializer::new);
     _factoryMap.put(NavigableSet.class, TreeSetDeserializer::new);
   }

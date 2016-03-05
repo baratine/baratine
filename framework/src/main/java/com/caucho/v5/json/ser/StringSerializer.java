@@ -43,7 +43,7 @@ public class StringSerializer extends JsonSerializerBase<String>
   private StringSerializer() {}
 
   @Override
-  public Object read(JsonReader in)
+  public String read(JsonReader in)
   {
     Event event = in.next();
     

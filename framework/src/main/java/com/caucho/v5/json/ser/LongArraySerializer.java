@@ -55,7 +55,7 @@ public class LongArraySerializer extends AbstractJsonArraySerializer<long[]>
   }
 
   @Override
-  public Object read(JsonReader in)
+  public long []read(JsonReader in)
   {
     Event event = in.next();
     

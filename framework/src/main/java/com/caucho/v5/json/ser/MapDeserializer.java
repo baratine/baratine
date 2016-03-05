@@ -36,16 +36,16 @@ import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.InJson.Event;
 import com.caucho.v5.util.L10N;
 
-public class MapDeserializer extends JsonDeserializerBase
+public class MapDeserializer extends JsonSerializerBase
 {
   private static final L10N L = new L10N(MapDeserializer.class);
   
-  private final JsonDeserializer _keyDeser;
-  private final JsonDeserializer _valueDeser;
+  private final SerializerJson _keyDeser;
+  private final SerializerJson _valueDeser;
   private final Supplier<Map<Object,Object>> _factory;
   
-  MapDeserializer(JsonDeserializer keyDeser,
-                  JsonDeserializer valueDeser,
+  MapDeserializer(SerializerJson keyDeser,
+                  SerializerJson valueDeser,
                   Supplier<Map<Object,Object>> factory)
   {
     _keyDeser = keyDeser;

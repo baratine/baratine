@@ -48,7 +48,7 @@ public class UuidSerializer extends JsonSerializerBase<UUID>
   }
   
   @Override
-  public Object read(JsonReader in)
+  public UUID read(JsonReader in)
   {
     try {
       Event event = in.peek();

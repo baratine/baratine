@@ -39,7 +39,7 @@ import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.remote.OutAmp;
 import com.caucho.v5.amp.remote.OutAmpFactory;
 import com.caucho.v5.bartender.hamp.EndpointHampClient;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.ramp.jamp.SessionContextJamp;
 import com.caucho.v5.util.L10N;
 
@@ -60,7 +60,7 @@ public class ConnectionHampFactoryClient implements OutAmpFactory
   private String _uid;
   private String _password;
 
-  private JsonSerializerFactory _jsonFactory;
+  private JsonFactory _jsonFactory;
   
   public ConnectionHampFactoryClient(ServiceManagerAmp rampManager,
                                      String uri)
@@ -71,7 +71,7 @@ public class ConnectionHampFactoryClient implements OutAmpFactory
       throw new RuntimeException(e);
     }
     
-    _jsonFactory = new JsonSerializerFactory();
+    _jsonFactory = new JsonFactory();
       
     _ampManager = rampManager;
   }

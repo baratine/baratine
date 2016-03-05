@@ -39,9 +39,9 @@ import com.caucho.v5.json.io.JsonWriter;
 
 class JsonImpl implements Json
 {
-  private final JsonSerializerFactory _factory;
+  private final JsonFactory _factory;
   
-  JsonImpl(JsonSerializerFactory factory)
+  JsonImpl(JsonFactory factory)
   {
     _factory = factory;
   }

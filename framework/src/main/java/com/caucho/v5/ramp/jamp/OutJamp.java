@@ -41,7 +41,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ErrorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.json.io.JsonWriter;
-import com.caucho.v5.json.ser.JsonSerializerFactory;
+import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.vfs.WriteStream;
 
 /**
@@ -52,7 +52,7 @@ public class OutJamp
   private static final Logger log
     = Logger.getLogger(OutJamp.class.getName());
   
-  private final JsonSerializerFactory _jsonFactory;
+  private final JsonFactory _jsonFactory;
 
   private JsonWriter _jOut;
   
@@ -60,10 +60,10 @@ public class OutJamp
 
   public OutJamp()
   {
-    this(new JsonSerializerFactory());
+    this(new JsonFactory());
   }
 
-  public OutJamp(JsonSerializerFactory jsonFactory)
+  public OutJamp(JsonFactory jsonFactory)
   {
     Objects.requireNonNull(jsonFactory);
     
