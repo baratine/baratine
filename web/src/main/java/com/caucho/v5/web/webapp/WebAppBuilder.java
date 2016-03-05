@@ -75,6 +75,7 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceManager;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Vault;
+import io.baratine.web.CrossOrigin;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.IncludeWeb;
 import io.baratine.web.InstanceBuilder;
@@ -96,11 +97,11 @@ public class WebAppBuilder
   private static final L10N L = new L10N(WebAppBuilder.class);
   private static final Logger log
     = Logger.getLogger(WebAppBuilder.class.getName());
-  
+
   private static final Predicate<RequestWeb> TRUE = x->true;
-  
+
   private static final Map<HttpMethod,Predicate<RequestWeb>> _methodMap;
-  
+
   private final HttpBaratine _http;
   private EnvironmentClassLoader _classLoader;
 
@@ -114,13 +115,13 @@ public class WebAppBuilder
   private InjectBuilderRootAmp _injectBuilder;
 
   private WebAppFactory _factory;
-  
+
   private ServiceManagerBuilderAmp _serviceBuilder;
   private ConfigBuilder _configBuilder;
   private WebAppAutoBind _autoBind;
   private WebApp _webApp;
   private WebSocketManager _wsManager;
-  
+
 
   /**
    * Creates the host with its environment loader.
@@ -128,47 +129,47 @@ public class WebAppBuilder
   public WebAppBuilder(WebAppFactory factory)
   {
     Objects.requireNonNull(factory);
-    
+
     _factory = factory;
-    
+
     _http = factory.http();
-    
+
     _classLoader = EnvironmentClassLoader.create(_http.classLoader(),
                                                  factory.id());
-    
+
     Thread thread = Thread.currentThread();
     ClassLoader loader = thread.getContextClassLoader();
-    
+
     OutboxAmp outbox = OutboxAmp.current();
     OutboxContext<MessageAmp> oldContext = null;
-    
+
     if (outbox != null) {
       oldContext = outbox.context();
     }
-    
+
     try {
       thread.setContextClassLoader(classLoader());
-      
+
       _configBuilder = Configs.config();
       _configBuilder.add(factory.config());
-      
+
       _injectBuilder = InjectManagerAmp.manager(classLoader());
 
       _injectBuilder.include(BaratineProducer.class);
-      
+
       _serviceBuilder = ServiceManagerAmp.newManager();
       _serviceBuilder.name("webapp");
       //_serviceBuilder.setJournalFactory(new JournalFactoryImpl());
       addJournalFactory(_serviceBuilder);
       addActorResources(_serviceBuilder);
       _serviceBuilder.contextManager(true);
-      
-      
+
+
       ServiceManagerAmp serviceManager = _serviceBuilder.managerBuild();
       Amp.setContextManager(serviceManager);
-      
+
       _injectBuilder.autoBind(new AutoBindService(serviceManager));
-      
+
       if (outbox != null) {
         InboxAmp inbox = serviceManager.inboxSystem();
         // XXX: should set the inbox
@@ -183,33 +184,33 @@ public class WebAppBuilder
       }
       Thread.dumpStack();
       */
-      
+
       _wsManager = webSocketManager();
-      
+
       new WebApp(this);
     } catch (Throwable e) {
       e.printStackTrace();
       log.log(Level.WARNING, e.toString(), e);
-      
+
       configException(e);
-      
+
       _webApp = new WebAppBaratineError(this);
     } finally {
       thread.setContextClassLoader(loader);
-      
+
       if (outbox != null) {
         outbox.getAndSetContext(oldContext);
       }
     }
   }
-  
+
   private static void addJournalFactory(ServiceManagerBuilderAmp builder)
   {
     try {
       JournalFactoryAmp factory;
-      
+
       Class<?> journal = Class.forName("com.caucho.v5.amp.journal.JournalFactoryImpl");
-      
+
       factory = (JournalFactoryAmp) journal.newInstance();
 
       builder.setJournalFactory(factory);
@@ -217,12 +218,12 @@ public class WebAppBuilder
       log.finer(e.toString());
     }
   }
-  
+
   protected void addActorResources(ServiceManagerBuilderAmp builder)
   {
     try {
       ActorGeneratorVault gen = new ActorGeneratorVault();
-      
+
       builder.actorGenerator(gen);
     } catch (Exception e) {
       log.finer(e.toString());
@@ -241,7 +242,7 @@ public class WebAppBuilder
     ClassLoader loader = thread.getContextClassLoader();
     OutboxAmp outbox = OutboxAmp.current();
     OutboxContext<MessageAmp> context = outbox.getAndSetContext(null);
-    
+
     try {
       thread.setContextClassLoader(classLoader());
       
@@ -255,34 +256,34 @@ public class WebAppBuilder
       */
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
-      
+
       configException(e);
-      
+
       _webApp = new WebAppBaratineError(this);
     } finally {
       thread.setContextClassLoader(loader);
       outbox.getAndSetContext(context);
     }
   }
-  
+
   void build(WebApp webApp)
   {
     Objects.requireNonNull(webApp);
-    
+
     _webApp = webApp;
-    
+
     _autoBind = new WebAppAutoBind(webApp);
     _injectBuilder.autoBind(_autoBind);
     _injectBuilder.bind(Config.class).toProvider(()->webApp.config());
     _injectBuilder.bind(InjectManager.class).toProvider(()->webApp.inject());
     _injectBuilder.bind(ServiceManager.class).toProvider(()->webApp.serviceManager());
-    
+
     generateFromFactory();
-    
+
     // defaults
     get("/**").to(WebStaticFile.class);
   }
-  
+
   //@Override
   public String id()
   {
@@ -305,7 +306,7 @@ public class WebAppBuilder
     return _webAppHttp;
   }
   */
-  
+
   //
   // deployment
   //
@@ -319,19 +320,19 @@ public class WebAppBuilder
   {
     return _injectBuilder;
   }
-  
+
   ServiceManagerBuilderAmp serviceBuilder()
   {
     ServiceManagerBuilderAmp builder = _serviceBuilder;
-    
-    return builder; 
+
+    return builder;
   }
 
   private void configException(Throwable e)
   {
     if (_configException == null) {
       log.log(Level.FINER, e.toString(), e);
-      
+
       _configException = e;
     }
     else {
@@ -344,27 +345,27 @@ public class WebAppBuilder
   {
     return _configException;
   }
-  
+
   private void generateFromFactory()
   {
     for (IncludeWeb include : _factory.includes()) {
       include.build(this);
     }
   }
-  
+
   /**
    * Builds the web-app's router
    */
   public InvocationRouter<InvocationBaratine> buildRouter(WebApp webApp)
   {
     // find views
-    
+
     InjectManagerAmp inject = webApp.inject();
-    
+
     for (Binding<ViewWeb> binding : inject.bindings(ViewWeb.class)) {
       try {
         ViewWeb<?> view = (ViewWeb<?>) binding.provider().get();
-      
+
         Key<ViewWeb<?>> key = (Key) binding.key();
 
         view(view, key);
@@ -372,15 +373,15 @@ public class WebAppBuilder
         log.log(Level.FINE, e.toString(), e);
       }
     }
-    
+
     ArrayList<RouteMap> mapList = new ArrayList<>();
-    
+
     ServiceManagerAmp manager = webApp.serviceManager();
 
     ServiceRefAmp serviceRef = manager.newService(new RouteService()).ref();
-    
+
     for (RouteWebApp route : _routes) {
-      mapList.add(route.toMap(inject, serviceRef));
+      mapList.addAll(route.toMap(inject, serviceRef));
     }
 
     /*
@@ -390,14 +391,14 @@ public class WebAppBuilder
       mapList.add(new RouteMap("", route));
     }
     */
-    
+
     RouteMap []routeArray = new RouteMap[mapList.size()];
-    
+
     mapList.toArray(routeArray);
-    
+
     return new InvocationRouterWebApp(webApp, routeArray);
   }
-  
+
   /**
    * Dummy to own the service.
    */
@@ -410,12 +411,12 @@ public class WebAppBuilder
   {
     System.out.println("ROUTER: " + type);
     IncludeWeb gen = (IncludeWeb) inject().instance(type);
-      
+
     System.out.println("GEN: " + gen);
-      
+
     return this;
   }
-  
+
   //
   // inject
   //
@@ -444,11 +445,11 @@ public class WebAppBuilder
     if (Vault.class.isAssignableFrom(api)) {
       addResourceConverter(api);
     }
-    
+
     if (_webApp != null && _webApp.serviceManager() != null) {
       return _webApp.serviceManager().newService(api);
     }
-    
+
     ServiceRef.ServiceBuilder builder = _serviceBuilder.service(api);
 
     return builder;
@@ -458,37 +459,37 @@ public class WebAppBuilder
   public ServiceRef.ServiceBuilder service(Key<?> key, Class<?> api)
   {
     ServiceRef.ServiceBuilder builder = _serviceBuilder.service(key, api);
-    
+
     if (Vault.class.isAssignableFrom(api)) {
       addResourceConverter(api);
     }
 
     return builder;
   }
-  
+
   private void addResourceConverter(Class<?> api)
   {
     TypeRef resourceRef =  TypeRef.of(api).to(Vault.class);
     Class<?> idType = resourceRef.param(0).rawClass();
     Class<?> itemType = resourceRef.param(1).rawClass();
-    
+
     Service service = api.getAnnotation(Service.class);
-    
+
     String address = "";
-    
+
     if (service != null) {
       address = service.value();
     }
-    
+
     if (address.isEmpty()) {
       address = "/" + itemType.getSimpleName();
     }
-    
+
     TypeRef convertRef = TypeRef.of(Convert.class, String.class, itemType);
-    
+
     Convert<String,?> convert
        = new ConvertResource(address, itemType);
-    
+
     bind(Key.of(convertRef.type())).to(convert);
   }
 
@@ -506,7 +507,7 @@ public class WebAppBuilder
     RoutePath route = new RoutePath(method, path);
 
     _routes.add(route);
-    
+
     return route;
   }
 
@@ -514,12 +515,12 @@ public class WebAppBuilder
   public WebSocketBuilder websocket(String path)
   {
     WebSocketPath route = new WebSocketPath(path);
-    
+
     _routes.add(route);
-    
+
     return route;
   }
-  
+
   //
   // views
   //
@@ -528,7 +529,7 @@ public class WebAppBuilder
   public <T> WebBuilder view(ViewWeb<T> view)
   {
     _views.add(new ViewRef<>(view));
-    
+
     return this;
   }
 
@@ -536,17 +537,17 @@ public class WebAppBuilder
   public <T> WebBuilder view(Class<? extends ViewWeb<T>> viewType)
   {
     ViewWeb<?> view = inject().instance(viewType);
-    
+
     return view(view, Key.of(viewType));
   }
 
   private <T> WebBuilder view(ViewWeb<T> view, Key key)
   {
     _views.add(new ViewRef<>(view, key.type()));
-    
+
     return this;
   }
-  
+
   List<ViewRef<?>> views()
   {
     return _views;
@@ -556,7 +557,7 @@ public class WebAppBuilder
   {
     return new BodyResolverBase();
   }
-  
+
   @Override
   public InjectManagerAmp inject()
   {
@@ -576,22 +577,22 @@ public class WebAppBuilder
     ClassLoader loader = thread.getContextClassLoader();
     OutboxAmp outbox = OutboxAmp.current();
     OutboxContext<MessageAmp> context = outbox.getAndSetContext(null);
-    
+
     try {
       thread.setContextClassLoader(classLoader());
-      
+
       if (configException() == null) {
         return _webApp.start();
       }
       else {
         return new WebAppBaratineError(this).start();
       }
-      
+
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
-      
+
       configException(e);
-      
+
       return new WebAppBaratineError(this);
     } finally {
       thread.setContextClassLoader(loader);
@@ -604,35 +605,35 @@ public class WebAppBuilder
   {
     return getClass().getSimpleName() + "[" + id() + "]";
   }
-  
+
   private class WebAppAutoBind implements InjectAutoBind
   {
     private WebApp _webApp;
-    
+
     WebAppAutoBind(WebApp webApp)
     {
       _webApp = webApp;
     }
-    
+
     @Override
     public <T> Provider<T> provider(InjectManager manager, Key<T> key)
     {
       Class<?> rawClass = key.rawClass();
-      
+
       return null;
     }
-    
+
   }
-  
+
   /**
    * RouteWebApp is a program for routes in the web-app.
    *
    */
   static interface RouteWebApp
   {
-    RouteMap toMap(InjectManagerAmp inject, ServiceRefAmp serviceRef);
+    List<RouteMap> toMap(InjectManagerAmp inject, ServiceRefAmp serviceRef);
   }
-  
+
   /**
    * RoutePath has a path pattern for a route.
    */
@@ -643,7 +644,7 @@ public class WebAppBuilder
     private ServiceWeb _service;
     private Class<? extends ServiceWeb> _serviceClass;
     private ViewRef<?> _viewRef;
-    
+
     RoutePath(HttpMethod method, String path)
     {
       _method = method;
@@ -654,7 +655,7 @@ public class WebAppBuilder
     public OutBuilder to(ServiceWeb service)
     {
       Objects.requireNonNull(service);
-      
+
       _service = service;
 
       return this;
@@ -664,36 +665,36 @@ public class WebAppBuilder
     public OutBuilder to(Class<? extends ServiceWeb> serviceClass)
     {
       Objects.requireNonNull(serviceClass);
-      
+
       _serviceClass = serviceClass;
 
       return this;
     }
-    
+
     @Override
     public <T> OutBuilder view(ViewWeb<T> view)
     {
       Objects.requireNonNull(view);
-      
+
       _viewRef = new ViewRef(view);
-      
+
       return this;
     }
-    
+
     @Override
-    public RouteMap toMap(InjectManagerAmp inject,
+    public List<RouteMap> toMap(InjectManagerAmp inject,
                           ServiceRefAmp serviceRef)
     {
       ArrayList<ViewRef<?>> views = new ArrayList<>();
-      
+
       if (_viewRef != null) {
         views.add(_viewRef);
       }
-      
+
       views.addAll(views());
-      
+
       ServiceWeb service;
-      
+
       if (_service != null) {
         service = _service;
       }
@@ -703,33 +704,52 @@ public class WebAppBuilder
       else {
         throw new IllegalStateException();
       }
-      
+
       RouteApply routeApply;
-      
+
       HttpMethod method = _method;
-      
+
       if (method == null) {
         method = HttpMethod.UNKNOWN;
       }
 
       Predicate<RequestWeb> test = _methodMap.get(method);
-        
+
       routeApply = new RouteApply(service, serviceRef, test, views);
-      
-      return new RouteMap(_path, routeApply);
+
+      List<RouteMap> list = new ArrayList<>();
+      list.add(new RouteMap(_path, routeApply));
+
+      CrossOrigin crossOrigin = service.getCrossOrigin();
+
+      if (crossOrigin != null) {
+        list.add(crossOriginRouteMap(crossOrigin));
+      }
+
+      return list;
+    }
+
+    private RouteMap crossOriginRouteMap(CrossOrigin crossOrigin)
+    {
+      Predicate<RequestWeb> options = _methodMap.get(HttpMethod.OPTIONS);
+
+      RouteCrossOrigin corsRoute
+        = new RouteCrossOrigin(options, _method, crossOrigin);
+
+      return new RouteMap(_path, corsRoute);
     }
   }
-  
+
   /**
    * WebSocketPath is a route to a websocket service.
    */
   static class WebSocketPath implements WebSocketBuilder, RouteWebApp
   {
     private String _path;
-    
+
     private Supplier<? extends ServiceWebSocket<?,?>> _serviceFactory;
     private Class<? extends ServiceWebSocket<?,?>> _serviceType;
-    
+
     WebSocketPath(String path)
     {
       _path = path;
@@ -740,20 +760,23 @@ public class WebAppBuilder
     {
       _serviceFactory = ()->service;
     }
-    
+
     @Override
-    public RouteMap toMap(InjectManagerAmp inject,
+    public List<RouteMap> toMap(InjectManagerAmp inject,
                           ServiceRefAmp serviceRef)
     {
       Supplier<? extends ServiceWebSocket<?,?>> factory = _serviceFactory;
-      
+
       if (factory == null && _serviceType != null) {
         factory = ()->inject.instance(_serviceType);
       }
-      
+
       WebSocketApply routeApply = new WebSocketApply(factory, serviceRef);
-      
-      return new RouteMap(_path, routeApply);
+
+      List<RouteMap> list = new ArrayList<>();
+      list.add(new RouteMap(_path, routeApply));
+
+      return list;
     }
 
     @Override
@@ -761,7 +784,7 @@ public class WebAppBuilder
     to(Class<? extends ServiceWebSocket<T,S>> type)
     {
       _serviceType = type;
-      
+
       return null;
     }
 
@@ -771,23 +794,23 @@ public class WebAppBuilder
       _serviceFactory = supplier;
     }
   }
-  
+
   private static class MethodPredicate implements Predicate<RequestWeb> {
     private HttpMethod _method;
-    
+
     MethodPredicate(HttpMethod method)
     {
       Objects.requireNonNull(method);
-      
+
       _method = method;
     }
-    
+
     public boolean test(RequestWeb request)
     {
       return _method.name().equals(request.method());
     }
   }
-  
+
   private static class MethodGet implements Predicate<RequestWeb> {
     @Override
     public boolean test(RequestWeb request)
@@ -795,46 +818,46 @@ public class WebAppBuilder
       return "GET".equals(request.method()) || "HEAD".equals(request.method());
     }
   }
-  
+
   static class ConvertResource<T> implements Convert<String,T>
   {
     private ServiceManager _manager;
     private String _address;
     private Class<T> _itemType;
-    
+
     ConvertResource(String address, Class<T> itemType)
     {
       if (! address.endsWith("/")) {
         address = address + "/";
       }
-      
+
       _address = address;
       _itemType = itemType;
     }
-    
+
     @Override
     public T convert(String key)
     {
       return manager().lookup(_address + key).as(_itemType);
     }
-    
+
     private ServiceManager manager()
     {
       if (_manager == null) {
         _manager = ServiceManager.current();
       }
-      
+
       return _manager;
     }
   }
-  
+
   static {
     _methodMap = new HashMap<>();
-    
+
     for (HttpMethod method : HttpMethod.values()) {
       _methodMap.put(method, new MethodPredicate(method));
     }
-    
+
     _methodMap.put(HttpMethod.GET, new MethodGet());
     _methodMap.put(HttpMethod.UNKNOWN, TRUE);
   }

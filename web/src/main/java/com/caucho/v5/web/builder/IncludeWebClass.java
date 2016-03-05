@@ -53,6 +53,7 @@ import io.baratine.service.Service;
 import io.baratine.service.Vault;
 import io.baratine.web.Body;
 import io.baratine.web.Cookie;
+import io.baratine.web.CrossOrigin;
 import io.baratine.web.Delete;
 import io.baratine.web.Get;
 import io.baratine.web.Header;
@@ -829,6 +830,17 @@ class IncludeWebClass implements IncludeWeb
       } catch (Exception e) {
         request.fail(e);
       }
+    }
+
+    @Override
+    public CrossOrigin getCrossOrigin()
+    {
+      CrossOrigin crossOrigin = _m.getAnnotation(CrossOrigin.class);
+
+      if (crossOrigin == null)
+        crossOrigin = _m.getDeclaringClass().getAnnotation(CrossOrigin.class);
+
+      return crossOrigin;
     }
   }
   
