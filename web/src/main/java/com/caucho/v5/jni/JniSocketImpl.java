@@ -257,7 +257,7 @@ public final class JniSocketImpl extends SocketBar {
    * Returns the server port that accepted the request.
    */
   @Override
-  public int getLocalPort()
+  public int portLocal()
   {
     return _localPort;
 
@@ -289,7 +289,7 @@ public final class JniSocketImpl extends SocketBar {
    * Returns the remote client's inet address.
    */
   @Override
-  public InetAddress getRemoteAddress()
+  public InetAddress addressRemote()
   {
     if (_remoteAddr == null) {
       try {
@@ -337,7 +337,7 @@ public final class JniSocketImpl extends SocketBar {
    * Returns the remote client's port.
    */
   @Override
-  public int getRemotePort()
+  public int portRemote()
   {
     return _remotePort;
   }
@@ -367,7 +367,7 @@ public final class JniSocketImpl extends SocketBar {
    * Returns the local server's inet address.
    */
   @Override
-  public InetAddress getLocalAddress()
+  public InetAddress addressLocal()
   {
     if (_localAddr == null) {
       try {
@@ -504,7 +504,7 @@ public final class JniSocketImpl extends SocketBar {
     if (requestExpireTime > 0 && requestExpireTime < CurrentTime.getCurrentTime()) {
       close();
       throw new ClientDisconnectException(L.l("{0}: request-timeout read",
-                                              getRemoteAddress()));
+                                              addressRemote()));
     }
 
     int result = 0;
@@ -547,7 +547,7 @@ public final class JniSocketImpl extends SocketBar {
     if (requestExpireTime > 0 && requestExpireTime < CurrentTime.getCurrentTime()) {
       close();
       throw new ClientDisconnectException(L.l("{0}: request-timeout write exp={0}s",
-                                              getRemoteAddress(),
+                                              addressRemote(),
                                               CurrentTime.getCurrentTime() - requestExpireTime));
     }
 
@@ -627,7 +627,7 @@ public final class JniSocketImpl extends SocketBar {
     if (requestExpireTime > 0 && requestExpireTime < CurrentTime.getCurrentTime()) {
       close();
       throw new ClientDisconnectException(L.l("{0}: request-timeout write",
-                                              getRemoteAddress()));
+                                              addressRemote()));
     }
 
     synchronized (_writeLock) {
@@ -663,7 +663,7 @@ public final class JniSocketImpl extends SocketBar {
     if (requestExpireTime > 0 && requestExpireTime < CurrentTime.getCurrentTime()) {
       close();
       throw new ClientDisconnectException(L.l("{0}: request-timeout sendfile",
-                                              getRemoteAddress()));
+                                              addressRemote()));
     }
 
 
@@ -706,7 +706,7 @@ public final class JniSocketImpl extends SocketBar {
    * input and output stream.
    */
   @Override
-  public StreamImpl getStream()
+  public StreamImpl stream()
     throws IOException
   {
     if (_stream == null) {
@@ -902,7 +902,7 @@ public final class JniSocketImpl extends SocketBar {
   public String toString()
   {
     return (getClass().getSimpleName()
-            + "[" + getRemoteHost() + ":" + getRemotePort()
+            + "[" + getRemoteHost() + ":" + portRemote()
             + ",fd=" + getNativeFd(_socketFd) + "]");
   }
 

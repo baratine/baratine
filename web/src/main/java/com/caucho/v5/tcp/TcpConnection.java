@@ -53,7 +53,7 @@ public class TcpConnection
     throws IOException
   {
     _socket = socket;
-    StreamImpl stream = _socket.getStream();
+    StreamImpl stream = _socket.stream();
     
     _is = new ReadBuffer(stream);
     _os = new WriteBuffer(stream);

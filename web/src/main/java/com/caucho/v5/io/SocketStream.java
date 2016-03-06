@@ -36,6 +36,10 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.net.ssl.SSLSocket;
+
+import com.caucho.v5.util.L10N;
+
 /**
  * Specialized stream to handle sockets.
  *
@@ -45,6 +49,7 @@ import java.util.logging.Logger;
 //@ModulePrivate
 public class SocketStream extends StreamImpl
 {
+  private static final L10N L = new L10N(SocketStream.class);
   private static final Logger log
     = Logger.getLogger(SocketStream.class.getName());
   
@@ -179,8 +184,9 @@ public class SocketStream extends StreamImpl
   {
     try {
       if (_is == null) {
-        if (_s == null)
+        if (_s == null) {
           return -1;
+        }
         
         _is = _s.getInputStream();
       }
@@ -193,11 +199,13 @@ public class SocketStream extends StreamImpl
 
       return readLength;
     } catch (InterruptedIOException e) {
+      e.printStackTrace();
       if (_throwReadInterrupts)
         throw e;
       
       log.log(Level.FINEST, e.toString(), e);
     } catch (IOException e) {
+      e.printStackTrace();
       if (_throwReadInterrupts) {
         throw e;
       }
@@ -376,7 +384,12 @@ public class SocketStream extends StreamImpl
 
     // since the output stream is opened lazily, we might
     // need to open it
-    if (_s != null) {
+    if (_s instanceof SSLSocket) {
+      // ssl socket cannot be half-closed
+      log.finer(L.l("sslSocket can not be half-closed"));
+      return;
+    }
+    else if (_s != null) {
       try {
         _s.shutdownOutput();
         
@@ -388,6 +401,7 @@ public class SocketStream extends StreamImpl
         log.log(Level.FINEST, e.toString(), e);
       }
     }
+    System.out.println("CLW2: " + isShutdownOutput);
 
     // SSLSocket doesn't support shutdownOutput()
     if (! isShutdownOutput && os != null) {

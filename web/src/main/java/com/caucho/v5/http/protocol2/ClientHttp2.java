@@ -172,7 +172,7 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
     
     socket.setTcpNoDelay(true);
     
-    StreamImpl sockStream = _socket.getStream();
+    StreamImpl sockStream = _socket.stream();
     
     StreamImpl inStream;
     StreamImpl outStream;

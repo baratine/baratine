@@ -40,8 +40,13 @@ import java.nio.channels.SocketChannel;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 
 import com.caucho.v5.util.ModulePrivate;
 
@@ -53,11 +58,16 @@ public class SocketChannelWrapperBar extends SocketBar
 {
   private static final Logger log
     = Logger.getLogger(SocketChannelWrapperBar.class.getName());
-  private static Class<?> _sslSocketClass;
+  
   private static HashMap<String,Integer> _sslKeySizes;
   
-  private SocketChannel _s;
-  private SocketChannelStream _streamImpl;
+  private SocketChannel _channel;
+  private SSLSocket _sslSocket;
+  
+  private SocketChannelStream _channelStream;
+  private SocketStream _sslStream;
+  
+  private StreamImpl _streamImpl;
   
   private boolean _isWriteClosed;
 
@@ -72,7 +82,9 @@ public class SocketChannelWrapperBar extends SocketBar
 
   public void init(SocketChannel s)
   {
-    _s = s;
+    _channel = s;
+    _sslSocket = null;
+    _streamImpl = null;
   }
   
   @Override
@@ -133,8 +145,26 @@ public class SocketChannelWrapperBar extends SocketBar
     throws SocketException
   {
     try {
-      _s.setOption(StandardSocketOptions.TCP_NODELAY, (Boolean) isNoDelay);
+      _channel.setOption(StandardSocketOptions.TCP_NODELAY, (Boolean) isNoDelay);
     } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
+  /**
+   * Initialize the ssl
+   */
+  @Override
+  public void ssl(SSLFactory sslFactory)
+  {
+    try {
+      Objects.requireNonNull(sslFactory);
+    
+      SocketChannel channel = _channel;
+      Objects.requireNonNull(channel);
+    
+      _sslSocket = sslFactory.ssl(channel);
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -143,9 +173,9 @@ public class SocketChannelWrapperBar extends SocketBar
    * Returns the server inet address that accepted the request.
    */
   @Override
-  public InetAddress getLocalAddress()
+  public InetAddress addressLocal()
   {
-    SocketChannel s = _s;
+    SocketChannel s = _channel;
     
     if (s != null) {
       try {
@@ -165,9 +195,9 @@ public class SocketChannelWrapperBar extends SocketBar
    * Returns the server port that accepted the request.
    */
   @Override
-  public int getLocalPort()
+  public int portLocal()
   {
-    SocketChannel s = _s;
+    SocketChannel s = _channel;
     
     if (s != null) {
       try {
@@ -187,9 +217,9 @@ public class SocketChannelWrapperBar extends SocketBar
    * Returns the remote client's inet address.
    */
   @Override
-  public InetAddress getRemoteAddress()
+  public InetAddress addressRemote()
   {
-    SocketChannel s = _s;
+    SocketChannel s = _channel;
     
     if (s != null) {
       try {
@@ -209,11 +239,11 @@ public class SocketChannelWrapperBar extends SocketBar
    * Returns the remote client's port.
    */
   @Override
-  public int getRemotePort()
+  public int portRemote()
   {
-    if (_s != null) {
+    if (_channel != null) {
       try {
-        SocketAddress addr = _s.getRemoteAddress();
+        SocketAddress addr = _channel.getRemoteAddress();
         
         return 0;
       } catch (Exception e) {
@@ -231,10 +261,7 @@ public class SocketChannelWrapperBar extends SocketBar
   @Override
   public boolean isSecure()
   {
-    if (_s == null || _sslSocketClass == null)
-      return false;
-    else
-      return _sslSocketClass.isAssignableFrom(_s.getClass());
+    return _sslSocket != null;
   }
   /**
    * Returns the secure cipher algorithm.
@@ -242,20 +269,20 @@ public class SocketChannelWrapperBar extends SocketBar
   @Override
   public String getCipherSuite()
   {
-    /*
-    if (! (_s instanceof SSLSocket))
+    SSLSocket sslSocket = _sslSocket;
+    
+    if (sslSocket == null) {
       return super.getCipherSuite();
-
-    SSLSocket sslSocket = (SSLSocket) _s;
+    }
     
     SSLSession sslSession = sslSocket.getSession();
     
-    if (sslSession != null)
+    if (sslSession != null) {
       return sslSession.getCipherSuite();
-    else
+    }
+    else {
       return null;
-      */
-    return null;
+    }
   }
 
   /**
@@ -302,24 +329,12 @@ public class SocketChannelWrapperBar extends SocketBar
   public X509Certificate []getClientCertificates()
     throws CertificateException
   {
-    if (_sslSocketClass == null)
-      return null;
-    else
-      return getClientCertificatesImpl();
-  }
-  
-  /**
-   * Returns the client certificate.
-   */
-  private X509Certificate []getClientCertificatesImpl()
-    throws CertificateException
-  {
-    /*
-    if (! (_s instanceof SSLSocket))
-      return null;
+    SSLSocket sslSocket = _sslSocket;
     
-    SSLSocket sslSocket = (SSLSocket) _s;
-
+    if (sslSocket == null) {
+      return null;
+    }
+    
     SSLSession sslSession = sslSocket.getSession();
     if (sslSession == null)
       return null;
@@ -336,60 +351,61 @@ public class SocketChannelWrapperBar extends SocketBar
     }
     
     return null;
-    */
-    return null;
   }
 
   /**
    * Returns the selectable channel.
    */
   @Override
-  public SelectableChannel getSelectableChannel()
+  public SelectableChannel selectableChannel()
   {
-    /*
-    if (_s != null) {
-      return _s.getChannel();
-    }
-    else {
-      return null;
-    }
-    */
-    return _s;
+    return _channel;
   }
   
   /**
    * Returns the socket's input stream.
    */
   @Override
-  public StreamImpl getStream()
+  public StreamImpl stream()
     throws IOException
   {
-    if (_streamImpl == null) {
-      _streamImpl = new SocketChannelStream();
+    if (_channelStream == null) {
+      _channelStream = new SocketChannelStream();
     }
-
-    _streamImpl.init(_s);
+    
+    if (_sslSocket == null) {
+      _channelStream.init(_channel);
+      _streamImpl = _channelStream;
+    }
+    else {
+      if (_sslStream == null) {
+        _sslStream = new SocketStream();
+      }
+      
+      _sslStream.init(_sslSocket);
+      _streamImpl = _sslStream;
+    }
 
     return _streamImpl;
   }
   
   public void resetTotalBytes()
   {
-    if (_streamImpl != null) {
-      _streamImpl.resetTotalBytes();
+    if (_channelStream != null) {
+      _channelStream.resetTotalBytes();
     }
   }
 
   @Override
   public long getTotalReadBytes()
   {
-    return (_streamImpl == null) ? 0 : _streamImpl.getTotalReadBytes();
+    return (_channelStream == null) ? 0 : _channelStream.getTotalReadBytes();
   }
 
   @Override
   public long getTotalWriteBytes()
   {
-    return (_streamImpl == null) ? 0 : _streamImpl.getTotalWriteBytes();
+    return (_channelStream == null) ? 0 : _channelStream.getTotalWriteBytes();
   }
 
   /**
@@ -398,7 +414,7 @@ public class SocketChannelWrapperBar extends SocketBar
   @Override
   public boolean isClosed()
   {
-    return _s == null;
+    return _channel == null;
   }
 
   /**
@@ -408,8 +424,18 @@ public class SocketChannelWrapperBar extends SocketBar
   public void close()
     throws IOException
   {
-    SocketChannel s = _s;
-    _s = null;
+    SocketChannel s = _channel;
+    _channel = null;
+    
+    SSLSocket sslSocket = _sslSocket;
+    _sslSocket = null;
+
+    if (sslSocket != null) {
+      try {
+        sslSocket.close();
+      } catch (Exception e) {
+      }
+    }
 
     if (s != null) {
       try {
@@ -428,16 +454,20 @@ public class SocketChannelWrapperBar extends SocketBar
     if (_isWriteClosed) {
       return;
     }
+    
     _isWriteClosed = true;
     
-    SocketChannelStream stream = _streamImpl;
+    StreamImpl stream = _streamImpl;
     
     if (stream != null) {
       stream.closeWrite();
     }
-    else if (_s != null) {
+    else if (_sslSocket != null) {
+      _sslSocket.getOutputStream().close();
+    }
+    else if (_channel != null) {
       try {
-        _s.shutdownOutput();
+        _channel.shutdownOutput();
       } catch (UnsupportedOperationException e) {
         log.log(Level.FINEST, e.toString(), e);
       } catch (Exception e) {
@@ -450,15 +480,10 @@ public class SocketChannelWrapperBar extends SocketBar
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _s + "]";
+    return getClass().getSimpleName() + "[" + _channel + "]";
   }
 
   static {
-    try {
-      _sslSocketClass = Class.forName("javax.net.ssl.SSLSocket");
-    } catch (Throwable e) {
-    }
-
     _sslKeySizes = new HashMap<>();
     _sslKeySizes.put("SSL_DH_anon_WITH_DES_CBC_SHA", 56);
     _sslKeySizes.put("SSL_DH_anon_WITH_3DES_EDE_CBC_SHA", 168);

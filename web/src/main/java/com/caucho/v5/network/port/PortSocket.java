@@ -36,5 +36,5 @@ import com.caucho.v5.amp.ServiceManagerAmp;
  */
 public interface PortSocket
 {
-  ServiceManagerAmp getAmpManager();
+  ServiceManagerAmp ampManager();
 }

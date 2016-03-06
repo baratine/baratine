@@ -39,7 +39,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
@@ -339,6 +338,14 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     _configBuilder.add("server.port", port);
     
     return this;
+  }
+  
+  @Override
+  public SslBuilder ssl()
+  {
+    _configBuilder.add("server.ssl", true);
+    
+    return new SslBuilderImpl();
   }
 
   public Config config()
@@ -1782,5 +1789,9 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     {
       return Vfs.path(source);
     }
+  }
+  
+  class SslBuilderImpl implements SslBuilder
+  {
   }
 }

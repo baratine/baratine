@@ -37,6 +37,8 @@ public interface WebServerBuilder extends WebBuilder, InjectBuilder
   
   WebServerBuilder port(int port);
   
+  SslBuilder ssl();
+  
   @Override
   WebServerBuilder include(Class<?> type);
 
@@ -74,4 +76,8 @@ public interface WebServerBuilder extends WebBuilder, InjectBuilder
   //void join(String ...args);
   
   void go(String ...args);
+  
+  public interface SslBuilder {
+    
+  }
 }

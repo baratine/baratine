@@ -217,7 +217,7 @@ public class PollTcpManagerNio
       return PollResult.CLOSED;
     }
 
-    SelectableChannel selChannel = socket.getSelectableChannel();
+    SelectableChannel selChannel = socket.selectableChannel();
 
     if (selChannel == null) {
       log.warning(this + " no channel for " + socket);
@@ -237,7 +237,7 @@ public class PollTcpManagerNio
   private void registerItem(PollController conn)
   {
     try {
-      SelectableChannel selChannel = conn.getSocket().getSelectableChannel();
+      SelectableChannel selChannel = conn.getSocket().selectableChannel();
 
       SelectionKey key = selChannel.register(_selector, 
                                              SelectionKey.OP_READ,
@@ -466,7 +466,7 @@ public class PollTcpManagerNio
     }
     
     SocketBar socket = conn.getSocket();
-    SelectableChannel channel = socket.getSelectableChannel();
+    SelectableChannel channel = socket.selectableChannel();
     
     SelectionKey key = channel.keyFor(_selector);
     

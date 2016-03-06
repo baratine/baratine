@@ -34,7 +34,6 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
@@ -50,7 +49,6 @@ import javax.annotation.PostConstruct;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.thread.IdleThreadLauncher;
-import com.caucho.v5.amp.thread.IdleThreadManager;
 import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.health.meter.ActiveMeter;
@@ -271,28 +269,14 @@ public class PortTcp implements PortSocket
       }
     }
     
-    /*
-    _connThreadPool = new IdleThreadManager(new ConnectionThreadLauncher());
-
-    if (CurrentTime.isTest()) {
-      _connThreadPool.setIdleMin(2);
-      _connThreadPool.setIdleMax(ACCEPT_IDLE_MAX);
-    }
-    else {
-      _connThreadPool.setIdleMin(ACCEPT_IDLE_MIN);
-      _connThreadPool.setIdleMax(ACCEPT_IDLE_MAX);
-    }
-    */
-
-    // _connThreadPool.setThrottleLimit(ACCEPT_THROTTLE_LIMIT);
-    // _connThreadPool.setThrottleSleepTime(ACCEPT_THROTTLE_SLEEP_TIME);
+    _sslFactory = builder.sslFactory();
 
     _connectionCount = new AtomicInteger();
     _connectionSequence = builder.getConnectionSequence();
   }
   
   @Override
-  public ServiceManagerAmp getAmpManager()
+  public ServiceManagerAmp ampManager()
   {
     return _ampManager;
   }
@@ -302,7 +286,7 @@ public class PortTcp implements PortSocket
     return getUrl();
   }
 
-  public ClassLoader getClassLoader()
+  public ClassLoader classLoader()
   {
     return _classLoader;
   }
@@ -868,6 +852,8 @@ public class PortTcp implements PortSocket
     }
     
     String protocolName = _protocol.name();
+    
+    String ssl = _sslFactory != null ? "s" : "";
 
     if (_serverSocket != null) {
       InetAddress address = _serverSocket.getLocalAddress();
@@ -877,6 +863,7 @@ public class PortTcp implements PortSocket
       else
         log.info("listening to *:" + _serverSocket.getLocalPort());
     }
+    /*
     else if (_sslFactory != null && _socketAddress != null) {
       _serverSocket = _sslFactory.create(_socketAddress, _port);
 
@@ -895,26 +882,19 @@ public class PortTcp implements PortSocket
         log.info(protocolName + "s listening to " + _address + ":" + _port);
       }
     }
+    */
     else if (_socketAddress != null) {
       _serverSocket = system.openServerSocket(_socketAddress, _port,
                                               _acceptListenBacklog,
                                               _isEnableJni);
       
-      log.info(_protocol.name() + " listening to " + _socketAddress.getHostName() + ":" + _serverSocket.getLocalPort());
+      log.info(_protocol.name() + ssl + " listening to " + _socketAddress.getHostName() + ":" + _serverSocket.getLocalPort());
     }
-    /*
-    else if (_unixPath != null) {
-      _serverSocket = system.openUnixServerSocket(_unixPath);
-
-      log.info(_protocol.name() + " listening to unix:"
-               + _unixPath.getFullPath());
-    }
-    */
     else {
       _serverSocket = system.openServerSocket(null, _port, _acceptListenBacklog,
                                               _isEnableJni);
       
-      log.info(_protocol.name() + " listening to *:"
+      log.info(_protocol.name() + ssl + " listening to *:"
                + _serverSocket.getLocalPort());
     }
 
@@ -1558,6 +1538,15 @@ public class PortTcp implements PortSocket
       return false;
     }
     
+  }
+
+  public void ssl(SocketBar socket)
+  {
+    SSLFactory sslFactory = _sslFactory;
+    
+    if (sslFactory != null) {
+      socket.ssl(sslFactory);
+    }
   }
 
   /**

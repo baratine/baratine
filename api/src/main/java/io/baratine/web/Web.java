@@ -37,6 +37,7 @@ import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.spi.WebServerProvider;
+import io.baratine.web.WebServerBuilder.SslBuilder;
 
 /**
  * Web provides static methods to build a web server in a main() class.
@@ -66,6 +67,11 @@ public interface Web
   static WebServerBuilder port(int port)
   {
     return builder().port(port);
+  }
+  
+  static SslBuilder ssl()
+  {
+    return builder().ssl();
   }
   
   //

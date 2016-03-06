@@ -111,8 +111,8 @@ public class PollContext
   {
     _socket = s;
 
-    _is.init(s.getStream());
-    _os.init(s.getStream());
+    _is.init(s.stream());
+    _os.init(s.stream());
   }
 
   @Override

@@ -1290,8 +1290,9 @@ public class WriteStream extends OutputStreamWithBuffer
    */
   public long writeStream(InputStream source) throws IOException
   {
-    if (source == null)
+    if (source == null) {
       return 0;
+    }
 
     int len;
     int length = _writeBuffer.length;

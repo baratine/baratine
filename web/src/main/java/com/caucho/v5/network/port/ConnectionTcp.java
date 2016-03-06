@@ -106,16 +106,16 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     _socket = socket;
 
     _writeStream = new WriteBuffer();
-    _writeStream.setReuseBuffer(true);
+    _writeStream.reuseBuffer(true);
 
     _readStream = new ReadBuffer();
-    _readStream.isReuseBuffer(true);
+    _readStream.reuseBuffer(true);
 
     _connectionId = connId;
 
     _port = port;
 
-    _loader = port.getClassLoader();
+    _loader = port.classLoader();
 
     Protocol protocol = port.protocol();
 
@@ -124,7 +124,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     // _id = listener.getDebugId() + "-" + _idCount;
     _id = protocol.name() + "-" + _port.port() + "-" + _connectionId;
     
-    _inRef = port.getAmpManager().newService(this).name(_id).ref();
+    _inRef = port.ampManager().newService(this).name(_id).ref();
     _connProxy = _inRef.as(ConnectionTcpProxy.class);
     
     _name = _id;
@@ -139,7 +139,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
    * WriteStream.
    */
   @Override
-  public final ReadBuffer getReadStream()
+  public final ReadBuffer readStream()
   {
     return _readStream;
   }
@@ -156,26 +156,10 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   }
 
   /**
-   * Returns the ServerRequest for the current thread.
-   */
-  public static ConnectionProtocol getCurrentRequest()
-  {
-    return null;//
-  }
-
-  /**
-   * For QA only, set the current request.
-   */
-  public static void setCurrentRequest(ConnectionProtocol request)
-  {
-    //_currentRequest.set(request);
-  }
-
-  /**
    * Returns the connection id.  Primarily for debugging.
    */
   @Override
-  public long getId()
+  public long id()
   {
     return _connectionId;
   }
@@ -188,7 +172,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   /**
    * Returns the connection sequence.
    */
-  public long getSequence()
+  public long sequence()
   {
     return _connectionSequence;
   }
@@ -427,7 +411,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   @Override
   public InetAddress getLocalAddress()
   {
-    return _socket.getLocalAddress();
+    return _socket.addressLocal();
   }
 
   /**
@@ -445,7 +429,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   @Override
   public int getLocalPort()
   {
-    return _socket.getLocalPort();
+    return _socket.portLocal();
   }
 
   /**
@@ -454,7 +438,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   @Override
   public InetAddress getRemoteAddress()
   {
-    return _socket.getRemoteAddress();
+    return _socket.addressRemote();
   }
 
   /**
@@ -481,7 +465,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   @Override
   public int getRemotePort()
   {
-    return _socket.getRemotePort();
+    return _socket.portRemote();
   }
 
   /**
@@ -615,7 +599,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     }
 
     try {
-      StreamImpl s = socket.getStream();
+      StreamImpl s = socket.stream();
 
       return s.isEof();
       /*
@@ -1058,7 +1042,7 @@ System.out.println("REQ_COMT:");
       return StateConnection.DESTROY;
     }
    
-    if (getReadStream().available() > 0) {
+    if (readStream().available() > 0) {
       return StateConnection.ACTIVE;
     }
 
@@ -1081,7 +1065,7 @@ System.out.println("REQ_COMT:");
     if (! _pollHandle.isKeepaliveStarted()) {
       ServiceRef.flushOutbox();
       
-      if (_port.keepaliveThreadRead(getReadStream(), _idleTimeout) > 0) {
+      if (_port.keepaliveThreadRead(readStream(), _idleTimeout) > 0) {
         return StateConnection.ACTIVE;
       }
       else if (_idleExpireTime <= CurrentTime.getCurrentTime()) {
@@ -1165,7 +1149,7 @@ System.out.println("REQ_COMT:");
           delta = 0;
         }
 
-        long result = getReadStream().fillWithTimeout(delta);
+        long result = readStream().fillWithTimeout(delta);
 
         if (result > 0) {
           return StateConnection.ACTIVE;
@@ -1194,7 +1178,7 @@ System.out.println("REQ_COMT:");
   @Override
   public int fillWithTimeout(long timeout) throws IOException
   {
-    return getReadStream().fillWithTimeout(timeout);
+    return readStream().fillWithTimeout(timeout);
   }
   
   //
@@ -1208,13 +1192,15 @@ System.out.println("REQ_COMT:");
     throws IOException
   {
     _idleTimeout = _port.getKeepaliveTimeout();
+    
+    _port.ssl(_socket);
 
-    writeStream().init(_socket.getStream());
+    writeStream().init(_socket.stream());
     
     // ReadStream cannot use getWriteStream or auto-flush
     // because of duplex mode
     // ReadStream is = getReadStream();
-    _readStream.init(_socket.getStream());
+    _readStream.init(_socket.stream());
     
     // XXX: ssl init here
     
@@ -1320,7 +1306,7 @@ System.out.println("REQ_COMT:");
       }
 
       try {
-        ReadBuffer readStream = getReadStream();
+        ReadBuffer readStream = readStream();
         
         if (readStream != null) {
           readStream.close();
@@ -1358,7 +1344,7 @@ System.out.println("REQ_COMT:");
           log.finer("closing connection " + dbgId()
                     + ", total=" + port.getConnectionCount());
         else
-          log.finer("closing connection " + getId());
+          log.finer("closing connection " + id());
       }
     }
   }
@@ -1391,7 +1377,7 @@ System.out.println("REQ_COMT:");
       }
 
       try {
-        getReadStream().close();
+        readStream().close();
       } catch (Throwable e) {
         log.log(Level.FINER, e.toString(), e);
       }
@@ -1427,7 +1413,7 @@ System.out.println("REQ_COMT:");
           log.finer("closing connection " + dbgId()
                     + ", total=" + port.getConnectionCount());
         else
-          log.finer("closing connection " + getId());
+          log.finer("closing connection " + id());
       }
       
       _state = _state.toFree();
@@ -1473,10 +1459,10 @@ System.out.println("REQ_COMT:");
         _dbgId = (getClass().getSimpleName() + "[id=" + getId() + "] ");
         */
       if (_port != null) {
-        _dbgId = _port.getUrl() + '-' + getId();
+        _dbgId = _port.getUrl() + '-' + id();
       }
       else {
-        _dbgId = getClass().getSimpleName() + '-' + getId();
+        _dbgId = getClass().getSimpleName() + '-' + id();
       }
     }
 

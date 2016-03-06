@@ -47,12 +47,12 @@ public interface ConnectionTcpApi
   /**
    * Returns the connection id.  Primarily for debugging.
    */
-  long getId();
+  long id();
 
   /**
    * Returns the connection's buffered read stream.
    */
-  ReadBuffer getReadStream();
+  ReadBuffer readStream();
 
   /**
    * Returns the connection's buffered write stream. 

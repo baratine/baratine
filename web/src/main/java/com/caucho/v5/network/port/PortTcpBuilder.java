@@ -33,7 +33,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.ServerSocketBar;
+import com.caucho.v5.network.ssl.JsseSSLFactory;
 
 import io.baratine.config.Config;
 
@@ -135,6 +137,23 @@ public class PortTcpBuilder
     _serverSocket = serverSocket;
   }
   */
+
+  public SSLFactory sslFactory()
+  {
+    boolean isSsl = _env.get(portName() + ".ssl", boolean.class, false);
+    
+    if (! isSsl) {
+      return null;
+    }
+    
+    JsseSSLFactory sslFactory = new JsseSSLFactory();
+    
+    sslFactory.setSelfSignedCertificateName("baratine");
+    
+    sslFactory.init();
+
+    return sslFactory;
+  }
   
   public ServerSocketBar serverSocket()
   {

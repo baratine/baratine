@@ -70,11 +70,11 @@ public class ThrottleSocketImpl extends ThrottleSocket
     else {
       client.getAndDecrement();
       
-      String remote = String.valueOf(socket.getRemoteAddress());
+      String remote = String.valueOf(socket.addressRemote());
 
       if (! remote.equals(_lastRemote)) {
         log.warning(L.l("Throttle: IP '{0}' attempted too many ({1}) connections.",
-                        socket.getRemoteAddress(), max));
+                        socket.addressRemote(), max));
       }
       
       _lastRemote = remote;

@@ -127,7 +127,7 @@ public final class ReadBuffer extends InputStream
     _readLength = 0;
   }
   
-  public void isReuseBuffer(boolean isReuse)
+  public void reuseBuffer(boolean isReuse)
   {
     _isReuseBuffer = isReuse;
   }
@@ -152,7 +152,7 @@ public final class ReadBuffer extends InputStream
     return _readOffset;
   }
 
-  public void setOffset(int offset)
+  public void offset(int offset)
   {
     if (offset < 0) {
       throw new IllegalStateException("illegal offset=" + offset);
@@ -161,12 +161,12 @@ public final class ReadBuffer extends InputStream
     _readOffset = offset;
   }
 
-  public int getLength()
+  public int length()
   {
     return _readLength;
   }
 
-  public void setLength(int length)
+  public void length(int length)
   {
     if (length< 0 || _readBuffer.length < length)
       throw new IllegalStateException("illegal length=" + length);
@@ -272,6 +272,7 @@ public final class ReadBuffer extends InputStream
    * Returns an estimate of the available bytes.  If a read would not block,
    * it will always return greater than 0.
    */
+  @Override
   public int available() throws IOException
   {
     if (_readOffset < _readLength) {
@@ -415,12 +416,13 @@ public final class ReadBuffer extends InputStream
     if (readLength <= readOffset) {
       if (ZERO_COPY_SIZE <= length) {
         int len = _source.read(buf, offset, length);
-
+        
         if (len > 0) {
           _position += len;
 
-          if (_isEnableReadTime)
+          if (_isEnableReadTime) {
             _readTime = CurrentTime.getCurrentTime();
+          }
         }
 
         return len;
@@ -530,10 +532,12 @@ public final class ReadBuffer extends InputStream
   public int fillBuffer()
     throws IOException
   {
-    if (! readBuffer())
-      return -1;
-    else
+    if (readBuffer()) {
       return _readLength;
+    }
+    else {
+      return -1;
+    }
   }
 
   /**
@@ -542,8 +546,9 @@ public final class ReadBuffer extends InputStream
   public boolean readNonBlock()
     throws IOException
   {
-    if (_readOffset < _readLength)
+    if (_readOffset < _readLength) {
       return true;
+    }
 
     if (_readBuffer == null) {
       _readOffset = 0;

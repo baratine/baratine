@@ -709,7 +709,7 @@ public class RequestHttp extends RequestHttpBase
     throws IOException
   {
     try {
-      ReadBuffer is = conn().getReadStream();
+      ReadBuffer is = conn().readStream();
       
       if (! readRequest(is)) {
         clearRequest();
@@ -808,7 +808,7 @@ public class RequestHttp extends RequestHttpBase
     
     byte []readBuffer = is.buffer();
     int readOffset = is.offset();
-    int readLength = is.getLength();
+    int readLength = is.length();
     int ch;
 
     // skip leading whitespace
@@ -1044,7 +1044,7 @@ public class RequestHttp extends RequestHttpBase
       ch = readBuffer[readOffset++];
     }
 
-    is.setOffset(readOffset);
+    is.offset(readOffset);
 
     return true;
   }
@@ -1095,7 +1095,7 @@ public class RequestHttp extends RequestHttpBase
       return false;
     }
     
-    ReadBuffer is = conn().getReadStream();
+    ReadBuffer is = conn().readStream();
     
     int sublen = (int) Math.min(Integer.MAX_VALUE, inOffset);
     sublen = Math.min(sublen, is.availableBuffer());
@@ -1159,7 +1159,7 @@ public class RequestHttp extends RequestHttpBase
   private int readChunkHeader()
     throws IOException
   {
-    ReadBuffer is = conn().getReadStream();
+    ReadBuffer is = conn().readStream();
     int ch;
     
     if ((ch = is.read()) == '\r') {
@@ -1226,7 +1226,7 @@ public class RequestHttp extends RequestHttpBase
       return false;
     }
     
-    ReadBuffer is = conn().getReadStream();
+    ReadBuffer is = conn().readStream();
     
     int sublen = (int) Math.min(Integer.MAX_VALUE, (contentLength - inOffset));
     sublen = Math.min(sublen, is.availableBuffer());
@@ -1365,7 +1365,7 @@ public class RequestHttp extends RequestHttpBase
   private boolean startHttp2()
     throws IOException
   {
-    ReadBuffer is = conn().getReadStream();
+    ReadBuffer is = conn().readStream();
 
     //int offset = is.getOffset();
     
@@ -1412,7 +1412,7 @@ public class RequestHttp extends RequestHttpBase
 
     byte []readBuffer = s.buffer();
     int readOffset = s.offset();
-    int readLength = s.getLength();
+    int readLength = s.length();
 
     char []headerBuffer = _headerBuffer;
     headerBuffer[0] = 'z';
@@ -1446,7 +1446,7 @@ public class RequestHttp extends RequestHttpBase
         ch = readBuffer[readOffset++];
 
         if (ch == '\n') {
-          s.setOffset(readOffset);
+          s.offset(readOffset);
           return;
         }
         else if (ch == ':') {
@@ -1559,16 +1559,16 @@ public class RequestHttp extends RequestHttpBase
       extendHeaderBuffers();
     }
     
-    if (s.getLength() <= readOffset) {
+    if (s.length() <= readOffset) {
       if (s.fillBuffer() < 0) {
         return -1;
       }
     }
     else {
-      s.setOffset(readOffset);
+      s.offset(readOffset);
     }
     
-    int tail = s.getLength() - s.offset();
+    int tail = s.length() - s.offset();
     
     if (_uri.length - uriOffset < tail) {
       tail = _uri.length - uriOffset;
@@ -1587,16 +1587,16 @@ public class RequestHttp extends RequestHttpBase
       extendHeaderBuffers();
     }
     
-    if (s.getLength() <= readOffset) {
+    if (s.length() <= readOffset) {
       if (s.fillBuffer() < 0) {
         return -1;
       }
     }
     else {
-      s.setOffset(readOffset);
+      s.offset(readOffset);
     }
     
-    int tail = s.getLength() - s.offset();
+    int tail = s.length() - s.offset();
     
     if (_headerBuffer.length - headerOffset < tail) {
       tail = _headerBuffer.length - headerOffset;

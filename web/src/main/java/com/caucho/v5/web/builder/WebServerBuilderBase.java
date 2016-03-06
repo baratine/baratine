@@ -169,6 +169,12 @@ class WebServerBuilderBase implements WebServerBuilder
   }
 
   @Override
+  public SslBuilder ssl()
+  {
+    return delegate().ssl();
+  }
+
+  @Override
   public WebServer start(String ...args)
   {
     throw new IllegalStateException(getClass().getName());

@@ -97,7 +97,7 @@ public class ConnectionBartender implements ConnectionProtocol
   
   ReadBuffer getReadStream()
   {
-    return _conn.getReadStream();
+    return _conn.readStream();
   }
   
   WriteBuffer getWriteStream()
@@ -122,7 +122,7 @@ public class ConnectionBartender implements ConnectionProtocol
       return StateConnection.CLOSE;
     }
     
-    ReadBuffer is = connTcp.getReadStream();
+    ReadBuffer is = connTcp.readStream();
 
     if (! readHeader(is)) {
       log.fine("No cluster websocket uri found");

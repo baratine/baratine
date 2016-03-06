@@ -150,7 +150,7 @@ public class SocketWrapperBar extends SocketBar
    * Returns the server inet address that accepted the request.
    */
   @Override
-  public InetAddress getLocalAddress()
+  public InetAddress addressLocal()
   {
     Socket s = getSocket();
     
@@ -166,7 +166,7 @@ public class SocketWrapperBar extends SocketBar
    * Returns the server port that accepted the request.
    */
   @Override
-  public int getLocalPort()
+  public int portLocal()
   {
     Socket s = getSocket();
     
@@ -182,7 +182,7 @@ public class SocketWrapperBar extends SocketBar
    * Returns the remote client's inet address.
    */
   @Override
-  public InetAddress getRemoteAddress()
+  public InetAddress addressRemote()
   {
     if (_s != null)
       return _s.getInetAddress();
@@ -194,7 +194,7 @@ public class SocketWrapperBar extends SocketBar
    * Returns the remote client's port.
    */
   @Override
-  public int getRemotePort()
+  public int portRemote()
   {
     if (_s != null)
       return _s.getPort();
@@ -219,17 +219,20 @@ public class SocketWrapperBar extends SocketBar
   @Override
   public String getCipherSuite()
   {
-    if (! (_s instanceof SSLSocket))
+    if (! (_s instanceof SSLSocket)) {
       return super.getCipherSuite();
+    }
 
     SSLSocket sslSocket = (SSLSocket) _s;
     
     SSLSession sslSession = sslSocket.getSession();
     
-    if (sslSession != null)
+    if (sslSession != null) {
       return sslSession.getCipherSuite();
-    else
+    }
+    else {
       return null;
+    }
   }
 
   /**
@@ -312,7 +315,7 @@ public class SocketWrapperBar extends SocketBar
    * Returns the selectable channel.
    */
   @Override
-  public SelectableChannel getSelectableChannel()
+  public SelectableChannel selectableChannel()
   {
     if (_s != null) {
       return _s.getChannel();
@@ -326,7 +329,7 @@ public class SocketWrapperBar extends SocketBar
    * Returns the socket's input stream.
    */
   @Override
-  public StreamImpl getStream()
+  public StreamImpl stream()
     throws IOException
   {
     if (_streamImpl == null) {
@@ -393,6 +396,7 @@ public class SocketWrapperBar extends SocketBar
     if (_isWriteClosed) {
       return;
     }
+    
     _isWriteClosed = true;
     
     SocketStream stream = _streamImpl;

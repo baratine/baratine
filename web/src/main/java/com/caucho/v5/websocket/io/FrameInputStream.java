@@ -435,7 +435,7 @@ public class FrameInputStream
   {
     byte []byteBuffer = _is.buffer();
     int byteOffset = _is.offset();
-    int byteLength = _is.getLength();
+    int byteLength = _is.length();
 
     if (byteLength <= byteOffset || length() == 0) {
       if (! fillFrameBuffer()) {
@@ -443,7 +443,7 @@ public class FrameInputStream
       }
 
       byteOffset = _is.offset();
-      byteLength = _is.getLength();
+      byteLength = _is.length();
     }
     
     int charEnd = charOffset + charLength;
@@ -557,7 +557,7 @@ public class FrameInputStream
       charBuffer[i++] = ch;
     }
     
-    _is.setOffset(byteOffset);
+    _is.offset(byteOffset);
     _length -= (byteOffset - byteBegin);
     
     return i - charOffset;
@@ -584,7 +584,7 @@ public class FrameInputStream
   {
     byte []frameBuffer = _is.buffer();
     int bufferOffset = _is.offset();
-    int bufferLength = _is.getLength();
+    int bufferLength = _is.length();
     long frameLength = _length;
 
     while (bufferLength <= bufferOffset || frameLength == 0) {
@@ -593,13 +593,13 @@ public class FrameInputStream
       }
 
       bufferOffset = _is.offset();
-      bufferLength = _is.getLength();
+      bufferLength = _is.length();
       frameLength = _length;
     }
 
     int value = frameBuffer[bufferOffset++] & 0xff;
 
-    _is.setOffset(bufferOffset);
+    _is.offset(bufferOffset);
     _length = frameLength - 1;
     
     return value;
@@ -610,7 +610,7 @@ public class FrameInputStream
   {
     byte []frameBuffer = _is.buffer();
     int bufferOffset = _is.offset();
-    int bufferLength = _is.getLength();
+    int bufferLength = _is.length();
     long frameLength = _length;
 
     while (bufferLength <= bufferOffset || frameLength == 0) {
@@ -619,7 +619,7 @@ public class FrameInputStream
       }
 
       bufferOffset = _is.offset();
-      bufferLength = _is.getLength();
+      bufferLength = _is.length();
       frameLength = _length;
     }
 
@@ -629,7 +629,7 @@ public class FrameInputStream
 
     System.arraycopy(frameBuffer, bufferOffset, buffer, offset, sublen);
 
-    _is.setOffset(bufferOffset + sublen);
+    _is.offset(bufferOffset + sublen);
     _length = frameLength - sublen;
 
     return sublen;
@@ -640,7 +640,7 @@ public class FrameInputStream
   {
     byte []frameBuffer = _is.buffer();
     int bufferOffset = _is.offset();
-    int bufferLength = _is.getLength();
+    int bufferLength = _is.length();
     long frameLength = _length;
 
     while (true) {
@@ -652,17 +652,17 @@ public class FrameInputStream
         frameLength -= sublen;
       }
       else if (frameLength > 0) {
-        _is.setOffset(bufferOffset);
+        _is.offset(bufferOffset);
         
         if (_is.fillBuffer() <= 0) {
           throw new IOException("unexpected eof in websocket");
         }
         
         bufferOffset = _is.offset();
-        bufferLength = _is.getLength();
+        bufferLength = _is.length();
       }
       else {
-        _is.setOffset(bufferOffset);
+        _is.offset(bufferOffset);
 
         _length = 0;
         
@@ -676,7 +676,7 @@ public class FrameInputStream
   {
     byte []frameBuffer = _is.buffer();
     int bufferOffset = _is.offset();
-    int bufferLength = _is.getLength();
+    int bufferLength = _is.length();
     long frameLength = _length;
 
     while (true) {
@@ -689,17 +689,17 @@ public class FrameInputStream
         frameLength -= sublen;
       }
       else if (frameLength > 0) {
-        _is.setOffset(bufferOffset);
+        _is.offset(bufferOffset);
         
         if (_is.fillBuffer() <= 0) {
           throw new IOException("unexpected eof in websocket");
         }
         
         bufferOffset = _is.offset();
-        bufferLength = _is.getLength();
+        bufferLength = _is.length();
       }
       else {
-        _is.setOffset(bufferOffset);
+        _is.offset(bufferOffset);
 
         _length = 0;
         
@@ -799,7 +799,7 @@ public class FrameInputStream
   {
     byte []buffer = _is.buffer();
     int byteOffset = _is.offset();
-    int byteLength = _is.getLength();
+    int byteLength = _is.length();
     
     int sublen = Math.min((int) _length, byteLength - byteOffset);
     

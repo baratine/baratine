@@ -741,9 +741,9 @@ public class RequestHttp2
     }
 
     if (id.equals(""))
-      return "server-" + getConnection().getId();
+      return "server-" + getConnection().id();
     else
-      return "server-" + id + ":" + getConnection().getId();
+      return "server-" + id + ":" + getConnection().id();
   }
   
   //

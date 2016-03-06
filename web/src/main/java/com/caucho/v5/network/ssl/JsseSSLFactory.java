@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
@@ -40,6 +42,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -47,6 +50,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.io.SSLFactory;
@@ -78,6 +83,8 @@ public class JsseSSLFactory implements SSLFactory
   private String _selfSignedName;
 
   private KeyStore _keyStore;
+
+  private SSLSocketFactory _sslSocketFactory;
   
   /**
    * Creates a ServerSocket factory without initializing it.
@@ -211,24 +218,41 @@ public class JsseSSLFactory implements SSLFactory
    */
   @PostConstruct
   public void init()
-    throws ConfigException, IOException, GeneralSecurityException
   {
-    if (_keyStoreFile != null && _password == null)
-      throw new ConfigException(L.l("'password' is required for JSSE."));
-    if (_password != null && _keyStoreFile == null)
-      throw new ConfigException(L.l("'key-store-file' is required for JSSE."));
+    try {
+      if (_keyStoreFile != null && _password == null) {
+        throw new ConfigException(L.l("'password' is required for JSSE."));
+      }
 
-    if (_alias != null && _keyStoreFile == null)
-      throw new ConfigException(L.l("'alias' requires a key store for JSSE."));
+      if (_password != null && _keyStoreFile == null) {
+        throw new ConfigException(L.l("'key-store-file' is required for JSSE."));
+      }
 
-    if (_keyStoreFile == null && _selfSignedName == null)
-      throw new ConfigException(L.l("JSSE requires a key-store-file or a self-signed-certificate-name."));
+      if (_alias != null && _keyStoreFile == null) {
+        throw new ConfigException(L.l("'alias' requires a key store for JSSE."));
+      }
 
-    if (_keyStoreFile == null)
-      return;
-    
+      if (_keyStoreFile == null && _selfSignedName == null) {
+        throw new ConfigException(L.l("JSSE requires a key-store-file or a self-signed-certificate-name."));
+      }
+
+      if (_keyStoreFile != null) {
+        initKeyStore();
+      }
+      
+      _sslSocketFactory = createFactory();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw ConfigException.createConfig(e);
+    }
+  }
+
+  private void initKeyStore()
+    throws Exception
+  {
     _keyStore = KeyStore.getInstance(_keyStoreType);
-    
+
     try (InputStream is = Files.newInputStream(_keyStoreFile)) {
       _keyStore.load(is, _password.toCharArray());
     }
@@ -238,13 +262,13 @@ public class JsseSSLFactory implements SSLFactory
 
       if (key == null)
         throw new ConfigException(L.l("JSSE alias '{0}' does not have a corresponding key.",
-                                  _alias));
+                                      _alias));
 
       Certificate []certChain = _keyStore.getCertificateChain(_alias);
-      
+
       if (certChain == null)
         throw new ConfigException(L.l("JSSE alias '{0}' does not have a corresponding certificate chain.",
-                                  _alias));
+                                      _alias));
 
       _keyStore = KeyStore.getInstance(_keyStoreType);
       _keyStore.load(null, _password.toCharArray());
@@ -254,12 +278,16 @@ public class JsseSSLFactory implements SSLFactory
   }
 
   /**
-   * Creates the SSL ServerSocket.
+   * Creates the SSLSocketFactory
    */
-  public ServerSocketBar create(InetAddress host, int port)
-    throws IOException, GeneralSecurityException
+  private SSLSocketFactory createFactory()
+    throws Exception
   {
-    SSLServerSocketFactory factory = null;
+    SSLSocketFactory ssFactory = null;
+    
+    String host = "localhost";
+    int port = 8086;
+    
     
     if (_keyStore != null) {
       SSLContext sslContext = SSLContext.getInstance(_sslContext);
@@ -279,20 +307,56 @@ public class JsseSSLFactory implements SSLFactory
         sslContext.createSSLEngine().setEnabledProtocols(_protocols);
       */
 
-      factory = sslContext.getServerSocketFactory();
+      ssFactory = sslContext.getSocketFactory();
     }
     else {
-      factory = createAnonymousFactory(host, port);
+      //ssFactory = createAnonymousFactory(host, port);
+      ssFactory = createAnonymousFactory(null, port);
     }
+    
+    return ssFactory;
+  }
 
+  /**
+   * Creates the SSL ServerSocket.
+   */
+  public ServerSocketBar create(InetAddress host, int port)
+    throws IOException, GeneralSecurityException
+  {
+    SSLServerSocketFactory ssFactory = null;
+    
+    if (_keyStore != null) {
+      SSLContext sslContext = SSLContext.getInstance(_sslContext);
+
+      KeyManagerFactory kmf
+        = KeyManagerFactory.getInstance(_keyManagerFactory);
+    
+      kmf.init(_keyStore, _password.toCharArray());
+      
+      sslContext.init(kmf.getKeyManagers(), null, null);
+
+      /*
+      if (_cipherSuites != null)
+        sslContext.createSSLEngine().setEnabledCipherSuites(_cipherSuites);
+
+      if (_protocols != null)
+        sslContext.createSSLEngine().setEnabledProtocols(_protocols);
+      */
+
+      ssFactory = sslContext.getServerSocketFactory();
+    }
+    else {
+      ssFactory = createAnonymousServerFactory(host, port);
+    }
+    
     ServerSocket serverSocket;
 
     int listen = 100;
 
     if (host == null)
-      serverSocket = factory.createServerSocket(port, listen);
+      serverSocket = ssFactory.createServerSocket(port, listen);
     else
-      serverSocket = factory.createServerSocket(port, listen, host);
+      serverSocket = ssFactory.createServerSocket(port, listen, host);
 
     SSLServerSocket sslServerSocket = (SSLServerSocket) serverSocket;
     
@@ -343,7 +407,7 @@ public class JsseSSLFactory implements SSLFactory
     return false;
   }
 
-  private SSLServerSocketFactory createAnonymousFactory(InetAddress hostAddr,
+  private SSLServerSocketFactory createAnonymousServerFactory(InetAddress hostAddr,
                                                         int port)
     throws IOException, GeneralSecurityException
   {
@@ -371,15 +435,12 @@ public class JsseSSLFactory implements SSLFactory
       }
     }
     
-    if (true) throw new UnsupportedOperationException();
-    /*
     SelfSignedCert cert = createSelfSignedCert(selfSignedName, cipherSuites);
 
     if (cert == null)
       throw new ConfigException(L.l("Cannot generate anonymous certificate"));
       
     sslContext.init(cert.getKeyManagers(), null, null);
-    */
 
     // SSLEngine engine = sslContext.createSSLEngine();
 
@@ -387,40 +448,55 @@ public class JsseSSLFactory implements SSLFactory
 
     return factory;
   }
+
+  private SSLSocketFactory createAnonymousFactory(InetAddress hostAddr,
+                                                  int port)
+    throws IOException, GeneralSecurityException
+  {
+    SSLContext sslContext = SSLContext.getInstance(_sslContext);
+
+    String []cipherSuites = _cipherSuites;
+
+    /*
+    if (cipherSuites == null) {
+      cipherSuites = sslContext.createSSLEngine().getSupportedCipherSuites();
+    }
+    */
+
+    String selfSignedName = _selfSignedName;
+
+    if (selfSignedName == null
+        || "".equals(selfSignedName)
+        || "*".equals(selfSignedName)) {
+      if (hostAddr != null)
+        selfSignedName = hostAddr.getHostName();
+      else {
+        InetAddress addr = InetAddress.getLocalHost();
+
+        selfSignedName = addr.getHostAddress();
+      }
+    }
+    
+    SelfSignedCert cert = createSelfSignedCert(selfSignedName, cipherSuites);
+
+    if (cert == null)
+      throw new ConfigException(L.l("Cannot generate anonymous certificate"));
+      
+    sslContext.init(cert.getKeyManagers(), null, null);
+
+    // SSLEngine engine = sslContext.createSSLEngine();
+
+    return sslContext.getSocketFactory();
+  }
   
-  /*
   private SelfSignedCert createSelfSignedCert(String name, 
                                               String []cipherSuites)
   {
-    Path dataDir = RootDirectorySystem.getCurrentDataDirectory();
-    Path certDir = dataDir.lookup("certs");
+    SelfSignedCert cert = SelfSignedCert.create(name, cipherSuites);
     
-    SelfSignedCert cert = null;
+    return cert;
     
-    try {
-      Path certPath = certDir.lookup(name + ".cert");
-      
-      if (certPath.canRead()) {
-        ReadStream is = certPath.openRead();
-        
-        try {
-          Hessian2Input hIn = new Hessian2Input(is);
-          
-          cert = (SelfSignedCert) hIn.readObject(SelfSignedCert.class);
-          
-          hIn.close();
-          
-          return cert;
-        } finally {
-          IoUtil.close(is);
-        }
-      }
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-    }
-      
-    cert = SelfSignedCert.create(name, cipherSuites);
-        
+    /*
     try {
       certDir.mkdirs();
       
@@ -438,16 +514,30 @@ public class JsseSSLFactory implements SSLFactory
     }
     
     return cert;
+    */
   }
-  */
   
   /**
    * Creates the SSL ServerSocket.
    */
+  @Override
   public ServerSocketBar bind(ServerSocketBar ss)
     throws ConfigException, IOException, GeneralSecurityException
   {
     throw new ConfigException(L.l("jsse is not allowed here"));
+  }
+
+  @Override
+  public SSLSocket ssl(SocketChannel chan)
+    throws IOException
+  {
+    Objects.requireNonNull(chan);
+    
+    Socket sock = chan.socket();
+    
+    SSLSocket sslSock = (SSLSocket) _sslSocketFactory.createSocket(sock, null, false);
+    
+    return sslSock;
   }
 }
 

@@ -362,7 +362,7 @@ public abstract class RequestHttpBase implements OutHttp
 
   public final long connectionId()
   {
-    return _conn.getId();
+    return _conn.id();
   }
 
   /**
@@ -2635,7 +2635,7 @@ public abstract class RequestHttpBase implements OutHttp
 
   protected String dbgId()
   {
-    return "Tcp[" + _conn.getId() + "] ";
+    return "Tcp[" + _conn.id() + "] ";
   }
 
   static {

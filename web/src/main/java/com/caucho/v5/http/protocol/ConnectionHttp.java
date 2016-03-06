@@ -81,7 +81,7 @@ public class ConnectionHttp implements ConnectionProtocol
     _conn = conn;
     _sequence = sequence;
     
-    ServiceManagerAmp ampManager = conn.port().getAmpManager();
+    ServiceManagerAmp ampManager = conn.port().ampManager();
     
     _outProxy = ampManager.newService(new OutHttpProxyImpl(this))
                           .name(conn.toString())

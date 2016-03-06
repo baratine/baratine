@@ -50,14 +50,14 @@ abstract public class SocketBar implements Closeable
   /**
    * Returns the server inet address that accepted the request.
    */
-  abstract public InetAddress getLocalAddress();
+  abstract public InetAddress addressLocal();
   
   /**
    * Returns the server inet address that accepted the request.
    */
   public String getLocalHost()
   {
-    InetAddress localAddress = getLocalAddress();
+    InetAddress localAddress = addressLocal();
     
     if (localAddress != null)
       return localAddress.getHostAddress();
@@ -69,19 +69,19 @@ abstract public class SocketBar implements Closeable
   /**
    * Returns the server port that accepted the request.
    */
-  abstract public int getLocalPort();
+  abstract public int portLocal();
 
   /**
    * Returns the remote client's inet address.
    */
-  abstract public InetAddress getRemoteAddress();
+  abstract public InetAddress addressRemote();
 
   /**
    * Returns the remote client's inet address.
    */
   public String getRemoteHost()
   {
-    InetAddress remoteAddress = getRemoteAddress();
+    InetAddress remoteAddress = addressRemote();
     
     if (remoteAddress != null)
       return remoteAddress.getHostAddress();
@@ -126,14 +126,14 @@ abstract public class SocketBar implements Closeable
    */
   public byte[] getRemoteIP()
   {
-    InetAddress addr = getRemoteAddress();
+    InetAddress addr = addressRemote();
     return addr.getAddress();
   }
   
   /**
    * Returns the remote client's port.
    */
-  abstract public int getRemotePort();
+  abstract public int portRemote();
 
   public void setTcpNoDelay(boolean value)
     throws SocketException
@@ -150,6 +150,11 @@ abstract public class SocketBar implements Closeable
     return -1;
   }
 
+  public void ssl(SSLFactory sslFactory)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
   /**
    * Returns true if the connection is secure.
    */
@@ -161,7 +166,7 @@ abstract public class SocketBar implements Closeable
   /**
    * Returns any selectable channel.
    */
-  public SelectableChannel getSelectableChannel()
+  public SelectableChannel selectableChannel()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -218,13 +223,13 @@ abstract public class SocketBar implements Closeable
    * Returns a stream impl for the socket encapsulating the
    * input and output stream.
    */
-  abstract public StreamImpl getStream()
+  abstract public StreamImpl stream()
     throws IOException;
 
   public ReadBuffer getInputStream()
     throws IOException
   {
-    StreamImpl stream = getStream();
+    StreamImpl stream = stream();
     
     if (stream != null) {
       return new ReadBuffer(stream);
@@ -237,7 +242,7 @@ abstract public class SocketBar implements Closeable
   public WriteBuffer getOutputStream()
     throws IOException
   {
-    StreamImpl stream = getStream();
+    StreamImpl stream = stream();
     
     if (stream != null) {
       return new WriteBuffer(stream);
@@ -279,7 +284,7 @@ abstract public class SocketBar implements Closeable
   public String toString()
   {
     return (getClass().getSimpleName()
-            + "[" + getLocalAddress() + ":" + getLocalPort() + "]");
+            + "[" + addressLocal() + ":" + portLocal() + "]");
   }
 }
 

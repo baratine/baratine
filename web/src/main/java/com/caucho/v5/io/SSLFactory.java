@@ -28,14 +28,17 @@
 
 package com.caucho.v5.io;
 
-import com.caucho.v5.config.ConfigException;
-
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.channels.SocketChannel;
 import java.security.GeneralSecurityException;
 
+import javax.net.ssl.SSLSocket;
+
+import com.caucho.v5.config.ConfigException;
+
 /**
- * Abstract socket to handle both normal sockets and bin/resin sockets.
+ * SSL factory to connect both normal sockets and JNI sockets.
  */
 public interface SSLFactory {
   /**
@@ -49,5 +52,11 @@ public interface SSLFactory {
    */
   public ServerSocketBar bind(ServerSocketBar ss)
     throws ConfigException, IOException, GeneralSecurityException;
+
+  default SSLSocket ssl(SocketChannel s)
+    throws IOException
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
 }
 

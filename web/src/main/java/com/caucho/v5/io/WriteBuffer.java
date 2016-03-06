@@ -216,7 +216,7 @@ public class WriteBuffer extends OutputStreamWithBuffer
     }
   }
 
-  public void setReuseBuffer(boolean reuse)
+  public void reuseBuffer(boolean reuse)
   {
     _isReuseBuffer = reuse;
   }

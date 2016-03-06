@@ -132,7 +132,7 @@ class TcpStream extends StreamImpl {
       throw new IOException(e);
     }
 
-    _stream = _s.getStream();
+    _stream = _s.stream();
 
     /*
     _is = new ReadStream(stream);
