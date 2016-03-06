@@ -79,12 +79,12 @@ class SkeletonMethodResult_N extends SkeletonMethodBase {
     return Result.class;
   }
   
-  protected Method getMethod()
+  protected Method method()
   {
     return _method;
   }
   
-  protected MethodHandle getMethodHandle()
+  protected MethodHandle methodHandle()
   {
     return _methodHandle;
   }

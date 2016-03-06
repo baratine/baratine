@@ -29,9 +29,6 @@
 
 package com.caucho.v5.amp.actor;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Objects;
@@ -39,7 +36,11 @@ import java.util.Objects;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
-import com.caucho.v5.amp.spi.QueryRefAmp;
+
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
+import io.baratine.service.Result;
+import io.baratine.service.ResultStream;
 
 
 /**
@@ -60,12 +61,12 @@ public class MethodAmpTee implements MethodAmp
     _teeMethod = teeMethod;
   }
   
-  private MethodAmp getDelegate()
+  private MethodAmp delegate()
   {
     return _delegate;
   }
   
-  private MethodAmp getTee()
+  private MethodAmp tee()
   {
     return _teeMethod;
   }
@@ -77,61 +78,61 @@ public class MethodAmpTee implements MethodAmp
   @Override
   public boolean isClosed()
   {
-    return getDelegate().isClosed();
+    return delegate().isClosed();
   }
   
   @Override
   public String name()
   {
-    return getDelegate().name();
+    return delegate().name();
   }
   
   @Override
   public boolean isDirect()
   {
-    return getDelegate().isDirect();
+    return delegate().isDirect();
   }
 
   @Override
   public boolean isModify()
   {
-    return getDelegate().isModify();
+    return delegate().isModify();
   }
   
   @Override
   public Annotation[] getAnnotations()
   {
-    return getDelegate().getAnnotations();
+    return delegate().getAnnotations();
   }
   
   @Override
   public Class<?> getReturnType()
   {
-    return getDelegate().getReturnType();
+    return delegate().getReturnType();
   }
   
   @Override
   public Class<?> []getParameterTypes()
   {
-    return getDelegate().getParameterTypes();
+    return delegate().getParameterTypes();
   }
   
   @Override
   public Type []getGenericParameterTypes()
   {
-    return getDelegate().getGenericParameterTypes();
+    return delegate().getGenericParameterTypes();
   }
   
   @Override
   public Annotation [][]getParameterAnnotations()
   {
-    return getDelegate().getParameterAnnotations();
+    return delegate().getParameterAnnotations();
   }
   
   @Override
   public boolean isVarArgs()
   {
-    return getDelegate().isVarArgs();
+    return delegate().isVarArgs();
   }
   
   //
@@ -142,9 +143,9 @@ public class MethodAmpTee implements MethodAmp
   public void send(HeadersAmp headers,
                     ActorAmp actor)
   {     
-    getDelegate().send(headers, actor);
+    delegate().send(headers, actor);
     
-    getTee().send(headers, actor);
+    tee().send(headers, actor);
   }
 
   @Override
@@ -152,9 +153,9 @@ public class MethodAmpTee implements MethodAmp
                     ActorAmp actor,
                     Object arg1)
   {
-    getDelegate().send(headers, actor, arg1);
+    delegate().send(headers, actor, arg1);
     
-    getTee().send(headers, actor, arg1);
+    tee().send(headers, actor, arg1);
   }
 
   @Override
@@ -163,9 +164,9 @@ public class MethodAmpTee implements MethodAmp
                     Object arg1, 
                     Object arg2)
   {
-    getDelegate().send(headers, actor, arg1, arg2);
+    delegate().send(headers, actor, arg1, arg2);
     
-    getTee().send(headers, actor, arg1, arg2);
+    tee().send(headers, actor, arg1, arg2);
   }
 
   @Override
@@ -175,9 +176,9 @@ public class MethodAmpTee implements MethodAmp
                    Object arg2, 
                    Object arg3)
   {
-    getDelegate().send(headers, actor, arg1, arg2, arg3);
+    delegate().send(headers, actor, arg1, arg2, arg3);
     
-    getTee().send(headers, actor, arg1, arg2, arg3);
+    tee().send(headers, actor, arg1, arg2, arg3);
   }
 
   @Override
@@ -185,9 +186,9 @@ public class MethodAmpTee implements MethodAmp
                    ActorAmp actor,
                    Object []args)
   {
-    getDelegate().send(headers, actor, args);
+    delegate().send(headers, actor, args);
     
-    getTee().send(headers, actor, args);
+    tee().send(headers, actor, args);
   }
   
   //
@@ -199,9 +200,9 @@ public class MethodAmpTee implements MethodAmp
                     Result<?> result,
                     ActorAmp actor)
   {
-    getDelegate().query(headers, result, actor);
+    delegate().query(headers, result, actor);
     
-    getTee().query(headers, result, actor);
+    tee().query(headers, result, actor);
   }
   
   @Override
@@ -210,9 +211,9 @@ public class MethodAmpTee implements MethodAmp
                     ActorAmp actor,
                     Object arg1)
   {
-    getDelegate().query(headers, result, actor, arg1);
+    delegate().query(headers, result, actor, arg1);
     
-    getTee().query(headers, result, actor, arg1);
+    tee().query(headers, result, actor, arg1);
   }
   
   @Override
@@ -222,9 +223,9 @@ public class MethodAmpTee implements MethodAmp
                     Object arg1,
                     Object arg2)
   {
-    getDelegate().query(headers, result, actor, arg1, arg2);
+    delegate().query(headers, result, actor, arg1, arg2);
     
-    getTee().query(headers, result, actor, arg1, arg2);
+    tee().query(headers, result, actor, arg1, arg2);
   }
   
   @Override
@@ -235,9 +236,9 @@ public class MethodAmpTee implements MethodAmp
                     Object arg2,
                     Object arg3)
   {
-    getDelegate().query(headers, result, actor, arg1, arg2, arg3);
+    delegate().query(headers, result, actor, arg1, arg2, arg3);
     
-    getTee().query(headers, result, actor, arg1, arg2, arg3);
+    tee().query(headers, result, actor, arg1, arg2, arg3);
   }
   
   @Override
@@ -246,9 +247,9 @@ public class MethodAmpTee implements MethodAmp
                     ActorAmp actor,
                     Object []args)
   {
-    getDelegate().query(headers, result, actor, args);
+    delegate().query(headers, result, actor, args);
     
-    getTee().query(headers, result, actor, args);
+    tee().query(headers, result, actor, args);
   }
   
   //
@@ -275,9 +276,31 @@ public class MethodAmpTee implements MethodAmp
                          ActorAmp actor,
                          Object []args)
   {
-    getDelegate().stream(headers, result, actor, args);
+    delegate().stream(headers, result, actor, args);
     
-    getTee().stream(headers, result, actor, args);
+    tee().stream(headers, result, actor, args);
+  }
+
+  @Override
+  public <T> void outPipe(HeadersAmp headers,
+                          ResultOutPipe<T> result,
+                          ActorAmp actor,
+                          Object []args)
+  {
+    delegate().outPipe(headers, result, actor, args);
+    
+    tee().outPipe(headers, result, actor, args);
+  }
+
+  @Override
+  public <T> void inPipe(HeadersAmp headers,
+                          ResultInPipe<T> result,
+                          ActorAmp actor,
+                          Object []args)
+  {
+    delegate().inPipe(headers, result, actor, args);
+    
+    tee().inPipe(headers, result, actor, args);
   }
   
   //

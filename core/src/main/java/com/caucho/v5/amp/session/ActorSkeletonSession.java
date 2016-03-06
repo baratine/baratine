@@ -138,7 +138,7 @@ public class ActorSkeletonSession extends ActorAmpBean
   
   protected SkeletonClassSession getSkeletonSession()
   {
-    return (SkeletonClassSession) getSkeleton();
+    return (SkeletonClassSession) skeleton();
   }
 
   public Object getKey()

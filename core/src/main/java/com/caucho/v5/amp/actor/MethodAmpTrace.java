@@ -29,9 +29,6 @@
 
 package com.caucho.v5.amp.actor;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -43,7 +40,11 @@ import com.caucho.v5.amp.manager.TraceAmp;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
-import com.caucho.v5.amp.spi.QueryRefAmp;
+
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
+import io.baratine.service.Result;
+import io.baratine.service.ResultStream;
 
 
 /**
@@ -63,7 +64,7 @@ public class MethodAmpTrace implements MethodAmp
     _delegate = delegate;
   }
   
-  private MethodAmp getDelegate()
+  private MethodAmp delegate()
   {
     return _delegate;
   }
@@ -75,61 +76,61 @@ public class MethodAmpTrace implements MethodAmp
   @Override
   public boolean isClosed()
   {
-    return getDelegate().isClosed();
+    return delegate().isClosed();
   }
   
   @Override
   public String name()
   {
-    return getDelegate().name();
+    return delegate().name();
   }
   
   @Override
   public boolean isDirect()
   {
-    return getDelegate().isDirect();
+    return delegate().isDirect();
   }
 
   @Override
   public boolean isModify()
   {
-    return getDelegate().isModify();
+    return delegate().isModify();
   }
   
   @Override
   public Annotation[] getAnnotations()
   {
-    return getDelegate().getAnnotations();
+    return delegate().getAnnotations();
   }
   
   @Override
   public Class<?> getReturnType()
   {
-    return getDelegate().getReturnType();
+    return delegate().getReturnType();
   }
   
   @Override
   public Class<?> []getParameterTypes()
   {
-    return getDelegate().getParameterTypes();
+    return delegate().getParameterTypes();
   }
   
   @Override
   public Type []getGenericParameterTypes()
   {
-    return getDelegate().getGenericParameterTypes();
+    return delegate().getGenericParameterTypes();
   }
   
   @Override
   public Annotation [][]getParameterAnnotations()
   {
-    return getDelegate().getParameterAnnotations();
+    return delegate().getParameterAnnotations();
   }
   
   @Override
   public boolean isVarArgs()
   {
-    return getDelegate().isVarArgs();
+    return delegate().isVarArgs();
   }
   
   //
@@ -148,7 +149,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().send(headers, actor);
+    delegate().send(headers, actor);
   }
 
   @Override
@@ -164,7 +165,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().send(headers, actor, arg1);
+    delegate().send(headers, actor, arg1);
   }
 
   @Override
@@ -181,7 +182,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().send(headers, actor, arg1, arg2);
+    delegate().send(headers, actor, arg1, arg2);
   }
 
   @Override
@@ -199,7 +200,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().send(headers, actor, arg1, arg2, arg3);
+    delegate().send(headers, actor, arg1, arg2, arg3);
   }
 
   @Override
@@ -215,7 +216,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().send(headers, actor, args);
+    delegate().send(headers, actor, args);
   }
   
   private void traceSend(String traceId,
@@ -249,7 +250,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().query(headers, result, actor);
+    delegate().query(headers, result, actor);
   }
   
   @Override
@@ -266,7 +267,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().query(headers, result, actor, arg1);
+    delegate().query(headers, result, actor, arg1);
   }
   
   @Override
@@ -284,7 +285,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().query(headers, result, actor, arg1, arg2);
+    delegate().query(headers, result, actor, arg1, arg2);
   }
   
   @Override
@@ -303,7 +304,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().query(headers, result, actor, arg1, arg2, arg3);
+    delegate().query(headers, result, actor, arg1, arg2, arg3);
   }
   
   @Override
@@ -320,7 +321,7 @@ public class MethodAmpTrace implements MethodAmp
       TraceAmp.deliverBreakpoint(traceId, actor.getName(), name());
     }
     
-    getDelegate().query(headers, result, actor, args);
+    delegate().query(headers, result, actor, args);
   }
   
   private void traceQuery(String traceId,
@@ -361,9 +362,27 @@ public class MethodAmpTrace implements MethodAmp
                          ActorAmp actor,
                          Object []args)
   {
-    getDelegate().stream(headers, result, actor, args);
+    delegate().stream(headers, result, actor, args);
     
     // getTee().stream(headers, result, actor, args);
+  }
+
+  @Override
+  public <T> void outPipe(HeadersAmp headers,
+                          ResultOutPipe<T> result,
+                          ActorAmp actor,
+                          Object []args)
+  {
+    delegate().outPipe(headers, result, actor, args);
+  }
+
+  @Override
+  public <T> void inPipe(HeadersAmp headers,
+                          ResultInPipe<T> result,
+                          ActorAmp actor,
+                          Object []args)
+  {
+    delegate().inPipe(headers, result, actor, args);
   }
   
   private String getTraceId(HeadersAmp headers)

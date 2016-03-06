@@ -265,8 +265,8 @@ public class StreamCallMessage<T>
   {
     String toAddress = null;
     
-    if (getInboxTarget() != null && getInboxTarget().serviceRef() != null) {
-      toAddress = getInboxTarget().serviceRef().address();
+    if (inboxTarget() != null && inboxTarget().serviceRef() != null) {
+      toAddress = inboxTarget().serviceRef().address();
     }
     
     String callbackName = null;

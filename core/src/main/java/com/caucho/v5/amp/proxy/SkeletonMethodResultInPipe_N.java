@@ -29,31 +29,30 @@
 
 package com.caucho.v5.amp.proxy;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
-import io.baratine.service.ServiceException;
-import io.baratine.service.ServiceExceptionIllegalArgument;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.io.ResultInPipe;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceException;
+import io.baratine.service.ServiceExceptionIllegalArgument;
 
 /**
  * Creates MPC skeletons and stubs.
  */
-class SkeletonMethodResultStream_N extends SkeletonMethodResult_N {
-  private static final L10N L = new L10N(SkeletonMethodResultStream_N.class);
+class SkeletonMethodResultInPipe_N extends SkeletonMethodResult_N
+{
+  private static final L10N L = new L10N(SkeletonMethodResultInPipe_N.class);
   private static final Logger log
-  = Logger.getLogger(SkeletonMethodResultStream_N.class.getName());
+  = Logger.getLogger(SkeletonMethodResultInPipe_N.class.getName());
 
-  SkeletonMethodResultStream_N(Method method) throws IllegalAccessException
+  SkeletonMethodResultInPipe_N(Method method) throws IllegalAccessException
   {
     super(method);
   }
@@ -61,7 +60,7 @@ class SkeletonMethodResultStream_N extends SkeletonMethodResult_N {
   @Override
   protected Class<?> getResultClass()
   {
-    return ResultStream.class;
+    return ResultInPipe.class;
   }
 
   @Override
@@ -95,10 +94,10 @@ class SkeletonMethodResultStream_N extends SkeletonMethodResult_N {
   }
 
   @Override
-  public <T> void stream(HeadersAmp headers,
-                         ResultStream<T> result,
-                         ActorAmp actor,
-                         Object []args)
+  public <T> void inPipe(HeadersAmp headers,
+                          ResultInPipe<T> result,
+                          ActorAmp actor,
+                          Object []args)
   {
     Object bean = actor.bean();
 
@@ -108,9 +107,6 @@ class SkeletonMethodResultStream_N extends SkeletonMethodResult_N {
     }
     
     try {
-      result.start();
-      
-      //_methodHandle.invokeExact(bean, result, args);
       methodHandle().invoke(bean, result, args);
     } catch (IllegalArgumentException e) {
       RuntimeException exn = new ServiceExceptionIllegalArgument(bean + "." + name() + ": " + e.getMessage(), e);

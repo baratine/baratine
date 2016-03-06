@@ -47,7 +47,7 @@ public class OnActiveReplayMessage extends MessageAmpBase
   }
   
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return _inbox;
   }
@@ -84,6 +84,6 @@ public class OnActiveReplayMessage extends MessageAmpBase
   {
     long timeout = InboxAmp.TIMEOUT_INFINITY;
     
-    getInboxTarget().offerAndWake(this, timeout);
+    inboxTarget().offerAndWake(this, timeout);
   }
 }

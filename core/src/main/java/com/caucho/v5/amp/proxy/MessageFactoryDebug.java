@@ -29,16 +29,11 @@
 
 package com.caucho.v5.amp.proxy;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultFuture;
-import io.baratine.service.ResultStream;
-
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.inbox.OutboxAmpFactory;
 import com.caucho.v5.amp.manager.AmpManager;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.HeadersNull;
@@ -52,10 +47,16 @@ import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.DebugUtil;
 
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
+import io.baratine.service.Result;
+import io.baratine.service.ResultFuture;
+import io.baratine.service.ResultStream;
+
 /**
  * Factory for proxy message
  */
-public final class MessageFactoryDebug implements MessageFactory
+public final class MessageFactoryDebug implements MessageFactoryAmp
 {
   private static final Logger log
     = Logger.getLogger(MessageFactoryDebug.class.getName());
@@ -297,6 +298,60 @@ public final class MessageFactoryDebug implements MessageFactory
   {
     // TODO Auto-generated method stub
     
+  }
+  
+  @Override
+  public <V> void resultOutPipe(ResultOutPipe<V> result, 
+                              long timeout,
+                              ServiceRefAmp serviceRef,
+                              MethodAmp method,
+                              Object []args)
+  {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_manager)) {
+      HeadersAmp headers = HeadersNull.NULL;
+    
+      System.out.println("PIPE_ME_UP:");
+      /*
+      StreamCallMessage<V> msg
+      = new StreamCallMessage<V>(outbox,
+                            outbox.inbox(),
+                            headers,
+                            serviceRef, 
+                            method,
+                            result, 
+                            timeout, 
+                            args);
+    
+      msg.offer(timeout);
+      */
+    }
+  }
+  
+  @Override
+  public <V> void resultInPipe(ResultInPipe<V> result, 
+                              long timeout,
+                              ServiceRefAmp serviceRef,
+                              MethodAmp method,
+                              Object []args)
+  {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_manager)) {
+      HeadersAmp headers = HeadersNull.NULL;
+    
+      System.out.println("PIPE_ME_UP:");
+      /*
+      StreamCallMessage<V> msg
+      = new StreamCallMessage<V>(outbox,
+                            outbox.inbox(),
+                            headers,
+                            serviceRef, 
+                            method,
+                            result, 
+                            timeout, 
+                            args);
+    
+      msg.offer(timeout);
+      */
+    }
   }
 
   protected HeadersAmp createHeaders(OutboxAmp outbox,

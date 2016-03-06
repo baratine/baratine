@@ -34,7 +34,7 @@ import java.util.Objects;
 /**
  * {@code InPipe} controls values
  */
-abstract public class InPipeBase<T> implements InPipe<T>, InFlow, ResultInPipe<T>
+abstract public class InPipeBase<T> implements InPipe<T>, InFlow
 {
   private InFlow _inFlow;
   

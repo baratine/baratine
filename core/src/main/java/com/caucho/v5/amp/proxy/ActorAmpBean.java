@@ -90,7 +90,7 @@ public class ActorAmpBean extends ActorAmpBeanBase
   @Override
   public void onInit(Result<? super Boolean> result)
   {
-    getSkeleton().onInit(this, result);
+    skeleton().onInit(this, result);
     
     beforeBatch();
   }
@@ -100,19 +100,19 @@ public class ActorAmpBean extends ActorAmpBeanBase
   {
     // afterBatch();
     
-    getSkeleton().shutdown(this, mode);
+    skeleton().shutdown(this, mode);
   }
 
   @Override
   public void beforeBatchImpl()
   {
-    getSkeleton().beforeBatch(this);
+    skeleton().beforeBatch(this);
   }
   
   @Override
   public void afterBatchImpl()
   {
-    getSkeleton().afterBatch(this);
+    skeleton().afterBatch(this);
     
     afterBatchChildren();
   }
@@ -120,19 +120,19 @@ public class ActorAmpBean extends ActorAmpBeanBase
   @Override
   public void consume(ServiceRef serviceRef)
   {
-    getSkeleton().consume(this, serviceRef);
+    skeleton().consume(this, serviceRef);
   }
   
   @Override
   public void subscribe(ServiceRef serviceRef)
   {
-    getSkeleton().subscribe(this, serviceRef);
+    skeleton().subscribe(this, serviceRef);
   }
   
   @Override
   public void unsubscribe(ServiceRef serviceRef)
   {
-    getSkeleton().unsubscribe(this, serviceRef);
+    skeleton().unsubscribe(this, serviceRef);
   }
   
   @Override

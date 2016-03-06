@@ -206,7 +206,7 @@ public class ResultJampRpc<T> implements MessageAmp
   */
 
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     System.out.println("IBT: " + this);
     

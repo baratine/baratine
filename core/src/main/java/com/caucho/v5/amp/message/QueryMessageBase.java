@@ -271,24 +271,6 @@ public class QueryMessageBase<T> extends MethodMessageBase
   public final void invoke(InboxAmp inbox, ActorAmp actorDeliver)
   {
     _state.invoke(this, inbox, actorDeliver);
-    /*
-    if (isReply()) {
-      try {
-        invokeReply(actorDeliver);
-      } catch (Throwable e) {
-        if (log.isLoggable(Level.FINER)) {
-          log.log(Level.FINER, e.toString(), e);
-        }
-      }
-    }
-    else {
-      try {
-        invokeQuery(inbox, actorDeliver);
-      } catch (Throwable e) {
-        fail(e);
-      }
-    }
-    */
   }
   
   public void invokeQuery(InboxAmp inbox, ActorAmp actorDeliver)
@@ -299,7 +281,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
     fail(e);
   }
   
-  protected boolean invokeComplete(ActorAmp actorDeliver)
+  protected boolean invokeOk(ActorAmp actorDeliver)
   {
     return true;
   }
@@ -308,47 +290,13 @@ public class QueryMessageBase<T> extends MethodMessageBase
   {
     return true;
   }
-  
-  /*
-  protected final void invokeReply(ActorAmp actor)
-  {
-    switch (_state) {
-    case COMPLETE:
-      onCompleted(_replyHeaders, actor, _value);
-      break;
-      
-    case FAILED:
-      onFailed(_replyHeaders, actor, _replyError);
-      break;
-      
-    default:
-      throw new IllegalStateException();
-    }
-  }
-  */
-
-  /*
-  protected void onCompleted(HeadersAmp headers,
-                             ActorAmp actor,
-                             Object value)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  protected void onFailed(HeadersAmp headers,
-                          ActorAmp actor,
-                          Throwable exn)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  */
 
   @Override
   public String toString()
   {
     return (getClass().getSimpleName()
              + "[" + getMethod().name()
-             + ",to=" + getInboxTarget().serviceRef().address()
+             + ",to=" + inboxTarget().serviceRef().address()
              + ",state=" + getState()
              + "]");
   }
@@ -372,14 +320,14 @@ public class QueryMessageBase<T> extends MethodMessageBase
       @Override
       WorkerDeliver getWorker(QueryMessageBase<?> query)
       {
-        return query.getInboxTarget().getWorker();
+        return query.inboxTarget().getWorker();
       }
 
       @Override
       void offerQueue(QueryMessageBase<?> query, long timeout)
       {
         try {
-          query.getInboxTarget().offer(query, timeout);
+          query.inboxTarget().offer(query, timeout);
         } catch (Throwable e) {
           query.fail(e);
         }
@@ -476,7 +424,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       @Override
       void invoke(QueryMessageBase<?> query, InboxAmp inbox, ActorAmp actorDeliver)
       {
-        if (query.invokeComplete(actorDeliver)) {
+        if (query.invokeOk(actorDeliver)) {
           query._state = CLOSED;
         }
       }

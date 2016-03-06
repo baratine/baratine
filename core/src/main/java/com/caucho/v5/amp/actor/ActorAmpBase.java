@@ -217,14 +217,14 @@ public class ActorAmpBase implements ActorAmp
   public LoadState load(ActorAmp actorMessage, MessageAmp msg)
   {
     return actorMessage.loadState().load(actorMessage, 
-                                         msg.getInboxTarget(), 
+                                         msg.inboxTarget(), 
                                          msg);
   }
   
   @Override
   public LoadState load(MessageAmp msg)
   {
-    return _loadState.load(this, msg.getInboxTarget(), msg);
+    return _loadState.load(this, msg.inboxTarget(), msg);
   }
   
   // @Override

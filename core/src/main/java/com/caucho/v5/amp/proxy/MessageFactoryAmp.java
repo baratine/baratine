@@ -29,16 +29,18 @@
 
 package com.caucho.v5.amp.proxy;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
+
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
+import io.baratine.service.Result;
+import io.baratine.service.ResultStream;
 
 /**
  * Factory for proxy message
  */
-public interface MessageFactory
+public interface MessageFactoryAmp
 {
   void send(ServiceRefAmp serviceRef,
             MethodAmp method);
@@ -82,4 +84,16 @@ public interface MessageFactory
                     ServiceRefAmp serviceRef,
                     MethodAmp method,
                     Object []args);
+
+  <V> void resultOutPipe(ResultOutPipe<V> result,
+                       long timeout,
+                       ServiceRefAmp serviceRef,
+                       MethodAmp method,
+                       Object []args);
+
+  <V> void resultInPipe(ResultInPipe<V> result,
+                       long timeout,
+                       ServiceRefAmp serviceRef,
+                       MethodAmp method,
+                       Object []args);
 }

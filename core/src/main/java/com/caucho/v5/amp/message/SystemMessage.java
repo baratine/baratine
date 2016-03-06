@@ -47,7 +47,7 @@ public final class SystemMessage extends MessageAmpBase
   }
 
   @Override
-  public final InboxAmp getInboxTarget()
+  public final InboxAmp inboxTarget()
   {
     return _systemMailbox;
   }

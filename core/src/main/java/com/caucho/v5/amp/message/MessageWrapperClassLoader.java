@@ -64,13 +64,13 @@ public class MessageWrapperClassLoader implements MessageAmp
   @Override
   public void offerQueue(long timeout)
   {
-    getInboxTarget().offer(this, timeout);
+    inboxTarget().offer(this, timeout);
   }
 
   @Override
   public void offer(long timeout)
   {
-    getInboxTarget().offer(this, timeout);
+    inboxTarget().offer(this, timeout);
   }
 
   @Override
@@ -107,9 +107,9 @@ public class MessageWrapperClassLoader implements MessageAmp
   }
 
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
-    return getDelegate().getInboxTarget();
+    return getDelegate().inboxTarget();
   }
 
   /*

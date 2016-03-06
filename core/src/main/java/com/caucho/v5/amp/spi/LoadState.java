@@ -33,6 +33,8 @@ import java.util.ArrayList;
 
 import com.caucho.v5.amp.actor.SaveResult;
 
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
 import io.baratine.service.Result;
 import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceRef;
@@ -187,6 +189,30 @@ public interface LoadState
     method.stream(headers, result, 
                   actorDeliver.getActor(actorMessage), 
                   args);
+  }
+  
+  default void outPipe(ActorAmp actorDeliver,
+                       ActorAmp actorMessage,
+                       MethodAmp method,
+                       HeadersAmp headers,
+                       ResultOutPipe<?> result, 
+                       Object[] args)
+  {
+    method.outPipe(headers, result, 
+                   actorDeliver.getActor(actorMessage), 
+                   args);
+  }
+  
+  default void inPipe(ActorAmp actorDeliver,
+                       ActorAmp actorMessage,
+                       MethodAmp method,
+                       HeadersAmp headers,
+                       ResultInPipe<?> result, 
+                       Object[] args)
+  {
+    method.inPipe(headers, result, 
+                   actorDeliver.getActor(actorMessage), 
+                   args);
   }
   
   default void queryError(ActorAmp actor,

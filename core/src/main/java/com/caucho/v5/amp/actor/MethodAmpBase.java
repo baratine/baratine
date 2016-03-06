@@ -29,10 +29,6 @@
 
 package com.caucho.v5.amp.actor;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
-import io.baratine.service.ServiceExceptionMethodNotFound;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
@@ -40,6 +36,12 @@ import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
+import io.baratine.service.Result;
+import io.baratine.service.ResultStream;
+import io.baratine.service.ServiceExceptionMethodNotFound;
 
 /**
  * Abstract stream for an actor.
@@ -197,6 +199,28 @@ public class MethodAmpBase implements MethodAmp
                          ResultStream<T> result,
                          ActorAmp actor,
                          Object []args)
+  {
+    result.fail(new ServiceExceptionMethodNotFound(
+                              L.l("'{0}' is an undefined method for {1}",
+                                  this, actor)));
+  }
+
+  @Override
+  public <T> void outPipe(HeadersAmp headers,
+                          ResultOutPipe<T> result,
+                          ActorAmp actor,
+                          Object []args)
+  {
+    result.fail(new ServiceExceptionMethodNotFound(
+                              L.l("'{0}' is an undefined method for {1}",
+                                  this, actor)));
+  }
+
+  @Override
+  public <T> void inPipe(HeadersAmp headers,
+                          ResultInPipe<T> result,
+                          ActorAmp actor,
+                          Object []args)
   {
     result.fail(new ServiceExceptionMethodNotFound(
                               L.l("'{0}' is an undefined method for {1}",

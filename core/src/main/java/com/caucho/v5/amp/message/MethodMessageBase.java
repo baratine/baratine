@@ -230,7 +230,7 @@ abstract public class MethodMessageBase implements MessageAmp
   }
   
   @Override
-  public final InboxAmp getInboxTarget()
+  public final InboxAmp inboxTarget()
   {
     return _inboxTarget;
   }
@@ -261,13 +261,13 @@ abstract public class MethodMessageBase implements MessageAmp
   @Override
   public void offerQueue(long timeout)
   {
-    getInboxTarget().offer(this, timeout);
+    inboxTarget().offer(this, timeout);
   }
   
   @Override
   public WorkerDeliver<MessageAmp> getWorker()
   {
-    return getInboxTarget().getWorker();
+    return inboxTarget().getWorker();
   }
 
   @Override

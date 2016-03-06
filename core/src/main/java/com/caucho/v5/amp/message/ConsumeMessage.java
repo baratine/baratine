@@ -55,7 +55,7 @@ public class ConsumeMessage extends MessageAmpBase
   }
   
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return _inbox;
   }
@@ -70,6 +70,6 @@ public class ConsumeMessage extends MessageAmpBase
   {
     long timeout = InboxAmp.TIMEOUT_INFINITY;
     
-    getInboxTarget().offerAndWake(this, timeout);
+    inboxTarget().offerAndWake(this, timeout);
   }
 }

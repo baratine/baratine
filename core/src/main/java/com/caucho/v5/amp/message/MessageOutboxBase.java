@@ -78,7 +78,7 @@ abstract public class MessageOutboxBase implements MessageAmp
   }
 
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return _inboxTarget;
   }
@@ -100,13 +100,13 @@ abstract public class MessageOutboxBase implements MessageAmp
   @Override
   public void offerQueue(long timeout)
   {
-    getInboxTarget().offer(this, timeout);
+    inboxTarget().offer(this, timeout);
   }
 
   @Override
   public WorkerDeliver getWorker()
   {
-    return getInboxTarget().getWorker();
+    return inboxTarget().getWorker();
   }
 
   @Override
@@ -118,6 +118,6 @@ abstract public class MessageOutboxBase implements MessageAmp
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + getInboxTarget() + "]";
+    return getClass().getSimpleName() + "[" + inboxTarget() + "]";
   }
 }

@@ -29,11 +29,13 @@
 
 package com.caucho.v5.amp.spi;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
+import io.baratine.service.Result;
+import io.baratine.service.ResultStream;
 
 
 /**
@@ -159,6 +161,20 @@ public interface MethodAmp
   
   <T> void stream(HeadersAmp headers,
                   ResultStream<T> result,
+                  ActorAmp actor,
+                  Object []args);
+  
+  //
+  // pipe methods
+  //
+  
+  <T> void outPipe(HeadersAmp headers,
+                   ResultOutPipe<T> result,
+                   ActorAmp actor,
+                   Object []args);
+  
+  <T> void inPipe(HeadersAmp headers,
+                  ResultInPipe<T> result,
                   ActorAmp actor,
                   Object []args);
 }

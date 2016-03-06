@@ -69,7 +69,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   private ConcurrentHashMap<Class<?>,SkeletonClassSession> _skeletonChannelMap
     = new ConcurrentHashMap<>();
   
-  private MessageFactory _messageFactory;
+  private MessageFactoryAmp _messageFactory;
       
   public ProxyFactoryAmpImpl(ServiceManagerAmp ampManager)
   {
@@ -251,7 +251,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
       }
       
       InboxAmp systemInbox = serviceRef.manager().inboxSystem();
-      MessageFactory messageFactory = _messageFactory;
+      MessageFactoryAmp messageFactory = _messageFactory;
       
       return (T) proxyCtor.newInstance(serviceRef, systemInbox, messageFactory);
     } catch (InvocationTargetException e) {

@@ -51,7 +51,7 @@ public class UnsubscribeMessage extends MessageAmpBase
   }
   
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return _service.inbox();
   }
@@ -68,6 +68,6 @@ public class UnsubscribeMessage extends MessageAmpBase
   {
     long timeout = InboxAmp.TIMEOUT_INFINITY;
     
-    getInboxTarget().offerAndWake(this, timeout);
+    inboxTarget().offerAndWake(this, timeout);
   }
 }

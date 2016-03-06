@@ -51,7 +51,7 @@ public class BuildMessageAmp extends MessageAmpBase
   }
 
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return _targetMailbox;
   }

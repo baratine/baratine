@@ -29,43 +29,52 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.ResultStream;
-
 import java.util.Objects;
+import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.pipe.PipeImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.util.L10N;
+
+import io.baratine.io.InPipe;
+import io.baratine.io.OutPipe;
+import io.baratine.io.ResultInPipe;
 
 /**
- * Handles the context for an actor, primarily including its
- * query map.
+ * Register a publisher to a pipe.
  */
-public class StreamForkMessage<T>
-  extends MethodMessageBase
-  implements ResultStreamAmp<T>
+public class PipeInMessage<T>
+  extends QueryMessageBase<Void>
+  implements ResultInPipe<T>
 {
-  private final ResultStream<T> _result;
+  private static final L10N L = new L10N(PipeInMessage.class);
+  private static final Logger log 
+    = Logger.getLogger(PipeInMessage.class.getName());
+  
+  private final ResultInPipe<T> _result;
 
-  private final Object[] _args;
+  private Object[] _args;
 
   private InboxAmp _callerInbox;
+  private PipeImpl<T> _pipe;
   
-  public StreamForkMessage(OutboxAmp outbox,
-                           InboxAmp callerInbox,
-                           HeadersAmp headers,
-                           ServiceRefAmp serviceRef,
-                           MethodAmp method,
-                           ResultStream<T> result,
-                           long expires,
-                           Object []args)
+  public PipeInMessage(OutboxAmp outbox,
+                        InboxAmp callerInbox,
+                        HeadersAmp headers,
+                        ServiceRefAmp serviceRef,
+                        MethodAmp method,
+                        ResultInPipe<T> result,
+                        long expires,
+                        Object []args)
   {
-    super(outbox, headers, serviceRef, method);
+    //super(outbox, headers, serviceRef, method);
+    super(outbox, serviceRef, method, expires);
     
     Objects.requireNonNull(result);
     
@@ -77,43 +86,13 @@ public class StreamForkMessage<T>
     _callerInbox = callerInbox;
   }
   
-  @Override
-  public InboxAmp getInbox()
-  {
-    return getCallerInbox();
-  }
-
-  @Override
-  public ResultStream<T> fork()
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  
   private InboxAmp getCallerInbox()
   {
     return _callerInbox;
   }
-  
-  private ServiceManagerAmp getManager()
-  {
-    return getCallerInbox().manager();
-  }
-  
-  private ResultStream<T> getNext()
-  {
-    return _result;
-  }
-  
-  @Override
-  public boolean isFuture()
-  {
-    ResultStream<T> result = _result;
-    
-    return result != null && result.isFuture();
-  }
 
   @Override
-  public final void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public final void invokeQuery(InboxAmp inbox, ActorAmp actorDeliver)
   {
     try {
       MethodAmp method = getMethod();
@@ -121,8 +100,8 @@ public class StreamForkMessage<T>
       ActorAmp actorMessage = getServiceRef().getActor();
 
       LoadState load = actorDeliver.load(actorMessage, this);
-    
-      load.stream(actorDeliver, actorMessage,
+      
+      load.inPipe(actorDeliver, actorMessage,
                   method,
                   getHeaders(),
                   this,
@@ -133,80 +112,53 @@ public class StreamForkMessage<T>
     }
   }
 
+  //@Override
+  public void failQ(Throwable exn)
+  {
+    _result.fail(exn);
+  }
+
+  @Override
+  protected boolean invokeOk(ActorAmp actorDeliver)
+  {
+    _result.ok(null);
+    
+    return true;
+  }
+  
+  protected boolean invokeFail(ActorAmp actorDeliver)
+  {
+    System.out.println("Missing Fail:" + this);
+    //_result.fail(_exn);
+
+    return true;
+  }
+
   /*
   @Override
-  public void complete(T value)
+  public void handle(OutPipe<T> pipe, Throwable exn) throws Exception
   {
-    accept(value);
-    complete();
+    throw new IllegalStateException(getClass().getName());
   }
   */
-  
+
   @Override
-  public void start()
+  public InPipe<T> pipe()
   {
-    getNext().start();
+    throw new IllegalStateException();
   }
 
   @Override
-  public void accept(T value)
+  public OutPipe<T> ok()
   {
-    getNext().accept(value);
-  }
-
-  @Override
-  public void ok()
-  {
-    getNext().ok();
-  }
-
-  @Override
-  public void fail(Throwable exn)
-  {
-    getNext().fail(exn);
+    super.ok(null);
+    
+    PipeImpl<T> pipe = new PipeImpl<>(getInboxCaller().serviceRef(),
+                                      _result.pipe());
+    
+    return pipe;
   }
   
-  @Override
-  public void handle(T value, Throwable exn, boolean ok)
-  {
-    if (ok) {
-      ok();
-    }
-    else if (exn != null) {
-      fail(exn);
-    }
-    else {
-      accept(value);
-    }
-  }
-
-  @Override
-  public boolean isCancelled()
-  {
-    return getNext().isCancelled();
-  }
-  
-  @Override
-  public ResultStream<?> createJoin()
-  {
-    return _result.createJoin();
-  }
-  
-  @Override
-  public ResultStream<T> createFork(ResultStream<Object> resultJoin)
-  {
-    return _result.createFork(resultJoin);
-  }
-  
-  @Override
-  public void offerQueue(long timeout)
-  {
-    try {
-      super.offerQueue(timeout);
-    } catch (Throwable e) {
-      fail(e);
-    }
-  }
 
   @Override
   public String toString()

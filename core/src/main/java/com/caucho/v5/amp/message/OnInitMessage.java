@@ -53,7 +53,7 @@ public class OnInitMessage extends MessageAmpBase
   }
   
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return _inbox;
   }
@@ -89,6 +89,6 @@ public class OnInitMessage extends MessageAmpBase
   {
     long timeout = InboxAmp.TIMEOUT_INFINITY;
     
-    getInboxTarget().offerAndWake(this, timeout);
+    inboxTarget().offerAndWake(this, timeout);
   }
 }

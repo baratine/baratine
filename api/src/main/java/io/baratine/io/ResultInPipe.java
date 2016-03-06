@@ -35,7 +35,8 @@ import io.baratine.service.Result;
 /**
  * {@code ResultInPipe} returns a pipe subscription.
  */
-public interface ResultInPipe<T> extends Result<Boolean>
+@FunctionalInterface
+public interface ResultInPipe<T> extends Result<Void>
 {
   /**
    * The subscriber's pipe.
@@ -47,7 +48,12 @@ public interface ResultInPipe<T> extends Result<Boolean>
    */
   default OutPipe<T> outPipe(OutFlow flow)
   {
-    throw new IllegalStateException();
+    throw new IllegalStateException(getClass().getName());
+  }
+  
+  default OutPipe<T> ok()
+  {
+    throw new IllegalStateException(getClass().getName());
   }
   
   /**
@@ -56,5 +62,13 @@ public interface ResultInPipe<T> extends Result<Boolean>
   default int prefetch()
   {
     return 0;
+  }
+
+  @Override
+  default void handle(Void value, Throwable exn)
+  {
+    if (exn != null) {
+      pipe().fail(exn);
+    }
   }
 }

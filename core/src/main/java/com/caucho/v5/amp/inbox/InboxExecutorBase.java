@@ -142,7 +142,7 @@ public class InboxExecutorBase extends InboxBase
   private void runMessage(MessageAmp msg)
   {
     try (OutboxAmp outbox = OutboxAmpFactory.newFactory().get()) {
-      outbox.inbox(msg.getInboxTarget());
+      outbox.inbox(msg.inboxTarget());
       outbox.setMessage(msg);
       
       //RampActor systemActor = null;
@@ -172,7 +172,7 @@ public class InboxExecutorBase extends InboxBase
     public void run()
     {
       try (OutboxAmp outbox = OutboxAmpFactory.newFactory().get()) {
-        outbox.inbox(_msg.getInboxTarget());
+        outbox.inbox(_msg.inboxTarget());
         outbox.setMessage(_msg);
         
         //RampActor systemActor = null;

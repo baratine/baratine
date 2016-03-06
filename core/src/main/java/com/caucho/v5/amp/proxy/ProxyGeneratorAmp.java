@@ -61,6 +61,8 @@ import com.caucho.v5.loader.ProxyClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.ModulePrivate;
 
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
 import io.baratine.service.MethodRef;
@@ -104,18 +106,9 @@ public class ProxyGeneratorAmp<T> {
   private HashMap<String,Method> _methodMap = new HashMap<>();
   private JavaClass _jClass;
   
-  private boolean _isReproxy;
-  
   private ProxyGeneratorAmp(Class<T> api,
-                            ClassLoader loader,
-                            boolean isReproxy)
+                            ClassLoader loader)
   {
-    if (isReproxy) {
-      throw new UnsupportedOperationException();
-    }
-    
-    _isReproxy = isReproxy;
-    
     _classLoader = loader;
 
     /*
@@ -140,7 +133,7 @@ public class ProxyGeneratorAmp<T> {
       if (zeroCtor == null) {
         ArrayList<Class<?>> interfaces = getInterfaces(api);
 
-        if (interfaces.size() > 0 && isReproxy) {
+        if (interfaces.size() > 0) {
           // XXX:
           api = (Class) interfaces.get(0);
           
@@ -166,13 +159,7 @@ public class ProxyGeneratorAmp<T> {
   static Constructor<?> create(Class<?> cl,
                                ClassLoader loader)
   {
-    return createImpl(cl, loader, false);
-  }
-  
-  static Constructor<?> createReproxy(Class<?> cl,
-                                      ClassLoader loader)
-  {
-    return createImpl(cl, loader, true);
+    return createImpl(cl, loader);
   }
   
   /**
@@ -180,8 +167,7 @@ public class ProxyGeneratorAmp<T> {
    * cache the type in the permgen.
    */
   private static Constructor<?> createImpl(Class<?> cl,
-                                           ClassLoader loader,
-                                           boolean isReproxy)
+                                           ClassLoader loader)
   {
     /**
     if (! Modifier.isAbstract(cl.getModifiers())) {
@@ -190,7 +176,7 @@ public class ProxyGeneratorAmp<T> {
     */
     
     ProxyGeneratorAmp<?> adapter
-      = new ProxyGeneratorAmp(cl, loader, isReproxy);
+      = new ProxyGeneratorAmp(cl, loader);
     
     Class<?> proxyClass = adapter.generate();
     
@@ -234,12 +220,7 @@ public class ProxyGeneratorAmp<T> {
       
       String thisClassName;
       
-      if (_isReproxy) {
-        thisClassName = typeClassName + "__AmpProxyChild";
-      }
-      else {
-        thisClassName = typeClassName + "__AmpProxy";
-      }
+      thisClassName = typeClassName + "__AmpProxy";
       
       if (thisClassName.startsWith("java")) {
         thisClassName = "amp/" + thisClassName;
@@ -325,7 +306,7 @@ public class ProxyGeneratorAmp<T> {
             .setAccessFlags(Modifier.PRIVATE|Modifier.FINAL);
       jClass.createField("_inboxSystem", InboxAmp.class)
             .setAccessFlags(Modifier.PRIVATE|Modifier.FINAL);
-      jClass.createField("_messageFactory", MessageFactory.class)
+      jClass.createField("_messageFactory", MessageFactoryAmp.class)
             .setAccessFlags(Modifier.PRIVATE|Modifier.FINAL);
 
       for (Method method : getMethods()) {
@@ -413,6 +394,8 @@ public class ProxyGeneratorAmp<T> {
         
         int ampResult = findAmpResult(paramTypes, Result.class);
         int ampResultStream = findAmpResult(paramTypes, ResultStream.class);
+        int ampResultOutPipe = findAmpResult(paramTypes, ResultOutPipe.class);
+        int ampResultInPipe = findAmpResult(paramTypes, ResultInPipe.class);
         
         if (ResultStreamBuilder.class.isAssignableFrom(method.getReturnType())) {
           if (ampResult >= 0 || ampResultStream >= 0) {
@@ -442,6 +425,22 @@ public class ProxyGeneratorAmp<T> {
           }
      
           createAmpResultStreamMethod(jClass, method, ampResultStream);
+        }
+        else if (ampResultOutPipe >= 0) {
+          if (! void.class.equals(method.getReturnType())) {
+            throw new IllegalArgumentException(L.l("Method '{0}' must return void with Result or ResultOutPipe argument",
+                                                   method.getName(), String.valueOf(method)));
+          }
+     
+          createAmpResultOutPipeMethod(jClass, method, ampResultOutPipe);
+        }
+        else if (ampResultInPipe >= 0) {
+          if (! void.class.equals(method.getReturnType())) {
+            throw new IllegalArgumentException(L.l("Method '{0}' must return void with Result or ResultOutPipe argument",
+                                                   method.getName(), String.valueOf(method)));
+          }
+     
+          createAmpResultInPipeMethod(jClass, method, ampResultInPipe);
         }
         else if (! void.class.equals(method.getReturnType())) {
           createQueryFutureMethod(jClass, method);
@@ -567,7 +566,7 @@ public class ProxyGeneratorAmp<T> {
                                           void.class,
                                           ServiceRefAmp.class,
                                           InboxAmp.class,
-                                          MessageFactory.class);
+                                          MessageFactoryAmp.class);
     ctor.setAccessFlags(Modifier.PUBLIC);
 
     CodeWriterAttribute code = ctor.createCodeWriter();
@@ -599,7 +598,7 @@ public class ProxyGeneratorAmp<T> {
     
     code.putField(jClass.getThisClass(),
                   "_messageFactory",
-                  MessageFactory.class);
+                  MessageFactoryAmp.class);
     
     for (Method method : _methodMap.values()) {
       String methodName = method.getName();
@@ -774,7 +773,7 @@ public class ProxyGeneratorAmp<T> {
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
                   "_messageFactory",
-                  MessageFactory.class);
+                  MessageFactoryAmp.class);
     
     int argLen = parameterTypes.length;
     
@@ -810,7 +809,7 @@ public class ProxyGeneratorAmp<T> {
     case 0:
       pushRawParameters(code, parameterTypes, parameterAnns);
 
-      code.invokeInterface(MessageFactory.class,
+      code.invokeInterface(MessageFactoryAmp.class,
                   "send",
                   void.class,
                   ServiceRefAmp.class,
@@ -820,7 +819,7 @@ public class ProxyGeneratorAmp<T> {
     case 1:
       pushRawParameters(code, parameterTypes, parameterAnns);
 
-      code.invokeInterface(MessageFactory.class,
+      code.invokeInterface(MessageFactoryAmp.class,
                   "send",
                   void.class,
                   ServiceRefAmp.class,
@@ -831,7 +830,7 @@ public class ProxyGeneratorAmp<T> {
     default:
       pushParameters(code, parameterTypes, parameterAnns);
 
-      code.invokeInterface(MessageFactory.class,
+      code.invokeInterface(MessageFactoryAmp.class,
                   "send",
                   void.class,
                   ServiceRefAmp.class,
@@ -935,7 +934,7 @@ public class ProxyGeneratorAmp<T> {
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
                   "_messageFactory",
-                  MessageFactory.class);
+                  MessageFactoryAmp.class);
     
     // code.pushObjectVar(getLength(parameterTypes, resultOffset) + 1);
     
@@ -963,7 +962,7 @@ public class ProxyGeneratorAmp<T> {
                    1, 0, paramLength, -1);
 
     if (timeoutAnn != null) {
-      code.invokeInterface(MessageFactory.class,
+      code.invokeInterface(MessageFactoryAmp.class,
                            "queryFuture",
                            Object.class, // QueryWithResultMessage.class,
                            long.class,
@@ -972,7 +971,7 @@ public class ProxyGeneratorAmp<T> {
                            Object[].class);
     }
     else {
-      code.invokeInterface(MessageFactory.class,
+      code.invokeInterface(MessageFactoryAmp.class,
                            "queryFuture",
                            Object.class, // QueryWithResultMessage.class,
                            ServiceRefAmp.class,
@@ -1013,7 +1012,7 @@ public class ProxyGeneratorAmp<T> {
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
                   "_messageFactory",
-                  MessageFactory.class);
+                  MessageFactoryAmp.class);
     
     int argLen = parameterTypes.length - 1;
     // code.dup();
@@ -1081,7 +1080,7 @@ public class ProxyGeneratorAmp<T> {
                         0, 
                         argLen);
 
-      code.invokeInterface(MessageFactory.class,
+      code.invokeInterface(MessageFactoryAmp.class,
                            "queryResult",
                            void.class, // QueryWithResultMessage.class,
                            Result.class,
@@ -1117,7 +1116,7 @@ public class ProxyGeneratorAmp<T> {
                          Object.class);
                          */
       
-      code.invokeInterface(MessageFactory.class,
+      code.invokeInterface(MessageFactoryAmp.class,
                            "queryResult",
                            void.class, // QueryWithResultMessage.class,
                            Result.class,
@@ -1145,7 +1144,7 @@ public class ProxyGeneratorAmp<T> {
                          Object[].class);
                          */
       
-      code.invokeInterface(MessageFactory.class,
+      code.invokeInterface(MessageFactoryAmp.class,
                            "queryResult",
                            void.class, // QueryWithResultMessage.class,
                            Result.class,
@@ -1199,7 +1198,7 @@ public class ProxyGeneratorAmp<T> {
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
                   "_messageFactory",
-                  MessageFactory.class);
+                  MessageFactoryAmp.class);
     
     int argLen = parameterTypes.length - 1;
     
@@ -1227,10 +1226,90 @@ public class ProxyGeneratorAmp<T> {
                    argLen + 1, // paramLength,
                    resultOffset);
       
-    code.invokeInterface(MessageFactory.class,
+    code.invokeInterface(MessageFactoryAmp.class,
                          "streamResult",
                          void.class, // QueryWithResultMessage.class,
                          ResultStream.class,
+                         long.class,
+                         ServiceRefAmp.class,
+                         MethodAmp.class,
+                         Object[].class);
+
+    code.addReturn();
+
+    code.close();
+  }
+  
+  private void createAmpResultOutPipeMethod(JavaClass jClass,
+                                            Method method,
+                                            int resultOffset)
+  {
+    createAmpResultPipeMethod(jClass, method, resultOffset,
+                              ResultOutPipe.class,
+                              "resultOutPipe");
+  }
+  
+  private void createAmpResultInPipeMethod(JavaClass jClass,
+                                            Method method,
+                                            int resultOffset)
+  {
+    createAmpResultPipeMethod(jClass, method, resultOffset,
+                              ResultInPipe.class,
+                              "resultInPipe");
+  }
+  
+  private void createAmpResultPipeMethod(JavaClass jClass,
+                                         Method method,
+                                         int resultOffset,
+                                         Class<?> resultType,
+                                         String messageMethod)
+  {
+    String methodName = method.getName();
+    Class<?> []parameterTypes = method.getParameterTypes();
+    Annotation [][]parameterAnns = method.getParameterAnnotations();
+
+    addMethod(method);
+    
+    CodeWriterAttribute code = createMethodHeader(jClass, method);
+    
+    code.setMaxLocals(1 + 2 * parameterTypes.length);
+    code.setMaxStack(10 + 2 * parameterTypes.length);
+    
+    code.pushObjectVar(0);
+    code.getField(jClass.getThisClass(),
+                  "_messageFactory",
+                  MessageFactoryAmp.class);
+    
+    int argLen = parameterTypes.length - 1;
+    
+    code.pushObjectVar(getLength(parameterTypes, resultOffset) + 1);
+    
+    long timeout = _defaultTimeout;
+    
+    code.pushConstant(timeout);
+    
+    code.pushObjectVar(0);
+    code.getField(jClass.getThisClass(),
+                  "_serviceRef",
+                  ServiceRefAmp.class);
+    
+    code.pushObjectVar(0);
+    code.getField(jClass.getThisClass(),
+                  getMethodFieldName(methodName),
+                  MethodAmp.class);
+    
+    partitionMethod(code, parameterTypes, parameterAnns);
+    
+    pushParameters(code, parameterTypes, parameterAnns, 
+                   1, 
+                   0, 
+                   argLen + 1, // paramLength,
+                   resultOffset);
+      
+    code.invokeInterface(MessageFactoryAmp.class,
+                         messageMethod,
+                         void.class, // QueryWithResultMessage.class,
+                         resultType,
                          long.class,
                          ServiceRefAmp.class,
                          MethodAmp.class,

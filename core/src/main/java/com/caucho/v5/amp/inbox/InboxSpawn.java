@@ -168,7 +168,7 @@ public class InboxSpawn extends InboxBase
         // OutboxAmpBase outbox = new OutboxAmpBase();
 
         Thread.dumpStack();
-        outbox.inbox(_msg.getInboxTarget());
+        outbox.inbox(_msg.inboxTarget());
         outbox.setMessage(_msg);
         
         //RampActor systemActor = null;

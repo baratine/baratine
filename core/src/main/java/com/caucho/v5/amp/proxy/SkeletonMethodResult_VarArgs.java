@@ -126,7 +126,7 @@ class SkeletonMethodResult_VarArgs extends SkeletonMethodResult_N
       Result<?> result = null;
       
       //_methodHandle.invokeExact(bean, cmpl, args);
-      getMethodHandle().invoke(bean, result, args);
+      methodHandle().invoke(bean, result, args);
     } catch (Throwable e) {
       log.log(Level.FINER, bean + ": " + e.toString(), e);
     }
@@ -147,9 +147,9 @@ class SkeletonMethodResult_VarArgs extends SkeletonMethodResult_N
     
     try {
       //_methodHandle.invokeExact(bean, result, args);
-      getMethodHandle().invoke(bean, result, args);
+      methodHandle().invoke(bean, result, args);
     } catch (IllegalArgumentException e) {
-      String msg = bean + "." + getMethod().getName() + ": " + e.getMessage();
+      String msg = bean + "." + method().getName() + ": " + e.getMessage();
 
       log.log(Level.FINE, msg, e);
       
@@ -157,8 +157,8 @@ class SkeletonMethodResult_VarArgs extends SkeletonMethodResult_N
       
       result.fail(exn);
     } catch (ArrayIndexOutOfBoundsException e) {
-      if (args.length + 1 != getMethod().getParameterTypes().length) {
-        String msg = bean + "." + getMethod().getName() + ": " + e.getMessage();
+      if (args.length + 1 != method().getParameterTypes().length) {
+        String msg = bean + "." + method().getName() + ": " + e.getMessage();
 
         log.log(Level.FINE, msg, e);
         

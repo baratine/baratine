@@ -43,7 +43,7 @@ public interface MessageAmp extends MessageDeliver, Message
   
   void fail(Throwable exn);
 
-  InboxAmp getInboxTarget();
+  InboxAmp inboxTarget();
   
   OutboxAmp getOutboxCaller();
 

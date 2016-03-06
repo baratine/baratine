@@ -97,7 +97,7 @@ public class ActorAmpBeanBase extends ActorAmpStateBase
     return _container;
   }
   
-  protected final SkeletonClass getSkeleton()
+  protected final SkeletonClass skeleton()
   {
     return _skel;
   }

@@ -171,7 +171,7 @@ public class QueryWithResultMessage<T>
   {
     outbox.flush();
   
-    InboxAmp inbox = getInboxTarget();
+    InboxAmp inbox = inboxTarget();
   
     OutboxContext<MessageAmp> oldInbox = outbox.getAndSetContext(inbox);
     
@@ -191,7 +191,7 @@ public class QueryWithResultMessage<T>
     try {
       //OutboxThreadLocal.setCurrent(outbox);
       
-      InboxAmp inbox = getInboxTarget();
+      InboxAmp inbox = inboxTarget();
       
       invoke(inbox, inbox.getDirectActor());
       
@@ -215,7 +215,7 @@ public class QueryWithResultMessage<T>
   }
 
   @Override
-  protected boolean invokeComplete(ActorAmp actorDeliver)
+  protected boolean invokeOk(ActorAmp actorDeliver)
   {
     return actorDeliver.complete(_result, (T) getReply());
   }
@@ -236,8 +236,8 @@ public class QueryWithResultMessage<T>
   {
     String toAddress = null;
     
-    if (getInboxTarget() != null && getInboxTarget().serviceRef() != null) {
-      toAddress = getInboxTarget().serviceRef().address();
+    if (inboxTarget() != null && inboxTarget().serviceRef() != null) {
+      toAddress = inboxTarget().serviceRef().address();
     }
     
     String callbackName = _result.getClass().getName();

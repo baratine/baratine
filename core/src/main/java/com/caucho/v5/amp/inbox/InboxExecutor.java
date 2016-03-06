@@ -164,7 +164,7 @@ public class InboxExecutor extends InboxBase
     public void run()
     {
       try (OutboxAmp outbox = OutboxAmpFactory.newFactory().get()) {
-        outbox.inbox(_msg.getInboxTarget());
+        outbox.inbox(_msg.inboxTarget());
         outbox.setMessage(_msg);
         
         //RampActor systemActor = null;

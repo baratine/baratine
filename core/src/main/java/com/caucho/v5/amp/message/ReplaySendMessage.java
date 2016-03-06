@@ -114,7 +114,7 @@ public class ReplaySendMessage<V> extends MessageAmpResult<V>
   }
 
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return null;
   }

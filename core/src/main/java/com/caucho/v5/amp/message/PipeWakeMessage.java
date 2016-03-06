@@ -29,47 +29,39 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.ServiceRef;
+import java.util.Objects;
 
+import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.pipe.PipeImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.spi.OutboxAmp;
 
 /**
- * Message to shut down an instance.
+ * Handles the context for an actor, primarily including its
+ * query map.
  */
-public class SubscribeMessage extends MessageAmpBase
+public class PipeWakeMessage<T>
+  extends MessageOutboxBase
 {
-  private final InboxAmp _inbox;
-  private final ServiceRef _service;
+  private final ServiceRefAmp _serviceRef;
+  private final PipeImpl<T> _pipe;
 
-  public SubscribeMessage(InboxAmp mailbox,
-                          ServiceRef service)
+  public PipeWakeMessage(OutboxAmp outbox,
+                         ServiceRefAmp serviceRef,
+                         PipeImpl<T> pipe)
   {
-    _inbox = mailbox;
-    _service = service;
-  }
-  
-  protected ServiceRef getService()
-  {
-    return _service;
-  }
-  
-  @Override
-  public InboxAmp inboxTarget()
-  {
-    return _inbox;
-  }
-  
-  @Override
-  public void invoke(InboxAmp inbox, ActorAmp actor)
-  {
-    actor.subscribe(_service);
-  }
-  
-  public void offer()
-  {
-    long timeout = InboxAmp.TIMEOUT_INFINITY;
+    super(outbox, serviceRef.inbox());
     
-    inboxTarget().offerAndWake(this, timeout);
+    Objects.requireNonNull(pipe);
+    
+    _serviceRef = serviceRef;
+    _pipe = pipe;
+  }
+
+  @Override
+  public void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  {
+    _pipe.read();
   }
 }

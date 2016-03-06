@@ -44,6 +44,7 @@ import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
+import io.baratine.io.ResultOutPipe;
 import io.baratine.service.Result;
 import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceExceptionClosed;
@@ -546,6 +547,21 @@ public enum LoadStateActorAmp implements LoadState
                         MethodAmp method,
                         HeadersAmp headers,
                         ResultStream<?> result, 
+                        Object[] args)
+    {
+      RuntimeException exn
+        = new ServiceExceptionClosed(actorMessage + " for method " + method);
+      exn.fillInStackTrace();
+  
+      result.fail(exn);
+    }
+    
+    @Override
+    public void outPipe(ActorAmp actorDeliver,
+                        ActorAmp actorMessage,
+                        MethodAmp method,
+                        HeadersAmp headers,
+                        ResultOutPipe<?> result, 
                         Object[] args)
     {
       RuntimeException exn

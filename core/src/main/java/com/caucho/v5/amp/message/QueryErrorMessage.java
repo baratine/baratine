@@ -96,7 +96,7 @@ public final class QueryErrorMessage implements MessageAmp
   }
 
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return _serviceRef.inbox();
   }

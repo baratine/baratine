@@ -52,6 +52,11 @@ public class Pipes
     throw new UnsupportedOperationException();
   }
   
+  public static <T> ResultInPipe<T> in(InPipe<T> pipe)
+  {
+    return ()->pipe;
+  }
+  
   interface OutPipeBuilder<T>
   {
     

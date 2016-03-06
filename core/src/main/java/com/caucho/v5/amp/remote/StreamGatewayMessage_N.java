@@ -104,7 +104,7 @@ public class StreamGatewayMessage_N
   }
 
   @Override
-  protected boolean invokeComplete(ActorAmp actor)
+  protected boolean invokeOk(ActorAmp actor)
   {
     HeadersAmp headers = null;
     

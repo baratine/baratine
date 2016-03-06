@@ -58,7 +58,7 @@ public class OnShutdownMessage extends MessageAmpBase
   }
   
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return _targetInbox;
   }

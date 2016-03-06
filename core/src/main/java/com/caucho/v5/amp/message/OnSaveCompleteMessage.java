@@ -51,7 +51,7 @@ public class OnSaveCompleteMessage extends MessageAmpBase
   }
   
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     return null;
   }

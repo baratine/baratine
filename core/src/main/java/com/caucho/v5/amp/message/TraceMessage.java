@@ -76,7 +76,7 @@ public class TraceMessage extends MessageAmpBase
   }
 
   @Override
-  public InboxAmp getInboxTarget()
+  public InboxAmp inboxTarget()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

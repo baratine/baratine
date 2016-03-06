@@ -85,7 +85,7 @@ abstract public class MessageAmpBase extends MessageDeliverBase
   @Override
   public void offer(long timeout)
   {
-    getInboxTarget().offerAndWake(this, timeout);
+    inboxTarget().offerAndWake(this, timeout);
   }
 
   @Override

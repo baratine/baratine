@@ -29,11 +29,6 @@
 
 package com.caucho.v5.bartender.pod;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
-import io.baratine.service.ServiceExceptionUnavailable;
-import io.baratine.service.ServiceRef;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.logging.Logger;
@@ -52,8 +47,14 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultOutPipe;
+import io.baratine.service.Result;
+import io.baratine.service.ResultStream;
+import io.baratine.service.ServiceExceptionUnavailable;
+import io.baratine.service.ServiceRef;
 
 /**
  * Method for a pod node call.
@@ -267,6 +268,30 @@ public class MethodPod implements MethodAmp
     }
 
     resultAmp.forkComplete();
+  }
+  
+  /**
+   * pipe publish registration call
+   */
+  @Override
+  public <T> void outPipe(HeadersAmp headers, 
+                          ResultOutPipe<T> result,
+                          ActorAmp actor,
+                          Object[] args)
+  {
+    result.fail(new UnsupportedOperationException(getClass().getName()));
+  }
+  
+  /**
+   * pipe publish registration call
+   */
+  @Override
+  public <T> void inPipe(HeadersAmp headers, 
+                          ResultInPipe<T> result,
+                          ActorAmp actor,
+                          Object[] args)
+  {
+    result.fail(new UnsupportedOperationException(getClass().getName()));
   }
 
   /**
