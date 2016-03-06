@@ -1,0 +1,461 @@
+
+#
+# --with-apache-src
+#
+AC_ARG_WITH(apache-src,
+[AS_HELP_STRING([--with-apache-src=DIR],
+                [Apache src static compilation])],
+[
+apache_src=${withval}
+
+if test -d "${apache_src}/modules"; then
+  a=b
+elif test -d "${apache_src}/src/modules"; then
+  apache_src=${apache_src}/src
+else
+  AC_MSG_ERROR([Can't find valid Apache source ${apache_src}])
+fi
+
+echo "using Apache source in ${apache_src}"
+])
+#
+# --with-apache
+#
+AC_ARG_WITH(apache,
+[AS_HELP_STRING([--with-apache=DIR],
+                [the Apache root directory])],
+[
+apache_dir=${withval}
+
+if test "${apache_dir}" = "yes"; then
+  if test -d /usr/local/apache; then
+    apache_dir=/usr/local/apache
+  else
+    apxs=`which apxs2`
+  fi
+fi
+
+if test ! -d "${apache_dir}" -a ! -x "${apxs}"; then
+  AC_MSG_ERROR([--with-apache=${apache_dir} is not a valid Apache directory])
+fi
+
+apache=1
+])
+
+#
+# --with-apxs
+#
+AC_ARG_WITH(apxs,
+[AS_HELP_STRING([--with-apxs=PATH],
+                [the Apache configuration utility])],
+[
+apxs=${withval}
+
+if test "${apxs}" = "yes"; then
+
+  apxs=`which apxs2` 2>/dev/null
+  if test -z "$apxs"; then
+    apxs=`which apxs` 2>/dev/null
+  fi
+
+  if test -z "$apxs"; then
+    apxs=apxs2
+  fi
+  
+  if test ! -x "$apxs"; then
+    AC_ERROR("'$apxs' is not a valid apxs")
+  fi   
+
+fi
+
+apache=1
+])
+
+#
+# --with-apache-eapi
+#
+AC_ARG_WITH(apache-eapi,
+[AS_HELP_STRING([--with-apache-eapi=DIR],
+                [Apache eapi support])],
+[apache_eapi=${withval}])
+
+#
+# --with-apache-include
+#
+AC_ARG_WITH(apache-include,
+[AS_HELP_STRING([--with-apache-include=DIR],
+                [the Apache include directory])],
+[
+apache_include=${withval}
+
+if test "${apache_include}" = "yes"; then
+    apache_include=
+fi
+
+apache=1
+])
+
+#
+# --with-apache-libexec
+#
+AC_ARG_WITH(apache-libexec,
+[AS_HELP_STRING([--with-apache-libexec=DIR],
+                [the Apache module directory])],
+[
+apache_libexec=${withval}
+
+if test "${apache_libexec}" = "yes"; then
+    apache_libexec=
+fi
+
+apache=1
+])
+
+#
+# --with-apache-conf
+#
+AC_ARG_WITH(apache-conf,
+[AS_HELP_STRING([--with-apache-conf=DIR],
+                [the Apache configuration])],
+[
+apache_conf=${withval}
+
+if test "${apache_conf}" = "yes"; then
+    apache_conf=
+fi
+
+apache=1
+])
+
+apache_cflags=
+
+#
+# --with-apache-cflags
+#
+AC_ARG_WITH(apache-cflags,
+[AS_HELP_STRING([--with-apache-cflags=flags],
+                [flags for compiling mod_caucho])],
+[
+apache_cflags=${withval}
+
+apache=1
+])
+
+#
+# check that apxs is okay
+#
+if test -n "${apxs}"; then
+  ${apxs} -q PREFIX >/dev/null 2>/dev/null
+  if test "$?" -ne 0; then
+    AC_MSG_ERROR(Apache ${apxs} is not a valid apxs script)
+  fi
+elif test -x "${apache_bin}/apxs"; then
+  apxs=${apache_bin}/apxs
+elif test -x "${apache_dir}/bin/apxs"; then
+  apxs=${apache_dir}/bin/apxs
+elif test -x "${apache_dir}/sbin/apxs"; then
+  apxs=${apache_dir}/sbin/apxs
+elif test -x "/sbin/apxs"; then
+  apxs=/sbin/apxs
+elif test -x "/usr/sbin/apxs"; then
+  apxs=/usr/sbin/apxs
+fi
+
+#
+# heuristics for finding the Apache include directory
+#
+if test -z "${apache_include}" -a -n "${apxs}"; then
+  apache_include=`${apxs} -q INCLUDEDIR`
+fi
+
+if test -z "${apache_include}" -a -r "${apache_dir}/include/httpd.h"; then
+  apache_include=${apache_dir}/include
+fi
+
+if test -n "${apache_include}"; then
+  APACHE_INC="-I${apache_include}"
+fi
+
+#
+# deal with stronghold
+#
+if test -z "${apache_include}" -a -r "${apache_dir}/src/include/httpd.h"; then
+  apache_include=${apache_dir}/src/include
+
+  APACHE_INC="-I${apache_dir}/src/include"
+  APACHE_INC="-I${apache_dir}/ssl/include $APACHE_INC"
+  APACHE_INC="-I${apache_dir}/src/os/unix $APACHE_INC"
+fi
+
+if test -n "$apache" -a ! -r ${apache_include}/httpd.h; then
+  AC_MSG_ERROR([Can't find Apache include directory ${apache_include}])
+fi
+
+#
+# heuristics for finding the Apache bin directory
+#
+if test -n "${apache_bin}"; then
+  a=b
+elif test -x "${apxs}"; then
+  apache_bin=`${apxs} -q SBINDIR`
+  apache_exe="${apache_bin}/`${apxs} -q TARGET`"
+elif test -n "${apache_dir}"; then
+  apache_bin="${apache_dir}/bin"
+fi
+
+if test -n "${apache_exe}"; then
+ a=b;
+elif test -z "${apache_bin}"; then
+ a=b;
+elif test -x "${apache_bin}/httpd"; then
+ apache_exe="${apache_bin}/httpd"
+elif test -x "${apache_bin}/apache"; then
+ apache_exe="${apache_bin}/apache"
+elif test -x "${apache_bin}/httpd2"; then
+ apache_exe="${apache_bin}/httpd2"
+elif test -x "${apache_bin}/apache2"; then
+ apache_exe="${apache_bin}/apache2"
+fi
+
+if test -n "${apache_exe}" -a ! -x "${apache_exe}"; then
+  AC_MSG_ERROR([Can't find Apache binary in directory ${apache_exe}])
+fi
+
+#
+# heuristics for finding the Apache module directory
+#
+if test -z "${apache_libexec}" -a -n "${apxs}"; then
+  apache_libexec=`${apxs} -q LIBEXECDIR`
+fi
+
+if test -z "${apache_libexec}" -a -d "${apache_dir}/libexec"; then
+  apache_libexec=${apache_dir}/libexec
+fi
+
+if test -z "${apache_libexec}" -a -d "${apache_dir}/modules"; then
+  apache_libexec=${apache_dir}/modules
+fi
+
+if test -n "$apache" -a ! -d "${apache_libexec}"; then
+  AC_MSG_ERROR([Can't find Apache module directory ${apache_libexec}])
+fi
+
+#
+# Heuristics for finding the Apache configuration directory
+#
+
+if test -z "${apache_conf}" -a -n "${apxs}"; then
+  apache_confdir=`${apxs} -q SYSCONFDIR`
+
+  if test -r "${apache_confdir}"/httpd.conf; then
+    apache_conf=${apache_confdir}/httpd.conf
+  elif test -r "${apache_confdir}"/apache.conf; then
+    apache_conf=${apache_confdir}/apache.conf
+  elif test -r "${apache_confdir}"/httpsd.conf; then
+    apache_conf=${apache_confdir}/httpsd.conf
+  fi
+fi
+
+if test -z "${apache_conf}" -a -r "${apache_dir}/conf/httpd.conf"; then
+  apache_conf=${apache_dir}/conf/httpd.conf
+fi
+
+if test -z "${apache_conf}" -a -r "${apache_dir}/etc/httpd.conf"; then
+  apache_conf=${apache_dir}/etc/httpd.conf
+fi
+
+if test -n "$apache" -a ! -r "${apache_conf}"; then
+  AC_MSG_ERROR([Can't find Apache module configuration ${apache_conf}])
+fi
+
+#
+# check for apr
+#
+if test -x "${apxs}"; then
+   apr_bin=`${apxs} -q APR_BINDIR 2> /dev/null`
+   if test -x "${apr_bin}/apr-config"; then
+     apr_inc=`"${apr_bin}/apr-config" --includes`
+     APACHE_INC="${APACHE_INC} ${apr_inc}"
+   elif test -x "${apr_bin}/apr-1-config"; then
+     apr_inc=`"${apr_bin}/apr-1-config" --includes`
+     APACHE_INC="${APACHE_INC} ${apr_inc}"
+   fi
+fi
+
+#
+# Apache CFLAGS
+#
+
+if test -z "$apache_cflags" -a -x "${apxs}"; then
+   if test -x "${apr_bin}/apr-config"; then
+     apache_cflags="$apache_cflags `${apr_bin}/apr-config --cppflags`"
+     apache_cflags="$apache_cflags `${apr_bin}/apr-config --cflags`"
+   elif test -x "${apr_bin}/apr-1-config"; then
+     apache_cflags="$apache_cflags `${apr_bin}/apr-1-config --cppflags`"
+     apache_cflags="$apache_cflags `${apr_bin}/apr-1-config --cflags`"
+   else
+     apache_cflags="`${apxs} -q CFLAGS`"
+   fi
+fi
+
+if test -z "$apache_cflags" -a -x "${apache_exe}"; then
+   flags=`${apache_exe} -V | grep EAPI`
+   if test -n "$flags"; then
+     apache_cflags=-DEAPI
+   fi
+fi
+
+if test -z "$apache_dir" -a -x "${apxs}"; then
+   apache_dir=`${apxs} -q PREFIX`
+fi
+
+#
+# test posix shared memory
+#
+
+if test -n "${apache_dir}"; then
+
+cat >conftest.$ac_ext <<_ACEOF
+#include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#define SHM_PATH "/mod_caucho_127.1:8080"
+int main(int argc, char **argv)
+{
+  shm_open(SHM_PATH, O_CREAT | O_RDWR, S_IRWXU | S_IRWXG);
+
+  shm_unlink(SHM_PATH);
+
+  return errno;
+}
+_ACEOF
+
+apache_shm=""
+
+CC_conftest="${CC} -o conftest ${apache_cflags} -lrt conftest.$ac_ext"
+$CC_conftest 1>/dev/null 2>/dev/null
+if test "$?" != 0; then
+  $CC_conftest
+  AC_MSG_WARN(Can't compile posix shared memory test.  Check compilation flags: $CC_conftest)
+elif ./conftest; then
+  apache_shm="-DSHM"
+  apache_cflags="$apache_cflags -lrt"
+  AC_MSG_RESULT(mod_caucho will use shared between processes srun status)
+else
+  AC_MSG_WARN(mod_caucho will not use shared between processes srun status)
+fi
+rm -f conftest conftest.$ac_ext
+fi
+
+#
+# test apache 2.4
+# request_rec->remote_ip became client_ip
+# request_rec->remote_addr became client_addr
+#
+
+if test -n "${apache_dir}"; then
+
+cat >conftest.$ac_ext <<_ACEOF
+#include "httpd.h"
+
+int main(int argc, char *argv[]) {
+  conn_rec *c;
+  c = malloc(sizeof(request_rec));
+  &c->client_ip;
+  &c->client_addr;
+
+  return 0;
+}
+_ACEOF
+
+apache_24=""
+
+echo $ECHO_N "checking if apache is 2.4 or later... "
+
+CC_conftest="${CC} -o conftest -I${APACHE_INC} ${apache_cflags} conftest.$ac_ext"
+$CC_conftest 1>/dev/null 2>/dev/null
+if test "$?" == 0; then
+  apache_24=-DAPACHE_24
+  echo "yes";
+else
+  echo "no";
+  $CC_conftest
+  AC_MSG_WARN(Can't compile apache 2.4 test. Check compilation flags if apache is 2.4: $CC_conftest)
+  AC_MSG_WARN(Assuming lower apache version)
+fi
+rm -f conftest conftest.$ac_ext
+fi
+
+AC_SUBST(APACHE_INC)
+AC_SUBST(apache_libexec)
+AC_SUBST(apache_conf)
+AC_SUBST(apache_dir)
+AC_SUBST(apache_cflags)
+AC_SUBST(apache_cflags_shlib)
+AC_SUBST(apache_ld_shlib)
+AC_SUBST(apache_ldflags_shlib)
+AC_SUBST(apache_libs_shlib)
+AC_SUBST(apache_shm)
+AC_SUBST(apache_24)
+
+
+if test -z "$apache"; then
+  a=b
+elif test -r "${apache_include}/apr_thread_mutex.h" -o -n "${apr_inc}"; then
+  echo "Using Apache 2.0 configuration ${apache_conf}"
+
+  plugins="$plugins apache2"
+else
+  AC_MSG_ERROR([Can't find valid Apache directory ${apache_inc}])
+fi
+
+if test -z "${apache_ld_shlib}"; then
+  apache_ld_shlib=$CC
+fi    
+
+#if test -z "${apache_ld_shlib}"; then
+#  apache_ld_shlib=$jni_ld_shlib
+#fi    
+
+if test -z "${apache_ldflags_shlib}"; then
+  apache_cflags_shlib=$plugin_cflags_shlib
+  apache_ld_shlib=$plugin_ld_shlib
+#  apache_ldflags_shlib=$plugin_ldflags_shlib
+  apache_libs_shlib=$plugin_libs_shlib
+fi    
+
+apache_ldflags_shlib="$apache_ldflags_shlib $plugin_ldflags_shlib"
+
+if test -n "$apache_cflags"; then
+  echo "Using Apache CFLAGS: $apache_cflags"
+fi
+
+#
+# Use apxs if it's available
+#
+if test -z "${apache_ldflags_shlib}"; then
+   if test -x "${apr_bin}/apr-config"; then
+     apache_cflags_shlib=`${apr_bin}/apr-config --cflags`
+     apache_ldflags_shlib=`${apr_bin}/apr-config --link-ld`
+#     apache_ldflags_shlib=`${apr_bin}/apr-config --ldflags`
+     apache_libs_shlib=`${apr_bin}/apr-config --libs`
+ 
+   elif test -x "${apr_bin}/apr-1-config"; then
+     apache_cflags_shlib=`${apr_bin}/apr-1-config --cflags`
+     apache_ldflags_shlib=`${apr_bin}/apr-1-config --link-ld`
+#     apache_ldflags_shlib=`${apr_bin}/apr-1-config --ldflags`
+     apache_libs_shlib=`${apr_bin}/apr-1-config --libs`
+ 
+   elif test -n "${apxs}"; then
+     apache_cflags_shlib=`${apxs} -q CFLAGS_SHLIB`
+     apache_ld_shlib=`${apxs} -q LD_SHLIB`
+     apache_ldflags_shlib=`${apxs} -q LDFLAGS_SHLIB`
+     apache_libs_shlib=`${apxs} -q LIBS_SHLIB`
+
+     echo "Using shared library flags from ${apxs}"
+  fi
+fi

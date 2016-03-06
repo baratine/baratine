@@ -1,0 +1,268 @@
+
+#
+# --enable-ssl
+#
+AC_ARG_ENABLE(ssl,
+[AS_HELP_STRING([--enable-ssl], [Turn on ssl])],
+[case "${enableval}" in
+ yes) ENABLE_SSL=true ;;
+ no)  ENABLE_SSL=false ;;
+ *) AC_MSG_ERROR(bad value ${enableval} for --enable-ssl) ;;
+ esac],[ENABLE_SSL=""])
+
+#
+# --with-openssl
+#
+AC_ARG_WITH(openssl,
+[AS_HELP_STRING([--with-openssl=DIR],
+                [Openssl directory])],
+[
+OPENSSL=${withval}
+OPENSSL_INCLUDE=${OPENSSL}/include
+OPENSSL_LIB=${OPENSSL}/lib
+ENABLE_SSL=true
+])
+
+#
+# --with-openssl-include
+#
+AC_ARG_WITH(openssl-include,
+[AS_HELP_STRING([--with-openssl-include=DIR],
+                [Openssl include directory])],
+[
+OPENSSL_INCLUDE=${withval}
+ENABLE_SSL=true
+
+if test ! -r "${OPENSSL_INCLUDE}/openssl/ssl23.h"; then
+  AC_MSG_ERROR([Can't find valid OpenSSL include ${OPENSSL_INCLUDE}])
+fi
+])
+
+#
+# --with-openssl-lib
+#
+AC_ARG_WITH(openssl-lib,
+[AS_HELP_STRING([--with-openssl-lib=DIR],
+                [Openssl lib directory])],
+[
+OPENSSL_LIB=${withval}
+ENABLE_SSL=true
+
+if test ! -r "${OPENSSL_LIB}/libssl.a" -a \
+        ! -r "${OPENSSL_LIB}/libssl.dylib" -a \
+  ! -r "${OPENSSL_LIB}/libssl.so"; then
+  AC_MSG_ERROR([Can't find valid OpenSSL library ${OPENSSL_LIB}/libssl.*])
+fi
+])
+
+if test "${ENABLE_SSL}" == false; then
+  foo=bar
+elif test -n "${OPENSSL_INCLUDE}"; then
+  foo=bar
+elif test -n "${OPENSSL}"; then
+  OPENSSL_INCLUDE=${OPENSSL}/include
+elif test -r /usr/local/opt/openssl/include/openssl/ssl3.h; then
+  # MacOS-X new versions of openssl
+  OPENSSL_INCLUDE=/usr/local/opt/openssl/include
+  OPENSSL_LIB=/usr/local/opt/openssl/lib
+  NPN_LIBS="-L${OPENSSL_LIB} "
+elif test -r /usr/include/openssl/ssl3.h; then
+  OPENSSL_INCLUDE=/usr/include
+elif test -r /usr/local/include/openssl/ssl3.h; then
+  OPENSSL_INCLUDE=/usr/local/include
+elif test -r /usr/local/ssl/include/openssl/ssl3.h; then
+  OPENSSL_INCLUDE=/usr/local/ssl/include
+fi
+
+if test "${ENABLE_SSL}" == false; then
+  foo=bar
+elif test -z "${OPENSSL_LIB}"; then
+  SSL_LIBS="${SSL_LIBS} -lssl"
+elif test -r "${OPENSSL_LIB}/libssl.so"; then
+  SSL_LIBS="${SSL_LIBS} -lssl"
+elif test -r "${OPENSSL_LIB}/libssl.dylib"; then
+  SSL_LIBS="${SSL_LIBS} -lssl"
+elif test -r "${OPENSSL_LIB}/libssl3.so"; then
+  SSL_LIBS="${SSL_LIBS} -lssl3"
+elif test -r "${OPENSSL_LIB}/libssl3.dylib"; then
+  SSL_LIBS="${SSL_LIBS} -lssl3"
+elif test -r "${OPENSSL_LIB}/libssl.a"; then
+  SSL_LIBS="${SSL_LIBS} ${OPENSSL_LIB}/libssl.a"
+elif test -r "${OPENSSL_LIB}/libssl3.a"; then
+  SSL_LIBS="${SSL_LIBS} ${OPENSSL_LIB}/libssl3.a"
+else
+  # probably an error
+  SSL_LIBS="${SSL_LIBS} -lssl"
+fi
+
+if test "${ENABLE_SSL}" == false; then
+  foo=bar
+elif test -z "${OPENSSL_LIB}"; then
+  SSL_LIBS="${SSL_LIBS} -lcrypto"
+elif test -r "${OPENSSL_LIB}/libcrypto.so"; then
+  SSL_LIBS="${SSL_LIBS} -lcrypto"
+elif test -r "${OPENSSL_LIB}/libcrypto.dylib"; then
+  SSL_LIBS="${SSL_LIBS} -lcrypto"
+elif test -r "${OPENSSL_LIB}/libcrypto.a"; then
+  SSL_LIBS="${SSL_LIBS} ${OPENSSL_LIB}/libcrypto.a"
+else
+  # probably an error
+  SSL_LIBS="${SSL_LIBS} -lcrypto"
+fi
+
+SSL_OBJ=ssl_stub.o
+
+if test "${ENABLE_SSL}" == false; then
+  echo "Openssl is not enabled"
+elif test -z "${OPENSSL_INCLUDE}"; then
+  echo "Can't find OpenSSL include '${OPENSSL_INCLUDE}'"
+elif test ! -r "${OPENSSL_INCLUDE}/openssl/ssl23.h"; then
+  AC_MSG_ERROR([Can't find valid OpenSSL include in ${OPENSSL_INCLUDE}])
+else
+  echo "Using openssl include in ... ${OPENSSL_INCLUDE}"
+  echo "Using openssl lib in ... ${OPENSSL_LIB}"
+  echo "Using openssl libraries ... ${SSL_LIBS}"
+
+  cat <<END
+END
+
+  if test -x "${apache_dir}/bin/httpd"; then
+    apache_ssl=`${apache_dir}/bin/httpd -l 2>&1 | grep ssl`
+    if test -n "$apache_ssl"; then
+      CFLAGS="$CFLAGS -DOPENSSL"
+      echo "Enabling ssl for mod_caucho"
+    fi
+  elif test -x "${apache_dir}/bin/httpd2"; then
+    apache_ssl=`${apache_dir}/bin/httpd2 -l 2>&1 | grep ssl`
+    if test -n "$apache_ssl"; then
+      CFLAGS="$CFLAGS -DOPENSSL"
+      echo "Enabling ssl for mod_caucho"
+    fi
+  fi
+
+  if test -r "${OPENSSL_INCLUDE}/openssl/engine.h"; then
+    CFLAGS_OPENSSL="$OPENSSL_CFLAGS -DSSL_ENGINE"
+  fi
+
+  if test -n "${OPENSSL_INCLUDE}"; then
+    INCLUDES="$INCLUDES -I${OPENSSL_INCLUDE}"
+  fi
+  SSL_OBJ=ssl.o
+  if test -n "${OPENSSL_LIB}"; then
+    LDFLAGS_SHLIB="${LDFLAGS_SHLIB} -L${OPENSSL_LIB}"
+  fi
+  # PROXY_LIBS="$PROXY_LIBS ${OPENSSL_LIB}/libssl.a ${OPENSSL_LIB}/libcrypto.a"
+fi
+
+if test -d /usr/kerberos/include; then
+   INCLUDES="$INCLUDES -I/usr/kerberos/include"
+fi
+
+#
+# test the open ssl
+#
+
+if test -n "${SSL_LIBS}"; then
+cat >conftest.$ac_ext <<_ACEOF
+#include <openssl/ssl.h>
+#include <openssl/rsa.h>
+#include <openssl/err.h>
+
+int main(int argc, char **argv)
+{
+  SSLeay_add_ssl_algorithms();
+  SSL_load_error_strings();
+
+#if OPENSSL_VERSION_NUMBER >= 0x00907000L
+    if (0)
+      ERR_print_errors_cb(0, 0);
+#endif
+
+  printf("%s\n", OPENSSL_VERSION_TEXT);
+
+  return 0;
+}
+_ACEOF
+
+#
+# test the open ssl npn
+#
+
+cat >conftest_npn.$ac_ext <<_ACEOF
+#include <openssl/ssl.h>
+#include <openssl/rsa.h>
+#include <openssl/err.h>
+
+static int
+ssl_npn_server_cb(SSL *s,
+                  const unsigned char **out, unsigned int *outlen,
+                  void *arg)
+{
+  return 0;
+}  
+
+int main(int argc, char **argv)
+{
+  char *proto;
+  SSL_CTX *ctx;
+  SSL *ssl;
+  const SSL_METHOD *meth;
+  int len;
+  char *protocols = "";
+  
+  SSLeay_add_ssl_algorithms();
+  SSL_load_error_strings();
+
+  meth = TLSv1_client_method();
+  ctx = SSL_CTX_new(meth);
+
+  SSL_CTX_set_next_protos_advertised_cb(ctx,
+                                        ssl_npn_server_cb,
+                                        protocols);
+
+  return 0;
+}
+_ACEOF
+
+${CC} -o conftest ${CFLAGS_OPENSSL} ${CFLAGS} ${INCLUDES} conftest.$ac_ext ${FLAG_OPENSSL_LIB} ${SSL_LIBS} ${PROXY_LIBS} 1>/dev/null 2>/dev/null
+
+if test "$?" != 0; then
+#  ${CC} -o conftest ${CFLAGS_OPENSSL} ${CFLAGS} ${INCLUDES} conftest.$ac_ext -L${OPENSSL_LIB} ${SSL_LIBS} ${PROXY_LIBS}
+
+  AC_MSG_WARN(Can't compile SSL.  Check compilation flags: ${CC} ${CFLAGS_OPENSSL} ${CFLAGS} ${INCLUDES} -L${OPENSSL_LIB} ${SSL_LIBS} ${PROXY_LIBS})
+  
+  baratine_ssl_plugin=""
+else
+  openssl_version=`./conftest`
+
+  if test "$?" != 0; then
+    AC_MSG_WARN(Can't execute SSL.  Check that load version in the library path: ${LD_LIBRARY_PATH} matches the expected version.)
+  else
+    baratine_ssl_plugin="ssl"
+  fi
+fi
+
+${CC} -o conftest_npn ${CFLAGS_OPENSSL} ${CFLAGS} ${INCLUDES} conftest_npn.$ac_ext ${FLAG_OPENSSL_LIB} ${SSL_LIBS} ${NPN_LIBS} ${PROXY_LIBS} 1>/dev/null 2>/dev/null
+
+if test "$?" == 0; then
+  ./conftest_npn 1>/dev/null 2>/dev/null
+  
+  if test "$?" == 0; then
+    echo "Using openssl NPN ... yes"
+
+    BAR_SSL_LIBS=libbaratinessl_npn
+  else
+    echo "Using openssl NPN ... no (exec)"
+  fi
+else  
+  echo "Using openssl NPN ... no (compile)"
+fi
+
+rm -f conftest conftest.$ac_ext conftest_npn conftest_npn.$ac_ext
+fi
+
+AC_SUBST(CFLAGS_OPENSSL)
+AC_SUBST(SSL_OBJ)
+AC_SUBST(SSL_LIBS)
+AC_SUBST(NPN_LIBS)
+AC_SUBST(BAR_SSL_LIBS)

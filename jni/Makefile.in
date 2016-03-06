@@ -1,0 +1,20 @@
+LIBEXEC = @LIBEXEC@
+
+all	:
+	@ (cd libbaratine; $(MAKE))
+
+install	: .dummy
+	(cd libbaratine; $(MAKE) install)
+	sh install.sh
+
+install-native	: .dummy
+	(cd modules/c/src; $(MAKE) install)
+
+.dummy	:
+
+clean	:
+	(cd modules/c/src; $(MAKE) clean)
+	if test $(resin_pro) != "." -a -r $(resin_pro)/modules/c/src/Makefile; then \
+	  cd $(resin_pro)/modules/c/src; $(MAKE) clean; \
+	fi
+	-rm -r $(LIBEXEC)

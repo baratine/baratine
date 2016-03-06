@@ -1,0 +1,482 @@
+#
+# fill in compilation stuff
+#
+SO=so
+
+#
+# native name directory
+#
+native_name=`perl make/scan_revision.pl --jni`
+
+if test -z "${native_name}"; then
+  native_name=`uname`
+fi
+
+native_dir="native/${native_name}"
+
+AC_SUBST(native_dir)
+
+#
+# check for poll/epoll
+#
+is_gcc=`${CC} -v 2>&1 | grep gcc`
+is_gnu_ld=`${LD} -v 2>&1 | grep GNU`
+
+dnl Checks for poll.h
+AC_CHECK_HEADER(sys/poll.h, [ poll=1 ])
+dnl Checks for epoll.h
+AC_CHECK_HEADER(sys/epoll.h, [ CFLAGS="$CFLAGS -DEPOLL"; epoll=1 ])
+
+#
+# check for glibc
+#
+
+
+echo $ECHO_N "checking for glibc version... "
+if test -n "${is_gcc}"; then
+cat >conftest.$ac_ext <<_ACEOF
+#include <stdio.h>
+#include <gnu/libc-version.h>
+
+int main(int argc, char **argv)
+{
+  puts(gnu_get_libc_version());
+  return 0;
+}
+_ACEOF
+
+${CC} -o conftest conftest.$ac_ext 1>/dev/null 2>/dev/null
+if test "$?" == 0; then
+  glibc_version=`./conftest`
+fi
+
+./conftest
+
+echo "${glibc_version}"
+
+rm -f $conftest
+rm -f $conftest.$ac_ext
+fi
+
+#
+# Java 1.7 check
+#
+
+echo $ECHO_N "checking if ${JAVA_EXE} is Java 1.7... "
+
+tmpname="/tmp/java$$.out"
+$JAVA_EXE -version 2> $tmpname
+
+grep "1\.@<:@78]" $tmpname 1> /dev/null
+if test "$?" != "0"; then
+  echo "no"
+  java_version=`cat $tmpname`
+  AC_MSG_ERROR([Java 1.7 required. ${JAVA_EXE} returned: ${java_version}])
+fi
+
+echo "yes"
+
+rm -f $tmpname
+
+
+#
+# --enable-lfs
+#
+AC_ARG_ENABLE(lfs,
+[AS_HELP_STRING([--enable-lfs], [Enable large file source support])],
+[case "${enableval}" in
+ yes) lfs=true ;;
+ no)  lfs="";;
+ *) AC_MSG_ERROR(bad value ${enableval} for --enable-lfs) ;;
+ esac],[])
+
+if test -n "${lfs}"; then
+  jni_cflags="$jni_cflags -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
+fi
+
+#
+# fill in based on known configurations
+#
+if test -z "${jni_ld_shlib}"; then
+  jni_ld_shlib=${LD}
+  jni_cflags_shlib="-fpic"
+  jni_ldflags_shlib="-shared"
+
+  plugin_cflags_shlib=$jni_cflags_shlib
+  plugin_ldflags_shlib=$jni_ldflags_shlib
+
+  case "$target_os" in
+    linux*)
+      jni_ld_shlib=${CC}
+
+      CFLAGS="$CFLAGS -pthread -fPIC -fno-omit-frame-pointer -O2"
+      jni_cflags="$jni_cflags -fPIC"
+      jni_ldflags_shlib="-shared -fPIC"
+
+      if test -n "$b64_jni"; then
+        jni_cflags_jni="$jni_cflags_jni -m64 -fPIC"
+        jni_ldflags_shlib="$jni_ldflags_shlib -m64"
+      else
+        jni_cflags="$jni_cflags -m32"
+        jni_ldflags_shlib="$jni_ldflags_shlib -m32"
+      fi
+      
+      plugin_cflags_shlib=$jni_cflags_shlib
+      plugin_ldflags_shlib=$jni_ldflags_shlib
+
+      if test -n "$b64"; then
+        plugin_cflags_jni="$jni_cflags_jni -m64 -fPIC"
+        plugin_ldflags_shlib="$jni_ldflags_shlib -m64"
+      else
+        plugin_cflags="$jni_cflags -m32"
+        plugin_ldflags_shlib="$jni_ldflags_shlib -m32"
+      fi
+      
+      if test "$target_cpu" = "armv6l"; then
+        jni_cflags_shlib="-fPIC"
+        plugin_cflags_shlib=$jni_cflags_shlib
+        jni_ldflags_shlib="-shared -fPIC"
+        plugin_ldflags_shlib=$jni_ldflags_shlib
+        jni_cflags="-fPIC"
+        plugin_cflags=$jni_cflags
+      fi
+      ;;
+
+    *solaris*)
+      jni_ldflags_shlib=""
+      plugin_ldflags_shlib=""
+      
+      if test -n "$is_gcc"; then
+        jni_cflags_shlib="-fPIC"
+        plugin_cflags_shlib="-fPIC"
+
+        CFLAGS="$CFLAGS -fPIC -fno-omit-frame-pointer"
+        jni_cflags="$jni_cflags -fPIC -fno-omit-frame-pointer"
+        plugin_cflags_shlib="-fPIC"
+
+        if test -n "$b64"; then
+          CFLAGS="$CFLAGS -m64"
+          plugin_cflags_shlib="-m64"
+          plugin_ldflags_shlib="-m64 -R /usr/sfw/lib/64 -R /usr/local/lib/sparcv9"
+        fi
+
+        if test -n "${b64_jni}"; then
+          jni_cflags="$jni_cflags -m64"
+          jni_ldflags_shlib="-m64 -R /usr/sfw/lib/64 -R /usr/local/lib/sparcv9"
+        fi
+
+        jni_ldflags_shlib="$jni_ldflags_shlib -shared"
+        plugin_ldflags_shlib="$plugin_ldflags_shlib -shared"
+      else
+        CFLAGS="-mt -KPIC -xO2"
+        jni_cflags_shlib="-mt -KPIC -xO2"
+        plugin_cflags_shlib="-mt -KPIC -xO2"
+
+        if test -n "$b64"; then
+          CFLAGS="$CFLAGS -m64"
+        fi
+
+        if test -n "$b64"; then
+          plugin_cflags="$plugin_cflags -m64"
+          plugin_ldflags_shlib="$jni_ldflags_shlib -m64 -G -mt -z defs -z text"
+          plugin_ldflags_shlib="$jni_ldflags_shlib -R/usr/lib/64:/usr/sfw/lib/64:/usr/local/lib/sparcv9 -YP,/usr/lib/64:/usr/sfw/lib/64:/usr/local/lib/sparcv9"
+        fi
+
+        if test -n "$b64_jni"; then
+          jni_cflags="$jni_cflags -m64"
+          jni_ldflags_shlib="$jni_ldflags_shlib -m64 -G -mt -z defs -z text"
+          jni_ldflags_shlib="$jni_ldflags_shlib -R/usr/lib/64:/usr/sfw/lib/64:/usr/local/lib/sparcv9 -YP,/usr/lib/64:/usr/sfw/lib/64:/usr/local/lib/sparcv9"
+        fi
+
+        jni_ldflags_shlib="$jni_ldflags_shlib -G -mt -z defs -z text"
+        plugin_ldflags_shlib="$plugin_ldflags_shlib -G -mt -z defs -z text"
+      fi
+      ;;
+
+    darwin*)
+      jni_cflags_shlib="-DSHARED_MODULE"
+      jni_ld_shlib=${CC}
+      jni_ldflags_shlib="-dynamiclib -undefined suppress -flat_namespace"
+
+      plugin_ld_shlib=${jni_ld_shlib}
+      plugin_ldflags_shlib=${jni_ldflags_shlib}
+
+      if test -n "$b64"; then
+        CFLAGS="$CFLAGS -arch x86_64"
+        jni_ldflags_shlib="$-arch x86_64 $jni_ldflags_shlib"
+        plugin_ldflags_shlib="-arch x86_64 $jni_ldflags_shlib"
+      fi
+      
+      if test -n "$b64_jni"; then
+        jni_cflags_jni="$CFLAGS_JNI -m64"
+        jni_ldflags_shlib="-arch x86_64 $jni_ldflags_shlib"
+      fi
+      ;;
+
+    *freebsd*)
+      CFLAGS="$CFLAGS -fPIC"
+      ;;
+
+    *aix*)
+      if test -z "$is_gcc"; then
+        jni_cflags_shlib="-bexpall"
+      else
+        jni_cflags_shlib="-fpic"
+      fi
+      jni_ldflags_shlib=""
+      ;;
+
+    *hpux*)
+      if test -z "$is_gcc"; then
+        jni_cflags_shlib="+z"
+      else
+        jni_cflags_shlib="-fpic"
+      fi
+      jni_ldflags_shlib="-b"
+      ;;
+  esac
+
+#  case "$target_cpu" in
+#    x86_64)
+#           if test -z "$b64_jni"; then
+#        CFLAGS_JNI="$CFLAGS_JNI -m32"
+#        LDFLAGS_SHLIB="$LDFLAGS_SHLIB -m32"
+#        fi
+# ;;
+#  esac
+fi
+
+case "$target_os" in
+  linux*)
+        CFLAGS="$CFLAGS -DHAS_SOCK_TIMEOUT -DHAS_SENDFILE -DHAS_SPLICE"
+  ;;
+  solaris*)
+        CFLAGS="$CFLAGS -DHAS_SOCK_TIMEOUT"
+  ;;
+  darwin*)
+        CFLAGS="$CFLAGS -DHAS_SOCK_TIMEOUT"
+        # disable poll on macosx, temporarily
+        poll=""
+  ;;
+esac
+
+if test -n "${poll}"; then
+   CFLAGS="$CFLAGS -DPOLL"
+fi   
+
+#
+# OS which can handle the 
+#
+
+case "$target_cpu" in
+  i?86)
+  CPU=i386
+  ;;
+
+  sparc*)
+  if test -n "${b64_jni}"; then
+      CPU=sparcv9
+  else
+      CPU=sparc
+  fi
+  ;;
+
+  x86_64)
+  CPU=$target_cpu
+  ;;
+
+  *)
+  CPU=$target_cpu
+  ;;
+esac
+
+case "$target_os" in
+  linux*)
+  jni_os=linux
+  PROXY_LIBS="-lpthread -lrt -lc"
+  ;;
+
+  *solaris*)
+  jni_os=solaris
+  CFLAGS="$CFLAGS -D__SOLARIS__"
+  PROXY_LIBS='-lnsl -lsocket -lthread -lc'
+  ;;
+
+  *freebsd*)
+  PROXY_LIBS='-lpthread'
+  jni_os=freebsd
+
+  tmp=`ldd $JAVA_HOME/bin/java | sed 's/.*=>//' | grep -c libc_r`
+  tmp=$tmp `ldd $JAVA_HOME/bin/java | sed 's/.*=>//' | grep -c libpthread`
+  tmp=$tmp `ldd $JAVA_HOME/bin/java | sed 's/.*=>//' | grep -c libthr`
+
+  case "$tmp" in
+  100)
+    PROXY_LIBS='-lc_r';
+    ;;
+  010)
+    PROXY_LIBS='-lpthread';
+    ;;
+  001)
+    PROXY_LIBS='-lthr';
+    ;;
+  *)
+    PROXY_LIBS='-lpthread'
+    echo "Using -lpthread as default"
+    ;;
+  esac
+  ;;
+
+  *darwin*)
+  LD=gcc
+  SO=dylib
+  jni_os=darwin
+  ;;
+
+  *hpux*)
+  if test -r "$JAVA_HOME/include/hpux/jni_md.h"; then
+    jni_os=hpux
+        else
+    jni_os=hp-ux
+        fi
+  ;;
+
+  *aix*)
+        jni_os=aix
+  ;;
+esac
+
+AC_SUBST(CPU)
+AC_SUBST(OS)
+AC_SUBST(SO)
+AC_SUBST(CFLAGS)
+AC_SUBST(jni_cflags)
+AC_SUBST(jni_cflags_shlib)
+AC_SUBST(jni_ld_shlib)
+AC_SUBST(jni_ldflags_shlib)
+AC_SUBST(jni_libs_shlib)
+AC_SUBST(glibc_version)
+AC_SUBST(PROXY_LIBS)
+AC_SUBST(SSL_LIBS)
+
+#
+# --with-jni-include
+#
+AC_ARG_WITH(jni-include,
+[AS_HELP_STRING([--with-jni-include="-Idir -Idir"],
+                [jni include string])],
+[
+JNI_INCLUDE=${withval}
+JNI="yes"
+])
+
+#
+# --enable-jni
+#
+AC_ARG_ENABLE(jni,
+[AS_HELP_STRING([--enable-jni], [Turn on jni])],
+[case "${enableval}" in
+ yes) JNI=true ;;
+ no)  JNI=false ;;
+ *) AC_MSG_ERROR(bad value ${enableval} for --enable-jni) ;;
+ esac],[JNI=""])
+
+JNI_INCLUDE_DIR=""
+
+if test "$JNI" != "false" ; then
+  if test -n "$JNI_INCLUDE"; then
+    JNI=yes
+    for x in $JNI_INCLUDE; do
+      y=${x:2}
+      if test -n "$JNI_INCLUDE_DIR"; then
+        JNI_INCLUDE_DIR="$JNI_INCLUDE_DIR $y"
+      else
+        JNI_INCLUDE_DIR="$y"
+      fi
+    done;
+  elif test -r "$JAVA_HOME/include/jni_md.h"; then
+    JNI_INCLUDE_DIR="${JAVA_HOME}/include"
+    JNI_INCLUDE="-I${JNI_INCLUDE_DIR}"
+    JNI=yes
+    echo "checking for JNI in $JAVA_HOME/include ... found"
+  elif test -r "$JAVA_HOME/include/$jni_os/jni_md.h"; then
+    JNI_INCLUDE_DIR="${JAVA_HOME}/include"
+    JNI_INCLUDE="-I$JAVA_HOME/include -I$JAVA_HOME/include/$jni_os"
+    JNI=yes
+    echo "checking for JNI in $JAVA_HOME/include/$jni_os ... found"
+  elif test -r "/System/Library/Frameworks/JavaVM.framework/Headers/jni_md.h"; then
+    # Darwin
+    echo "checking for JNI in /System/Library/Frameworks/JavaVM.framework/Headers ... found"
+    JNI_INCLUDE_DIR="/System/Library/Frameworks/JavaVM.framework/Headers"
+    JNI_INCLUDE="-I${JNI_INCLUDE_DIR}"
+    JNI=yes
+  elif test -r "$JAVA_HOME/../Headers/jni_md.h"; then
+    # Darwin
+    echo "checking for JNI in $JAVA_HOME/../Headers ... found"
+    JNI_INCLUDE_DIR="$JAVA_HOME/../Headers"
+    JNI_INCLUDE="-I${JNI_INCLUDE_DIR}"
+    JNI=yes
+  elif test -r "$JAVA_HOME/include/jni.h"; then
+    JNI_INCLUDE_DIR="$JAVA_HOME/include"
+    JNI_INCLUDE="-I${JNI_INCLUDE_DIR}"
+    JNI=yes
+    echo "checking for JNI in $JAVA_HOME/include ... found"
+  else
+    JNI=""
+    AC_MSG_ERROR([
+
+    *** Can't find JNI directory in JAVA_HOME=${JAVA_HOME}
+    *** JNI is expected in ${JAVA_HOME}/include/$jni_os
+  ])
+  fi
+
+  HAS_JVMTI=""
+
+  for x in $JNI_INCLUDE_DIR; do
+    if test -r "$x/jvmti.h"; then
+      HAS_JVMTI="yes"
+    fi
+  done;
+
+  if test -n "$HAS_JVMTI"; then
+    echo "Using JVMTI for class reloading"
+    CFLAGS="$CFLAGS -DHAS_JVMTI"
+  else
+    AC_MSG_ERROR([Can't find JVMTI directory ${JNI_INCLUDE_DIR}/jvmti.h])
+  fi
+fi
+
+if test "$JNI" = "false" ; then
+  echo "JNI disabled by --disable-jni"
+elif test -n "$JNI"; then
+  plugins="$plugins baratine"
+else
+  plugins=""
+  echo "Can't find JNI include files in JAVA_HOME: $JAVA_HOME"
+fi
+
+#
+# additional CFLAGS
+#
+# for solaris
+CFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS"
+
+AC_SUBST(JNI)
+AC_SUBST(JNI_INCLUDE)
+AC_SUBST(INCLUDES)
+AC_SUBST(CFLAGS_JNI)
+
+#
+# --ENABLE-debug
+#
+AC_ARG_ENABLE(debug,
+[AS_HELP_STRING([--enable-debug], [Turn on debugging])],
+[case "${enableval}" in
+ yes) debug=true ;;
+ no)  debug=false ;;
+ *) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+ esac],[debug=false])
+
+if test "$debug" = true; then
+  CFLAGS="$CFLAGS -DDEBUG -Wall"
+fi
