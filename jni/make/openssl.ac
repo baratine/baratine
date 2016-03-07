@@ -65,13 +65,17 @@ elif test -r /usr/local/opt/openssl/include/openssl/ssl3.h; then
   # MacOS-X new versions of openssl
   OPENSSL_INCLUDE=/usr/local/opt/openssl/include
   OPENSSL_LIB=/usr/local/opt/openssl/lib
-  NPN_LIBS="-L${OPENSSL_LIB} "
+  ALPN_LIBS="-L${OPENSSL_LIB} "
 elif test -r /usr/include/openssl/ssl3.h; then
   OPENSSL_INCLUDE=/usr/include
 elif test -r /usr/local/include/openssl/ssl3.h; then
   OPENSSL_INCLUDE=/usr/local/include
 elif test -r /usr/local/ssl/include/openssl/ssl3.h; then
   OPENSSL_INCLUDE=/usr/local/ssl/include
+elif test -r /usr/local/openssl/include/openssl/ssl3.h; then
+  OPENSSL=/usr/local/openssl
+  OPENSSL_INCLUDE="${OPENSSL}/include"
+  OPENSSL_LIB="${OPENSSL}/lib"
 fi
 
 if test "${ENABLE_SSL}" == false; then
@@ -185,16 +189,16 @@ int main(int argc, char **argv)
 _ACEOF
 
 #
-# test the open ssl npn
+# test the open ssl alpn
 #
 
-cat >conftest_npn.$ac_ext <<_ACEOF
+cat >conftest_alpn.$ac_ext <<_ACEOF
 #include <openssl/ssl.h>
 #include <openssl/rsa.h>
 #include <openssl/err.h>
 
 static int
-ssl_npn_server_cb(SSL *s,
+ssl_alpn_server_cb(SSL *s,
                   const unsigned char **out, unsigned int *outlen,
                   void *arg)
 {
@@ -209,6 +213,7 @@ int main(int argc, char **argv)
   const SSL_METHOD *meth;
   int len;
   char *protocols = "";
+  const unsigned char *protos = "h2";
   
   SSLeay_add_ssl_algorithms();
   SSL_load_error_strings();
@@ -216,9 +221,7 @@ int main(int argc, char **argv)
   meth = TLSv1_client_method();
   ctx = SSL_CTX_new(meth);
 
-  SSL_CTX_set_next_protos_advertised_cb(ctx,
-                                        ssl_npn_server_cb,
-                                        protocols);
+  SSL_CTX_set_alpn_protos(ctx, protos, 1);
 
   return 0;
 }
@@ -242,20 +245,22 @@ else
   fi
 fi
 
-${CC} -o conftest_npn ${CFLAGS_OPENSSL} ${CFLAGS} ${INCLUDES} conftest_npn.$ac_ext ${FLAG_OPENSSL_LIB} ${SSL_LIBS} ${NPN_LIBS} ${PROXY_LIBS} 1>/dev/null 2>/dev/null
+${CC} -o conftest_alpn ${CFLAGS_OPENSSL} ${CFLAGS} ${INCLUDES} conftest_alpn.$ac_ext ${FLAG_OPENSSL_LIB} ${SSL_LIBS} ${ALPN_LIBS} ${PROXY_LIBS} 1>/dev/null 2>/dev/null
+#${CC} -o conftest_alpn ${CFLAGS_OPENSSL} ${CFLAGS} ${INCLUDES} conftest_alpn.$ac_ext ${FLAG_OPENSSL_LIB} ${SSL_LIBS} ${ALPN_LIBS} ${PROXY_LIBS}
+
 
 if test "$?" == 0; then
-  ./conftest_npn 1>/dev/null 2>/dev/null
+  ./conftest_alpn 1>/dev/null 2>/dev/null
   
   if test "$?" == 0; then
-    echo "Using openssl NPN ... yes"
+    echo "Using openssl ALPN ... yes"
 
-    BAR_SSL_LIBS=libbaratinessl_npn
+    BAR_SSL_LIBS=libbaratinessl_alpn
   else
-    echo "Using openssl NPN ... no (exec)"
+    echo "Using openssl ALPN ... no (exec)"
   fi
 else  
-  echo "Using openssl NPN ... no (compile)"
+  echo "Using openssl ALPN ... no (compile)"
 fi
 
 rm -f conftest conftest.$ac_ext conftest_npn conftest_npn.$ac_ext

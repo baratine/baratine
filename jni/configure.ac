@@ -51,18 +51,8 @@ plugins="$plugins $baratine_ssl_plugin"
 AC_CONFIG_FILES([
 Makefile
 make/install.sh
-modules/c/src/Makefile
-modules/c/src/common/Makefile
-modules/c/src/baratine/Makefile
-modules/c/src/ssl/Makefile
+libbaratine/Makefile
 ])
-
-if test -r "bin/resin-dist.in"; then
-  AC_CONFIG_FILES([
-    bin/resin-dist
-    init.d/resin
-  ])
-fi
 
 if test -r "bin/baratine-dist.in"; then
   AC_CONFIG_FILES([

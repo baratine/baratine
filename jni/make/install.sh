@@ -1,12 +1,12 @@
-build_dir=/Users/ferg/ws5/baratine
+build_dir=/Users/ferg/ws5/baratine/jni
 
-abs_home_dir=/Users/ferg/ws5/baratine/dist
+abs_home_dir=/usr/local/share/baratine-0.10-SNAPSHOT
 home_dir=${DESTDIR}${abs_home_dir}
-root_dir=${DESTDIR}/Users/ferg/ws5/baratine/dist
-log_dir=${DESTDIR}/Users/ferg/ws5/baratine/dist/log
-conf_dir=${DESTDIR}/Users/ferg/ws5/baratine/dist/conf
+root_dir=${DESTDIR}/var/lib/baratine
+log_dir=${DESTDIR}/var/log/baratine
+conf_dir=${DESTDIR}/etc/baratine
 
-abs_usr_share=
+abs_usr_share=/usr/local/share
 usr_share=${DESTDIR}${abs_usr_share}
 
 abs_usr_bin=/usr/bin
