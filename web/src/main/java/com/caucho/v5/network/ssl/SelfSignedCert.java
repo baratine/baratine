@@ -41,9 +41,6 @@ import java.util.logging.Logger;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 
-import sun.security.tools.keytool.CertAndKeyGen;
-import sun.security.x509.X500Name;
-
 import com.caucho.v5.util.L10N;
 
 /**
@@ -106,6 +103,7 @@ public class SelfSignedCert implements Serializable
       int keysize = 1024;
       int days = 365;
 
+      /*
       CertAndKeyGen keypair;
       keypair = new CertAndKeyGen(keyAlgName, sigAlgName, providerName);
 
@@ -118,7 +116,9 @@ public class SelfSignedCert implements Serializable
         = keypair.getSelfCertificate(x500name, days * 24 * 3600);
 
       return new SelfSignedCert(cert, privKey);
-      //return null;
+      */
+      
+      return null;
       /*
     } catch (ClassNotFoundException e) {
       throw ConfigException.create(L.l("SelfSigned certificates require Sun JDK\n  {0}",
