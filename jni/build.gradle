@@ -1,0 +1,40 @@
+apply plugin: 'c'
+
+model {
+  components {
+    baratine(NativeLibrarySpec) {
+      binaries.all {
+        cCompiler.args "-I/Library/Java/Home8/Include", "-I/Library/Java/Home8/Include/darwin"
+      }
+    }
+  }
+}
+
+def osName = System.properties['os.name'];
+
+switch (osName) {
+case "Mac OS X":
+  osName = "osx";
+  break;
+}
+
+def osArch = System.properties['os.arch'];
+
+switch (osName) {
+case "amd64":
+  osArch = "x86_64";
+  break;
+}
+
+task copyJni(type: Copy) {
+  dependsOn 'assemble'
+  from 'build/libs/baratine/shared'
+  into "build/dist/com/caucho/native/${osName}-${osArch}"
+}
+
+
+task printProps << {
+  println osName
+  println osArch
+  println "$osName-$osArch"
+}

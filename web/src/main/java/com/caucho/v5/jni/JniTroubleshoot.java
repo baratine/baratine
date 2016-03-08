@@ -105,30 +105,10 @@ public class JniTroubleshoot {
     Path lib = getLib();
 
     if (! Files.exists(lib)) {
-      if (isMacOSX()) {
-        return L.l("Unable to find native library '{0}' for {1}. "
-                   + "Baratine expects to find this library in:\n"
-                   + "  (Mac OS X) {2}\n"
-                   + "On Mac OS X, run ./configure --prefix=`pwd`; make; make install.\n"
-                   + "The JVM exception was: {3}\n",
-                   _libraryName, _className, lib, _cause);
-      }
-      else if (isWin()) {
-        return L.l("Unable to find native library '{0}' for {1}. "
-                   + "Baratine expects to find this library in:\n"
-                   + "  (Windows) {2}\n"
-                   + "On Windows, check your installation for the DLL above.\n"
-                   + "The JVM exception was: {3}\n",
-                   _libraryName, _className, lib, _cause);
-      }
-      else {
-        return L.l("Unable to find native library '{0}' for {1}. "
-                   + "Baratine expects to find this library in:\n"
-                   + "  (Unix) {2}\n"
-                   + "On Unix, run ./configure --prefix=`pwd`; make; make install.\n\n"
-                   + "The JVM exception was: {3}\n",
-                   _libraryName, _className, lib, _cause);
-      }
+      return L.l("Unable to find native library '{0}' for {1}. "
+                 + "Baratine expects to find this library in: {2}\n"
+                 + "The JVM exception was: {3}\n",
+                 _libraryName, _className, lib, _cause);
     }
     else {
       return L.l("Found library '{0}' as '{1}', but the load failed. "

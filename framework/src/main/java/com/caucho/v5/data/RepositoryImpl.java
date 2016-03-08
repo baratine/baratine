@@ -76,7 +76,7 @@ public class RepositoryImpl<ID, T>
 
     if (db == null) {
       db = ServiceManager.current()
-                         .lookup("bardb:///")
+                         .service("bardb:///")
                          .as(DatabaseService.class);
     }
 

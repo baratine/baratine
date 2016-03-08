@@ -9,47 +9,12 @@
 
 #undef BARATINE_DIRECT_JNI_BUFFER
 
-#ifdef B64
 #define PTR jlong
-#else
-#define PTR jint
-#endif
 
-/* Threading */
-#ifdef WIN32
-#define pthread_t HANDLE
-#define pthread_self() GetCurrentThread()
-#define pthread_kill(thread,signal) ThreadInterrupt(thread)
-
-#define pthread_mutex_t HANDLE
-#define pthread_mutex_init(x,y)
-#define pthread_mutex_lock(x) WaitForSingleObject(*(x), INFINITE);
-
-#define pthread_mutex_unlock(x) ReleaseMutex(*(x))
-#define ECONNRESET EPIPE
-#else
 #undef closesocket
 #define closesocket(x) close(x)
 
-#ifdef __SOLARIS__
-#include <thread.h>
-#include <synch.h>
-
-#define pthread_mutex_t mutex_t
-#define pthread_mutex_lock(x) mutex_lock(x)
-#define pthread_mutex_unlock(x) mutex_unlock(x)
-
-#define pthread_cond_t cond_t
-#define pthread_cond_wait(cond,mutex) cond_wait(cond,mutex)
-#define pthread_cond_signal(x) cond_signal(x)
-
-#define pthread_t thread_t
-#define pthread_create(thread_id, foo, start, arg) \
-        thr_create(0, 0, start, arg, 0, thread_id)
-#else
 #include <pthread.h>
-#endif
-#endif
 
 typedef struct connection_t connection_t;
 

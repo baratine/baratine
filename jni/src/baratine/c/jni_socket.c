@@ -1,18 +1,13 @@
 /*
- * Copyright (c) 1998-2010 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
  * @author Scott Ferguson
  */
 
 #ifdef WIN32
-#ifndef _WINSOCKAPI_ 
-#define _WINSOCKAPI_
-#endif 
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <io.h>
-#else
+#error "JNI for Windows is not supported"
+#endif
+
 #define _GNU_SOURCE
 #include <sys/param.h>
 #include <sys/time.h>
@@ -42,8 +37,6 @@
 
 #ifdef HAS_SENDFILE
 #include <sys/sendfile.h>
-#endif
-
 #endif
 
 #ifdef linux
@@ -1152,14 +1145,6 @@ Java_com_caucho_v5_jni_JniServerSocketImpl_bindPort(JNIEnv *env,
   struct sockaddr_in *sin = (struct sockaddr_in *) sin_data;
   socklen_t sin_length = sizeof(sin_data);
 
-#ifdef WIN32
-  {
-	  WSADATA data;
-	  WORD version = MAKEWORD(2,2);
-	  WSAStartup(version, &data);
-  }
-#endif
-  
   addr_name[0] = 0;
   memset(sin_data, 0, sizeof(sin_data));
 
@@ -1191,8 +1176,9 @@ Java_com_caucho_v5_jni_JniServerSocketImpl_bindPort(JNIEnv *env,
     sin_length = sizeof(struct sockaddr_in6);
   }
   
-  if (! sin)
+  if (! sin) {
     return 0;
+  }
 
   sock = socket(family, SOCK_STREAM, 0);
   if (sock < 0) {
@@ -1258,20 +1244,6 @@ Java_com_caucho_v5_jni_JniServerSocketImpl_bindPort(JNIEnv *env,
   memset(sin_data, 0, sin_length);
   getsockname(sock, (struct sockaddr *) sin_data, &sin_length);
 
-  /* must be 0 if the poll is missing for accept */
-#if 0 && defined(O_NONBLOCK)
-  /*
-   * sets nonblock to ensure the timeout work in the case of multiple threads.
-   */
-  {
-    int flags;
-    int result;
-    
-    flags = fcntl(sock, F_GETFL);
-    result = fcntl(sock, F_SETFL, O_NONBLOCK|flags);
-  }
-#endif
-
   ss = (server_socket_t *) cse_malloc(sizeof(server_socket_t));
   memset(ss, 0, sizeof(server_socket_t));
 
@@ -1284,13 +1256,8 @@ Java_com_caucho_v5_jni_JniServerSocketImpl_bindPort(JNIEnv *env,
   ss->init = &std_init;
   ss->close = &std_close_ss;
 
-#ifdef WIN32
-  ss->accept_lock = CreateMutex(0, 0, 0);
-  ss->ssl_lock = CreateMutex(0, 0, 0);
-#endif
-
   init_server_socket(env, ss);
-  
+
   return (PTR) ss;
 }
 
@@ -1591,9 +1558,9 @@ Java_com_caucho_v5_jni_JniServerSocketImpl_nativeListen(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL
-Java_com_caucho_v5_jni_JniServerSocketImpl_getLocalPort(JNIEnv *env,
-                                                  jobject obj,
-                                                  jlong ss)
+Java_com_caucho_v5_jni_JniServerSocketImpl_nativeLocalPort(JNIEnv *env,
+                                                           jobject obj,
+                                                           jlong ss)
 {
   server_socket_t *socket = (server_socket_t *) (PTR) ss;
 

@@ -86,11 +86,6 @@ public interface ServiceManager
   <T> T service(Class<T> api);
   
   <T> T service(Class<T> api, String id);
-
-  default ServiceRef lookup(String address)
-  {
-    return service(address);
-  }
   
   /**
    * Creates a new service programmatically.

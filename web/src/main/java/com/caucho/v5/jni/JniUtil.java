@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -42,8 +43,6 @@ import java.util.Comparator;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.caucho.v5.util.HomeUtil;
 
 /**
  * JNI calls for misc system utilities.
@@ -116,9 +115,7 @@ public class JniUtil {
   {
     String tail = System.mapLibraryName(libraryName);
     
-    boolean is64bit = true; // CauchoUtil.is64Bit();
-    Path homeDir = HomeUtil.getHomeDir();
-    
+    System.out.println("GLP: " + tail);
     char sep = File.separatorChar;
     char pathSep = File.pathSeparatorChar;
     
@@ -145,7 +142,9 @@ public class JniUtil {
       return null;
     }
     
+    /*
     Path libexec = homeDir.resolve("native").resolve(nativeName);
+
     
     Path lookupPath = libexec.resolve(tail);
     
@@ -156,6 +155,7 @@ public class JniUtil {
         throw new RuntimeException(e);
       }
     }
+    */
     
     try {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -165,6 +165,7 @@ public class JniUtil {
       
       String tempPath = System.getProperty("java.io.tmpdir") + "/" + tail;
       
+      System.out.println("BLOK: " + tempPath);
       Path path = Paths.get(tempPath);
       
       if (Files.isReadable(path)) {
@@ -174,12 +175,12 @@ public class JniUtil {
       String resourceName = "com/caucho/native/" + nativeName + "/" + tail;
       
       InputStream is = loader.getResourceAsStream(resourceName);
-      
+      System.out.println("IS: " + is + " " + resourceName);
       if (is != null) {
         return extractJniToTempFile(is, path);
       }
       
-      return lookupPath.toRealPath().toString();
+      return null;
     } catch (Exception e) {
       e.printStackTrace();
       return null;
@@ -195,11 +196,11 @@ public class JniUtil {
     
       Path srcPath;
       
-      Path homeDir = HomeUtil.getHomeDir();
+      //Path homeDir = HomeUtil.getHomeDir();
       
-      srcPath = homeDir.resolve("native");
+      //srcPath = homeDir.resolve("native");
       
-      getNativePaths(paths, srcPath, dstPath, libraryNames, false);
+      //getNativePaths(paths, srcPath, dstPath, libraryNames, false);
       
       srcPath = getNativeJarPath();
     
@@ -210,7 +211,8 @@ public class JniUtil {
       
       return list;
     } catch (Exception e) {
-      log.finer("JNI loading exceptin: " + e);
+      e.printStackTrace();
+      log.finer("JNI loading exception: " + e);
       log.log(Level.FINEST, e.toString(), e);
       
       return new String[0];
@@ -271,7 +273,11 @@ public class JniUtil {
       }
       
       if (paths.size() == 0) {
-        paths.add(srcPath.resolve(nativeName).resolve(tail).toRealPath().toString());
+        try {
+          paths.add(srcPath.resolve(nativeName).resolve(tail).toRealPath().toString());
+        } catch (NoSuchFileException e) {
+          log.log(Level.FINEST, e.toString(), e);
+        }
       }
     }
     
@@ -291,7 +297,7 @@ public class JniUtil {
     }
     
     URL url = loader.getResource("com/caucho/native/");
-    
+
     if (url == null) {
       return null;
     }
@@ -369,7 +375,7 @@ public class JniUtil {
     
     switch (osName) {
     case "Mac OS X":
-      osName = "macosx";
+      osName = "osx";
       break;
     case "Linux":
       osName = "linux";

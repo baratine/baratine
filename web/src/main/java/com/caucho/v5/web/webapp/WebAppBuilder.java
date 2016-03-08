@@ -838,7 +838,7 @@ public class WebAppBuilder
     @Override
     public T convert(String key)
     {
-      return manager().lookup(_address + key).as(_itemType);
+      return manager().service(_address + key).as(_itemType);
     }
 
     private ServiceManager manager()

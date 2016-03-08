@@ -69,7 +69,7 @@ public class AutoBindService implements InjectAutoBind
     String address = _serviceManager.address(rawClass);
 
     if (address != null && ! address.isEmpty()) {
-      T proxy = _serviceManager.lookup(address).as(rawClass);
+      T proxy = _serviceManager.service(address).as(rawClass);
       
       return ()->proxy;
     }

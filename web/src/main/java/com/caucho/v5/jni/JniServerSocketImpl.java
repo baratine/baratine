@@ -67,7 +67,6 @@ public class JniServerSocketImpl extends ServerSocketBar
     throws IOException
   {
     _fd = bindPort(host, port);
-    
 
     _id = host + ":" + port;
     
@@ -341,7 +340,7 @@ public class JniServerSocketImpl extends ServerSocketBar
   @Override
   public int getLocalPort()
   {
-    return getLocalPort(_fd);
+    return nativeLocalPort(_fd);
   }
 
   public boolean isClosed()
@@ -443,7 +442,7 @@ public class JniServerSocketImpl extends ServerSocketBar
   /**
    * Returns the server's local port.
    */
-  private native int getLocalPort(long fd);
+  private native int nativeLocalPort(long fd);
 
   /**
    * Returns the OS file descriptor.

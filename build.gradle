@@ -4,7 +4,8 @@ mainClassName = 'com.caucho.v5.cli.baratine.BaratineCommandLine'
 
 allprojects {
   group="io.baratine"
-  version="0.11-SNAPSHOT"
+  
+  version=System.properties['version'] ?: "0.11-SNAPSHOT"
   
   apply plugin: 'java'
   apply plugin: 'eclipse'

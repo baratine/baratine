@@ -100,7 +100,7 @@ public class VaultDriverDataImpl<ID, T>
 
     _ampManager = ServiceManagerAmp.current();
 
-    _db = _ampManager.lookup("bardb:///")
+    _db = _ampManager.service("bardb:///")
                      .as(DatabaseServiceSync.class);
 
     Objects.requireNonNull(_db);
@@ -286,7 +286,7 @@ public class VaultDriverDataImpl<ID, T>
       return null;
     }
 
-    ServiceRef ref = _ampManager.lookup(toAddress(id));
+    ServiceRef ref = _ampManager.service(toAddress(id));
 
     return ref.as(_entityClass);
   }
@@ -298,7 +298,7 @@ public class VaultDriverDataImpl<ID, T>
       return null;
     }
 
-    ServiceRefAmp ref = (ServiceRefAmp) _ampManager.lookup(toAddress(id));
+    ServiceRefAmp ref = (ServiceRefAmp) _ampManager.service(toAddress(id));
 
     return ref;
   }

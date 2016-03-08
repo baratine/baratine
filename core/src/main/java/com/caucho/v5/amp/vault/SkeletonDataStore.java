@@ -254,7 +254,7 @@ public class SkeletonDataStore extends SkeletonClass
         result.ok(null);
       }
       else {
-        Object obj = _ampManager.lookup(_address + '/' + id)
+        Object obj = _ampManager.service(_address + '/' + id)
                                 .as(_skelEntity.getApiClass());
 
         result.ok(obj);
