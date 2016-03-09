@@ -29,51 +29,48 @@
 
 package io.baratine.io;
 
-import io.baratine.service.Result;
-
+import io.baratine.io.Pipes.PipeInResultImpl;
 
 /**
  * {@code ResultInPipe} returns a pipe subscription.
  */
 @FunctionalInterface
-public interface ResultPipeIn<T> extends Result<Void>
+public interface ResultPipeIn<T>
 {
-  /**
-   * The subscriber's pipe.
-   */
-  PipeIn<T> pipe();
+  //
+  // caller/subscriber side
+  //
   
   /**
-   * Callee's out-pipe with a flow callback. 
+   * The subscriber's {@code PipeIn} handler will be registered as
+   * the pipe consumer.
    */
-  default PipeOut<T> outPipe(OutFlow flow)
+  default PipeIn<T> pipe()
   {
-    throw new IllegalStateException(getClass().getName());
-  }
-  
-  default PipeOut<T> ok()
-  {
-    throw new IllegalStateException(getClass().getName());
+    return new PipeInResultImpl<>(this);
   }
 
-  default PipeOut<T> ok(OutFlow flow)
+  /**
+   * Subscription lambda for basic clients.
+   * 
+   * Clients that need more control over the flow should use the pipe().
+   */
+  void handle(T next, Throwable fail, boolean ok);
+  
+  //
+  // receiver/publisher side
+  //
+
+  /**
+   * Publisher accepts the subscription with flow control callback.
+   */
+  default void ok(PipeOut.Flow<T> flow)
   {
     throw new IllegalStateException(getClass().getName());
   }
   
-  /**
-   * Sets the initial prefetch. Return -1 to disable the prefetch.
-   */
-  default int prefetch()
+  default void fail(Throwable exn)
   {
-    return 0;
-  }
-
-  @Override
-  default void handle(Void value, Throwable exn)
-  {
-    if (exn != null) {
-      pipe().fail(exn);
-    }
+    throw new IllegalStateException(getClass().getName());
   }
 }

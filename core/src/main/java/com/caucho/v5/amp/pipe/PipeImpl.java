@@ -44,7 +44,6 @@ import com.caucho.v5.amp.queue.QueueRing;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.OutFlow;
 import io.baratine.io.PipeIn;
 import io.baratine.io.PipeOut;
 
@@ -73,15 +72,21 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   private PipeInFlowImpl _inFlow = new PipeInFlowImpl();
 
   private int _prefetch;
+  private boolean _isPaused;
+  private volatile long _inCredit;
 
   private ServiceRefAmp _outRef;
 
-  private OutFlow _outFlow;
+  // credit as seen by out. Used because of timing between
+  // available() and offer()
+  private long _outCredit;
+  
+  private PipeOut.Flow<T> _outFlow;
   
   public PipeImpl(ServiceRefAmp inRef, 
                   PipeIn<T> inPipe,
                   ServiceRefAmp outRef,
-                  OutFlow outFlow)
+                  PipeOut.Flow<T> outFlow)
   {
     Objects.requireNonNull(inRef);
     Objects.requireNonNull(inPipe);
@@ -93,10 +98,10 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     _outFlow = outFlow;
     
     int prefetch = _inPipe.prefetch();
+    int credits = _inPipe.credits();
     int capacity = _inPipe.capacity();
     
     if (capacity > 0) {
-      
     }
     else {
       if (prefetch <= 0) {
@@ -108,11 +113,13 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     
     _prefetch = prefetch;
     
-    _inPipe.inFlow(_inFlow);
+    _inPipe.flow(_inFlow);
     
     _inFlow.init();
-    
+
     _queue = new QueueRing<>(capacity);
+    
+    updatePrefetchCredits();
   }
 
   @Override
@@ -128,9 +135,12 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
       
       wakeIn();
       
-      int size = _queue.size();
+      long sent = _queue.head();
       
-      if (_prefetch <= size) {
+      // _outCredit is used instead of _queue.isEmpty() because of
+      // timing between available() and next(). The application might think
+      // it's used the last available, but the queue has just been drained.
+      if (_outCredit <= sent && _outCredit > 0) {
         outFull();
       }
     }
@@ -156,11 +166,13 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   }
 
   @Override
-  public int available()
+  public int credits()
   {
-    int size = (int) _queue.size();
+    long sent = _queue.head();
     
-    int available = Math.max(0, _prefetch - size);
+    int available = Math.max(0, (int) (_inCredit - sent));
+    
+    _outCredit = sent + available;
     
     if (available <= 0) {
       outFull();
@@ -171,7 +183,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   
   private void outFull()
   {
-    OutFlow outFlow = _outFlow;
+    PipeOut.Flow<T> outFlow = _outFlow;
     
     if (outFlow == null) {
       return;
@@ -184,16 +196,16 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
       stateOld = _stateOutRef.get();
       stateNew = stateOld.toFull();
     } while (! _stateOutRef.compareAndSet(stateOld, stateNew));
+
+    long sent = _queue.head();
     
-    int size = (int) _queue.size();
-    
-    if (size < _prefetch) {
+    if (sent < _inCredit) {
       do {
         stateOld = _stateOutRef.get();
         stateNew = stateOld.toWake();
       } while (! _stateOutRef.compareAndSet(stateOld, stateNew));
       
-      outFlow.available(_prefetch - size);
+      outFlow.ready(this);
     }
   }
   
@@ -233,7 +245,8 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     } catch (Exception e) {
       log.log(Level.FINER, e.toString(), e);
     }
-      
+
+    updatePrefetchCredits();
     /*
     T msg;
       
@@ -256,6 +269,15 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   public void deliver(T msg, Outbox<T> outbox) throws Exception
   {
     _inPipe.next(msg);
+    
+    updatePrefetchCredits();
+  }
+  
+  private void updatePrefetchCredits()
+  {
+    if (! _isPaused) {
+      _inCredit = _queue.getTail() + _prefetch;
+    }
   }
   
   /**
@@ -288,11 +310,14 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
    */
   private void wakeOut()
   {
-    OutFlow outFlow = _outFlow;
+    PipeOut.Flow<T> outFlow = _outFlow;
     
     if (outFlow == null) {
       return;
     }
+
+    OutboxAmp outbox = OutboxAmp.current();
+    Objects.requireNonNull(outbox);
     
     StateOutPipe stateOld;
     StateOutPipe stateNew;
@@ -306,9 +331,6 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
       
       stateNew = stateOld.toWake();
     } while (! _stateOutRef.compareAndSet(stateOld, stateNew));
-
-    OutboxAmp outbox = OutboxAmp.current();
-    Objects.requireNonNull(outbox);
       
     PipeWakeOutMessage<T> msg = new PipeWakeOutMessage<>(outbox, _outRef, this, outFlow);
     
@@ -324,22 +346,25 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     @Override
     public void pause()
     {
-      // TODO Auto-generated method stub
-      
+      // XXX: check for prefetch mode
+      _isPaused = true;
     }
 
     @Override
     public void resume()
     {
-      // TODO Auto-generated method stub
-      
+      // XXX: check for prefetch mode
+      _isPaused = false;
+      updatePrefetchCredits();
+      wakeOut();
     }
 
     @Override
-    public void credit(int newCredits)
+    public void credits(int newCredits)
     {
-      // TODO Auto-generated method stub
-      
+      if (newCredits < 0) {
+        throw new IllegalArgumentException(String.valueOf(newCredits));
+      }
     }
   }
   

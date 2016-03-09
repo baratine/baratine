@@ -30,46 +30,55 @@
 package io.baratine.io;
 
 /**
- * Subscriber's callback for a {@code Pipe}.
+ * Consumer's callback for a {@code Pipe}.
  */
 public interface PipeIn<T> extends Pipe<T>
 {
   public static final int PREFETCH_DEFAULT = 0;
   public static final int PREFETCH_DISABLE = -1;
   
-  default void inFlow(Flow flow)
+  public static final int CREDIT_DISABLE = -1;
+  
+  /**
+   * Accept the {@code Flow} object for finer flow control.
+   * 
+   * The {@code Flow} object can pause the prefetch, or add credits
+   * manually when the credit system is used. 
+   */
+  default void flow(Flow flow)
   {
   }
   
+  /**
+   * The prefetch size.
+   * 
+   * Prefetch automatically manages the credits available to the sender.
+   * 
+   * If {@code PREFETCH_DISABLE} is returned, use the credits instead. 
+   */
   default int prefetch()
   {
     return PREFETCH_DEFAULT;
+  }
+
+  /**
+   * The initial number of credits. Can be zero if no initial credits.
+   * 
+   * To enable credits and disable the prefetch queue, return a non-negative
+   * value.
+   * 
+   * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
+   * is the default behavior. 
+   */
+  default int credits()
+  {
+    return CREDIT_DISABLE;
   }
   
   default int capacity()
   {
     return 0;
   }
-
-  @Override
-  default void next(T value)
-  {
-    handle(value, null, false);
-  }
-  
-  @Override
-  default void fail(Throwable exn)
-  {
-    handle(null, exn, false);
-  }
-  
-  @Override
-  default void ok()
-  {
-    handle(null, null, true);
-  }
-  
-  void handle(T value, Throwable exn, boolean isOk);
   
   /**
    * {@code Flow} controls the pipe prefetch
@@ -83,22 +92,33 @@ public interface PipeIn<T> extends Pipe<T>
      * Items currently in the prefetch queue will be delivered, and the
      * publisher can still add up to the current prefetch credit, but the 
      * publisher cannot add more items after that.
+     * 
+     * @throws IllegalStateException if credits are used
      */
     void pause();
     
     /**
      * Resumes the publisher.
+     * 
+     * @throws IllegalStateException if credits are used
      */
     void resume();
     
     /**
-     * Adds to the prefetch queue when prefetch is disabled. Used by applications
-     * that need finer control over the prefetch queue.
+     * Adds to the credits when prefetch is disabled. Used by applications
+     * that need finer control.
      * 
      * Applications using credit need to continually add credits.
      * 
      * @param newCredits additional credits for the publisher
+     * 
+     * @throws IllegalStateException if prefetch is used
      */
-    void credit(int newCredits);
+    void credits(int newCredits);
+  }
+  
+  public interface InHandler<T>
+  {
+    void handle(T value, Throwable exn, boolean ok);
   }
 }

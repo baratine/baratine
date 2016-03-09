@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public interface QueueDeliver<M> extends BlockingQueue<M>
 {
-  long getHead();
+  long head();
 
   //int getOfferReserve();
   

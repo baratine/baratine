@@ -35,9 +35,9 @@ package io.baratine.io;
 public interface PipeOut<T> extends Pipe<T>
 {
   /**
-   * Returns the available space in the queue.
+   * Returns the available credits in the queue.
    */
-  int available();
+  int credits();
   
   /**
    * True if the stream has been cancelled by the reader.
@@ -47,5 +47,21 @@ public interface PipeOut<T> extends Pipe<T>
   default boolean isClosed()
   {
     return false;
+  }
+  
+  /**
+   * {@code Flow} is a callback to wake the publisher when credits are
+   * available for the pipe.
+   * 
+   * Called after the publisher would block, calculated as when the number
+   * of {@code OutPipe.next()} calls match a previous {@code OutPipe.credits()}.
+   */
+  public interface Flow<T>
+  {
+    void ready(PipeOut<T> pipe);
+    
+    default void fail(Throwable exn)
+    {
+    }
   }
 }

@@ -29,26 +29,49 @@
 
 package io.baratine.io;
 
-import io.baratine.service.Result;
-
+import io.baratine.io.Pipes.PipeOutFlowImpl;
 
 /**
  * {@code OutStream} is a source of a pipe to write.
  * <pre><code>
- *   service.publish(Pipes.publish(new MyFlow()));
+ *   service.publish(Pipes.out(new MyFlow()));
  * </code></pre>
  */
-public interface ResultPipeOut<T> extends Result<PipeOut<T>>
+public interface ResultPipeOut<T>
 {
+  //
+  // caller/publisher side
+  //
+  
   /**
    * Returns the publisher's flow callback.
    */
-  default OutFlow flow()
+  default PipeOut.Flow<T> flow()
   {
-    return null;
+    return new PipeOutFlowImpl<>(this);
   }
   
+  /**
+   * Lambda for an inline publisher.
+   */
+  void handle(PipeOut<T> pipe, Throwable exn);
+  
+  //
+  // receiver/consumer side
+  //
+
+  /**
+   * Service accepts the request.
+   */
   default void ok(PipeIn<T> pipe)
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
+  
+  /**
+   * Service rejects the request.
+   */
+  default void fail(Throwable exn)
   {
     throw new IllegalStateException(getClass().getName());
   }

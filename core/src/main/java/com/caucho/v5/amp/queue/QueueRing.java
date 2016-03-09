@@ -142,7 +142,7 @@ public final class QueueRing<M>
     return getCapacity() - size() - 1;
   }
 
-  public final long getHead()
+  public final long head()
   {
     return _head.get();
   }

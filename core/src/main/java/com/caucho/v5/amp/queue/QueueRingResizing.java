@@ -171,9 +171,9 @@ public final class QueueRingResizing<T>
     return _readQueue.size();
   }
   
-  public long getHead()
+  public long head()
   {
-    return _readQueue.getHead();
+    return _readQueue.head();
   }
   
   @Override

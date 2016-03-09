@@ -57,7 +57,7 @@ public final class FreeRingSoft<T> {
   
   public long getHead()
   {
-    return _ringQueue.getHead();
+    return _ringQueue.head();
   }
   
   public long getHeadAlloc()

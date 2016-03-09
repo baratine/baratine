@@ -42,7 +42,6 @@ import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.OutFlow;
 import io.baratine.io.PipeIn;
 import io.baratine.io.PipeOut;
 import io.baratine.io.ResultPipeOut;
@@ -51,7 +50,7 @@ import io.baratine.io.ResultPipeOut;
  * Register a publisher to a pipe.
  */
 public class PipeOutMessage<T>
-  extends QueryMessageBase<PipeOut<T>>
+  extends QueryMessageBase<Void>
   implements ResultPipeOut<T>
 {
   private static final L10N L = new L10N(PipeOutMessage.class);
@@ -121,7 +120,7 @@ public class PipeOutMessage<T>
   }
 
   @Override
-  public void ok(PipeOut<T> pipe)
+  public void ok(Void value)
   {
     throw new IllegalStateException(getClass().getSimpleName());
   }
@@ -137,27 +136,28 @@ public class PipeOutMessage<T>
     ServiceRefAmp inRef = inboxTarget().serviceRef();
     
     ServiceRefAmp outRef = inboxCaller().serviceRef();
-    OutFlow outFlow = _result.flow();
+    PipeOut.Flow<T> outFlow = _result.flow();
     
     PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
     
     _pipe = pipe;
     
-    super.ok(pipe);
+    super.ok((Void) null);
   }
 
   @Override
   protected boolean invokeOk(ActorAmp actorDeliver)
   {
-    _result.ok(_pipe);
+    _result.flow().ready(_pipe);
     
     return true;
   }
   
+  @Override
   protected boolean invokeFail(ActorAmp actorDeliver)
   {
-    System.out.println("Missing Fail:" + this);
-    //_result.fail(_exn);
+    //System.out.println("Missing Fail:" + this);
+    _result.fail(getException());
 
     return true;
   }
@@ -192,5 +192,11 @@ public class PipeOutMessage<T>
         + ",result=" + callbackName
         + "]");
     
+  }
+
+  @Override
+  public void handle(PipeOut<T> pipe, Throwable exn)
+  {
+    throw new UnsupportedOperationException();
   }
 }

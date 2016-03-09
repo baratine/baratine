@@ -143,7 +143,7 @@ public final class QueueRingSingleWriter<M>
     return getCapacity() - size() - 1;
   }
   
-  public final long getHead()
+  public final long head()
   {
     return _headRef.get();
   }

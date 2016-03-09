@@ -43,7 +43,7 @@ public interface Pipe<T>
 
   /**
    * Completes sending the values to the client and signals to the client
-   * that no more values is expected.
+   * that no more values are expected.
    */
   void ok();
 

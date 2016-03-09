@@ -42,7 +42,6 @@ import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.OutFlow;
 import io.baratine.io.PipeIn;
 import io.baratine.io.PipeOut;
 import io.baratine.io.ResultPipeIn;
@@ -122,15 +121,16 @@ public class PipeInMessage<T>
   @Override
   protected boolean invokeOk(ActorAmp actorDeliver)
   {
-    _result.ok((Void) null);
+    //_result.ok((Void) null);
     
     return true;
   }
   
+  @Override
   protected boolean invokeFail(ActorAmp actorDeliver)
   {
-    System.out.println("Missing Fail:" + this);
-    //_result.fail(_exn);
+    //System.out.println("Missing Fail:" + this);
+    _result.fail(getException());
 
     return true;
   }
@@ -149,15 +149,19 @@ public class PipeInMessage<T>
     throw new IllegalStateException();
   }
 
+  /*
   @Override
   public PipeOut<T> ok()
   {
     return ok((OutFlow) null);
   }
+  */
 
   @Override
-  public PipeOut<T> ok(OutFlow outFlow)
+  public void ok(PipeOut.Flow<T> outFlow)
   {
+    Objects.requireNonNull(outFlow);
+    
     super.ok(null);
     
     ServiceRefAmp inRef = inboxCaller().serviceRef();
@@ -167,9 +171,14 @@ public class PipeInMessage<T>
     
     PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
     
-    return pipe;
+    outFlow.ready(pipe);
   }
-  
+
+  @Override
+  public void handle(T next, Throwable fail, boolean ok)
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
 
   @Override
   public String toString()

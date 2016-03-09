@@ -74,7 +74,7 @@ public class WorkerDeliverDisruptorMultiWorker<M extends MessageDeliver>
 
     do {
       lastHead = _lastHead.get();
-      head = _queue.getHead();
+      head = _queue.head();
     } while (! _lastHead.compareAndSet(lastHead, head));
     
     long size = Math.min(head - lastHead, _queue.size());
