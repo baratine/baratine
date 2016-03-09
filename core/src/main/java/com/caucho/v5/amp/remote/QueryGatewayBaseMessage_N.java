@@ -61,7 +61,7 @@ public class QueryGatewayBaseMessage_N
   @Override
   public final void invokeQuery(InboxAmp inbox, ActorAmp actorDeliver)
   {
-    ActorAmp actorMessage = getServiceRef().getActor();
+    ActorAmp actorMessage = serviceRef().getActor();
 
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,

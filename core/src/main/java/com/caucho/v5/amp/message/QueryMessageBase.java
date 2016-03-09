@@ -125,7 +125,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
     _timeout = expireTime;
   }
   
-  protected InboxAmp getInboxCaller()
+  protected InboxAmp inboxCaller()
   {
     return _inboxCaller;
   }
@@ -227,7 +227,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       return;
     }
     
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(getServiceRef().manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
       outbox.offer(this);
     }
   }
@@ -412,7 +412,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       @Override
       void offerQueue(QueryMessageBase<?> query, long timeout)
       {
-        query.getInboxCaller().offerResult(query);
+        query.inboxCaller().offerResult(query);
       }
       
       @Override
@@ -437,7 +437,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       @Override
       void offerQueue(QueryMessageBase<?> query, long timeout)
       {
-        query.getInboxCaller().offerResult(query);
+        query.inboxCaller().offerResult(query);
       }
       
       @Override
@@ -487,7 +487,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
     
     WorkerDeliver getWorker(QueryMessageBase<?> query)
     {
-      return query.getInboxCaller().getWorker();
+      return query.inboxCaller().getWorker();
     }
     
     void offer(QueryMessageBase<?> query, long timeout)

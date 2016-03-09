@@ -29,52 +29,43 @@
 
 package com.caucho.v5.amp.message;
 
+import java.util.Objects;
+
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.pipe.PipeImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
-import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 
+import io.baratine.io.OutFlow;
+
 /**
- * Handle to an amp instance.
+ * Handles the context for an actor, primarily including its
+ * query map.
  */
-public final class SendMessage_0 extends MethodMessageBase
+public class PipeWakeOutMessage<T>
+  extends MessageOutboxBase
 {
-  /*
-  public SendMessage_0(ServiceRefAmp serviceRef,
-                       MethodAmp method)
-  {
-    super(serviceRef, method);
-  }
-  */
+  private final PipeImpl<T> _pipe;
+  private final OutFlow _flow;
 
-  public SendMessage_0(OutboxAmp outbox,
-                       ServiceRefAmp serviceRef,
-                       MethodAmp method)
+  public PipeWakeOutMessage(OutboxAmp outbox,
+                         ServiceRefAmp serviceRef,
+                         PipeImpl<T> pipe,
+                         OutFlow flow)
   {
-    super(outbox, serviceRef, method);
-  }
-
-  public SendMessage_0(OutboxAmp outbox,
-                       HeadersAmp headers,
-                       ServiceRefAmp serviceRef,
-                       MethodAmp method)
-  {
-    super(outbox, headers, serviceRef, method);
+    super(outbox, serviceRef.inbox());
+    
+    Objects.requireNonNull(pipe);
+    _pipe = pipe;
+    
+    Objects.requireNonNull(flow);
+    _flow = flow;
   }
 
   @Override
-  public final void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public void invoke(InboxAmp inbox, ActorAmp actorDeliver)
   {
-    ActorAmp actorMessage = serviceRef().getActor();
-    
-    LoadState load = actorDeliver.load(actorMessage, this);
-
-    load.send(actorDeliver,
-              actorMessage,
-              getMethod(),
-              getHeaders());
+    _flow.available(_pipe.available());
   }
 }

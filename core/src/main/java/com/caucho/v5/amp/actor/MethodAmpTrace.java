@@ -41,8 +41,8 @@ import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 
-import io.baratine.io.ResultInPipe;
-import io.baratine.io.ResultOutPipe;
+import io.baratine.io.ResultPipeIn;
+import io.baratine.io.ResultPipeOut;
 import io.baratine.service.Result;
 import io.baratine.service.ResultStream;
 
@@ -369,7 +369,7 @@ public class MethodAmpTrace implements MethodAmp
 
   @Override
   public <T> void outPipe(HeadersAmp headers,
-                          ResultOutPipe<T> result,
+                          ResultPipeOut<T> result,
                           ActorAmp actor,
                           Object []args)
   {
@@ -378,7 +378,7 @@ public class MethodAmpTrace implements MethodAmp
 
   @Override
   public <T> void inPipe(HeadersAmp headers,
-                          ResultInPipe<T> result,
+                          ResultPipeIn<T> result,
                           ActorAmp actor,
                           Object []args)
   {

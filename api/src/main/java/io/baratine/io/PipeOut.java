@@ -29,49 +29,23 @@
 
 package io.baratine.io;
 
-import java.util.Objects;
-
 /**
- * {@code InPipe} controls values
+ * {@code OutPipe} sends a sequence of values from a source to a sink.
  */
-abstract public class InPipeBase<T> implements InPipe<T>, InFlow
+public interface PipeOut<T> extends Pipe<T>
 {
-  private InFlow _inFlow;
+  /**
+   * Returns the available space in the queue.
+   */
+  int available();
   
-  @Override
-  public void inFlow(InFlow inFlow)
+  /**
+   * True if the stream has been cancelled by the reader.
+   *
+   * @return true if cancelled
+   */
+  default boolean isClosed()
   {
-    Objects.requireNonNull(inFlow);
-    
-    _inFlow = inFlow;
-  }
-  
-  public InFlow inFlow()
-  {
-    return _inFlow;
-  }
-  
-  @Override
-  public void fail(Throwable exn)
-  {
-    handle(null, exn, false);
-  }
-
-  @Override
-  public void credit(int newCredits)
-  {
-    inFlow().credit(newCredits);
-  }
-  
-  @Override
-  public void pause()
-  {
-    inFlow().pause();
-  }
-  
-  @Override
-  public void resume()
-  {
-    inFlow().resume();
+    return false;
   }
 }

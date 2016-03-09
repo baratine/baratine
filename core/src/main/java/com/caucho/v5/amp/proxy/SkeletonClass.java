@@ -52,8 +52,8 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.ResultInPipe;
-import io.baratine.io.ResultOutPipe;
+import io.baratine.io.ResultPipeIn;
+import io.baratine.io.ResultPipeOut;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
 import io.baratine.service.Journal;
@@ -465,11 +465,11 @@ public class SkeletonClass
         }
       }
       
-      if (isResult(paramTypes, ResultOutPipe.class)) {
+      if (isResult(paramTypes, ResultPipeOut.class)) {
         return new SkeletonMethodResultOutPipe_N(method);
       }
       
-      if (isResult(paramTypes, ResultInPipe.class)) {
+      if (isResult(paramTypes, ResultPipeIn.class)) {
         return new SkeletonMethodResultInPipe_N(method);
       }
       

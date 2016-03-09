@@ -38,7 +38,7 @@ import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.ResultInPipe;
+import io.baratine.io.ResultPipeIn;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;
@@ -60,7 +60,7 @@ class SkeletonMethodResultInPipe_N extends SkeletonMethodResult_N
   @Override
   protected Class<?> getResultClass()
   {
-    return ResultInPipe.class;
+    return ResultPipeIn.class;
   }
 
   @Override
@@ -95,7 +95,7 @@ class SkeletonMethodResultInPipe_N extends SkeletonMethodResult_N
 
   @Override
   public <T> void inPipe(HeadersAmp headers,
-                          ResultInPipe<T> result,
+                          ResultPipeIn<T> result,
                           ActorAmp actor,
                           Object []args)
   {

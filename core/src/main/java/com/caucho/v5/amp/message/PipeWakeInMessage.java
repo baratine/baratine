@@ -41,13 +41,13 @@ import com.caucho.v5.amp.spi.OutboxAmp;
  * Handles the context for an actor, primarily including its
  * query map.
  */
-public class PipeWakeMessage<T>
+public class PipeWakeInMessage<T>
   extends MessageOutboxBase
 {
   private final ServiceRefAmp _serviceRef;
   private final PipeImpl<T> _pipe;
 
-  public PipeWakeMessage(OutboxAmp outbox,
+  public PipeWakeInMessage(OutboxAmp outbox,
                          ServiceRefAmp serviceRef,
                          PipeImpl<T> pipe)
   {

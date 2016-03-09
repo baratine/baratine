@@ -33,8 +33,8 @@ import java.util.ArrayList;
 
 import com.caucho.v5.amp.actor.SaveResult;
 
-import io.baratine.io.ResultInPipe;
-import io.baratine.io.ResultOutPipe;
+import io.baratine.io.ResultPipeIn;
+import io.baratine.io.ResultPipeOut;
 import io.baratine.service.Result;
 import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceRef;
@@ -195,7 +195,7 @@ public interface LoadState
                        ActorAmp actorMessage,
                        MethodAmp method,
                        HeadersAmp headers,
-                       ResultOutPipe<?> result, 
+                       ResultPipeOut<?> result, 
                        Object[] args)
   {
     method.outPipe(headers, result, 
@@ -207,7 +207,7 @@ public interface LoadState
                        ActorAmp actorMessage,
                        MethodAmp method,
                        HeadersAmp headers,
-                       ResultInPipe<?> result, 
+                       ResultPipeIn<?> result, 
                        Object[] args)
   {
     method.inPipe(headers, result, 

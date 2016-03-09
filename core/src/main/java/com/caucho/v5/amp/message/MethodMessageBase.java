@@ -213,7 +213,7 @@ abstract public class MethodMessageBase implements MessageAmp
     return _headers;
   }
   
-  protected final ServiceRefAmp getServiceRef()
+  protected final ServiceRefAmp serviceRef()
   {
     return _serviceRef;
   }

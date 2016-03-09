@@ -29,23 +29,51 @@
 
 package io.baratine.io;
 
+import io.baratine.service.Result;
+
+
 /**
- * {@code OutPipe} sends a sequence of values from a source to a sink.
+ * {@code ResultInPipe} returns a pipe subscription.
  */
-public interface OutPipe<T> extends Pipe<T>
+@FunctionalInterface
+public interface ResultPipeIn<T> extends Result<Void>
 {
   /**
-   * Returns the available space in the queue.
+   * The subscriber's pipe.
    */
-  int available();
+  PipeIn<T> pipe();
   
   /**
-   * True if the stream has been cancelled by the reader.
-   *
-   * @return true if cancelled
+   * Callee's out-pipe with a flow callback. 
    */
-  default boolean isClosed()
+  default PipeOut<T> outPipe(OutFlow flow)
   {
-    return false;
+    throw new IllegalStateException(getClass().getName());
+  }
+  
+  default PipeOut<T> ok()
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
+
+  default PipeOut<T> ok(OutFlow flow)
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
+  
+  /**
+   * Sets the initial prefetch. Return -1 to disable the prefetch.
+   */
+  default int prefetch()
+  {
+    return 0;
+  }
+
+  @Override
+  default void handle(Void value, Throwable exn)
+  {
+    if (exn != null) {
+      pipe().fail(exn);
+    }
   }
 }

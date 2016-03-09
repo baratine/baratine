@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,40 +27,16 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.io;
+package com.caucho.v5.amp.pipe;
 
 /**
- * {@code Flow} controls the pipe prefetch
+ * pipe exception when it's full.
  */
-public interface InFlow
+@SuppressWarnings("serial")
+public class PipeExceptionFull extends RuntimeException
 {
-  public static final int PREFETCH_DEFAULT = 0;
-  public static final int PREFETCH_DISABLE = -1;
-  
-  /**
-   * Pause publisher from adding to the prefetch queue by stopping the
-   * automatic adding of credits.
-   * 
-   * Items currently in the prefetch queue will be delivered, and the
-   * publisher can still add up to the current prefetch credit, but the 
-   * publisher cannot add more items after that.
-   */
-  void pause();
-  
-  /**
-   * Resumes the publisher.
-   */
-  void resume();
-  
-  /**
-   * Adds to the prefetch queue when prefetch is disabled. Used by applications
-   * that need finer control over the prefetch queue.
-   * 
-   * Applications using credit need to continually add credits.
-   * 
-   * @param newCredits additional credits for the publisher
-   */
-  void credit(int newCredits);
-
-  void prefetch(int prefetch);
+  PipeExceptionFull(String msg)
+  {
+    super(msg);
+  }
 }

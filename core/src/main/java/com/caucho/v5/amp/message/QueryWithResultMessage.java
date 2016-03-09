@@ -139,7 +139,7 @@ public class QueryWithResultMessage<T>
     */
     
     try {
-      outbox.inbox(getInboxCaller());
+      outbox.inbox(inboxCaller());
       
       _result.completeFuture(value);
     } finally {
@@ -157,8 +157,8 @@ public class QueryWithResultMessage<T>
   {
     MethodAmp method = getMethod();
     
-    if (method.isDirect() && getServiceRef().getActor().isStarted()) {
-      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(getServiceRef().manager())) {
+    if (method.isDirect() && serviceRef().getActor().isStarted()) {
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
         offerDirect(outbox);
       }
     }

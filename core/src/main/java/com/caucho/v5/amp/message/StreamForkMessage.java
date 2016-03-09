@@ -118,7 +118,7 @@ public class StreamForkMessage<T>
     try {
       MethodAmp method = getMethod();
     
-      ActorAmp actorMessage = getServiceRef().getActor();
+      ActorAmp actorMessage = serviceRef().getActor();
 
       LoadState load = actorDeliver.load(actorMessage, this);
     

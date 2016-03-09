@@ -170,7 +170,7 @@ public class StreamCallMessage<T>
     try {
       MethodAmp method = getMethod();
     
-      ActorAmp actorMessage = getServiceRef().getActor();
+      ActorAmp actorMessage = serviceRef().getActor();
 
       LoadState load = actorDeliver.load(actorMessage, this);
       

@@ -42,26 +42,28 @@ import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.InPipe;
-import io.baratine.io.OutPipe;
-import io.baratine.io.ResultOutPipe;
+import io.baratine.io.OutFlow;
+import io.baratine.io.PipeIn;
+import io.baratine.io.PipeOut;
+import io.baratine.io.ResultPipeOut;
 
 /**
  * Register a publisher to a pipe.
  */
 public class PipeOutMessage<T>
-  extends QueryMessageBase<OutPipe<T>>
-  implements ResultOutPipe<T>
+  extends QueryMessageBase<PipeOut<T>>
+  implements ResultPipeOut<T>
 {
   private static final L10N L = new L10N(PipeOutMessage.class);
   private static final Logger log 
     = Logger.getLogger(PipeOutMessage.class.getName());
   
-  private final ResultOutPipe<T> _result;
+  private final ResultPipeOut<T> _result;
 
   private Object[] _args;
 
   private InboxAmp _callerInbox;
+  
   private PipeImpl<T> _pipe;
   
   public PipeOutMessage(OutboxAmp outbox,
@@ -69,7 +71,7 @@ public class PipeOutMessage<T>
                         HeadersAmp headers,
                         ServiceRefAmp serviceRef,
                         MethodAmp method,
-                        ResultOutPipe<T> result,
+                        ResultPipeOut<T> result,
                         long expires,
                         Object []args)
   {
@@ -97,7 +99,7 @@ public class PipeOutMessage<T>
     try {
       MethodAmp method = getMethod();
     
-      ActorAmp actorMessage = getServiceRef().getActor();
+      ActorAmp actorMessage = serviceRef().getActor();
 
       LoadState load = actorDeliver.load(actorMessage, this);
       
@@ -119,20 +121,25 @@ public class PipeOutMessage<T>
   }
 
   @Override
-  public void ok(OutPipe<T> pipe)
+  public void ok(PipeOut<T> pipe)
   {
     throw new IllegalStateException(getClass().getSimpleName());
   }
 
   @Override
-  public void ok(InPipe<T> inPipe)
+  public void ok(PipeIn<T> inPipe)
   {
     if (inPipe == null) {
       _result.fail(new NullPointerException(L.l("NPE from service {0}", getMethod())));
       Objects.requireNonNull(inPipe);
     }
     
-    PipeImpl<T> pipe = new PipeImpl<>(inboxTarget().serviceRef(), inPipe);
+    ServiceRefAmp inRef = inboxTarget().serviceRef();
+    
+    ServiceRefAmp outRef = inboxCaller().serviceRef();
+    OutFlow outFlow = _result.flow();
+    
+    PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
     
     _pipe = pipe;
     

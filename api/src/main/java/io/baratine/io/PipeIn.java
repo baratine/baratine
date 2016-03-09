@@ -32,10 +32,23 @@ package io.baratine.io;
 /**
  * Subscriber's callback for a {@code Pipe}.
  */
-public interface InPipe<T> extends Pipe<T>
+public interface PipeIn<T> extends Pipe<T>
 {
-  default void inFlow(InFlow flow)
+  public static final int PREFETCH_DEFAULT = 0;
+  public static final int PREFETCH_DISABLE = -1;
+  
+  default void inFlow(Flow flow)
   {
+  }
+  
+  default int prefetch()
+  {
+    return PREFETCH_DEFAULT;
+  }
+  
+  default int capacity()
+  {
+    return 0;
   }
 
   @Override
@@ -57,4 +70,35 @@ public interface InPipe<T> extends Pipe<T>
   }
   
   void handle(T value, Throwable exn, boolean isOk);
+  
+  /**
+   * {@code Flow} controls the pipe prefetch
+   */
+  public interface Flow
+  {
+    /**
+     * Pause publisher from adding to the prefetch queue by stopping the
+     * automatic adding of credits.
+     * 
+     * Items currently in the prefetch queue will be delivered, and the
+     * publisher can still add up to the current prefetch credit, but the 
+     * publisher cannot add more items after that.
+     */
+    void pause();
+    
+    /**
+     * Resumes the publisher.
+     */
+    void resume();
+    
+    /**
+     * Adds to the prefetch queue when prefetch is disabled. Used by applications
+     * that need finer control over the prefetch queue.
+     * 
+     * Applications using credit need to continually add credits.
+     * 
+     * @param newCredits additional credits for the publisher
+     */
+    void credit(int newCredits);
+  }
 }

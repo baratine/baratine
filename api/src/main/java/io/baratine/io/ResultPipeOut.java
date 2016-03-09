@@ -33,42 +33,23 @@ import io.baratine.service.Result;
 
 
 /**
- * {@code ResultInPipe} returns a pipe subscription.
+ * {@code OutStream} is a source of a pipe to write.
+ * <pre><code>
+ *   service.publish(Pipes.publish(new MyFlow()));
+ * </code></pre>
  */
-@FunctionalInterface
-public interface ResultInPipe<T> extends Result<Void>
+public interface ResultPipeOut<T> extends Result<PipeOut<T>>
 {
   /**
-   * The subscriber's pipe.
+   * Returns the publisher's flow callback.
    */
-  InPipe<T> pipe();
+  default OutFlow flow()
+  {
+    return null;
+  }
   
-  /**
-   * Callee's out-pipe with a flow callback. 
-   */
-  default OutPipe<T> outPipe(OutFlow flow)
+  default void ok(PipeIn<T> pipe)
   {
     throw new IllegalStateException(getClass().getName());
-  }
-  
-  default OutPipe<T> ok()
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  
-  /**
-   * Sets the initial prefetch. Return -1 to disable the prefetch.
-   */
-  default int prefetch()
-  {
-    return 0;
-  }
-
-  @Override
-  default void handle(Void value, Throwable exn)
-  {
-    if (exn != null) {
-      pipe().fail(exn);
-    }
   }
 }

@@ -37,22 +37,22 @@ import java.util.function.Consumer;
  */
 public class Pipes
 {
-  public static <T> ResultOutPipe<T> publisher(OutFlow flow)
+  public static <T> ResultPipeOut<T> publisher(OutFlow flow)
   {
     throw new UnsupportedOperationException();
   }
   
-  public static <T> ResultOutPipe<T> fail(Consumer<Throwable> fail)
+  public static <T> ResultPipeOut<T> fail(Consumer<Throwable> fail)
   {
     throw new UnsupportedOperationException();
   }
   
-  public static <T> ResultOutPipe<T> ok(Consumer<OutPipe<T>> pipe)
+  public static <T> ResultPipeOut<T> ok(Consumer<PipeOut<T>> pipe)
   {
     throw new UnsupportedOperationException();
   }
   
-  public static <T> ResultInPipe<T> in(InPipe<T> pipe)
+  public static <T> ResultPipeIn<T> in(PipeIn<T> pipe)
   {
     return ()->pipe;
   }

@@ -29,27 +29,49 @@
 
 package io.baratine.io;
 
-import io.baratine.service.Result;
-
+import java.util.Objects;
 
 /**
- * {@code OutStream} is a source of a pipe to write.
- * <pre><code>
- *   service.publish(Pipes.publish(new MyFlow()));
- * </code></pre>
+ * {@code InPipe} controls values
  */
-public interface ResultOutPipe<T> extends Result<OutPipe<T>>
+abstract public class PipeInBase<T> implements PipeIn<T>, InFlow
 {
-  /**
-   * Returns the publisher's flow callback.
-   */
-  default OutFlow flow()
+  private PipeIn.Flow _inFlow;
+  
+  @Override
+  public void inFlow(Flow inFlow)
   {
-    return null;
+    Objects.requireNonNull(inFlow);
+    
+    _inFlow = inFlow;
   }
   
-  default void ok(InPipe<T> pipe)
+  public Flow inFlow()
   {
-    throw new IllegalStateException(getClass().getName());
+    return _inFlow;
+  }
+  
+  @Override
+  public void fail(Throwable exn)
+  {
+    handle(null, exn, false);
+  }
+
+  @Override
+  public void credit(int newCredits)
+  {
+    inFlow().credit(newCredits);
+  }
+  
+  @Override
+  public void pause()
+  {
+    inFlow().pause();
+  }
+  
+  @Override
+  public void resume()
+  {
+    inFlow().resume();
   }
 }

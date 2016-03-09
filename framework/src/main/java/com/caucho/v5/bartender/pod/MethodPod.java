@@ -49,8 +49,8 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.ResultInPipe;
-import io.baratine.io.ResultOutPipe;
+import io.baratine.io.ResultPipeIn;
+import io.baratine.io.ResultPipeOut;
 import io.baratine.service.Result;
 import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceExceptionUnavailable;
@@ -275,7 +275,7 @@ public class MethodPod implements MethodAmp
    */
   @Override
   public <T> void outPipe(HeadersAmp headers, 
-                          ResultOutPipe<T> result,
+                          ResultPipeOut<T> result,
                           ActorAmp actor,
                           Object[] args)
   {
@@ -287,7 +287,7 @@ public class MethodPod implements MethodAmp
    */
   @Override
   public <T> void inPipe(HeadersAmp headers, 
-                          ResultInPipe<T> result,
+                          ResultPipeIn<T> result,
                           ActorAmp actor,
                           Object[] args)
   {

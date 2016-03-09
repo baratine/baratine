@@ -61,8 +61,8 @@ import com.caucho.v5.loader.ProxyClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.ModulePrivate;
 
-import io.baratine.io.ResultInPipe;
-import io.baratine.io.ResultOutPipe;
+import io.baratine.io.ResultPipeIn;
+import io.baratine.io.ResultPipeOut;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
 import io.baratine.service.MethodRef;
@@ -394,8 +394,8 @@ public class ProxyGeneratorAmp<T> {
         
         int ampResult = findAmpResult(paramTypes, Result.class);
         int ampResultStream = findAmpResult(paramTypes, ResultStream.class);
-        int ampResultOutPipe = findAmpResult(paramTypes, ResultOutPipe.class);
-        int ampResultInPipe = findAmpResult(paramTypes, ResultInPipe.class);
+        int ampResultOutPipe = findAmpResult(paramTypes, ResultPipeOut.class);
+        int ampResultInPipe = findAmpResult(paramTypes, ResultPipeIn.class);
         
         if (ResultStreamBuilder.class.isAssignableFrom(method.getReturnType())) {
           if (ampResult >= 0 || ampResultStream >= 0) {
@@ -1245,7 +1245,7 @@ public class ProxyGeneratorAmp<T> {
                                             int resultOffset)
   {
     createAmpResultPipeMethod(jClass, method, resultOffset,
-                              ResultOutPipe.class,
+                              ResultPipeOut.class,
                               "resultOutPipe");
   }
   
@@ -1254,7 +1254,7 @@ public class ProxyGeneratorAmp<T> {
                                             int resultOffset)
   {
     createAmpResultPipeMethod(jClass, method, resultOffset,
-                              ResultInPipe.class,
+                              ResultPipeIn.class,
                               "resultInPipe");
   }
   

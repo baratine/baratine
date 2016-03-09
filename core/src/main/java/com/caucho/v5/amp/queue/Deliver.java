@@ -39,7 +39,10 @@ public interface Deliver<M>
   /**
    * name for debugging
    */
-  String getName();
+  default String getName()
+  {
+    return getClass().getSimpleName();
+  }
   
   /**
    * Deliver a single message.
@@ -51,28 +54,38 @@ public interface Deliver<M>
    * Called before items in the queue are processed. This can be
    * used to flush buffers.
    */
-  void beforeBatch();
+  default void beforeBatch()
+  {
+  }
 
   /**
    * Called when all items in the queue are processed. This can be
    * used to flush buffers.
    * @throws Exception 
    */
-  void afterBatch()
-    throws Exception;
+  default void afterBatch()
+    throws Exception
+  {
+  }
 
   /**
    * Initialize the processor
    */
-  void onInit();
+  default void onInit()
+  {
+  }
 
   /**
    * Activate the processor
    */
-  void onActive();
+  default void onActive()
+  {
+  }
 
   /**
    * Closes the processor
    */
-  void shutdown(ShutdownModeAmp mode);
+  default void shutdown(ShutdownModeAmp mode)
+  {
+  }
 }
