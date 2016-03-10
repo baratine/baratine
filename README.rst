@@ -1,5 +1,5 @@
-Baratine :tm:
-=============
+Baratine :superscript:`:tm:`
+============================
 
 .. image:: https://travis-ci.org/baratine/baratine.svg?branch=master
     :target: https://travis-ci.org/baratine/baratine
