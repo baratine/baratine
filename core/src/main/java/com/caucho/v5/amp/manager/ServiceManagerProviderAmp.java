@@ -125,7 +125,7 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
     OutboxAmp outbox = OutboxAmp.current();
     
     if (outbox != null) {
-      return outbox.getMessage();
+      return outbox.message();
     }
     else {
       return null;

@@ -87,7 +87,7 @@ public final class QueryReplyMessage implements MessageAmp
   }
 
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     return _serviceRef.inbox().getWorker();
   }

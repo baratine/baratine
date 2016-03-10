@@ -56,7 +56,7 @@ public class MessageDeliverBase implements MessageDeliver
 */
   
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     return WorkerDeliverNull.WORKER;
   }

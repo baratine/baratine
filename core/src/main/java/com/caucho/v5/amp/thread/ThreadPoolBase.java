@@ -29,6 +29,7 @@
 
 package com.caucho.v5.amp.thread;
 
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -681,9 +682,7 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
                                  boolean isQueueIfFull,
                                  boolean isWakeScheduler)
   {
-    if (task == null) {
-      throw new NullPointerException();
-    }
+    Objects.requireNonNull(task);
     
     RunnableItem taskItem = new RunnableItem(task, loader);
     

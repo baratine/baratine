@@ -284,7 +284,7 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
         if (state.isClosed()) {
           return null;
         }
-        else if (tailMsg != null && tailMsg.getWorker() == this) {
+        else if (tailMsg != null && tailMsg.worker() == this) {
         }
         else if (stateIdle.isIdle()) {
           return tailMsg;
@@ -294,7 +294,7 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
           long timeout = 10000;
           
           tailMsg.offerQueue(timeout);
-          tailMsg.getWorker().wake();
+          tailMsg.worker().wake();
           tailMsg = null;
         }
           

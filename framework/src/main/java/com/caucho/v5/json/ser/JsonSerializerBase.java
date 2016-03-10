@@ -21,7 +21,12 @@ public abstract class JsonSerializerBase<T>
   @Override
   public void write(JsonWriter out, T value)
   {
-    throw new UnsupportedOperationException(getClass().getName());
+    if (value == null) {
+      out.writeNull();
+    }
+    else if (value.getClass() != Object.class) {
+      out.writeObjectValue(value);
+    }
   }
   
   /*

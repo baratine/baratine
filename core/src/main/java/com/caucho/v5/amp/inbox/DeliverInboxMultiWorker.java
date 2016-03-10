@@ -108,7 +108,7 @@ class DeliverInboxMultiWorker extends DeliverAmpBase<MessageAmp>
     if (headers != null && headers.getSize() > 0) {
       OutboxAmp outboxAmp = (OutboxAmp) outbox;
       
-      outboxAmp.setMessage(msg);
+      outboxAmp.message(msg);
 
       try {
         msg.invoke(_inbox, _actor);
@@ -117,7 +117,7 @@ class DeliverInboxMultiWorker extends DeliverAmpBase<MessageAmp>
       } catch (Throwable e) {
         log.log(Level.WARNING, this + " " + e.toString(), e);
       } finally {
-        outboxAmp.setMessage(_messageContext);
+        outboxAmp.message(_messageContext);
       }
     }
     else {

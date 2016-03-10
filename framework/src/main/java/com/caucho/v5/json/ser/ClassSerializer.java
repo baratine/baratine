@@ -27,71 +27,46 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.inbox;
+package com.caucho.v5.json.ser;
 
-import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.json.io.InJson.Event;
+import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonWriter;
 
-/**
- * Thread context for ramp events.
- */
-public class OutboxAmpNull implements OutboxAmp
+public class ClassSerializer extends JsonSerializerBase<Class<?>>
 {
-  public static final OutboxAmpNull NULL = new OutboxAmpNull();
-  
-  @Override
-  public InboxAmp inbox()
-  {
-    return null;
-  }
+  static final ClassSerializer SER = new ClassSerializer();
+
+  private ClassSerializer() {}
 
   @Override
-  public MessageAmp message()
+  public void write(JsonWriter out, Class<?> value)
   {
-    return null;
-  }
-
-  @Override
-  public void inbox(InboxAmp inbox)
-  {
-  }
-
-  @Override
-  public void message(MessageAmp message)
-  {
+    //out.write(QDate.formatISO8601(value.getTime()));
+    out.write(value.getName());
   }
   
   @Override
-  public void offer(MessageAmp msg)
+  public Class<?> read(JsonReader in)
   {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
+    try {
+      Event event = in.peek();
+      
+      switch (in.peek()) {
+      case VALUE_NULL:
+        return null;
+      
+      case VALUE_STRING:
+        //return new Date(new QDate().parseDate(in.readString()));
+        return null;
 
-  @Override
-  public void flush()
-  {
+      default:
+        throw error("Unexpected JSON {0} while parsing Date", event);
+      }
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new JsonException(e);
+    }
   }
-
-  @Override
-  public MessageAmp flushAfterTask()
-  {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public void close()
-  {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public boolean flushAndExecuteLast()
-  {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
 }

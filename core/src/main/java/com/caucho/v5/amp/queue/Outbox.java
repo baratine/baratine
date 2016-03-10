@@ -80,13 +80,6 @@ public interface Outbox<M>
     return OutboxProvider.getProvider().current();
   }
   
-  /*
-  static Outbox<?> currentOrCreate()
-  {
-    return OutboxProvider.getProvider().currentOrCreate();
-  }
-  */
-  
   static <M> Outbox<M> currentOrCreate(Supplier<? extends Outbox<M>> supplier)
   {
     return (Outbox) OutboxProvider.getProvider().currentOrCreate((Supplier) supplier);

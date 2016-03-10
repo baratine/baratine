@@ -358,7 +358,7 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
                                         ServiceRefAmp serviceRef,
                                         MethodAmp method)
   {
-    MessageAmp msg = outbox.getMessage();
+    MessageAmp msg = outbox.message();
     
     HeadersAmp headers;
     

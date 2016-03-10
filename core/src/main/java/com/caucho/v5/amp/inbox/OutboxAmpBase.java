@@ -70,13 +70,13 @@ public class OutboxAmpBase
   }
 
   @Override
-  public MessageAmp getMessage()
+  public MessageAmp message()
   {
     return _message;
   }
   
   @Override
-  public void setMessage(MessageAmp message)
+  public void message(MessageAmp message)
   {
     _message = message;
   }

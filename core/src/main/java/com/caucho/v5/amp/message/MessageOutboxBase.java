@@ -104,7 +104,7 @@ abstract public class MessageOutboxBase implements MessageAmp
   }
 
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     return inboxTarget().getWorker();
   }

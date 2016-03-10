@@ -63,7 +63,7 @@ public final class MessageInboxDeliver extends MessageAmpBase
   }
 
   @Override
-  public final WorkerDeliver getWorker()
+  public final WorkerDeliver worker()
   {
     return _inbox.getWorker();
   }

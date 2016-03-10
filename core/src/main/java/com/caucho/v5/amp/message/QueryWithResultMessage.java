@@ -124,7 +124,7 @@ public class QueryWithResultMessage<T>
     
     if (outbox == null) {
       outbox = OutboxAmpFactory.newFactory().get();
-      outbox.setMessage(this);
+      outbox.message(this);
       // OutboxThreadLocal.setCurrent(outbox);
       isNew = true;
     }

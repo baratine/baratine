@@ -63,7 +63,7 @@ public class TraceAmp implements Trace
     if (outboxAmp != null) {
       _outbox = outboxAmp;
       
-      _message = _outbox.getMessage();
+      _message = _outbox.message();
       
       HeadersAmp headers = _message.getHeaders();
       
@@ -83,7 +83,7 @@ public class TraceAmp implements Trace
       
       TraceMessage traceMessage = new TraceMessage(traceId, headers, _message);
      
-      _outbox.setMessage(traceMessage);
+      _outbox.message(traceMessage);
     }
   }
   
@@ -97,7 +97,7 @@ public class TraceAmp implements Trace
     
     // OutboxAmp outbox = (OutboxAmp) outboxDeliver;
 
-    MessageAmp message = outbox.getMessage();
+    MessageAmp message = outbox.message();
 
     HeadersAmp headers = message.getHeaders();
 
@@ -117,7 +117,7 @@ public class TraceAmp implements Trace
 
     TraceMessage traceMessage = new TraceMessage(id, headers, message);
 
-    outbox.setMessage(traceMessage);
+    outbox.message(traceMessage);
   }
   
   public static boolean isTrace()
@@ -130,7 +130,7 @@ public class TraceAmp implements Trace
     
     // OutboxAmp outbox = (OutboxAmp) outboxDeliver;
 
-    MessageAmp message = outbox.getMessage();
+    MessageAmp message = outbox.message();
 
     HeadersAmp headers = message.getHeaders();
 
@@ -147,7 +147,7 @@ public class TraceAmp implements Trace
     
     // OutboxAmp outbox = (OutboxAmp) outboxDeliver;
 
-    MessageAmp message = outbox.getMessage();
+    MessageAmp message = outbox.message();
     
     HeadersAmp headers = message.getHeaders();
     
@@ -164,14 +164,14 @@ public class TraceAmp implements Trace
     
     // OutboxAmp outbox = (OutboxAmp) outboxDeliver;
 
-    MessageAmp message = outbox.getMessage();
+    MessageAmp message = outbox.message();
     
     if (message instanceof TraceMessage) {
       TraceMessage trace = (TraceMessage) message;
       
       MessageAmp prev = trace.getPrev();
       
-      outbox.setMessage(prev);
+      outbox.message(prev);
     }
   }
   
@@ -188,7 +188,7 @@ public class TraceAmp implements Trace
   public void close()
   {
     if (_outbox != null) {
-      _outbox.setMessage(_message);
+      _outbox.message(_message);
     }
   }
 }

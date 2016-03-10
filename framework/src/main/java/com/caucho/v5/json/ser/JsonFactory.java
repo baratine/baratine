@@ -464,6 +464,8 @@ public class JsonFactory
 
     _staticSerMap.put(String.class, StringSerializer.SER);
     _staticSerMap.put(Object.class, ObjectSerializer.SER);
+    
+    _staticSerMap.put(Class.class, ClassSerializer.SER);
 
     _staticSerMap.put(boolean[].class, BooleanArraySerializer.SER);
     _staticSerMap.put(byte[].class, ByteArraySerializer.SER);

@@ -94,7 +94,7 @@ abstract public class MethodMessageBase implements MessageAmp
     _serviceRef = serviceRef;
     _method = method;
     
-    MessageAmp message = outboxCaller.getMessage();
+    MessageAmp message = outboxCaller.message();
 
     HeadersAmp headersCaller;
     
@@ -265,7 +265,7 @@ abstract public class MethodMessageBase implements MessageAmp
   }
   
   @Override
-  public WorkerDeliver<MessageAmp> getWorker()
+  public WorkerDeliver<MessageAmp> worker()
   {
     return inboxTarget().getWorker();
   }

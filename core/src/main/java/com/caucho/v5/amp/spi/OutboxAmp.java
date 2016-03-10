@@ -31,7 +31,6 @@ package com.caucho.v5.amp.spi;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.inbox.OutboxProviderAmp;
-import com.caucho.v5.amp.queue.Outbox;
 import com.caucho.v5.amp.queue.OutboxDeliver;
 
 /**
@@ -43,38 +42,22 @@ public interface OutboxAmp extends OutboxDeliver<MessageAmp>
   
   InboxAmp inbox();
   
-  MessageAmp getMessage();
+  MessageAmp message();
 
   void inbox(InboxAmp inbox);
   
-  void setMessage(MessageAmp message);
+  void message(MessageAmp message);
   
   static OutboxAmp current()
   {
     return OutboxProviderAmp.currentAmp();
   }
   
-  /*
-  static OutboxAmp currentOrCreate()
-  {
-    return (OutboxAmp) Outbox.currentOrCreate();
-  }
-  */
-  
   static OutboxAmp currentOrCreate(ServiceManagerAmp manager)
   {
-    //OutboxAmp outbox = (OutboxAmp) Outbox.currentOrCreate(manager.getOutboxFactory());
     OutboxAmp outbox = OutboxProviderAmp.currentOrCreateAmp(manager.getOutboxFactory());
     
     return outbox;
-    /*
-    if (outbox != null) {
-      return outbox;
-    }
-    else {
-      return manager.getSystemOutbox();
-    }
-    */
   }
 
   default void open()

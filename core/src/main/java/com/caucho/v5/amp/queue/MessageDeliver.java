@@ -40,10 +40,10 @@ public interface MessageDeliver
 
   default <M extends MessageDeliver> M runAs(OutboxDeliver<M> outbox)
   {
-    WorkerDeliver<M> worker = getWorker();
+    WorkerDeliver<M> worker = worker();
     
     return worker.runAs(outbox, (M) this);
   }
   
-  <M extends MessageDeliver> WorkerDeliver<M> getWorker();
+  <M extends MessageDeliver> WorkerDeliver<M> worker();
 }

@@ -353,7 +353,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   {
     OutboxAmp outbox = OutboxAmp.current();
     
-    return outbox.getMessage();
+    return outbox.message();
     // return ContextMessageAmp.get();
   }
   

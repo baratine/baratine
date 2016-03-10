@@ -64,8 +64,8 @@ abstract public class OutboxDeliverBase<M extends MessageDeliver>
         e.printStackTrace();
       }
       
-      if (prevMsg.getWorker() != msg.getWorker()) {
-        prevMsg.getWorker().wake();
+      if (prevMsg.worker() != msg.worker()) {
+        prevMsg.worker().wake();
       }
     }
   }
@@ -79,7 +79,7 @@ abstract public class OutboxDeliverBase<M extends MessageDeliver>
       _msg = null;
       
       prevMsg.offerQueue(OFFER_TIMEOUT);
-      prevMsg.getWorker().wake();
+      prevMsg.worker().wake();
     }
   }
   
@@ -94,7 +94,7 @@ abstract public class OutboxDeliverBase<M extends MessageDeliver>
     
     _msg = null;
     
-    WorkerDeliver nextWorker = tailMsg.getWorker();
+    WorkerDeliver nextWorker = tailMsg.worker();
 
     if (! (nextWorker instanceof WorkerDeliverMessage)) {
       tailMsg.offerQueue(OFFER_TIMEOUT);

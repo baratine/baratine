@@ -253,7 +253,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
   }
   
   @Override
-  public final WorkerDeliver getWorker()
+  public final WorkerDeliver worker()
   {
     return _state.getWorker(this);
   }

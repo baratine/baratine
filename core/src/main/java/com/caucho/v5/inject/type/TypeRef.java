@@ -108,11 +108,16 @@ public interface TypeRef extends Type
       
       // String name = var.getName();
       
-      TypeRef lowerBound = of(var.getLowerBounds()[0]);
+      Type[] lowerBounds = var.getLowerBounds();
       
-      //Thread.dumpStack();
+      if (lowerBounds.length > 0) {
+        TypeRef lowerBound = of(var.getLowerBounds()[0]);
       
-      return lowerBound;
+        return lowerBound;
+      }
+      else {
+        return of(Object.class);
+      }
     }
     else if (type instanceof GenericArrayType) {
       GenericArrayType array = (GenericArrayType) type;

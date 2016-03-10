@@ -54,7 +54,7 @@ public class OutboxAmpDirect implements OutboxAmp
   }
 
   @Override
-  public MessageAmp getMessage()
+  public MessageAmp message()
   {
     return _message;
   }
@@ -66,7 +66,7 @@ public class OutboxAmpDirect implements OutboxAmp
   }
 
   @Override
-  public void setMessage(MessageAmp message)
+  public void message(MessageAmp message)
   {
     //_message = message;
   }
@@ -75,7 +75,7 @@ public class OutboxAmpDirect implements OutboxAmp
   public void offer(MessageAmp msg)
   {
     msg.offerQueue(1000);
-    msg.getWorker().wake();
+    msg.worker().wake();
   }
 
   @Override

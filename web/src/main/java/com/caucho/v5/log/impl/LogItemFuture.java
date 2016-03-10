@@ -48,7 +48,7 @@ public final class LogItemFuture extends LogItem<LogItemBinaryHandler>
   }
 
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     return null;
   }

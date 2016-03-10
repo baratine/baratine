@@ -61,7 +61,7 @@ public class FieldShort<T> extends FieldBase<T>
   public final int getInt(T bean)
   {
     try {
-      return (int) _getter.invokeExact((Object) bean);
+      return (short) _getter.invokeExact((Object) bean);
     } catch (Throwable e) {
       throw error(e);
     }
@@ -69,6 +69,26 @@ public class FieldShort<T> extends FieldBase<T>
   
   @Override
   public final void setInt(T bean, int value)
+  {
+    try {
+      _setter.invokeExact((Object) bean, (short) value);
+    } catch (Throwable e) {
+      throw error(e);
+    }
+  }
+  
+  @Override
+  public final long getLong(T bean)
+  {
+    try {
+      return (short) _getter.invokeExact((Object) bean);
+    } catch (Throwable e) {
+      throw error(e);
+    }
+  }
+  
+  @Override
+  public final void setLong(T bean, long value)
   {
     try {
       _setter.invokeExact((Object) bean, (short) value);

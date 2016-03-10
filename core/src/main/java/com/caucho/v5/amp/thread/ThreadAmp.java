@@ -41,7 +41,8 @@ import com.caucho.v5.util.CurrentTime;
 /**
  * A generic pool of threads available for Alarms and Work tasks.
  */
-public final class ThreadAmp extends Thread {
+public final class ThreadAmp extends Thread
+{
   private static final Logger log 
     = Logger.getLogger(ThreadAmp.class.getName());
   

@@ -35,11 +35,4 @@ package com.caucho.v5.amp.spi;
  */
 public interface OutboxAmpContext extends OutboxAmp
 {
-  /*
-  @Override
-  MessageAmp getMessage();
-  
-  @Override
-  void flush();
-  */
 }

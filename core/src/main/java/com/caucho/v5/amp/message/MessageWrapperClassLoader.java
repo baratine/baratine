@@ -74,9 +74,9 @@ public class MessageWrapperClassLoader implements MessageAmp
   }
 
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
-    return getDelegate().getWorker();
+    return getDelegate().worker();
   }
 
   @Override

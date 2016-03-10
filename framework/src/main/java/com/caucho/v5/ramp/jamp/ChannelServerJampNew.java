@@ -103,7 +103,7 @@ public class ChannelServerJampNew implements ChannelServer
     
     _outbox = new OutboxAmpBase();
     _outbox.inbox(ServiceRefAmp.current().inbox());
-    _outbox.setMessage(manager.systemMessage());
+    _outbox.message(manager.systemMessage());
   }
 
   /*

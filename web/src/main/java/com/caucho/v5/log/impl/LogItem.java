@@ -42,7 +42,7 @@ abstract public class LogItem<H extends LogItemHandler> implements MessageDelive
   }
 
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     return null;
   }

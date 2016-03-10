@@ -61,7 +61,7 @@ public class FieldFloat<T> extends FieldBase<T>
   public final double getDouble(T bean)
   {
     try {
-      return (double) _getter.invokeExact((Object) bean);
+      return (float) _getter.invokeExact((Object) bean);
     } catch (Throwable e) {
       throw error(e);
     }

@@ -53,7 +53,7 @@ public final class LogItemString extends LogItem<LogItemStringHandler>
   }
 
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     return null;
   }

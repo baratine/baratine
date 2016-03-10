@@ -466,7 +466,7 @@ public class PollContext
   }
 
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

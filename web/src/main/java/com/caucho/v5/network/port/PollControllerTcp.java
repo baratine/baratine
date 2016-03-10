@@ -211,7 +211,7 @@ public class PollControllerTcp implements PollController
   }
   
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

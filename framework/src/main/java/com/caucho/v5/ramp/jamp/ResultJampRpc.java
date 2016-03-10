@@ -186,7 +186,7 @@ public class ResultJampRpc<T> implements MessageAmp
   }
 
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerDeliver worker()
   {
     return _queue;
   }

@@ -76,4 +76,24 @@ public class FieldInt<T> extends FieldBase<T>
       throw error(e);
     }
   }
+  
+  @Override
+  public final long getLong(T bean)
+  {
+    try {
+      return (int) _getter.invokeExact((Object) bean);
+    } catch (Throwable e) {
+      throw error(e);
+    }
+  }
+  
+  @Override
+  public final void setLong(T bean, long value)
+  {
+    try {
+      _setter.invokeExact((Object) bean, (int) value);
+    } catch (Throwable e) {
+      throw error(e);
+    }
+  }
 }

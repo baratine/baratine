@@ -53,7 +53,7 @@ class DeliverInboxDebug extends DeliverInbox
     OutboxAmp outbox = (OutboxAmp) outboxDeliver;
 
     // debug mode can set traces 
-    MessageAmp oldMsg = outbox.getMessage();
+    MessageAmp oldMsg = outbox.message();
     Thread thread = Thread.currentThread();
     String oldName = thread.getName();
 
@@ -62,7 +62,7 @@ class DeliverInboxDebug extends DeliverInbox
       
       super.deliver(msg, outboxDeliver);
     } finally {
-      outbox.setMessage(oldMsg);
+      outbox.message(oldMsg);
       
       thread.setName(oldName);
     }

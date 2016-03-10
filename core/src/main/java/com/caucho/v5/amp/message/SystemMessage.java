@@ -53,7 +53,7 @@ public final class SystemMessage extends MessageAmpBase
   }
 
   @Override
-  public final WorkerDeliver getWorker()
+  public final WorkerDeliver worker()
   {
     return _systemMailbox.getWorker();
   }
