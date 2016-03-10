@@ -1,5 +1,5 @@
-Baratine(tm)
-============
+Baratine|trade|
+===============
 
 .. image:: https://travis-ci.org/baratine/baratine.svg?branch=master
     :target: https://travis-ci.org/baratine/baratine
@@ -7,12 +7,12 @@ Baratine(tm)
 DOCUMENTATION
 -------------
 
-  http://www.baratine.io/
+http://www.baratine.io/
 
 EXAMPLES
 --------
 
-  http://github.com/baratine
+http://github.com/baratine
 
 LICENSING
 ---------
