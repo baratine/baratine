@@ -1,4 +1,4 @@
-Baratine|trade|
+Baratine \\:tm:
 ===============
 
 .. image:: https://travis-ci.org/baratine/baratine.svg?branch=master
