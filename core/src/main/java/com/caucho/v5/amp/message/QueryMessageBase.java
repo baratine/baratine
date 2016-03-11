@@ -37,7 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -253,7 +253,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
   }
   
   @Override
-  public final WorkerDeliver worker()
+  public final WorkerOutbox worker()
   {
     return _state.getWorker(this);
   }
@@ -318,9 +318,9 @@ public class QueryMessageBase<T> extends MethodMessageBase
       State toSent() { return SENT; }
 
       @Override
-      WorkerDeliver getWorker(QueryMessageBase<?> query)
+      WorkerOutbox getWorker(QueryMessageBase<?> query)
       {
-        return query.inboxTarget().getWorker();
+        return query.inboxTarget().worker();
       }
 
       @Override
@@ -485,9 +485,9 @@ public class QueryMessageBase<T> extends MethodMessageBase
       throw new IllegalStateException(toString());
     }
     
-    WorkerDeliver getWorker(QueryMessageBase<?> query)
+    WorkerOutbox getWorker(QueryMessageBase<?> query)
     {
-      return query.inboxCaller().getWorker();
+      return query.inboxCaller().worker();
     }
     
     void offer(QueryMessageBase<?> query, long timeout)

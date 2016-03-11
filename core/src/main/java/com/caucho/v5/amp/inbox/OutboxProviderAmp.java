@@ -31,21 +31,27 @@ package com.caucho.v5.amp.inbox;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.queue.Outbox;
-import com.caucho.v5.amp.queue.OutboxProvider;
-import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.outbox.OutboxProvider;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.thread.ThreadAmp;
 
 /**
  * Supplier of outboxes for the system
  */
-public class OutboxProviderAmp extends OutboxProvider<MessageAmp>
+public class OutboxProviderAmp
+  extends OutboxProvider<OutboxAmp>
 {
   private static ThreadLocal<OutboxAmp> _outboxLocal = new ThreadLocal<>();
   
+  public static OutboxProviderAmp getProvider()
+  {
+    OutboxProvider<OutboxAmp> provider = OutboxProvider.getProvider();
+    
+    return (OutboxProviderAmp) provider; 
+  }
+
   @Override
-  public Outbox<MessageAmp> get()
+  public OutboxAmp get()
   {
     return new OutboxAmpThread();
   }
@@ -63,7 +69,7 @@ public class OutboxProviderAmp extends OutboxProvider<MessageAmp>
     if (thread instanceof ThreadAmp) {
       ThreadAmp threadAmp = (ThreadAmp) thread;
       
-      return (OutboxAmp) threadAmp.getOutbox();
+      return (OutboxAmp) threadAmp.outbox();
     }
     
     return _outboxLocal.get();
@@ -87,13 +93,13 @@ public class OutboxProviderAmp extends OutboxProvider<MessageAmp>
   */
   
   @Override
-  public OutboxAmp currentOrCreate(Supplier<Outbox<MessageAmp>> supplier)
+  public OutboxAmp currentOrCreate(Supplier<OutboxAmp> supplier)
   {
     return currentOrCreateAmp(supplier);
   }
   
   public static OutboxAmp 
-  currentOrCreateAmp(Supplier<? extends Outbox<MessageAmp>> supplier)
+  currentOrCreateAmp(Supplier<OutboxAmp> supplier)
   {
     OutboxAmp outbox = currentAmp();
     
@@ -103,7 +109,9 @@ public class OutboxProviderAmp extends OutboxProvider<MessageAmp>
       return outbox;
     }
     else {
-      return (OutboxAmp) supplier.get();
+      outbox = supplier.get();
+      
+      return outbox;
     }
   }
 

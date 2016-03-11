@@ -27,9 +27,8 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -39,9 +38,10 @@ import com.caucho.v5.util.L10N;
 /**
  * Value queue with atomic reference.
  */
-abstract public class QueueDeliverBase<M> implements QueueDeliver<M>
+abstract public class QueueOutboxBase<M>
+  implements QueueOutbox<M>
 {
-  private static final L10N L = new L10N(QueueDeliverBase.class);
+  private static final L10N L = new L10N(QueueOutboxBase.class);
   
   //
   // general size information
@@ -206,21 +206,13 @@ abstract public class QueueDeliverBase<M> implements QueueDeliver<M>
   @Override
   public Iterator<M> iterator()
   {
-    ArrayList<M> list = new ArrayList<M>();
-
-    for (Object item : toArray()) {
-      list.add((M) item);
-    }
-    
-    return list.iterator();
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
   public Object[] toArray()
   {
-    Object []array = new Object[size()];
-
-    return toArray(array);
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override

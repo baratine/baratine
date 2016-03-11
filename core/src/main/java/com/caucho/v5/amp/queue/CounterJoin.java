@@ -32,11 +32,11 @@ package com.caucho.v5.amp.queue;
 /**
  * Abstract counter for a multi-processor queue.
  */
-public final class CounterJoin implements CounterActor
+public final class CounterJoin implements CounterRing
 {
-  private final CounterActor []_prev;
+  private final CounterRing []_prev;
   
-  CounterJoin(CounterActor []prev)
+  CounterJoin(CounterRing []prev)
   {
     _prev = prev;
   }
@@ -46,7 +46,7 @@ public final class CounterJoin implements CounterActor
   {
     long min = Long.MAX_VALUE;
     
-    for (CounterActor prev : _prev) {
+    for (CounterRing prev : _prev) {
       min = Math.min(min, prev.get());
     }
     
@@ -57,7 +57,7 @@ public final class CounterJoin implements CounterActor
   public final void set(final long value)
   {
     // XXX: implemented for init, but doesn't make sense otherwise
-    for (CounterActor prev : _prev) {
+    for (CounterRing prev : _prev) {
       prev.set(value);
     }
   }
@@ -75,7 +75,7 @@ public final class CounterJoin implements CounterActor
   }
   
   @Override
-  public CounterActor getTail()
+  public CounterRing getTail()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

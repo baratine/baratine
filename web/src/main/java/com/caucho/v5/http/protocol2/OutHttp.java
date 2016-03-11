@@ -37,9 +37,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.queue.DeliverAmpBase;
-import com.caucho.v5.amp.queue.Outbox;
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.TempBuffer;
@@ -482,10 +482,10 @@ public class OutHttp implements AutoCloseable
     }
   }
   
-  private class WriterServiceImpl extends DeliverAmpBase<MessageHttp> 
+  private class WriterServiceImpl implements DeliverOutbox<MessageHttp> 
   {
     @Override
-    public void deliver(MessageHttp message, Outbox<MessageHttp> outbox)
+    public void deliver(MessageHttp message, Outbox outbox)
     {
       try {
         message.deliver(_os, OutHttp.this);

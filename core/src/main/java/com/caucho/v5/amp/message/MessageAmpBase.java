@@ -29,29 +29,31 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.ServiceExceptionClosed;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.queue.MessageDeliverBase;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 
+import io.baratine.service.ServiceExceptionClosed;
+
 /**
  * Handle to an amp instance.
  */
-abstract public class MessageAmpBase extends MessageDeliverBase
+abstract public class MessageAmpBase
   implements MessageAmp
 {
   private static final Logger log
     = Logger.getLogger(MessageAmpBase.class.getName());
   
+  /*
   public Type getType()
   {
     return Type.UNKNOWN;
   }
+  */
   
   @Override
   public HeadersAmp getHeaders()
@@ -86,6 +88,18 @@ abstract public class MessageAmpBase extends MessageDeliverBase
   public void offer(long timeout)
   {
     inboxTarget().offerAndWake(this, timeout);
+  }
+  
+  @Override
+  public void offerQueue(long timeout)
+  {
+    inboxTarget().offer(this, timeout);
+  }
+  
+  @Override
+  public WorkerOutbox<MessageAmp> worker()
+  {
+    return inboxTarget().worker();
   }
 
   @Override

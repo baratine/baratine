@@ -33,8 +33,9 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.queue.Outbox;
-import com.caucho.v5.amp.queue.OutboxProvider;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.OutboxProvider;
 import com.caucho.v5.util.CurrentTime;
 
 
@@ -51,10 +52,8 @@ public final class ThreadAmp extends Thread
   private final ThreadPoolBase _pool;
   private final ThreadLauncher _launcher;
   
-  private final Outbox<?> _outbox;
+  private final Outbox _outbox;
 
-  private long _spinCount;
-  
   private long _activeSlowExpireTime;
   private ExecutorThrottle _executor;
   
@@ -71,15 +70,13 @@ public final class ThreadAmp extends Thread
 
     setDaemon(true);
     
-    _spinCount = pool.getSpinCount();
-    
     _outbox = OutboxProvider.getProvider().get();
   }
 
   /**
    * Returns the name.
    */
-  public String getDebugName()
+  public String debugName()
   {
     return _name;
   }
@@ -87,7 +84,7 @@ public final class ThreadAmp extends Thread
   /**
    * Returns the thread id.
    */
-  public long getThreadId()
+  public long threadId()
   {
     return getId();
   }
@@ -126,7 +123,7 @@ public final class ThreadAmp extends Thread
     return false;
   }
 
-  public final Outbox<?> getOutbox()
+  public final Outbox outbox()
   {
     return _outbox;
   }
@@ -194,6 +191,8 @@ public final class ThreadAmp extends Thread
     
     ThreadPoolBase pool = _pool;
     Thread thread = this;
+    Outbox outbox = outbox();
+    
     setName(_name);
     
     while (! _isClose) {
@@ -202,18 +201,31 @@ public final class ThreadAmp extends Thread
       if (taskItem != null) {
         try {
           _launcher.onChildIdleEnd();
+          
+          outbox.open();
 
           do {
             // if the task is available, run it in the proper context
             thread.setContextClassLoader(taskItem.getClassLoader());
 
             taskItem.getTask().run();
+            
+            outbox.flushAndExecuteAll();
           } while ((taskItem = pool.poll()) != null);
         } catch (Throwable e) {
           log.log(Level.WARNING, e.toString(), e);
         } finally {
+          try {
+            outbox.close();
+          } catch (Throwable e) {
+            e.printStackTrace();
+          }
+          
           _launcher.onChildIdleBegin();
           thread.setContextClassLoader(systemClassLoader);
+          if (thread.getName() != _name) {
+            setName(_name);
+          }
         }
       }
       else if (_launcher.isIdleExpire()) {

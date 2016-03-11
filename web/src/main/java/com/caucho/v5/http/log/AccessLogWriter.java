@@ -34,8 +34,8 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.queue.DeliverServiceQueueBase;
-import com.caucho.v5.amp.queue.Outbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.queue.DeliverQueueBase;
 import com.caucho.v5.config.types.Bytes;
 import com.caucho.v5.log.impl.RolloverLogBase;
 import com.caucho.v5.store.temp.TempFileSystem;
@@ -226,7 +226,7 @@ public class AccessLogWriter extends RolloverLogBase
     _logWriterTask.close();
   }
 
-  class LogWriterTask extends DeliverServiceQueueBase<LogBuffer>
+  class LogWriterTask extends DeliverQueueBase<LogBuffer>
   {
     LogWriterTask()
     {
@@ -234,7 +234,7 @@ public class AccessLogWriter extends RolloverLogBase
     }
 
     @Override
-    public void deliver(LogBuffer value, Outbox<LogBuffer> outbox)
+    public void deliver(LogBuffer value, Outbox outbox)
     {
       if (value == null) {
         return;

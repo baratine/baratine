@@ -27,11 +27,65 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
+
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
- * Context for the current outbox.
+ * Delivers a message to a handler.
  */
-public interface OutboxContext<M>
+public interface DeliverOutbox<M>
 {
+  /**
+   * name for debugging
+   */
+  default String getName()
+  {
+    return getClass().getSimpleName();
+  }
+  
+  /**
+   * Deliver a single message.
+   */
+  void deliver(M msg, Outbox outbox)
+    throws Exception;
+
+  /**
+   * Called before items in the queue are processed. This can be
+   * used to flush buffers.
+   */
+  default void beforeBatch()
+  {
+  }
+
+  /**
+   * Called when all items in the queue are processed. This can be
+   * used to flush buffers.
+   * @throws Exception 
+   */
+  default void afterBatch()
+    throws Exception
+  {
+  }
+
+  /**
+   * Initialize the processor
+   */
+  default void onInit()
+  {
+  }
+
+  /**
+   * Activate the processor
+   */
+  default void onActive()
+  {
+  }
+
+  /**
+   * Closes the processor
+   */
+  default void shutdown(ShutdownModeAmp mode)
+  {
+  }
 }

@@ -29,25 +29,18 @@
 
 package com.caucho.v5.amp.queue;
 
-
 /**
- * Thread worker controller for a queue/inbox.
+ * Abstract counter for a multi-processor queue.
  */
-public class WorkerDeliverNull implements WorkerDeliver
+public interface CounterRing
 {
-  public static final WorkerDeliver WORKER = new WorkerDeliverNull();
+  long get();
   
+  void set(long value);
   
-  private WorkerDeliverNull()
-  {
-  }
+  void setLazy(long value);
   
-  /**
-   * Wake the worker
-   */
-  @Override
-  public boolean wake()
-  {
-    return true;
-  }
+  boolean compareAndSet(long oldValue, long newValue);
+  
+  CounterRing getTail();
 }

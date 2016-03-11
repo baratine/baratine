@@ -29,20 +29,18 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.Result;
-
 import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.OutboxAmpFactory;
-import com.caucho.v5.amp.queue.OutboxContext;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+
+import io.baratine.service.Result;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -173,12 +171,12 @@ public class QueryWithResultMessage<T>
   
     InboxAmp inbox = inboxTarget();
   
-    OutboxContext<MessageAmp> oldInbox = outbox.getAndSetContext(inbox);
+    Object oldContext = outbox.getAndSetContext(inbox);
     
     try {
       invoke(inbox, inbox.getDirectActor());
     } finally {
-      outbox.getAndSetContext(oldInbox);
+      outbox.getAndSetContext(oldContext);
     }
   }
   

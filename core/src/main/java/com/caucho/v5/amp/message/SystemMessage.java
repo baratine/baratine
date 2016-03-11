@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.message;
 
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 
@@ -53,9 +53,9 @@ public final class SystemMessage extends MessageAmpBase
   }
 
   @Override
-  public final WorkerDeliver worker()
+  public final WorkerOutbox worker()
   {
-    return _systemMailbox.getWorker();
+    return _systemMailbox.worker();
   }
 
   @Override

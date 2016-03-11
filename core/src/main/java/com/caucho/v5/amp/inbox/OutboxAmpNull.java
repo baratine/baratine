@@ -29,6 +29,7 @@
 
 package com.caucho.v5.amp.inbox;
 
+import com.caucho.v5.amp.outbox.MessageOutbox;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -63,7 +64,7 @@ public class OutboxAmpNull implements OutboxAmp
   }
   
   @Override
-  public void offer(MessageAmp msg)
+  public void offer(MessageOutbox<?> msg)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -73,12 +74,14 @@ public class OutboxAmpNull implements OutboxAmp
   {
   }
 
+  /*
   @Override
   public MessageAmp flushAfterTask()
   {
     // TODO Auto-generated method stub
     return null;
   }
+  */
 
   @Override
   public void close()

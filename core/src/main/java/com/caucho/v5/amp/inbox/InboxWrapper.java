@@ -35,7 +35,7 @@ import io.baratine.service.ResultStream;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -94,10 +94,18 @@ abstract public class InboxWrapper implements InboxAmp
   }
   
   @Override
-  public WorkerDeliver<MessageAmp> getWorker()
+  public WorkerOutbox<MessageAmp> worker()
   {
-    return delegate().getWorker();
+    return delegate().worker();
   }
+  
+  /*
+  @Override
+  public void wake()
+  {
+    return delegate().wake();
+  }
+  */
 
   /**
    * Adds a query callback to handle a later message.

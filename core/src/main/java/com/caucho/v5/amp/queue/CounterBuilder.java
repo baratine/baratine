@@ -49,7 +49,7 @@ public interface CounterBuilder
   
   CounterBuilder getTail();
   
-  CounterGroup build(long initialIndex);
+  CounterRingGroup build(long initialIndex);
 
-  CounterActor build(CounterActor[] counters, boolean isTail);
+  CounterRing build(CounterRing[] counters, boolean isTail);
 }

@@ -35,7 +35,7 @@ import java.util.List;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.QueueServiceBuilderBase;
 
 import io.baratine.service.Result;

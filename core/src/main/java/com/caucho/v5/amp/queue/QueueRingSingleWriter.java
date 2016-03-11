@@ -32,6 +32,10 @@ package com.caucho.v5.amp.queue;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.QueueOutboxBase;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
 
@@ -39,7 +43,7 @@ import com.caucho.v5.util.L10N;
  * Value queue with atomic reference.
  */
 public final class QueueRingSingleWriter<M>
-  extends QueueDeliverBase<M>
+  extends QueueOutboxBase<M>
 {
   private static final L10N L = new L10N(QueueRingSingleWriter.class);
   
@@ -51,11 +55,11 @@ public final class QueueRingSingleWriter<M>
   // private final RingUnsafeArray<T> _ring;
   private final int _capacity;
   
-  private final CounterGroup _counterGroup;
+  private final CounterRingGroup _counterGroup;
   
-  private final CounterActor _headRef;
+  private final CounterRing _headRef;
   
-  private final CounterActor _tail;
+  private final CounterRing _tail;
   
   private final RingBlocker _blocker;
   
@@ -103,8 +107,8 @@ public final class QueueRingSingleWriter<M>
     
     _counterGroup = counterBuilder.build(initialIndex);
     
-    _headRef = _counterGroup.getCounter(0);
-    _tail = _counterGroup.getCounter(_counterGroup.getSize() - 1);
+    _headRef = _counterGroup.counter(0);
+    _tail = _counterGroup.counter(_counterGroup.getSize() - 1);
     
     _blocker = blocker;
   }
@@ -164,16 +168,18 @@ public final class QueueRingSingleWriter<M>
   }
   
   @Override
-  public CounterGroup getCounterGroup()
+  public CounterRingGroup counterGroup()
   {
     return _counterGroup;
   }
   
+  /*
   @Override
-  public WorkerDeliverLifecycle getOfferTask()
+  public WorkerDeliverLifecycle worker()
   {
     return _blocker;
   }
+  */
   
   public final M getValue(long ptr)
   {
@@ -184,7 +190,8 @@ public final class QueueRingSingleWriter<M>
   {
     return _ring.get(ptr);
   }
-  
+
+  /*
   private final M getAndClear(long ptr)
   {
     return _ring.takeAndClear(ptr);
@@ -194,6 +201,7 @@ public final class QueueRingSingleWriter<M>
   {
     return _ring.get(ptr) != null;
   }
+  */
   
   @Override
   public final boolean offer(final M value, 
@@ -204,8 +212,8 @@ public final class QueueRingSingleWriter<M>
     
     // completePoll();
     
-    final CounterActor headRef = _headRef;
-    final CounterActor tailRef = _tail;
+    final CounterRing headRef = _headRef;
+    final CounterRing tailRef = _tail;
     final int capacity = _capacity;
     
     while (true) {
@@ -248,8 +256,8 @@ public final class QueueRingSingleWriter<M>
   public final M poll(long timeout, TimeUnit unit)
   {
     // final AtomicLong tailAllocRef = _tailAlloc;
-    final CounterActor headRef = _headRef;
-    final CounterActor tailRef = _tail;
+    final CounterRing headRef = _headRef;
+    final CounterRing tailRef = _tail;
     
     final ArrayRing<M> ring = _ring;
 
@@ -291,12 +299,12 @@ public final class QueueRingSingleWriter<M>
   }
   
   @Override
-  public void deliver(final Deliver<M> deliver,
-                      final Outbox<M> outbox)
+  public void deliver(final DeliverOutbox<M> deliver,
+                      final Outbox outbox)
     throws Exception
   {
-    final CounterActor headCounter = _headRef;
-    final CounterActor tailCounter = _tail;
+    final CounterRing headCounter = _headRef;
+    final CounterRing tailCounter = _tail;
     
     long initialTail = tailCounter.get();
     long tail = initialTail;
@@ -319,13 +327,13 @@ public final class QueueRingSingleWriter<M>
 
   private long deliver(long head, 
                        long tail,
-                       final Deliver<M> deliver,
-                       final Outbox<M> outbox)
+                       final DeliverOutbox<M> deliver,
+                       final Outbox outbox)
     throws Exception
   {
     final int tailChunk = 32;
     final ArrayRing<M> ring = _ring;
-    final CounterActor tailCounter = _tail;
+    final CounterRing tailCounter = _tail;
     
     long lastTail = tail;
 
@@ -356,17 +364,17 @@ public final class QueueRingSingleWriter<M>
   }
   
   @Override
-  public void deliver(final Deliver<M> processor,
-                      final Outbox<M> outbox,
+  public void deliver(final DeliverOutbox<M> processor,
+                      final Outbox outbox,
                       final int headIndex,
                       final int tailIndex,
-                      final WorkerDeliver nextWorker,
+                      final WorkerOutbox<?> nextWorker,
                       boolean isTail)
     throws Exception
   {
-    final CounterGroup counterGroup = getCounterGroup();
-    final CounterActor headCounter = counterGroup.getCounter(headIndex);
-    final CounterActor tailCounter = counterGroup.getCounter(tailIndex);
+    final CounterRingGroup counterGroup = counterGroup();
+    final CounterRing headCounter = counterGroup.counter(headIndex);
+    final CounterRing tailCounter = counterGroup.counter(tailIndex);
     
     final RingGetter<M> ringGetter = isTail ? _tailGetter : _nonTailGetter;
     
@@ -405,15 +413,17 @@ public final class QueueRingSingleWriter<M>
     }
   }
 
+  /*
   @Override
-  public void deliverMulti(Deliver<M> actor,
-                           Outbox<M> outbox,
+  public void deliverMulti(DeliverOutbox<M> actor,
+                           Outbox outbox,
                            int headCounter,
                            int tailCounter,
-                           WorkerDeliver tailWorker)
+                           WorkerOutbox<M> tailWorker)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
   
   public final boolean isWriteClosed()
   {
@@ -478,13 +488,15 @@ public final class QueueRingSingleWriter<M>
   /* (non-Javadoc)
    * @see com.caucho.env.actor.ActorQueue#deliverMultiTail(com.caucho.env.actor.Actor, int, int, com.caucho.env.thread.TaskWorker)
    */
+  /*
   @Override
-  public void deliverMultiTail(Deliver<M> actor,
-                               Outbox<M> outbox,
+  public void deliverMultiTail(DeliverOutbox<M> actor,
+                               Outbox outbox,
                                int headIndex, 
                                int tailIndex,
-                               WorkerDeliver tailWorker) throws Exception
+                               WorkerOutbox<M> tailWorker) throws Exception
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
 }

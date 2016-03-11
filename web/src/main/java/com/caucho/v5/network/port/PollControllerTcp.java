@@ -32,7 +32,7 @@ package com.caucho.v5.network.port;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.io.SocketBar;
 
 /**
@@ -211,7 +211,7 @@ public class PollControllerTcp implements PollController
   }
   
   @Override
-  public WorkerDeliver worker()
+  public WorkerOutbox worker()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

@@ -31,10 +31,12 @@ package com.caucho.v5.amp.queue;
 
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
 /**
- * Ring blocking algorithm.
+ * Ring blocking API used to block and wait for the producers and consumers.
  */
-public interface RingBlocker extends WorkerDeliverLifecycle
+public interface RingBlocker
 {
   long nextOfferSequence();
   
@@ -53,4 +55,12 @@ public interface RingBlocker extends WorkerDeliverLifecycle
   boolean isPollWait();
   
   void pollWake();
+  
+  boolean wake();
+  
+  void wakeAll();
+
+  default void shutdown(ShutdownModeAmp mode)
+  {
+  }
 }

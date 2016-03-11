@@ -33,30 +33,35 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.OutboxImpl;
+
 /**
  * Processor to spawn threads.
  */
-final class DeliverAmpSpawn<M extends MessageDeliver>
-  extends DeliverAmpBase<M>
+final class DeliverAmpSpawn<M extends MessageOutbox<M>>
+  implements DeliverOutbox<M>
 {
   private static final Logger log 
     = Logger.getLogger(DeliverAmpSpawn.class.getName());
   
-  private final Deliver<M> _processor;
+  private final DeliverOutbox<M> _processor;
   private final Executor _executor;
 
-  private OutboxDeliverBase<M> _outbox;
+  private Outbox _outbox;
   
-  DeliverAmpSpawn(Deliver<M> processor,
+  DeliverAmpSpawn(DeliverOutbox<M> processor,
                  Executor executor)
   {
     _processor = processor;
     _executor = executor;
-    _outbox = new OutboxDeliverImpl<M>();
+    _outbox = new OutboxImpl();
   }
   
   @Override
-  public void deliver(M item, Outbox<M> outbox)
+  public void deliver(M item, Outbox outbox)
   {
     _executor.execute(new SpawnTask(item));
   }
@@ -72,14 +77,14 @@ final class DeliverAmpSpawn<M extends MessageDeliver>
     @Override
     public void run()
     {
-      Deliver<M> actor = _processor;
+      DeliverOutbox<M> deliver = _processor;
       
       try {
-        actor.beforeBatch();
+        deliver.beforeBatch();
       
-        actor.deliver(_item, _outbox);
+        deliver.deliver(_item, _outbox);
       
-        actor.afterBatch();
+        deliver.afterBatch();
       } catch (Exception e) {
         log.log(Level.FINER, e.toString(), e);
       } finally {

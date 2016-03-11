@@ -31,7 +31,6 @@ package com.caucho.v5.http.log;
 
 import java.util.concurrent.locks.LockSupport;
 
-import com.caucho.v5.amp.queue.MessageDeliverBase;
 import com.caucho.v5.amp.thread.ThreadPool;
 
 /**
@@ -40,7 +39,7 @@ import com.caucho.v5.amp.thread.ThreadPool;
  * Resin can recycle the buffers during keepalives to keep the memory
  * consumption low.
  */
-public final class LogBuffer extends MessageDeliverBase
+public final class LogBuffer // extends MessageDeliverBase
 {
   private final boolean _isPrivate;
   private final byte []_logBuffer;

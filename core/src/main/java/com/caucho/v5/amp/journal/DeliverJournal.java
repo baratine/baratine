@@ -29,23 +29,22 @@
 
 package com.caucho.v5.amp.journal;
 
-import io.baratine.service.ServiceException;
-
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.inbox.InboxQueue;
-import com.caucho.v5.amp.queue.DeliverAmpBase;
-import com.caucho.v5.amp.queue.Outbox;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.service.ServiceException;
 
 /**
  * Worker for a queue inbox. 
  */
-public class DeliverJournal extends DeliverAmpBase<MessageAmp>
+public class DeliverJournal implements DeliverOutbox<MessageAmp>
 {
   private static final Logger log
     = Logger.getLogger(DeliverJournal.class.getName());
@@ -64,7 +63,8 @@ public class DeliverJournal extends DeliverAmpBase<MessageAmp>
   }
 
   @Override
-  public final void deliver(final MessageAmp msg, Outbox<MessageAmp> outbox)
+  public final void deliver(final MessageAmp msg, 
+                            Outbox outbox)
       throws Exception
   {
     try {
@@ -74,35 +74,6 @@ public class DeliverJournal extends DeliverAmpBase<MessageAmp>
     } catch (Throwable e) {
       log.log(Level.WARNING, this + " " + e.toString(), e);
     }
-  }
-
-  @Override
-  public void beforeBatch()
-  {
-  }
-
-  @Override
-  public void afterBatch()
-  {
-    // _actor.postDeliver();
-  }
-
-  @Override
-  public void onActive()
-  {
-    // _actor.onActive();
-  }
-
-  @Override
-  public void onInit()
-  {
-    // _actor.onStart();
-  }
-
-  @Override
-  public void shutdown(ShutdownModeAmp mode)
-  {
-    // _actor.shutdown(mode);
   }
 
   @Override

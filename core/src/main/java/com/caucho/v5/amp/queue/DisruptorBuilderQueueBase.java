@@ -31,19 +31,27 @@ package com.caucho.v5.amp.queue;
 
 import java.util.Objects;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.QueueService;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
+
 
 
 /**
  * Interface to build a disruptor based queue.
  */
-public class DisruptorBuilderQueueBase<M extends MessageDeliver>
+public class DisruptorBuilderQueueBase<M extends MessageOutbox<M>>
   implements DisruptorBuilderQueue<M>
 {
+  /*
   @Override
-  public DisruptorBuilderQueue<M> peer(DeliverFactory<M> factory)
+  public DisruptorBuilderQueue<M,C> peer(DeliverFactory<M> factory)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
   
   @Override
   public DisruptorBuilderQueue<M> next(DeliverFactory<M> factory)
@@ -52,16 +60,18 @@ public class DisruptorBuilderQueueBase<M extends MessageDeliver>
   }
   
   @Override
-  public DisruptorBuilderQueue<M> next(Deliver<M> deliver)
+  public DisruptorBuilderQueue<M> next(DeliverOutbox<M> deliver)
   {
-    return next(new DeliverFactorySingleton<M>(deliver));
+    return next(new DeliverFactorySingleton<>(deliver));
   }
   
+  /*
   @Override
-  public DisruptorBuilderQueue<M> prologue(DeliverFactory<M> factory)
+  public DisruptorBuilderQueue<M,C> prologue(DeliverFactory<M> factory)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
   
   @Override
   public CounterBuilder createCounterBuilder(CounterBuilder head,
@@ -89,12 +99,12 @@ public class DisruptorBuilderQueueBase<M extends MessageDeliver>
     
     CounterBuilder counter = new CounterBuilderTop(prev, next);
     
-    QueueDeliver<M> queue = queueBuilder.buildQueue(counter);
+    QueueOutbox<M> queue = queueBuilder.buildQueue(counter);
     
-    WorkerDeliverLifecycle<M> nextTask = (WorkerDeliverLifecycle) queue.getOfferTask();
+    WorkerOutbox<M> nextTask = null;//(WorkerDeliverLifecycle) queue.worker();
     // Executor executor = queueBuilder.createExecutor();
 
-    WorkerDeliverLifecycle<M> worker;
+    WorkerOutbox<M> worker;
     
     worker = build(queue, 
                    prev,
@@ -114,21 +124,22 @@ public class DisruptorBuilderQueueBase<M extends MessageDeliver>
   }
 
   @Override
-  public WorkerDeliverLifecycle<M> build(QueueDeliver<M> queue,
+  public WorkerOutbox<M> build(QueueOutbox<M> queue,
                                          CounterBuilder head,
                                          CounterBuilder tail,
-                                         WorkerDeliverLifecycle<M> nextTask,
+                                         WorkerOutbox<M> nextTask,
                                          QueueDeliverBuilder<M> queueBuilder,
                                          boolean isTail)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
   
-  static class DeliverFactorySingleton<M> implements DeliverFactory<M>
+  static class DeliverFactorySingleton<M extends MessageOutbox<M>>
+    implements DeliverFactory<M>
   {
-    private Deliver<M> _deliver;
+    private DeliverOutbox<M> _deliver;
     
-    DeliverFactorySingleton(Deliver<M> deliver)
+    DeliverFactorySingleton(DeliverOutbox<M> deliver)
     {
       Objects.requireNonNull(deliver);
       
@@ -142,7 +153,7 @@ public class DisruptorBuilderQueueBase<M extends MessageDeliver>
     }
     
     @Override
-    public Deliver<M> get()
+    public DeliverOutbox<M> get()
     {
       return _deliver;
     }

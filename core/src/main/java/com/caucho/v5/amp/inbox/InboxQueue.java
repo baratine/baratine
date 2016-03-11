@@ -29,10 +29,6 @@
 
 package com.caucho.v5.amp.inbox;
 
-import io.baratine.service.QueueFullHandler;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionClosed;
-
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -50,13 +46,11 @@ import com.caucho.v5.amp.message.OnActiveReplayMessage;
 import com.caucho.v5.amp.message.OnInitMessage;
 import com.caucho.v5.amp.message.OnShutdownMessage;
 import com.caucho.v5.amp.message.ReplayMessage;
+import com.caucho.v5.amp.outbox.QueueService;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.outbox.WorkerOutboxMultiThread;
 import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
-import com.caucho.v5.amp.queue.OutboxContext;
-import com.caucho.v5.amp.queue.QueueService;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
-import com.caucho.v5.amp.queue.WorkerDeliver;
-import com.caucho.v5.amp.queue.WorkerDeliverDisruptorMultiWorker;
-import com.caucho.v5.amp.queue.WorkerDeliverMessage;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -66,8 +60,12 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.service.QueueFullHandler;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceExceptionClosed;
+
 /**
- * Mailbox for an actor
+ * inbox for a service.
  */
 public class InboxQueue extends InboxBase
 {
@@ -80,10 +78,9 @@ public class InboxQueue extends InboxBase
   private final String _anonAddress;
   private String _bindAddress;
 
-  //private final ActorQueuePreallocApi<Message> _queue;
   private final QueueService<MessageAmp> _queue;
   private final ActorAmp _actor;
-  private final WorkerDeliverMessage<MessageAmp> _worker;
+  private final WorkerOutbox<MessageAmp> _worker;
   
   private final boolean _isLifecycleAware;
   
@@ -142,7 +139,8 @@ public class InboxQueue extends InboxBase
 
     _queue = serviceQueueFactory.build(queueBuilder, this);
 
-    _worker = (WorkerDeliverMessage<MessageAmp>) _queue.getWorker();
+    _worker = (WorkerOutbox<MessageAmp>) _queue.worker();
+    //_worker = _queue.worker();
 
     _actor = actor;
     
@@ -229,7 +227,7 @@ public class InboxQueue extends InboxBase
   {
     //BuildMessageAmp buildMessage = new BuildMessageAmp(this);
 
-    OnInitMessage onInitMsg = new OnInitMessage(this, isSingle());
+    OnInitMessage onInitMsg = new OnInitMessage(this);
       
     _queue.offer(onInitMsg);
     _queue.wake();
@@ -291,7 +289,7 @@ public class InboxQueue extends InboxBase
   @Override
   protected boolean isSingle()
   {
-    return ! (_worker instanceof WorkerDeliverDisruptorMultiWorker);
+    return ! (_worker instanceof WorkerOutboxMultiThread);
   }
 
   public DeliverFactory<MessageAmp>
@@ -476,7 +474,7 @@ public class InboxQueue extends InboxBase
   }
 
   @Override
-  public final WorkerDeliver getWorker()
+  public final WorkerOutbox worker()
   {
     return _worker;
   }
@@ -517,7 +515,7 @@ public class InboxQueue extends InboxBase
     super.shutdown(mode);
 
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(manager())) {
-      OutboxContext<MessageAmp> ctx = outbox.getAndSetContext(this);
+      Object ctx = outbox.getAndSetContext(this);
       
       try {
         outbox.flush();

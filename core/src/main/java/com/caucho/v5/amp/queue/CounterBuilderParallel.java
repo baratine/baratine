@@ -72,16 +72,16 @@ public class CounterBuilderParallel extends CounterBuilderBase
   }
 
   @Override
-  public CounterActor build(CounterActor[] counters, boolean isTail)
+  public CounterRing build(CounterRing[] counters, boolean isTail)
   {
-    CounterActor []prev = new CounterActor[_children.length];
+    CounterRing []prev = new CounterRing[_children.length];
     int i = 0;
     
     for (CounterBuilder child : _children) {
       prev[i++] = child.build(counters, false);
     }
     
-    CounterActor join = new CounterJoin(prev);
+    CounterRing join = new CounterJoin(prev);
     
     counters[getTailIndex()] = join;
     

@@ -114,7 +114,7 @@ public class InHamp implements InAmpWebSocket
                 ChannelAmp channel)
   {
     _ampManager = rampManager;
-    _outboxFactory = rampManager.getOutboxFactory();
+    _outboxFactory = rampManager.outboxFactory();
     
     if (_ampManager.isClosed()) {
       throw new IllegalStateException(String.valueOf(_ampManager));

@@ -67,9 +67,9 @@ public class CounterBuilderMultiWorker extends CounterBuilderBase
   }
 
   @Override
-  public CounterActor build(CounterActor[] counters, boolean isTail)
+  public CounterRing build(CounterRing[] counters, boolean isTail)
   {
-    CounterActor counter;
+    CounterRing counter;
     
     if (isTail) {
       counter = new CounterAtomic();

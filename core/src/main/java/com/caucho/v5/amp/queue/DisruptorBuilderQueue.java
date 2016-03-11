@@ -32,21 +32,27 @@ package com.caucho.v5.amp.queue;
 
 import java.util.function.Supplier;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.QueueService;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
+
 /**
  * Interface for building a disruptor queue.
  */
-public interface DisruptorBuilderQueue<M extends MessageDeliver>
+public interface DisruptorBuilderQueue<M extends MessageOutbox<M>>
 {
-  DisruptorBuilderQueue<M> peer(DeliverFactory<M> factory);
+  //DisruptorBuilderQueue<M,C> peer(DeliverFactory<M> factory);
   
   DisruptorBuilderQueue<M> next(DeliverFactory<M> factory);
-  DisruptorBuilderQueue<M> next(Deliver<M> factory);
+  DisruptorBuilderQueue<M> next(DeliverOutbox<M> factory);
 
   /**
    * Used in cases like the journal where the journal is prepended to
    * the main.
    */
-  DisruptorBuilderQueue<M> prologue(DeliverFactory<M> factory);
+  //DisruptorBuilderQueue<M,C> prologue(DeliverFactory<M,C> factory);
   
   //QueueService<M> build(QueueDeliverBuilder<M> queueBuilder);
   QueueService<M> build();
@@ -63,17 +69,18 @@ public interface DisruptorBuilderQueue<M extends MessageDeliver>
                                   boolean isTail);
   */
   
-  WorkerDeliver<M> build(QueueDeliver<M> queue,
+  WorkerOutbox<M> build(QueueOutbox<M> queue,
                       CounterBuilder head,
                       CounterBuilder tail,
-                      WorkerDeliverLifecycle<M> nextTask,
+                      WorkerOutbox<M> nextTask,
                       QueueDeliverBuilder<M> queueBuilder,
                       boolean isTail);
   
-  public interface DeliverFactory<M> extends Supplier<Deliver<M>>
+  public interface DeliverFactory<M extends MessageOutbox<M>>
+    extends Supplier<DeliverOutbox<M>>
   {
     @Override
-    Deliver<M> get();
+    DeliverOutbox<M> get();
     
     int getMaxWorkers();
   }

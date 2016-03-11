@@ -35,8 +35,6 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.manager.ServiceConfig;
-import com.caucho.v5.amp.queue.Outbox;
-import com.caucho.v5.amp.queue.OutboxContext;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -178,7 +176,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   default void run(Runnable task)
   {
     OutboxAmp outboxCurrent = OutboxAmp.current();
-    OutboxContext<MessageAmp> context = null;
+    Object context = null;
     
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(this)) {
       context = outbox.getAndSetContext(inboxSystem());
@@ -198,9 +196,9 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
 
   QueueFullHandler getQueueFullHandler();
   
-  Supplier<OutboxAmp> getOutboxFactory();
+  Supplier<OutboxAmp> outboxFactory();
 
-  Outbox<MessageAmp> getOutboxSystem();
+  OutboxAmp getOutboxSystem();
   
   JournalAmp openJournal(String name);
 
@@ -269,7 +267,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   
   interface DisruptorBuilder<T>
   {
-    DisruptorBuilder<T> peer(T serviceImpl);
+    //DisruptorBuilder<T> peer(T serviceImpl);
     
     DisruptorBuilder<T> next(T serviceImpl);
     

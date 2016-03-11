@@ -49,14 +49,14 @@ public class CounterBuilderTop extends CounterBuilderBase
   }
 
   @Override
-  public final CounterGroup build(long initialIndex)
+  public final CounterRingGroup build(long initialIndex)
   {
-    CounterActor []counters = new CounterActor[_length];
+    CounterRing []counters = new CounterRing[_length];
     
     _head.build(counters, false);
     _tail.build(counters, true);
     
-    for (CounterActor counter : counters) {
+    for (CounterRing counter : counters) {
       counter.set(initialIndex);
     }
     

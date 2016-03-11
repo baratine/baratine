@@ -29,24 +29,22 @@
 
 package com.caucho.v5.amp.inbox;
 
-import io.baratine.service.ServiceExceptionConnect;
-
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.queue.DeliverAmpBase;
-import com.caucho.v5.amp.queue.Outbox;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.service.ServiceExceptionConnect;
 
 /**
  * Worker for an inbox
  */
-class DeliverInbox extends DeliverAmpBase<MessageAmp>
+class DeliverInbox implements DeliverOutbox<MessageAmp>
 {
   private static final Logger log
     = Logger.getLogger(DeliverInbox.class.getName());
@@ -56,7 +54,7 @@ class DeliverInbox extends DeliverAmpBase<MessageAmp>
 
   // private OutboxAmp _outbox;
 
-  private MessageInboxDeliver _messageContext;
+  //private MessageInboxDeliver _messageContext;
 
   DeliverInbox(InboxAmp inbox, 
                ActorAmp actor)
@@ -97,7 +95,7 @@ class DeliverInbox extends DeliverAmpBase<MessageAmp>
   */
 
   @Override
-  public void deliver(final MessageAmp msg, Outbox<MessageAmp> outbox)
+  public void deliver(final MessageAmp msg, Outbox outbox)
       throws Exception
   {
     //outbox.setMessage(msg);

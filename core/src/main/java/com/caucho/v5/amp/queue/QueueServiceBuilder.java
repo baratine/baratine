@@ -29,14 +29,17 @@
 
 package com.caucho.v5.amp.queue;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 
 /**
  * Builder for a service queue.
  */
-public interface QueueServiceBuilder<M extends MessageDeliver>
+public interface QueueServiceBuilder<M extends MessageOutbox<M>>
 {
-  QueueServiceBuilder<M> processors(Deliver<M> ...processors);
+  QueueServiceBuilder<M> processors(DeliverOutbox<M> ...processors);
   
   QueueServiceBuilder<M> capacity(int capacity);
   
@@ -54,11 +57,11 @@ public interface QueueServiceBuilder<M extends MessageDeliver>
   
   int getMultiworkerOffset();
 
-  QueueService<M> build(Deliver<M> processor);
+  QueueService<M> build(DeliverOutbox<M> processor);
 
-  QueueService<M> build(Deliver<M> ...processors);
+  QueueService<M> build(DeliverOutbox<M> ...processors);
 
   DisruptorBuilderQueue<M> disruptorBuilder(DeliverFactory<M> actorFactory);
   
-  DisruptorBuilderQueue<M> disruptorBuilder(Deliver<M> actorFactory);
+  DisruptorBuilderQueue<M> disruptorBuilder(DeliverOutbox<M> actorFactory);
 }

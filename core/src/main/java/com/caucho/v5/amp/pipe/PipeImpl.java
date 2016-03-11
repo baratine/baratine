@@ -38,9 +38,9 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.PipeWakeInMessage;
 import com.caucho.v5.amp.message.PipeWakeOutMessage;
-import com.caucho.v5.amp.queue.Deliver;
-import com.caucho.v5.amp.queue.Outbox;
-import com.caucho.v5.amp.queue.QueueRing;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.queue.QueueRingSingleWriter;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
@@ -50,13 +50,13 @@ import io.baratine.io.PipeOut;
 /**
  * pipe implementation
  */
-public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
+public class PipeImpl<T> implements PipeOut<T>, DeliverOutbox<T>
 {
   private static final L10N L = new L10N(PipeImpl.class);
   private static final Logger log = Logger.getLogger(PipeImpl.class.getName());
   
   private PipeIn<T> _inPipe;
-  private QueueRing<T> _queue;
+  private QueueRingSingleWriter<T> _queue;
   
   private volatile boolean _isOk;
   private volatile Throwable _fail;
@@ -117,7 +117,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     
     _inFlow.init();
 
-    _queue = new QueueRing<>(capacity);
+    _queue = new QueueRingSingleWriter<>(capacity);
     
     updatePrefetchCredits();
   }
@@ -238,7 +238,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   {
     PipeIn<T> inPipe = _inPipe;
     
-    Outbox<T> outbox = null;
+    Outbox outbox = null;
     
     try {
       _queue.deliver(this, outbox);
@@ -266,7 +266,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   }
 
   @Override
-  public void deliver(T msg, Outbox<T> outbox) throws Exception
+  public void deliver(T msg, Outbox outbox) throws Exception
   {
     _inPipe.next(msg);
     

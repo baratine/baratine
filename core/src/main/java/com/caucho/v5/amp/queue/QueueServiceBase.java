@@ -34,16 +34,20 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
  * Queue with an attached processor.
  */
-abstract public class QueueServiceBase<M> implements QueueService<M>
+abstract public class QueueServiceBase<M extends MessageOutbox<M>>
+  implements QueueService<M>
 {
-  private final QueueDeliver<M> _queue;
+  private final QueueOutbox<M> _queue;
  
-  public QueueServiceBase(QueueDeliver<M> queue)
+  public QueueServiceBase(QueueOutbox<M> queue)
   {
     Objects.requireNonNull(queue);
     
@@ -57,7 +61,7 @@ abstract public class QueueServiceBase<M> implements QueueService<M>
   }
   */
   
-  protected final QueueDeliver<M> getQueue()
+  protected final QueueOutbox<M> getQueue()
   {
     return _queue;
   }
@@ -123,11 +127,13 @@ abstract public class QueueServiceBase<M> implements QueueService<M>
     }
   }
   
+  /*
   @Override
   public WorkerDeliverLifecycle getWorker()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
   
   @Override
   public void shutdown(ShutdownModeAmp mode)

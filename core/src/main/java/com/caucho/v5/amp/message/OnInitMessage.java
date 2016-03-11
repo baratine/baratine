@@ -29,27 +29,19 @@
 
 package com.caucho.v5.amp.message;
 
-import java.util.logging.Logger;
-
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 
 /**
- * Message to shut down an instance.
+ * Message to start a service.
  */
 public class OnInitMessage extends MessageAmpBase
 {
-  private static final Logger log
-    = Logger.getLogger(OnInitMessage.class.getName());
-  
   private InboxAmp _inbox;
-  private boolean _isStart;
-  private boolean _isSingle;
 
-  public OnInitMessage(InboxAmp inbox, boolean isSingle)
+  public OnInitMessage(InboxAmp inbox)
   {
     _inbox = inbox;
-    _isSingle = isSingle;
   }
   
   @Override
@@ -61,29 +53,10 @@ public class OnInitMessage extends MessageAmpBase
   @Override
   public void invoke(InboxAmp inbox, ActorAmp actor)
   {
-      /*
-      if (_isSingle) {
-        actor.onInit(Result.ignore());
-      }
-      */
-      
-      actor = actor.getActor(actor);
+    actor = actor.getActor(actor);
 
-      actor.load(this);
+    actor.load(this);
   }
-
-  /*
-  public boolean waitFor(long timeout, TimeUnit unit)
-  {
-    try {
-      return _future.get(timeout, unit);
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-      
-      return false;
-    }
-  }
-  */
   
   public void offer()
   {

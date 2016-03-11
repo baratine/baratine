@@ -38,8 +38,7 @@ import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.AmpManager;
-import com.caucho.v5.amp.queue.OutboxContext;
-import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
@@ -356,7 +355,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
     
     Objects.requireNonNull(_ampManager);
     
-    OutboxContext<MessageAmp> oldCxt = null;
+    Object oldCxt = null;
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_ampManager)) {
       oldCxt = outbox.getAndSetContext(_ampManager.inboxSystem());
       

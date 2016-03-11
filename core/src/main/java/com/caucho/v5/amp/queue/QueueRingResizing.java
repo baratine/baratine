@@ -31,6 +31,12 @@ package com.caucho.v5.amp.queue;
 
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.QueueOutboxBase;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.util.L10N;
@@ -38,8 +44,8 @@ import com.caucho.v5.util.L10N;
 /**
  * Value queue with atomic reference.
  */
-public final class QueueRingResizing<T> 
-  extends QueueDeliverBase<T>
+public final class QueueRingResizing<M>
+  extends QueueOutboxBase<M>
 {
   private static final L10N L = new L10N(QueueRingResizing.class);
   
@@ -51,10 +57,10 @@ public final class QueueRingResizing<T>
   private final CounterBuilder _counterBuilder;
   private final RingBlocker _baseBlocker;
 
-  private volatile QueueRing<T> _readQueue;
+  private volatile QueueRing<M> _readQueue;
   
   private final Object _resizeLock = new Object();
-  private volatile QueueRing<T> _writeQueue;
+  private volatile QueueRing<M> _writeQueue;
   
   public QueueRingResizing(int minCapacity, int maxCapacity)
   {
@@ -111,17 +117,19 @@ public final class QueueRingResizing<T>
     _readQueue = _writeQueue;
   }
   
-  public static <T> QueueDeliver<T> create(int min, int max)
+  public static <T extends MessageOutbox<T>> 
+  QueueOutbox<T> create(int min, int max)
   {
     return create(min, max,
                   CounterBuilderSingle.create(),
                   new RingBlockerBasic());
   }
     
-  public static <T> QueueDeliver<T> create(int min, 
-                                         int max,
-                                         CounterBuilder counterBuilder,
-                                         RingBlocker blocker)
+  public static <T extends MessageOutbox<T>> 
+  QueueOutbox<T> create(int min, 
+                        int max,
+                        CounterBuilder counterBuilder,
+                        RingBlocker blocker)
   {
     if (min == max) {
       return new QueueRing<T>(max, counterBuilder, 0, blocker);
@@ -139,10 +147,18 @@ public final class QueueRingResizing<T>
   }
   */
   
+  /*
   @Override
-  public WorkerDeliverLifecycle getOfferTask()
+  public WorkerDeliverLifecycle worker()
   {
     return _baseBlocker;
+  }
+  */
+  
+  @Override
+  public void wake()
+  {
+    _baseBlocker.wake();
   }
 
   @Override
@@ -177,9 +193,9 @@ public final class QueueRingResizing<T>
   }
   
   @Override
-  public final boolean offer(T value, long timeout, TimeUnit unit)
+  public final boolean offer(M value, long timeout, TimeUnit unit)
   {
-    QueueRing<T> writeQueue;
+    QueueRing<M> writeQueue;
     do {
       writeQueue = _writeQueue;
       
@@ -192,11 +208,11 @@ public final class QueueRingResizing<T>
   }
   
   @Override
-  public final T peek()
+  public final M peek()
   {
-    QueueRing<T> queue = _readQueue;
+    QueueRing<M> queue = _readQueue;
     
-    T value = queue.peek();
+    M value = queue.peek();
     
     if (value != null) {
       return value;
@@ -210,11 +226,11 @@ public final class QueueRingResizing<T>
   }
  
   @Override
-  public final T poll(long timeout, TimeUnit unit)
+  public final M poll(long timeout, TimeUnit unit)
   {
-    QueueRing<T> readQueue = _readQueue;
+    QueueRing<M> readQueue = _readQueue;
 
-    T value = readQueue.poll(timeout, unit);
+    M value = readQueue.poll(timeout, unit);
     
     while (value == null && pollResize(readQueue)) {
       readQueue = _readQueue;
@@ -226,10 +242,10 @@ public final class QueueRingResizing<T>
   }
   
   @Override
-  public void deliver(Deliver<T> deliver, Outbox<T> outbox)
+  public void deliver(DeliverOutbox<M> deliver, Outbox outbox)
     throws Exception
   {
-    QueueRing<T> readQueue;
+    QueueRing<M> readQueue;
     
     do {
       readQueue = _readQueue;
@@ -239,15 +255,15 @@ public final class QueueRingResizing<T>
   }
   
   @Override
-  public void deliver(Deliver<T> processor,
-                      Outbox<T> outbox,
+  public void deliver(DeliverOutbox<M> processor,
+                      Outbox outbox,
                       int headIndex,
                       int tailIndex,
-                      WorkerDeliver nextWorker,
+                      WorkerOutbox<?> nextWorker,
                       boolean isTail)
     throws Exception
   {
-    QueueRing<T> readQueue;
+    QueueRing<M> readQueue;
     
     // the loop is required on resize because the wake assumes the deliver
     // will consume at least one item if it was available at the time of the
@@ -264,13 +280,14 @@ public final class QueueRingResizing<T>
                         isTail);
     } while (isTail && pollResize(readQueue));
   }
-  
+
+  /*
   @Override
-  public void deliverMulti(Deliver<T> processor,
-                           Outbox<T> outbox,
+  public void deliverMulti(DeliverOutbox<T> processor,
+                           Outbox outbox,
                            int headIndex,
                            int tailIndex,
-                           WorkerDeliver tailWorker)
+                           WorkerOutbox<T> tailWorker)
     throws Exception
   {
     QueueRing<T> readQueue;
@@ -285,11 +302,11 @@ public final class QueueRingResizing<T>
   }
   
   @Override
-  public void deliverMultiTail(Deliver<T> processor,
-                               Outbox<T> outbox,
+  public void deliverMultiTail(DeliverOutbox<T> processor,
+                               Outbox outbox,
                                int headIndex,
                                int tailIndex,
-                               WorkerDeliver tailWorker)
+                               WorkerOutbox<T> tailWorker)
     throws Exception
   {
     QueueRing<T> readQueue;
@@ -304,18 +321,18 @@ public final class QueueRingResizing<T>
                                  tailWorker);
     } while (pollResize(readQueue));
   }
-  
+  */
   @Override
-  public final CounterGroup getCounterGroup()
+  public final CounterRingGroup counterGroup()
   {
-    return _readQueue.getCounterGroup();
+    return _readQueue.counterGroup();
   }
   
-  private QueueRing<T> createQueue(int capacity,
+  private QueueRing<M> createQueue(int capacity,
                                    long initialIndex)
   {
     if (_maxCapacity <= capacity) {
-      return new QueueRing<T>(_maxCapacity, 
+      return new QueueRing<M>(_maxCapacity, 
                               _counterBuilder,
                               initialIndex,
                               _baseBlocker);
@@ -328,7 +345,7 @@ public final class QueueRingResizing<T>
     }
   }
   
-  private boolean pollResize(QueueRing<T> readQueue)
+  private boolean pollResize(QueueRing<M> readQueue)
   {
     synchronized (_resizeLock) {
       if (readQueue == _readQueue && readQueue != _writeQueue) {
@@ -346,7 +363,7 @@ public final class QueueRingResizing<T>
     return false;
   }
   
-  private void copyQueue(T item, QueueRing<T> queue)
+  private void copyQueue(M item, QueueRing<M> queue)
   {
     long timeout = 10;
     
@@ -363,18 +380,18 @@ public final class QueueRingResizing<T>
   }
   
   private class ResizingRingBlocker implements RingBlocker {
-    private final QueueRing<T> _queue;
+    private final QueueRing<M> _queue;
     
     ResizingRingBlocker(int capacity,
                         long initialIndex,
-                        QueueRing<T> prevQueue)
+                        QueueRing<M> prevQueue)
     {
-      _queue = new QueueRing<T>(capacity, 
+      _queue = new QueueRing<M>(capacity, 
                                 _counterBuilder, initialIndex, 
                                      this);
     }
     
-    QueueRing<T> getQueue()
+    QueueRing<M> getQueue()
     {
       return _queue;
     }
@@ -391,7 +408,7 @@ public final class QueueRingResizing<T>
                                    TimeUnit unit)
     {
       synchronized (_resizeLock) {
-        QueueRing<T> queue = _queue;
+        QueueRing<M> queue = _queue;
 
         if (queue.isWriteClosed()) {
           // queue was already resized
@@ -404,18 +421,18 @@ public final class QueueRingResizing<T>
         else if (queue.getCapacity() < _maxCapacity) {
           queue.closeWrite();
 
-          QueueRing<T> nextQueue = createQueue(4 * queue.getCapacity(),
+          QueueRing<M> nextQueue = createQueue(4 * queue.getCapacity(),
                                                queue.getHeadAlloc());
 
           if (queue != _readQueue) {
             // if unshifted, copy the items
-            T item;
+            M item;
 
             while ((item = queue.poll()) != null) {
               // System.out.println("COPY: " + item);
 
               if (! nextQueue.offer(item)) {
-                T firstItem = item;
+                M firstItem = item;
                 
                 ThreadPool.current().schedule(()->copyQueue(firstItem, queue));
                 break;
@@ -476,6 +493,7 @@ public final class QueueRingResizing<T>
       _baseBlocker.pollWake();
     }
 
+    /*
     @Override
     public void onActive()
     {
@@ -487,6 +505,7 @@ public final class QueueRingResizing<T>
     {
       _baseBlocker.onInit();
     }
+    */
 
     @Override
     public void shutdown(ShutdownModeAmp mode)

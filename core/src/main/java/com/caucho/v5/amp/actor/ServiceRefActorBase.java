@@ -29,14 +29,7 @@
 
 package com.caucho.v5.amp.actor;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Result;
-import io.baratine.service.ResultFuture;
-import io.baratine.service.ServiceExceptionClosed;
-import io.baratine.service.ServiceRef;
-
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +41,6 @@ import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.message.SubscribeMessage;
 import com.caucho.v5.amp.message.UnsubscribeMessage;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
-import com.caucho.v5.amp.queue.OutboxContext;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -57,6 +49,11 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceExceptionClosed;
+import io.baratine.service.ServiceRef;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -181,7 +178,7 @@ abstract class ServiceRefActorBase extends ServiceRefBase
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(manager())) {
       init();
     
-      OutboxContext<MessageAmp> oldContext = outbox.getAndSetContext(inbox());
+      Object oldContext = outbox.getAndSetContext(inbox());
       try {
         child = onLookupImpl(path);
       } finally {

@@ -31,7 +31,7 @@ package com.caucho.v5.network.port;
 
 import java.io.IOException;
 
-import com.caucho.v5.amp.queue.MessageDeliver;
+import com.caucho.v5.amp.outbox.MessageOutbox;
 import com.caucho.v5.io.SocketBar;
 
 /**
@@ -42,7 +42,7 @@ import com.caucho.v5.io.SocketBar;
  * <p>TcpConnection is the most common implementation.  The test harness
  * provides a string based Connection.
  */
-public interface PollController extends MessageDeliver
+public interface PollController extends MessageOutbox
 {
   /**
    * Returns the connection id.  Primarily for debugging.

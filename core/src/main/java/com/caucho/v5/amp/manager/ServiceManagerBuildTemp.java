@@ -40,8 +40,8 @@ import com.caucho.v5.amp.actor.ServiceRefDynamic;
 import com.caucho.v5.amp.actor.ServiceRefLazyProxy;
 import com.caucho.v5.amp.inbox.InboxWrapper;
 import com.caucho.v5.amp.journal.JournalAmp;
+import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmpImpl;
-import com.caucho.v5.amp.queue.Outbox;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -338,14 +338,14 @@ public class ServiceManagerBuildTemp implements ServiceManagerAmp
   }
 
   @Override
-  public Supplier<OutboxAmp> getOutboxFactory()
+  public Supplier<OutboxAmp> outboxFactory()
   {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public Outbox<MessageAmp> getOutboxSystem()
+  public OutboxAmp getOutboxSystem()
   {
     // TODO Auto-generated method stub
     return null;

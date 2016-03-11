@@ -29,9 +29,9 @@
 
 package com.caucho.v5.log.impl;
 
-import io.baratine.service.ResultFuture;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import io.baratine.service.ResultFuture;
 
 public final class LogItemFuture extends LogItem<LogItemBinaryHandler>
 {
@@ -48,7 +48,7 @@ public final class LogItemFuture extends LogItem<LogItemBinaryHandler>
   }
 
   @Override
-  public WorkerDeliver worker()
+  public WorkerOutbox worker()
   {
     return null;
   }

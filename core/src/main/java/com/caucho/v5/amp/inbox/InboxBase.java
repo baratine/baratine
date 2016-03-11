@@ -29,24 +29,23 @@
 
 package com.caucho.v5.amp.inbox;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.OnInitMessage;
 import com.caucho.v5.amp.message.QueryMap;
-import com.caucho.v5.amp.queue.WorkerDeliver;
-import com.caucho.v5.amp.queue.WorkerDeliverNull;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.ResultStream;
 
 /**
  * Mailbox for an actor
@@ -114,9 +113,9 @@ abstract public class InboxBase
   }
   
   @Override
-  public WorkerDeliver getWorker()
+  public WorkerOutbox worker()
   {
-    return WorkerDeliverNull.WORKER;
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   /**
@@ -174,13 +173,13 @@ abstract public class InboxBase
   @Override
   public void init()
   {
-    offer(new OnInitMessage(this, isSingle()), InboxAmp.TIMEOUT_INFINITY);
+    offer(new OnInitMessage(this), InboxAmp.TIMEOUT_INFINITY);
   }
   
   @Override
   public void start()
   {
-    offer(new OnInitMessage(this, isSingle()), InboxAmp.TIMEOUT_INFINITY);
+    offer(new OnInitMessage(this), InboxAmp.TIMEOUT_INFINITY);
   }
   
   protected boolean isSingle()

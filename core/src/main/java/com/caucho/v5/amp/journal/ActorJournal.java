@@ -35,7 +35,7 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.actor.ActorAmpBase;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;

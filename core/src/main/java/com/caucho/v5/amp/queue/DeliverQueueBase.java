@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,27 +27,50 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.inbox;
+package com.caucho.v5.amp.queue;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.manager.ServiceConfig;
-import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.InboxFactoryAmp;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.QueueService;
 
 /**
- * Creates mailboxes for actors.
+ * Extension deliver message queue.Ring-based memory queue processed by a single worker.
  */
-public class InboxDirectFactory implements InboxFactoryAmp
+abstract public class DeliverQueueBase<M>
+  implements DeliverOutbox<M>
 {
-  /**
-   * Creates a mailbox for an actor.
-   */
-  @Override
-  public InboxAmp create(ServiceManagerAmp manager,
-                            QueueServiceFactoryInbox serviceFactory,
-                            ServiceConfig config)
+  private final QueueService<M> _queue;
+  
+  public DeliverQueueBase(int size)
   {
-    // XXX: other api than getMainActor?
-    return new InboxDirect(manager, serviceFactory.getMainActor());
+    QueueServiceBuilderImpl builder = new QueueServiceBuilderImpl<>();
+    builder.capacity(size);
+    
+    _queue = builder.build(this);
   }
+  
+  public final boolean isEmpty()
+  {
+    return _queue.isEmpty();
+  }
+  
+  public final int getSize()
+  {
+    return _queue.size();
+  }
+  
+  public final boolean offer(M value)
+  {
+    _queue.offer(value);
+    
+    return true;
+  }
+  
+  public final void wake()
+  {
+    _queue.wake();
+  }
+  
+  @Override
+  abstract public void deliver(M tailMessage, Outbox outbox);
 }

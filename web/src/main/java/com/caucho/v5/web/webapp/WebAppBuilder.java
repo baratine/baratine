@@ -46,9 +46,7 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.manager.AutoBindService;
-import com.caucho.v5.amp.queue.OutboxContext;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.vault.ActorGeneratorVault;
@@ -141,7 +139,7 @@ public class WebAppBuilder
     ClassLoader loader = thread.getContextClassLoader();
 
     OutboxAmp outbox = OutboxAmp.current();
-    OutboxContext<MessageAmp> oldContext = null;
+    Object oldContext = null;
 
     if (outbox != null) {
       oldContext = outbox.context();
@@ -241,7 +239,7 @@ public class WebAppBuilder
     Thread thread = Thread.currentThread();
     ClassLoader loader = thread.getContextClassLoader();
     OutboxAmp outbox = OutboxAmp.current();
-    OutboxContext<MessageAmp> context = outbox.getAndSetContext(null);
+    Object context = outbox.getAndSetContext(null);
 
     try {
       thread.setContextClassLoader(classLoader());
@@ -576,7 +574,7 @@ public class WebAppBuilder
     Thread thread = Thread.currentThread();
     ClassLoader loader = thread.getContextClassLoader();
     OutboxAmp outbox = OutboxAmp.current();
-    OutboxContext<MessageAmp> context = outbox.getAndSetContext(null);
+    Object context = outbox.getAndSetContext(null);
 
     try {
       thread.setContextClassLoader(classLoader());

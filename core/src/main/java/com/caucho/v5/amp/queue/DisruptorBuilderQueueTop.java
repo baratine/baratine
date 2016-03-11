@@ -29,14 +29,18 @@
 
 package com.caucho.v5.amp.queue;
 
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.QueueService;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 
 /**
  * Interface for an actor queue
  */
-public class DisruptorBuilderQueueTop<M extends MessageDeliver>
+public class DisruptorBuilderQueueTop<M extends MessageOutbox<M>>
   extends DisruptorBuilderQueueBase<M>
 {
-  private DisruptorBuilderQueueNode<M> _prologue;
+  //private DisruptorBuilderQueueNode<M,C> _prologue;
   private DisruptorBuilderQueueNode<M> _main;
   
   private DisruptorBuilderQueueNode<M> _top;
@@ -45,30 +49,34 @@ public class DisruptorBuilderQueueTop<M extends MessageDeliver>
   DisruptorBuilderQueueTop(QueueDeliverBuilder<M> queueBuilder,
                       DeliverFactory<M> actorFactory)
   {
-    _main = new DisruptorBuilderQueueNode<M>(this, actorFactory);
+    _main = new DisruptorBuilderQueueNode<>(this, actorFactory);
     _queueBuilder = queueBuilder;
   }
   
+  /*
   @Override
-  public DisruptorBuilderQueueNode<M> prologue(DeliverFactory<M> actorFactory)
+  public DisruptorBuilderQueueNode<M,C> prologue(DeliverFactory<M> actorFactory)
   {
     if (_prologue != null || _top != null) {
       throw new IllegalStateException();
     }
     
-    DisruptorBuilderQueueNode<M> prologue
+    DisruptorBuilderQueueNode<M,C> prologue
       = new DisruptorBuilderQueueNode<>(this, actorFactory);
     
     _prologue = prologue;
     
     return prologue;
   }
+  */
   
+  /*
   @Override
-  public DisruptorBuilderQueueNode<M> peer(DeliverFactory<M> actorFactory)
+  public DisruptorBuilderQueueNode<M,C> peer(DeliverFactory<M> actorFactory)
   {
     return _main.peer(actorFactory);
   }
+  */
   
   @Override
   public DisruptorBuilderQueueNode<M> next(DeliverFactory<M> actorFactory)
@@ -86,16 +94,16 @@ public class DisruptorBuilderQueueTop<M extends MessageDeliver>
   }
 
   @Override
-  public WorkerDeliverLifecycle<M> build(QueueDeliver<M> queue,
+  public WorkerOutbox<M> build(QueueOutbox<M> queue,
                                          CounterBuilder headBuilder,
                                          CounterBuilder tailBuilder,
-                                         WorkerDeliverLifecycle<M> nextTask,
+                                         WorkerOutbox<M> nextTask,
                                          QueueDeliverBuilder<M> queueBuilder,
                                          boolean isTail)
   {
     DisruptorBuilderQueueNode<M> top = getTopNode();
     
-    if (top.getPeers().size() == 0 && top.getNext() == null) {
+    if (top.getNext() == null) {
       return top.buildSingle(queue, queueBuilder);
     }
     else {
@@ -120,11 +128,13 @@ public class DisruptorBuilderQueueTop<M extends MessageDeliver>
   {
     if (_top != null) {
     }
+    /*
     else if (_prologue != null) {
       _top = _prologue;
       
       _top.setNext(_main);
     }
+    */
     else {
       _top = _main;
     }

@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -84,16 +84,18 @@ public final class QueryErrorMessage implements MessageAmp
   }
 
   @Override
-  public WorkerDeliver worker()
+  public WorkerOutbox worker()
   {
-    return _serviceRef.inbox().getWorker();
+    return _serviceRef.inbox().worker();
   }
 
+  /*
   @Override
   public Type getType()
   {
     return Type.REPLY;
   }
+  */
 
   @Override
   public InboxAmp inboxTarget()

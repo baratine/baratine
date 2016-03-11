@@ -29,27 +29,26 @@
 
 package com.caucho.v5.amp.inbox;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultFuture;
-import io.baratine.service.ServiceException;
-
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.actor.ActorAmpMultiWorker;
-import com.caucho.v5.amp.queue.DeliverAmpBase;
-import com.caucho.v5.amp.queue.Outbox;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
+import io.baratine.service.Result;
+import io.baratine.service.ResultFuture;
+import io.baratine.service.ServiceException;
+
 /**
  * Worker for an inbox
  */
-class DeliverInboxMultiWorker extends DeliverAmpBase<MessageAmp>
+class DeliverInboxMultiWorker implements DeliverOutbox<MessageAmp>
 {
   private static final Logger log
     = Logger.getLogger(DeliverInboxMultiWorker.class.getName());
@@ -62,7 +61,7 @@ class DeliverInboxMultiWorker extends DeliverAmpBase<MessageAmp>
 
   private final DeliverInboxState _stateShared;
   private DeliverInboxState _stateSelf;
-  private MessageInboxDeliver _messageContext;
+  //private MessageInboxDeliver _messageContext;
 
   DeliverInboxMultiWorker(InboxQueue inbox, 
                           ActorAmp actor,
@@ -100,7 +99,8 @@ class DeliverInboxMultiWorker extends DeliverAmpBase<MessageAmp>
   */
 
   @Override
-  public final void deliver(final MessageAmp msg, Outbox<MessageAmp> outbox)
+  public final void deliver(final MessageAmp msg, 
+                            Outbox outbox)
       throws Exception
   {
     final HeadersAmp headers = msg.getHeaders();
@@ -117,7 +117,7 @@ class DeliverInboxMultiWorker extends DeliverAmpBase<MessageAmp>
       } catch (Throwable e) {
         log.log(Level.WARNING, this + " " + e.toString(), e);
       } finally {
-        outboxAmp.message(_messageContext);
+        outboxAmp.message(null);
       }
     }
     else {

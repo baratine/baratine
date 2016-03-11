@@ -33,7 +33,7 @@ import io.baratine.service.Result;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;

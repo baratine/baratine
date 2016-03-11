@@ -32,12 +32,13 @@ package com.caucho.v5.amp.queue;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.thread.WorkerAmp;
 
 /**
  * Handles gateway/multi tail responses.
  */
-public final class CounterMultiTail implements CounterActor
+public final class CounterMultiTail implements CounterRing
 {
   private final AtomicLong _tailAlloc = new AtomicLong();
   private final AtomicLong _tail = new AtomicLong();
@@ -64,7 +65,7 @@ public final class CounterMultiTail implements CounterActor
     return tail;
   }
   
-  void update(long tail, WorkerDeliver worker)
+  void update(long tail, WorkerOutbox worker)
   {
     if (_tail.compareAndSet(tail, tail + 1)) {
       updateTail(tail + 1);
@@ -141,7 +142,7 @@ public final class CounterMultiTail implements CounterActor
   }
 
   @Override
-  public CounterActor getTail()
+  public CounterRing getTail()
   {
     return this;
   }

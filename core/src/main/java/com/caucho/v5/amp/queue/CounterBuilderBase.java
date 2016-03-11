@@ -59,13 +59,13 @@ public class CounterBuilderBase implements CounterBuilder
   }
 
   @Override
-  public CounterGroup build(long initialIndex)
+  public CounterRingGroup build(long initialIndex)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
-  public CounterActor build(CounterActor[] counters, boolean isTail)
+  public CounterRing build(CounterRing[] counters, boolean isTail)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

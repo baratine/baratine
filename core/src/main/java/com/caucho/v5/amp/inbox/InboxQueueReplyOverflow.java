@@ -31,9 +31,9 @@ package com.caucho.v5.amp.inbox;
 
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.queue.QueueDeliver;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.QueueRingResizing;
-import com.caucho.v5.amp.queue.QueueService;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.thread.WorkerThreadPoolBase;
 
@@ -45,7 +45,7 @@ class InboxQueueReplyOverflow
   private static final int OVERFLOW_SIZE = 1024 * 1024;
   
   private final QueueService<MessageAmp> _targetQueue;
-  private final QueueDeliver<MessageAmp> _overflowQueue;
+  private final QueueOutbox<MessageAmp> _overflowQueue;
   private final ReplyWriter _replyWriter = new ReplyWriter(); 
   
   InboxQueueReplyOverflow(QueueService<MessageAmp> targetQueue)

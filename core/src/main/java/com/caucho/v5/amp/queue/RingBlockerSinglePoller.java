@@ -33,9 +33,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
-import java.util.logging.Level;
 
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.CurrentTime;
 
 /**

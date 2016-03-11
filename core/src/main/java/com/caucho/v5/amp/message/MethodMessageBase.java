@@ -29,8 +29,6 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.spi.Headers;
-
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
@@ -38,7 +36,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.OutboxAmpNull;
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -223,11 +221,13 @@ abstract public class MethodMessageBase implements MessageAmp
     return _method;
   }
   
+  /*
   @Override
   public Type getType()
   {
     return Type.UNKNOWN;
   }
+  */
   
   @Override
   public final InboxAmp inboxTarget()
@@ -265,9 +265,9 @@ abstract public class MethodMessageBase implements MessageAmp
   }
   
   @Override
-  public WorkerDeliver<MessageAmp> worker()
+  public WorkerOutbox<MessageAmp> worker()
   {
-    return inboxTarget().getWorker();
+    return inboxTarget().worker();
   }
 
   @Override

@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Abstract counter for a multi-processor queue.
  */
-public final class CounterAtomic implements CounterActor
+public final class CounterAtomic implements CounterRing
 {
   private final AtomicLong _counter = new AtomicLong();
 
@@ -63,7 +63,7 @@ public final class CounterAtomic implements CounterActor
   }
   
   @Override
-  public CounterActor getTail()
+  public CounterRing getTail()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

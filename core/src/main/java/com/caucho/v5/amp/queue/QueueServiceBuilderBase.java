@@ -29,13 +29,16 @@
 
 package com.caucho.v5.amp.queue;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 import com.caucho.v5.util.L10N;
 
 /**
  * Interface for an actor queue
  */
-public abstract class QueueServiceBuilderBase<M extends MessageDeliver> 
+public abstract class QueueServiceBuilderBase<M extends MessageOutbox<M>>
   implements QueueServiceBuilder<M>, QueueDeliverBuilder<M>
 {
   private static final L10N L = new L10N(QueueServiceBuilderBase.class);
@@ -43,7 +46,7 @@ public abstract class QueueServiceBuilderBase<M extends MessageDeliver>
   private static final int DEFAULT_INITIAL = 16;
   private static final int DEFAULT_CAPACITY = 1024;
   
-  private Deliver<M> []_processors;
+  private DeliverOutbox<M> []_processors;
   //private int _initial = 64;
   private int _initial = -1;
   private int _capacity = -1;
@@ -51,7 +54,7 @@ public abstract class QueueServiceBuilderBase<M extends MessageDeliver>
   private int _multiworkerOffset = 1;
   
   public QueueServiceBuilderBase<M>
-  processors(Deliver<M> ...processors)
+  processors(DeliverOutbox<M> ...processors)
   {
     if (processors == null)
       throw new NullPointerException();
@@ -63,7 +66,7 @@ public abstract class QueueServiceBuilderBase<M extends MessageDeliver>
     return this;
   }
   
-  public Deliver<M> []getProcessors()
+  public DeliverOutbox<M> []getProcessors()
   {
     return _processors;
   }
@@ -152,12 +155,12 @@ public abstract class QueueServiceBuilderBase<M extends MessageDeliver>
     */
   }
 
-  public QueueService<M> build(Deliver<M> processor)
+  public QueueService<M> build(DeliverOutbox<M> processor)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  public QueueService<M> build(Deliver<M> []processors)
+  public QueueService<M> build(DeliverOutbox<M> []processors)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

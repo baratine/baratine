@@ -29,15 +29,15 @@
 
 package com.caucho.v5.amp.spi;
 
-import io.baratine.spi.Message;
-
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.queue.MessageDeliver;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+
+import io.baratine.spi.Message;
 
 /**
  * Mailbox for an actor
  */
-public interface MessageAmp extends MessageDeliver, Message
+public interface MessageAmp extends MessageOutbox<MessageAmp>, Message
 {
   void invoke(InboxAmp inbox, ActorAmp actor);
   

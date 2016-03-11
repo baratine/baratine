@@ -27,53 +27,57 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
 
 import java.util.concurrent.Executor;
-import java.util.function.Supplier;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 
 /**
- * Interface for the transaction log.
+ * Message worker for a single-threaded queue.
+ * 
+ * Received messages are passed to a delivery handler that implements
+ * {@code DeliveryOutbox}.
  */
-final class WorkerDeliverSingleThread<M extends MessageDeliver>
-  extends WorkerDeliverBase<M>
+public final class WorkerOutboxSingleThread<M extends MessageOutbox<M>>
+  extends WorkerOutboxBase<M>
 {
-  private final QueueDeliver<M> _queue;
-  private final Deliver<M> _deliver;
+  private final QueueOutbox<M> _queue;
+  private final DeliverOutbox<M> _deliver;
  
-  WorkerDeliverSingleThread(Deliver<M> deliver,
-                            Supplier<OutboxDeliver<M>> outboxFactory,
-                            OutboxContext<M> outboxContext,
-                            Executor executor,
-                            ClassLoader loader,
-                            QueueDeliver<M> queue)
+  public WorkerOutboxSingleThread(DeliverOutbox<M> deliver,
+                                  Object context,
+                                  Executor executor,
+                                  ClassLoader loader,
+                                  QueueOutbox<M> queue)
   {
-    super(deliver, outboxFactory, outboxContext, executor, loader);
+    super(deliver, context, executor, loader);
     
     _queue = queue;
     _deliver = deliver;
   }
   
-  protected Deliver<M> getDeliver()
+  /**
+   * The message delivery handler.
+   */
+  private final DeliverOutbox<M> deliver()
   {
     return _deliver;
   }
   
   @Override
-  protected boolean isEmpty()
+  protected final boolean isEmpty()
   {
     return _queue.isEmpty();
   }
 
   @Override
-  public void runImpl(OutboxDeliver<M> outbox, M tailMsg)
+  public void runImpl(Outbox outbox, M tailMsg)
     throws Exception
   {
-    Deliver<M> deliver = getDeliver();
-    QueueDeliver<M> queue = _queue;
+    DeliverOutbox<M> deliver = deliver();
+    QueueOutbox<M> queue = _queue;
     
     try {
       deliver.beforeBatch();
@@ -97,11 +101,11 @@ final class WorkerDeliverSingleThread<M extends MessageDeliver>
   }
 
   @Override
-  protected void runOneImpl(OutboxDeliver<M> outbox, M tailMsg)
+  protected void runOneImpl(Outbox outbox, M tailMsg)
     throws Exception
   {
-    Deliver<M> deliver = getDeliver();
-    QueueDeliver<M> queue = _queue;
+    DeliverOutbox<M> deliver = deliver();
+    QueueOutbox<M> queue = _queue;
     
     try {
       deliver.beforeBatch();

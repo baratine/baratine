@@ -39,9 +39,9 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-import com.caucho.v5.amp.queue.DeliverAmpBase;
-import com.caucho.v5.amp.queue.Outbox;
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.util.L10N;
 
@@ -288,11 +288,10 @@ abstract public class LogHandlerBase extends Handler
   }
 
   private class LogQueue
-    extends DeliverAmpBase<LogItemString>
-    implements LogItemStringHandler
+    implements LogItemStringHandler, DeliverOutbox<LogItemString>
   {
     @Override
-    public void deliver(LogItemString value, Outbox<LogItemString> outbox)
+    public void deliver(LogItemString value, Outbox outbox)
       throws Exception
     {
       // value.deliver(this);

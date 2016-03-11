@@ -27,53 +27,35 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
- * Blocking queue with a processor.
+ * Interface for an actor queue
  */
-public interface QueueDeliver<M> extends BlockingQueue<M>
+public interface QueueService<M>
+  extends BlockingQueue<M>
 {
-  long head();
-
-  //int getOfferReserve();
+  boolean isSingleWorker();
   
-  WorkerDeliverLifecycle getOfferTask();
-
   @Override
-  boolean offer(M value,
-                long timeout,
-                TimeUnit unit);
+  boolean offer(M msg, long value, TimeUnit unit);
   
-  void deliver(Deliver<M> deliver,
-               Outbox<M> outbox)
-    throws Exception;
-  
-  CounterGroup getCounterGroup();
-  
-  void deliver(Deliver<M> deliver,
-               Outbox<M> outbox,
-               int headIndex,
-               int tailIndex,
-               WorkerDeliver nextWorker,
-               boolean isTail)
-    throws Exception;
-  
-  void deliverMulti(Deliver<M> deliver,
-                    Outbox<M> outbox,
-                    int headIndex,
-                    int tailIndex,
-                    WorkerDeliver tailWorker)
-    throws Exception;
-  
-  void deliverMultiTail(Deliver<M> deliver,
-                        Outbox<M> outbox,
-                        int headIndex,
-                        int tailIndex,
-                        WorkerDeliver tailWorker)
-    throws Exception;
+  //@Override
+  boolean wake();
+
+  void wakeAll();
+
+  //WorkerDeliverLifecycle getWorker();
+
+  void shutdown(ShutdownModeAmp mode);
+
+  void wakeAllAndWait();
+
+  // build
+  WorkerOutbox<?> worker();
 }

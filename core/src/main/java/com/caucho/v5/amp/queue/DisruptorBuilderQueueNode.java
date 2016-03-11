@@ -29,21 +29,27 @@
 
 package com.caucho.v5.amp.queue;
 
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.outbox.WorkerOutboxSingleThread;
+
 /**
  * Interface for an actor queue
  */
-public class DisruptorBuilderQueueNode<M extends MessageDeliver>
+public class DisruptorBuilderQueueNode<M extends MessageOutbox<M>>
   extends DisruptorBuilderQueueBase<M>
 {
   private final DisruptorBuilderQueueTop<M> _top;
   private final DeliverFactory<M> _actorFactory;
   
-  private ArrayList<DisruptorBuilderQueueNode<M>> _peers = new ArrayList<>();
+  // private ArrayList<DisruptorBuilderQueueNode<M,C>> _peers = new ArrayList<>();
   
   private DisruptorBuilderQueueNode<M> _next;
   
@@ -58,16 +64,15 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
   }
   
   private DisruptorBuilderQueueNode(DisruptorBuilderQueueTop<M> top,
-                               DeliverFactory<M> actorFactory,
-                               ArrayList<DisruptorBuilderQueueNode<M>> peers,
-                               DisruptorBuilderQueueNode<M> next)
+                                    DeliverFactory<M> actorFactory,
+                                    DisruptorBuilderQueueNode<M> next)
   {
     Objects.requireNonNull(top);
     Objects.requireNonNull(actorFactory);
     
     _top = top;
     _actorFactory = actorFactory;
-    _peers = peers;
+    //_peers = peers;
     _next = next;
   }
   
@@ -77,10 +82,12 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
     return _top;
   }
   
-  protected ArrayList<DisruptorBuilderQueueNode<M>> getPeers()
+  /*
+  protected ArrayList<DisruptorBuilderQueueNode<M,C>> getPeers()
   {
     return _peers;
   }
+  */
   
   protected void setNext(DisruptorBuilderQueueNode<M> next)
   {
@@ -96,15 +103,17 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
     return _next;
   }
   
+  /*
   @Override
-  public DisruptorBuilderQueueNode<M> peer(DeliverFactory<M> actorFactory)
+  public DisruptorBuilderQueueNode<M,C> peer(DeliverFactory<M> actorFactory)
   {
-    DisruptorBuilderQueueNode<M> peer = new DisruptorBuilderQueueNode<>(_top, actorFactory);
+    DisruptorBuilderQueueNode<M,C> peer = new DisruptorBuilderQueueNode<>(_top, actorFactory);
     
     _peers.add(peer);
     
     return peer;
   }
+  */
   
   @Override
   public DisruptorBuilderQueueNode<M> next(DeliverFactory<M> actorFactory)
@@ -122,30 +131,32 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
   
   private DisruptorBuilderQueueNode<M> normalize()
   {
-    ArrayList<DisruptorBuilderQueueNode<M>> peers = new ArrayList<>();
+    /*
+    ArrayList<DisruptorBuilderQueueNode<M,C>> peers = new ArrayList<>();
     
-    for (DisruptorBuilderQueueNode<M> peer : _peers) {
+    for (DisruptorBuilderQueueNode<M,C> peer : _peers) {
       peer.normalize(peers);
     }
+    */
     
-    return new DisruptorBuilderQueueNode<M>(_top, _actorFactory, 
-                                       peers,
+    return new DisruptorBuilderQueueNode<>(_top, _actorFactory, 
                                        _next.normalize());
   }
-  
-  private void normalize(ArrayList<DisruptorBuilderQueueNode<M>> peers)
+  /*
+  private void normalize(ArrayList<DisruptorBuilderQueueNode<M,C>> peers)
   {
     if (_next != null) {
       peers.add(normalize());
     }
     else {
-      peers.add(new DisruptorBuilderQueueNode<M>(_top, _actorFactory));
+      peers.add(new DisruptorBuilderQueueNode<>(_top, _actorFactory));
       
-      for (DisruptorBuilderQueueNode<M> peer : _peers) {
+      for (DisruptorBuilderQueueNode<M,C> peer : _peers) {
         peer.normalize(peers);
       }
     }
   }
+  */
   
   @Override
   public CounterBuilder createCounterBuilder(CounterBuilder head,
@@ -164,15 +175,16 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
     
     CounterBuilder first;
     
-    if (_peers.size() == 0) {
-      first = self; 
+    //if (_peers.size() == 0) {
+      first = self;
+      /*
     }
     else {
       ArrayList<CounterBuilder> counters = new ArrayList<>();
 
       counters.add(self);
       
-      for (DisruptorBuilderQueueNode<M> peer : _peers) {
+      for (DisruptorBuilderQueueNode<M,C> peer : _peers) {
         CounterBuilder counter = peer.createCounterBuilder(head, index);
         
         counters.add(counter);
@@ -182,28 +194,31 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
       
       first = new CounterBuilderParallel(counters, index++);
     }
+    */
     
     if (_next != null) {
       CounterBuilder rest = _next.createCounterBuilder(first, index);
       
       return new CounterBuilderSequence(first, rest);
     }
+    /*
     else if (_peers.size() > 0) {
       // dummy counter for the dummy tail join()
       CounterBuilder rest = new CounterBuilderAtomic(index);
       
       return new CounterBuilderSequence(first, rest);
     }
+    */
     else {
       return first;
     }
   }
 
   @Override
-  public WorkerDeliverLifecycle<M> build(QueueDeliver<M> queue,
+  public WorkerOutbox<M> build(QueueOutbox<M> queue,
                                          CounterBuilder headBuilder,
                                          CounterBuilder tailBuilder,
-                                         WorkerDeliverLifecycle<M> nextTask,
+                                         WorkerOutbox<M> nextTask,
                                          QueueDeliverBuilder<M> queueBuilder,
                                          boolean isTail)
   {
@@ -226,6 +241,7 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
       isTail = false;
     }
     
+    /*
     if (_peers.size() > 0) {
       if (isTail) {
         // dummy tail worker to consume the entry if a fork is
@@ -253,7 +269,7 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
       
       CounterBuilder[] children = builder.getChildren();
       
-      WorkerDeliverLifecycle<M> self;
+      WorkerOutbox<M> self;
       
       self = buildImpl(queue, 
                        headBuilder, 
@@ -262,13 +278,13 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
                        queueBuilder, 
                        false);
       
-      ArrayList<WorkerDeliverLifecycle<M>> workers = new ArrayList<>();
+      ArrayList<WorkerOutbox<M>> workers = new ArrayList<>();
       workers.add(self);
       
       for (int i = 0; i < _peers.size(); i++) {
-        DisruptorBuilderQueueNode<M> peer = _peers.get(i);
+        DisruptorBuilderQueueNode<M,C> peer = _peers.get(i);
         
-        WorkerDeliverLifecycle<M> worker;
+        WorkerDeliverLifecycle<M,C> worker;
         
         worker = peer.build(queue, 
                             headBuilder, 
@@ -280,25 +296,26 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
         workers.add(worker);
       }
       
-      WorkerDeliverLifecycle<M> joinWorker = new WorkerDeliverDisruptorJoin<>(workers);
+      WorkerDeliverLifecycle<M,C> joinWorker = new WorkerDeliverDisruptorJoin<>(workers);
 
       return joinWorker;
     }
     else {
+    */
       return buildImpl(queue, 
                        headBuilder, 
                        tailBuilder, 
                        nextTask,
                        queueBuilder, 
                        isTail);
-    }
+    //}
   }
 
-  WorkerDeliverLifecycle<M>
-  buildImpl(QueueDeliver<M> queue,
+  WorkerOutbox<M>
+  buildImpl(QueueOutbox<M> queue,
             CounterBuilder prev,
             CounterBuilder next,
-            WorkerDeliverLifecycle<M> nextTask,
+            WorkerOutbox<M> nextTask,
             QueueDeliverBuilder<M> queueBuilder,
             boolean isTail)
   {
@@ -307,17 +324,15 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
     
     int workers = _actorFactory.getMaxWorkers();
     
-    WorkerDeliverMessage<M> worker;
+    WorkerOutbox<M> worker;
     
-    Supplier<OutboxDeliver<M>> outboxFactory = queueBuilder.getOutboxFactory();
-    OutboxContext<M> outboxContext = queueBuilder.getOutboxContext();
+    //Supplier<Outbox<M,C>> outboxFactory = queueBuilder.getOutboxFactory();
+    Object outboxContext = queueBuilder.getOutboxContext();
     
     
-    if (workers <= 1) {
-      Deliver<M> deliver = _actorFactory.get();
+      DeliverOutbox<M> deliver = _actorFactory.get();
       
       worker = new WorkerDeliverDisruptor<M>(_actorFactory.get(),
-                                             outboxFactory,
                                              outboxContext,
                                              executor,
                                              loader,
@@ -326,15 +341,17 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
                                              next.getHeadIndex(), 
                                              isTail,
                                              nextTask);
-    }
+      
+    //}
+    /*
     else if (isTail) {
-      WorkerDeliverMessage<M>[]subworkers
+      WorkerDeliverMessage<M,C>[]subworkers
         = new WorkerDeliverMessage[workers];
     
       for (int i = 0; i < workers; i++) { 
-        Deliver<M> deliver = _actorFactory.get();
+        DeliverOutbox<M> deliver = _actorFactory.get();
         
-        subworkers[i] = new WorkerDeliverDisruptorMultiTail<M>(_actorFactory.get(),
+        subworkers[i] = new WorkerDeliverDisruptorMultiTail<>(_actorFactory.get(),
                                                                outboxFactory,
                                                                outboxContext,
                                                                executor,
@@ -345,17 +362,18 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
                                                                nextTask);
       }
     
-      worker = new WorkerDeliverDisruptorMultiWorker<M>(queue, subworkers);
+      worker = new WorkerDeliverDisruptorMultiWorker<>(queue, subworkers);
     }
-
+    */
+      /*
     else {
-      WorkerDeliverMessage<M> []subworkers
+      WorkerDeliverMessage<M,C> []subworkers
         = new WorkerDeliverMessage[workers];
 
       for (int i = 0; i < workers; i++) {
-        Deliver<M> deliver = _actorFactory.get();
+        DeliverOutbox<M> deliver = _actorFactory.get();
         
-        subworkers[i] = new WorkerDeliverDisruptorMulti<M>(deliver,
+        subworkers[i] = new WorkerDeliverDisruptorMulti<M,C>(deliver,
                                                            outboxFactory,
                                                            outboxContext,
                                                            executor,
@@ -367,33 +385,34 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
                                                            nextTask);
       }
     
-      worker = new WorkerDeliverDisruptorMultiWorker<M>(queue, subworkers);
+      worker = new WorkerDeliverDisruptorMultiWorker<M,C>(queue, subworkers);
     }
+    */
     
     return worker;
   }
 
-  WorkerDeliverLifecycle<M>
-  buildDummyTailImpl(QueueDeliver<M> queue,
+  WorkerOutbox<M>
+  buildDummyTailImpl(QueueOutbox<M> queue,
                      CounterBuilder prev,
                      CounterBuilder next,
-                     WorkerDeliverLifecycle<M> nextTask,
+                     WorkerOutbox<M> nextTask,
                      Executor executor,
                      ClassLoader loader)
   {
     // ContextOutbox<M> threadManager = new ContextOutbox<>();
     
-    DeliverAmpBase<M> deliver = new DeliverAmpBase<M>();
+    DeliverOutbox<M> deliver = null;//new DeliverOutbox<M>() {};
     
-    Supplier<OutboxDeliver<M>> outboxFactory = null;
-    OutboxContext<M> outboxContext = null;
+    Supplier<Outbox> outboxFactory = null;
+    Object outboxContext = null;
     
     boolean isTail = true;
     
     WorkerDeliverDisruptor<M> worker;
 
-    worker = new WorkerDeliverDisruptor<M>(deliver,
-                                           outboxFactory,
+    worker = new WorkerDeliverDisruptor<>(deliver,
+                                           //outboxFactory,
                                            outboxContext,
                                            executor,
                                            loader,
@@ -406,46 +425,47 @@ public class DisruptorBuilderQueueNode<M extends MessageDeliver>
     return worker;
   }
 
-  public WorkerDeliverLifecycle<M>
-  buildSingle(QueueDeliver<M> queue,
+  public WorkerOutbox<M>
+  buildSingle(QueueOutbox<M> queue,
               QueueDeliverBuilder<M> queueBuilder)
   {
     Executor executor = queueBuilder.createExecutor();
     ClassLoader loader = queueBuilder.getClassLoader();
     
-    WorkerDeliverLifecycle<M> worker;
+    WorkerOutbox<M> worker;
     
-    Supplier<OutboxDeliver<M>> outboxFactory = queueBuilder.getOutboxFactory();
-    OutboxContext<M> outboxContext = queueBuilder.getOutboxContext();
+    //Supplier<Outbox<M,C>> outboxFactory = queueBuilder.getOutboxFactory();
+    Object outboxContext = queueBuilder.getOutboxContext();
     
     int workers = _actorFactory.getMaxWorkers();
     
-    if (workers <= 1) {
-      Deliver<M> deliver = _actorFactory.get();
+      DeliverOutbox<M> deliver = _actorFactory.get();
       
-      worker = new WorkerDeliverSingleThread<M>(deliver,
-                                                outboxFactory,
+      worker = new WorkerOutboxSingleThread<M>(deliver,
+          //                                      outboxFactory,
                                                 outboxContext,
                                                 executor,
                                                 loader,
                                                 queue);
+      /*
     }
     else {
-      WorkerDeliverMessage<M> []subworkers = new WorkerDeliverMessage[workers];
+      WorkerOutbox<M> []subworkers = new WorkerOutbox[workers];
       
       for (int i = 0; i < workers; i++) {
-        Deliver<M> deliver = _actorFactory.get();
+        DeliverOutbox<M> deliver = _actorFactory.get();
         
-        subworkers[i] = new WorkerDeliverMultiThread<M>(deliver,
-                                                        outboxFactory,
+        subworkers[i] = new WorkerDeliverMultiThread<>(deliver,
+                                                     //   outboxFactory,
                                                         outboxContext,
                                                         executor,
                                                         loader,
                                                         queue);
       }
       
-      worker = new WorkerDeliverDisruptorMultiWorker<M>(queue, subworkers);
+      worker = new WorkerDeliverDisruptorMultiWorker<>(queue, subworkers);
     }
+    */
     
     return worker;
   }

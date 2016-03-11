@@ -60,7 +60,7 @@ public class InboxFactoryQueue implements InboxFactoryAmp
     QueueServiceBuilderImpl<MessageAmp> queueBuilder
       = new QueueServiceBuilderImpl<>();
       
-    queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
+    //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
     // Executor executor = ThreadPool.getCurrent();
     queueBuilder.setClassLoader(_manager.classLoader());
     

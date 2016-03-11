@@ -29,16 +29,21 @@
 
 package com.caucho.v5.amp.queue;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.QueueOutboxBase;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
 
 /**
  * Value queue with atomic reference.
  */
-public final class QueueRing<M>
-  extends QueueDeliverBase<M>
+public final class QueueRing<M >
+  extends QueueOutboxBase<M>
 {
   private static final L10N L = new L10N(QueueRing.class);
 
@@ -48,11 +53,11 @@ public final class QueueRing<M>
 
   private final int _capacity;
 
-  private final CounterActor _head;
-  private final CounterActor _tail;
+  private final CounterRing _head;
+  private final CounterRing _tail;
 
   private final RingBlocker _blocker;
-  private final CounterGroup _counterGroup;
+  private final CounterRingGroup _counterGroup;
 
   private volatile boolean _isWriteClosed;
 
@@ -102,8 +107,8 @@ public final class QueueRing<M>
     _nonTailGetter = new RingNonTailGetter<M>(_ring);
 
     _counterGroup = counterBuilder.build(initialIndex);
-    _head = _counterGroup.getCounter(counterBuilder.getHeadIndex());
-    _tail = _counterGroup.getCounter(counterBuilder.getTailIndex());
+    _head = _counterGroup.counter(counterBuilder.getHeadIndex());
+    _tail = _counterGroup.counter(counterBuilder.getTailIndex());
 
     _blocker = blocker;
   }
@@ -162,10 +167,18 @@ public final class QueueRing<M>
     return _tail.get();
   }
 
+  /*
   @Override
-  public WorkerDeliverLifecycle getOfferTask()
+  public WorkerOutbox<M> worker()
   {
     return _blocker;
+  }
+  */
+  
+  @Override
+  public void wake()
+  {
+    _blocker.offerWake();
   }
 
   public final M getValue(long ptr)
@@ -183,12 +196,10 @@ public final class QueueRing<M>
                              final long timeout,
                              final TimeUnit unit)
   {
-    if (value == null) {
-      throw new NullPointerException();
-    }
+    Objects.requireNonNull(value);
 
-    final CounterActor headRef = _head;
-    final CounterActor tailRef = _tail;
+    final CounterRing headRef = _head;
+    final CounterRing tailRef = _tail;
     final int capacity = _capacity;
 
     while (true) {
@@ -220,8 +231,8 @@ public final class QueueRing<M>
   public final M poll(long timeout, TimeUnit unit)
   {
     // final AtomicLong tailAllocRef = _tailAlloc;
-    final CounterActor headRef = _head;
-    final CounterActor tailRef = _tail;
+    final CounterRing headRef = _head;
+    final CounterRing tailRef = _tail;
 
     final ArrayRing<M> ring = _ring;
 
@@ -274,14 +285,14 @@ public final class QueueRing<M>
   }
 
   @Override
-  public void deliver(final Deliver<M> actor,
-                      final Outbox<M> outbox)
+  public void deliver(final DeliverOutbox<M> deliver,
+                      final Outbox outbox)
     throws Exception
   {
     final int tailChunk = 64;
     final ArrayRing<M> ring = _ring;
-    final CounterActor headCounter = _head;
-    final CounterActor tailCounter = _tail;
+    final CounterRing headCounter = _head;
+    final CounterRing tailCounter = _tail;
 
     long head = _head.get();
     long tail = _tail.get();
@@ -296,7 +307,7 @@ public final class QueueRing<M>
 
           tail++;
 
-          actor.deliver(item, outbox);
+          deliver.deliver(item, outbox);
         }
 
         tailCounter.set(tail);
@@ -317,18 +328,18 @@ public final class QueueRing<M>
   }
 
   @Override
-  public void deliver(final Deliver<M> deliver,
-                      final Outbox<M> outbox,
+  public void deliver(final DeliverOutbox<M> deliver,
+                      final Outbox outbox,
                       final int headIndex,
                       final int tailIndex,
-                      final WorkerDeliver nextWorker,
+                      final WorkerOutbox<?> nextWorker,
                       boolean isTail)
     throws Exception
   {
-    final CounterGroup counterGroup = getCounterGroup();
+    final CounterRingGroup counterGroup = counterGroup();
 
-    final CounterActor headCounter = counterGroup.getCounter(headIndex);
-    final CounterActor tailCounter = counterGroup.getCounter(tailIndex);
+    final CounterRing headCounter = counterGroup.counter(headIndex);
+    final CounterRing tailCounter = counterGroup.counter(tailIndex);
 
     final RingGetter<M> ringGetter = isTail ? _tailGetter : _nonTailGetter;
 
@@ -365,17 +376,18 @@ public final class QueueRing<M>
     }
   }
 
+  /*
   @Override
-  public final void deliverMulti(Deliver<M> actor,
-                                 Outbox<M> outbox,
+  public final void deliverMulti(DeliverOutbox<M> deliver,
+                                 Outbox outbox,
                                  int headIndex,
                                  int tailIndex,
-                                 WorkerDeliver tailWorker)
+                                 WorkerOutbox<?> tailWorker)
     throws Exception
   {
-    final CounterGroup counterGroup = getCounterGroup();
+    final CounterRingGroup counterGroup = counterGroup();
 
-    final CounterActor headRef = counterGroup.getCounter(headIndex);
+    final CounterRing headRef = counterGroup.counter(headIndex);
     final CounterMultiTail tailRef = counterGroup.getMultiCounter(tailIndex);
 
     while (true) {
@@ -390,25 +402,27 @@ public final class QueueRing<M>
       M message = _ring.get(tail);
 
       try {
-        actor.deliver(message, outbox);
+        deliver.deliver(message, outbox);
       } finally {
         tailRef.update(tail, tailWorker);
       }
     }
   }
+  /*
 
+/*
   @Override
-  public final void deliverMultiTail(Deliver<M> actor,
-                                     Outbox<M> outbox,
+  public final void deliverMultiTail(DeliverOutbox<M> actor,
+                                     Outbox outbox,
                                      int headIndex,
                                      int tailIndex,
-                                     WorkerDeliver tailWorker)
+                                     WorkerOutbox<?> tailWorker)
     throws Exception
   {
-    final CounterGroup counterGroup = getCounterGroup();
+    final CounterRingGroup counterGroup = counterGroup();
 
-    final CounterActor headRef = counterGroup.getCounter(headIndex);
-    final CounterActor tailRef = counterGroup.getCounter(tailIndex);
+    final CounterRing headRef = counterGroup.counter(headIndex);
+    final CounterRing tailRef = counterGroup.counter(tailIndex);
 
     while (true) {
       long tail = tailRef.get();
@@ -430,9 +444,10 @@ public final class QueueRing<M>
       actor.deliver(message, outbox);
     }
   }
+  */
 
   @Override
-  public final CounterGroup getCounterGroup()
+  public final CounterRingGroup counterGroup()
   {
     return _counterGroup;
   }

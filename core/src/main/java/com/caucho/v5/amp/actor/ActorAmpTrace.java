@@ -39,7 +39,7 @@ import java.util.Objects;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.QueueServiceBuilderBase;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorAmpState;

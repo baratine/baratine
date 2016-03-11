@@ -27,22 +27,22 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
-
-import io.baratine.service.ResultFuture;
+package com.caucho.v5.amp.outbox;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.thread.RunnableItem;
 import com.caucho.v5.amp.thread.RunnableItemScheduler;
+import com.caucho.v5.amp.thread.ThreadAmp;
+
+import io.baratine.service.ResultFuture;
 
 /**
  * Base worker for delivering messages.
@@ -51,16 +51,16 @@ import com.caucho.v5.amp.thread.RunnableItemScheduler;
  * A new thread will be assigned if the worker is currently idle, otherwise
  * the current thread is used.
  */
-abstract class WorkerDeliverBase<M extends MessageDeliver>
-  implements WorkerDeliverMessage<M>, Runnable
+public abstract class WorkerOutboxBase<M extends MessageOutbox<M>>
+  implements WorkerOutbox<M>, Runnable
 {
   private static final Logger log
-    = Logger.getLogger(WorkerDeliverBase.class.getName());
+    = Logger.getLogger(WorkerOutboxBase.class.getName());
   
-  private final Deliver<M> _deliver;
+  private final DeliverOutbox<M> _deliver;
   
-  private final Supplier<OutboxDeliver<M>> _outboxFactory;  
-  private final OutboxContext<M> _outboxContext;
+  //private final Supplier<Outbox> _outboxFactory;  
+  private final Object _context;
   
   /*
   private final AtomicReference<OutboxDeliver<M>> _outboxRef
@@ -77,14 +77,12 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
   private final ClassLoader _classLoader;
   private final Launcher _launcher;
 
-  protected WorkerDeliverBase(Deliver<M> deliver,
-                              Supplier<OutboxDeliver<M>> outboxFactory,
-                              OutboxContext<M> context,
-                              Executor executor,
-                              ClassLoader classLoader)
+  protected WorkerOutboxBase(DeliverOutbox<M> deliver,
+                             Object context,
+                             Executor executor,
+                             ClassLoader classLoader)
   {
     Objects.requireNonNull(deliver);
-    Objects.requireNonNull(outboxFactory);
     Objects.requireNonNull(executor);
     Objects.requireNonNull(classLoader);
     
@@ -94,16 +92,15 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
     
     _launcher = createLauncher(executor, this);
     
-    _outboxFactory = outboxFactory;
-    _outboxContext = context;
+    _context = context;
   }
   
-  protected final OutboxContext<M> getOutboxContext()
+  protected final Object context()
   {
-    return _outboxContext;
+    return _context;
   }
     
-  abstract protected void runImpl(OutboxDeliver<M> outbox, M tailMsg)
+  abstract protected void runImpl(Outbox outbox, M tailMsg)
     throws Exception;
   
   protected boolean isEmpty()
@@ -163,50 +160,29 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
   @Override
   public final void run()
   {
-    try (OutboxDeliver<M> outbox = _outboxFactory.get()) {
+    try {
       _startCount.incrementAndGet();
-      
-      /*
-      outbox = _outboxRef.getAndSet(null);
-      
-      if (outbox == null) {
-        outbox = _outboxInit.createInit();
-      }
-      */
-      
-      // OutboxThreadLocal.setCurrent(outbox);
-      
-      //M tailMsg = null;
-      //WorkerDeliverBase<M> worker = this;
       
       _stateRef.set(State.ACTIVE);
       
-      M tailMsg = runStarted(outbox, null);
-
-      while (tailMsg != null) {
-        // WorkerDeliver worker = tailMsg.getWorker();
-        
-        tailMsg = tailMsg.runAs(outbox);
-      }
+      ThreadAmp thread = (ThreadAmp) Thread.currentThread();
+      /// XXX: check outbox type
+      Outbox outbox = thread.outbox();
+      
+      runStarted(outbox, null);
     } catch (Throwable e) {
       log.log(Level.FINER, e.toString(), e);
       System.out.println(getClass().getSimpleName() + ": " + e);
     } finally {
-      // _outboxRef.compareAndSet(null, outbox);
-      
       _endCount.incrementAndGet();
     }
   }
   
   @Override
-  public M runAs(OutboxDeliver<M> outbox, M tailMsg)
+  public void runAs(Outbox outbox, M tailMsg)
   {
-    //OutboxDeliver<M> outbox = (OutboxDeliver) outboxValue;
-    
-    //M tailMsg = (M) tailMsgValue;
-    
     if (toStart()) {
-      return runStarted(outbox, tailMsg);
+      runStarted(outbox, tailMsg);
     }
     else {
       long timeout = 10000;
@@ -216,16 +192,13 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
       if (wakeSelf()) {
         _stateRef.set(State.ACTIVE);
         
-        return runStarted(outbox, null);
-      }
-      else {
-        return null;
+        runStarted(outbox, null);
       }
     }
   }
   
   @Override
-  public boolean runOne(OutboxDeliver<M> outbox, M tailMsg)
+  public boolean runOne(Outbox outbox, M tailMsg)
   {
     Objects.requireNonNull(tailMsg);
     
@@ -243,20 +216,19 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
     return false;
   }
   
-  protected void runOneImpl(OutboxDeliver<M> outbox, M tailMsg) throws Exception
+  protected void runOneImpl(Outbox outbox, M tailMsg) throws Exception
   {
     throw new IllegalStateException(getClass().getName());
   }
     
-  private M runStarted(OutboxDeliver<M> outbox, M tailMsg)
+  private void runStarted(Outbox outbox, M tailMsg)
   {
     ClassLoader classLoader = _classLoader;
     Thread thread = Thread.currentThread();
     boolean isDebug = false;
     String oldThreadName = null;
     
-    OutboxContext<M> oldContext = outbox.getAndSetContext(getOutboxContext());
-    
+    Object oldContext = outbox.getAndSetContext(context());
     
     try {
       thread.setContextClassLoader(classLoader);
@@ -269,33 +241,17 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
       
       AtomicReference<State> stateRef = _stateRef;
       
-      // OutboxDeliverMessage<M> outbox = getOutbox();
-      
-      // ContextOutbox.setCurrent(outbox);
-      
       while (true) {
         runImpl(outbox, tailMsg);
         
-        tailMsg = outbox.flushAfterTask();
+        tailMsg = null;
+        // tailMsg = outbox.flushAfterTask();
         
         State state = stateRef.get();
         State stateIdle = state.toIdle();
         
-        if (state.isClosed()) {
-          return null;
-        }
-        else if (tailMsg != null && tailMsg.worker() == this) {
-        }
-        else if (stateIdle.isIdle()) {
-          return tailMsg;
-        }
-        else if (tailMsg != null) {
-          // XXX: is a timeout here a problem?
-          long timeout = 10000;
-          
-          tailMsg.offerQueue(timeout);
-          tailMsg.worker().wake();
-          tailMsg = null;
+        if (state.isClosed() || stateIdle.isIdle()) {
+          return;
         }
           
         stateRef.compareAndSet(state, State.ACTIVE);
@@ -303,7 +259,7 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
       }
     } catch (Throwable e) {
       log.log(Level.FINER, e.toString(), e);
-      return null;
+      return;
     } finally {
       outbox.getAndSetContext(oldContext);
       // ContextOutbox.setCurrent(null);
@@ -316,7 +272,7 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
     }
   }
   
-  private void runOneStarted(OutboxDeliver<M> outbox, M tailMsg)
+  private void runOneStarted(Outbox outbox, M tailMsg)
   {
     ClassLoader classLoader = _classLoader;
     Thread thread = Thread.currentThread();
@@ -325,7 +281,7 @@ abstract class WorkerDeliverBase<M extends MessageDeliver>
     
     ClassLoader oldLoader = thread.getContextClassLoader();
     //OutboxDeliver<Object> oldOutbox = ContextOutbox.getCurrent();
-    OutboxContext<M> oldContext = outbox.getAndSetContext(_outboxContext);
+    Object oldContext = outbox.getAndSetContext(context());
   
     try {
       thread.setContextClassLoader(classLoader);

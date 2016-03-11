@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.manager.ServiceConfig;
-import com.caucho.v5.amp.queue.Deliver;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -66,7 +66,7 @@ public class DeliverInboxFactory implements DeliverFactory<MessageAmp>
   }
 
   @Override
-  public Deliver<MessageAmp> get()
+  public DeliverOutbox<MessageAmp> get()
   {
     ActorAmp actor = _supplier.get();
     

@@ -56,15 +56,15 @@ package io.baratine.spi;
 
 public interface Message
 {
-  static Message getCurrent()
+  static Message current()
   {
     return ServiceManagerProvider.current().getCurrentMessage();
   }
   
-  Type getType();
+  //Type getType();
   
   Headers getHeaders();
-  
+  /*
   enum Type {
     UNKNOWN,
     SEND,
@@ -72,4 +72,5 @@ public interface Message
     REPLY,
     ERROR;
   }
+  */
 }

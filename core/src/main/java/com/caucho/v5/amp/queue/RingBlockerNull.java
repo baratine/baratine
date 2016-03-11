@@ -31,12 +31,11 @@ package com.caucho.v5.amp.queue;
 
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
-
 /**
- * Ring blocking algorithm.
+ * empty ring blocker
  */
-public final class RingBlockerNull implements RingBlocker {
+public final class RingBlockerNull implements RingBlocker
+{
   @Override
   public final long nextOfferSequence()
   {
@@ -93,53 +92,4 @@ public final class RingBlockerNull implements RingBlocker {
   public final void pollWake()
   {
   }
-    
-  @Override
-  public final void onActive()
-  {
-  }
-  
-  @Override
-  public final void onInit()
-  {
-  }
-  
-  @Override
-  public final void shutdown(ShutdownModeAmp mode)
-  {
-  }
-
-  /*
-  private void waitForAvailable(long headAlloc, long tail)
-  {
-    synchronized (_isWait) {
-      if (_headAlloc.get() == headAlloc
-          && _tail.get() == tail) {
-        _isWait.set(true);
-
-        try {
-          Thread.interrupted();
-          _isWait.wait(1000);
-        } catch (Exception e) {
-          log.log(Level.FINER, e.toString(), e);
-        }
-      }
-    }
-  }
-  
-  private void wakeAvailable()
-  {
-    if (_isWait.get()) {
-      synchronized (_isWait) {
-        long tail = _tail.get();
-        long headAlloc = _headAlloc.get();
-        
-        if (headAlloc - tail < _ringLength || _isClosed) {
-          _isWait.set(false);
-          _isWait.notifyAll();
-        }
-      }
-    }
-  }
-  */
 }

@@ -54,7 +54,7 @@ public final class CounterBuilderHead extends CounterBuilderBase
   }
 
   @Override
-  public CounterActor build(CounterActor[] counters, boolean isTail)
+  public CounterRing build(CounterRing[] counters, boolean isTail)
   {
     counters[getTailIndex()] = new CounterAtomic();
     

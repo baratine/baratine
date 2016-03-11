@@ -30,21 +30,23 @@
 package com.caucho.v5.amp.queue;
 
 import java.util.concurrent.Executor;
-import java.util.function.Supplier;
+
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
 
 /**
  * Interface for an actor queue
  */
-public interface QueueDeliverBuilder<M extends MessageDeliver>
+public interface QueueDeliverBuilder<M extends MessageOutbox<M>>
 {
-  QueueDeliver<M> buildQueue(CounterBuilder counterBuilder);
+  QueueOutbox<M> buildQueue(CounterBuilder counterBuilder);
 
   Executor createExecutor();
 
   ClassLoader getClassLoader();
 
-  Supplier<OutboxDeliver<M>> getOutboxFactory();
-  OutboxContext<M> getOutboxContext();
+  //Supplier<Outbox<M,C>> getOutboxFactory();
+  Object getOutboxContext();
   
   // OutboxDeliver<M> createOutbox(Deliver<M> deliver);
 }

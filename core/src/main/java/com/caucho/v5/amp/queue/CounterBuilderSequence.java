@@ -78,7 +78,7 @@ public class CounterBuilderSequence extends CounterBuilderBase
   }
 
   @Override
-  public CounterActor build(CounterActor[] counters, boolean isTail)
+  public CounterRing build(CounterRing[] counters, boolean isTail)
   {
     _first.build(counters, false);
     

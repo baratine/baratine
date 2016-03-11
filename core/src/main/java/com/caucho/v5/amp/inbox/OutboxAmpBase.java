@@ -29,20 +29,17 @@
 
 package com.caucho.v5.amp.inbox;
 
-import com.caucho.v5.amp.queue.OutboxContext;
-import com.caucho.v5.amp.queue.OutboxDeliverBase;
+import com.caucho.v5.amp.outbox.OutboxImpl;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.OutboxAmpContext;
+import com.caucho.v5.amp.spi.OutboxAmp;
 
 /**
  * Thread context for ramp events.
  */
 public class OutboxAmpBase
-  extends OutboxDeliverBase<MessageAmp>
-  implements OutboxAmpContext
+  extends OutboxImpl implements OutboxAmp
 {
-  private InboxAmp _inbox;
   private MessageAmp _message;
   
   private int _openCount;
@@ -54,19 +51,13 @@ public class OutboxAmpBase
   @Override
   public InboxAmp inbox()
   {
-    return _inbox;
+    return (InboxAmp) context();
   }
   
   @Override
   public void inbox(InboxAmp inbox)
   {
-    /*
-    if (inbox == null) {
-      Thread.dumpStack();
-    }
-    */
-    
-    _inbox = inbox;
+    getAndSetContext(inbox);
   }
 
   @Override
@@ -82,44 +73,12 @@ public class OutboxAmpBase
   }
   
   @Override
-  public OutboxContext<MessageAmp> context()
+  public Object getAndSetContext(Object context)
   {
-    return _inbox;
+    _message = null;
+    
+    return super.getAndSetContext(context);
   }
-  
-  @Override
-  public OutboxContext<MessageAmp> getAndSetContext(OutboxContext<MessageAmp> context)
-  {
-    InboxAmp inboxAmp = (InboxAmp) context;
-    
-    OutboxContext<MessageAmp> oldContext = _inbox;
-    
-    _inbox = inboxAmp;
-    
-    if (inboxAmp != null) {
-      // _inbox = contextAmp.getInbox();
-      _message = inboxAmp.getMessage();
-    }
-    else {
-      _message = null;
-      // Thread.dumpStack();
-    }
-    
-    return oldContext;
-  }
-  
-  /*
-  @Override
-  public OutboxDeliver<MessageAmp> createInit()
-  {
-    OutboxAmpContextImpl context = new OutboxAmpContextImpl();
-    
-    context.setInbox(getInbox());
-    context.setMessage(getMessage());
-    
-    return context;
-  }
-  */
 
   @Override
   public final void open()

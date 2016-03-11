@@ -36,11 +36,12 @@ import java.util.function.Supplier;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.InboxQueue;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.DisruptorBuilderQueue;
-import com.caucho.v5.amp.queue.QueueService;
-import com.caucho.v5.amp.queue.QueueServiceBuilder;
 import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
+import com.caucho.v5.amp.queue.QueueServiceBuilder;
 import com.caucho.v5.amp.spi.ActorAmp;
+import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.util.L10N;
 
@@ -58,7 +59,7 @@ public class DisruptorBuilderNode<T> extends DisruptorBuilderBase<T>
   
   private final DeliverFactoryDisruptor _deliverFactory;
   
-  private ArrayList<DisruptorBuilderNode<T>> _peers = new ArrayList<>();
+  //private ArrayList<DisruptorBuilderNode<T>> _peers = new ArrayList<>();
   private DisruptorBuilderNode<T> _next;
   
   DisruptorBuilderNode(DisruptorBuilderTop<T> top,
@@ -92,6 +93,7 @@ public class DisruptorBuilderNode<T> extends DisruptorBuilderBase<T>
     return getHead().getManager();
   }
   
+  /*
   @Override
   public DisruptorBuilderAmp<T> peer(T worker)
   {
@@ -101,7 +103,9 @@ public class DisruptorBuilderNode<T> extends DisruptorBuilderBase<T>
     
     return peer;
   }
+  */
   
+  /*
   @Override
   public DisruptorBuilderAmp<T> peer(Supplier<? extends T> supplier,
                                   ServiceConfig config)
@@ -114,7 +118,9 @@ public class DisruptorBuilderNode<T> extends DisruptorBuilderBase<T>
     
     return peer;
   }
+  */
   
+  /*
   @Override
   public DisruptorBuilderAmp<T> peer(DeliverFactoryDisruptor deliverFactory)
   {
@@ -126,6 +132,7 @@ public class DisruptorBuilderNode<T> extends DisruptorBuilderBase<T>
     
     return peer;
   }
+  */
 
   @Override
   public DisruptorBuilderAmp<T> next(T worker)
@@ -254,13 +261,15 @@ public class DisruptorBuilderNode<T> extends DisruptorBuilderBase<T>
   void buildDisruptorChildren(DisruptorBuilderQueue<MessageAmp> builder,
                               InboxQueue inbox)
   {
+    /*
     for (DisruptorBuilderNode<T> peer : _peers) {
-      DisruptorBuilderQueue<MessageAmp> peerBuilder;
+      DisruptorBuilderQueue<MessageAmp,InboxAmp> peerBuilder;
       
       peerBuilder = builder.peer(peer.createDeliverFactory(inbox));
       
       peer.buildDisruptorChildren(peerBuilder, inbox);
     }
+    */
     
     if (_next != null) {
       DisruptorBuilderQueue<MessageAmp> next;

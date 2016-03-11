@@ -27,14 +27,14 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
 
 import java.util.function.Supplier;
 
 /**
  * Outbox for the current worker thread.
  */
-public interface Outbox<M>
+public interface Outbox extends AutoCloseable
 {
   default boolean isEmpty()
   {
@@ -44,7 +44,7 @@ public interface Outbox<M>
   /**
    * Adds the message to the outgoing queue.
    */
-  void offer(M msg);
+  void offer(MessageOutbox<?> msg);
   
   void flush();
   
@@ -62,26 +62,40 @@ public interface Outbox<M>
   {
     flush();
     
-    return true;
+    return false;
   }
+  
+  default void flushAndExecuteAll()
+  {
+    while (flushAndExecuteLast()) {
+    }
+  }
+  
+  //MessageOutbox<?> tailMessage();
+  
+  void open();
+  
+  void close();
 
-  default OutboxContext<M> context()
+  default Object context()
   {
     return null;
   }
   
-  default OutboxContext<M> getAndSetContext(OutboxContext<M> context)
+  default Object getAndSetContext(Object context)
   {
     return null;
   }
   
-  static Outbox<?> current()
+  static Outbox current()
   {
-    return OutboxProvider.getProvider().current();
+    return (Outbox) OutboxProvider.getProvider().current();
   }
   
-  static <M> Outbox<M> currentOrCreate(Supplier<? extends Outbox<M>> supplier)
+  static <O extends Outbox> O currentOrCreate(Supplier<O> supplier)
   {
-    return (Outbox) OutboxProvider.getProvider().currentOrCreate((Supplier) supplier);
+    OutboxProvider<O> provider = OutboxProvider.getProvider();
+    
+    return provider.currentOrCreate(supplier);
   }
 }

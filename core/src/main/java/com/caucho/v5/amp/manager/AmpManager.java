@@ -54,10 +54,9 @@ import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.SystemMessage;
+import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmpImpl;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
-import com.caucho.v5.amp.queue.Outbox;
-import com.caucho.v5.amp.queue.OutboxContext;
 import com.caucho.v5.amp.remote.ServiceNodeBase;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.session.ContextSessionFactory;
@@ -239,6 +238,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   {
     OutboxAmpImpl outbox = new OutboxAmpImpl();
     outbox.inbox(_inboxSystem);
+
     // outbox.open();
     
     return outbox;
@@ -374,7 +374,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   }
 
   @Override
-  public final Outbox<MessageAmp> getOutboxSystem()
+  public final OutboxAmp getOutboxSystem()
   {
     return _systemContext;
   }
@@ -404,7 +404,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
     ClassLoader loader = thread.getContextClassLoader();
     
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(this)) {
-      OutboxContext<MessageAmp> inbox = outbox.getAndSetContext(inboxSystem());
+      Object oldContext = outbox.getAndSetContext(inboxSystem());
 
       thread.setContextClassLoader(classLoader());
 
@@ -413,7 +413,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
         
         return serviceRef;
       } finally {
-        outbox.getAndSetContext(inbox);
+        outbox.getAndSetContext(oldContext);
       }
     } finally {
       thread.setContextClassLoader(loader);
@@ -774,7 +774,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   }
   
   @Override
-  public Supplier<OutboxAmp> getOutboxFactory()
+  public Supplier<OutboxAmp> outboxFactory()
   {
     return _outboxFactory;
   }

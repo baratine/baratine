@@ -27,22 +27,23 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
  * queue with delivery workers that consume its messages.
  */
-public class WorkerDeliverMultiCoordinator implements WorkerDeliverLifecycle
+public class WorkerOutboxMultiCoordinator<M extends MessageOutbox<M>>
+  implements WorkerOutbox<M>
 {
-  private QueueDeliver<?> _queue;
-  private WorkerDeliverLifecycle[] _workers;
+  private QueueOutbox<M> _queue;
+  private WorkerOutbox<M>[] _workers;
   private int _multiworkerOffset;
   
-  WorkerDeliverMultiCoordinator(QueueDeliver<?> queue,
-                                WorkerDeliverLifecycle []workers,
-                                int multiworkerOffset)
+  public WorkerOutboxMultiCoordinator(QueueOutbox<M> queue,
+                                      WorkerOutbox<M> []workers,
+                                      int multiworkerOffset)
   {
     _queue = queue;
     _workers = workers;
@@ -69,7 +70,7 @@ public class WorkerDeliverMultiCoordinator implements WorkerDeliverLifecycle
   @Override
   public void wakeAll()
   {
-    for (WorkerDeliverLifecycle worker : _workers) {
+    for (WorkerOutbox<M> worker : _workers) {
       worker.wakeAll();
     }
   }
@@ -77,7 +78,7 @@ public class WorkerDeliverMultiCoordinator implements WorkerDeliverLifecycle
   @Override
   public void onActive()
   {
-    for (WorkerDeliverLifecycle worker : _workers) {
+    for (WorkerOutbox<M> worker : _workers) {
       worker.onActive();
     }
   }
@@ -85,7 +86,7 @@ public class WorkerDeliverMultiCoordinator implements WorkerDeliverLifecycle
   @Override
   public void onInit()
   {
-    for (WorkerDeliverLifecycle worker : _workers) {
+    for (WorkerOutbox<M> worker : _workers) {
       worker.onInit();
     }
   }
@@ -93,7 +94,7 @@ public class WorkerDeliverMultiCoordinator implements WorkerDeliverLifecycle
   @Override
   public void shutdown(ShutdownModeAmp mode)
   {
-    for (WorkerDeliverLifecycle worker : _workers) {
+    for (WorkerOutbox<M> worker : _workers) {
       worker.shutdown(mode);
     }
   }

@@ -37,7 +37,8 @@ import com.caucho.v5.baratine.client.ServiceManagerClient;
 /**
  * Abstract client for RAMP messages.
  */
-public class ClientAmpLocal extends ServiceManagerAmpWrapper implements ServiceManagerClient
+public class ClientAmpLocal extends ServiceManagerAmpWrapper
+  implements ServiceManagerClient
 {
   private ServiceManagerAmp _manager;
 

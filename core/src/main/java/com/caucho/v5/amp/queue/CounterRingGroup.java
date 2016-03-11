@@ -29,29 +29,14 @@
 
 package com.caucho.v5.amp.queue;
 
-
 /**
- * Thread worker controller for a queue/inbox.
+ * Abstract counter for a multi-processor queue.
  */
-public interface WorkerDeliver<M extends MessageDeliver>
+public interface CounterRingGroup
 {
-  /**
-   * Wake the worker
-   * 
-   * @return true if the worker was newly woken.
-   */
-  boolean wake();
+  int getSize();
   
-  /**
-   * Executes the message in the target worker's context, returning the
-   * new tail message.
-   */
-  default M runAs(OutboxDeliver<M> outbox, M tailMsg)
-  {
-    tailMsg.offerQueue(0);
-    outbox.flush();
-    wake();
-    
-    return null;
-  }
+  CounterRing counter(int index);
+
+  CounterMultiTail getMultiCounter(int tailIndex);
 }

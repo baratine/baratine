@@ -38,10 +38,12 @@ import java.util.function.Supplier;
  */
 public interface DisruptorBuilderAmp<T> extends DisruptorBuilder<T>
 {
+  /*
   DisruptorBuilderAmp<T> peer(Supplier<? extends T> supplier,
                                       ServiceConfig config);
   
   DisruptorBuilderAmp<T> peer(DeliverFactoryDisruptor deliverFactory);
+  */
 
   @Override
   DisruptorBuilderAmp<T> next(T worker);

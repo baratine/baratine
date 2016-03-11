@@ -32,17 +32,17 @@ package com.caucho.v5.amp.manager;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServiceManagerAmp.DisruptorBuilder;
+import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpDisruptor;
 import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.inbox.QueueServiceFactoryInbox;
 import com.caucho.v5.amp.journal.JournalAmp;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.proxy.SkeletonClass;
-import com.caucho.v5.amp.queue.QueueService;
 import com.caucho.v5.amp.queue.QueueServiceBuilder;
 import com.caucho.v5.amp.spi.ActorAmp;
+import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.util.L10N;
 
@@ -62,7 +62,7 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
   private final JournalAmp _journal;
   private ActorAmp _actorMain;
   
-  private DisruptorBuilderNode<T> _peer;
+  //private DisruptorBuilderNode<T> _peer;
   private DisruptorBuilderNode<T> _next;
   
   public DisruptorBuilderTop(ServiceBuilderImpl serviceBuilder,
@@ -105,6 +105,7 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
     return this;
   }
   
+  /*
   @Override
   public DisruptorBuilder<T> peer(T worker)
   {
@@ -121,6 +122,8 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
     
     return _peer;
   }
+  */
+  /*
   
   @Override
   public DisruptorBuilderAmp<T> peer(Supplier<? extends T> supplierBean,
@@ -139,7 +142,9 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
     
     return _peer;
   }
+  */
   
+  /*
   @Override
   public DisruptorBuilderAmp<T> peer(DeliverFactoryDisruptor deliverFactory)
   {
@@ -156,6 +161,7 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
     
     return _peer;
   }
+  */
   
   private DisruptorBuilderNode<T> create(DeliverFactoryDisruptor deliverFactory)
   {
@@ -177,9 +183,11 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
                                           worker));
     }
     
+    /*
     if (_peer != null) {
       return _peer.next(worker);
     }
+    */
     
     _next = new DisruptorBuilderNode<T>(this, deliverFactory(worker));
     
@@ -195,9 +203,12 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
                                           supplier));
     }
     
-    if (_peer != null) {
+    /*
+    if
+    (_peer != null) {
       return _peer.next(supplier, config);
     }
+    */
     
     // Supplier<ActorAmp> supplierActor = new SupplierActor(supplier);
     
@@ -214,9 +225,11 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
                                           deliverFactory));
     }
     
+    /*
     if (_peer != null) {
       return _peer.next(deliverFactory);
     }
+    */
     
     // Supplier<ActorAmp> supplierActor = new SupplierActor(supplier);
     
@@ -333,12 +346,16 @@ public class DisruptorBuilderTop<T> extends DisruptorBuilderBase<T>
     
     @Override
     public QueueService<MessageAmp> build(QueueServiceBuilder<MessageAmp> queueBuilder,
-                                               InboxQueue inbox)
+                                          InboxQueue inbox)
     {
+      /*
       if (_peer != null) {
         return _peer.buildQueue(queueBuilder, inbox);
       }
-      else if (_next != null) {
+      else
+      */ 
+      
+      if (_next != null) {
         return _next.buildQueue(queueBuilder, inbox);
       }
       else {

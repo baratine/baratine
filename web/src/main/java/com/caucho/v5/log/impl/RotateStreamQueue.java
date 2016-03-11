@@ -29,22 +29,22 @@
 
 package com.caucho.v5.log.impl;
 
-import io.baratine.service.ResultFuture;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.queue.DeliverAmpBase;
-import com.caucho.v5.amp.queue.Outbox;
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.util.ConcurrentArrayList;
+
+import io.baratine.service.ResultFuture;
 
 /**
  * Queue for the rotating stream.
  */
-public class RotateStreamQueue extends DeliverAmpBase<LogItem<?>>
-  implements LogItemBinaryHandler, LogItemStringHandler
+public class RotateStreamQueue //extends DeliverAmpBase<LogItem<?>>
+  implements LogItemBinaryHandler, LogItemStringHandler, DeliverOutbox<LogItem<?>>
 {
   private final ConcurrentArrayList<RotateStream> _streamList
     = new ConcurrentArrayList<>(RotateStream.class);
@@ -77,7 +77,7 @@ public class RotateStreamQueue extends DeliverAmpBase<LogItem<?>>
   
   private QueueService<LogItem<?>> buildQueue()
   {
-    QueueServiceBuilderImpl<LogItem<?>> builder
+    QueueServiceBuilderImpl builder
       = new QueueServiceBuilderImpl<>();
     builder.initial(256);
     builder.capacity(16 * 1024);
@@ -108,7 +108,7 @@ public class RotateStreamQueue extends DeliverAmpBase<LogItem<?>>
   }
 
   @Override
-  public void deliver(LogItem<?> value, Outbox<LogItem<?>> outbox)
+  public void deliver(LogItem<?> value, Outbox outbox)
     throws Exception
   {
     ((LogItem) value).deliver(this);

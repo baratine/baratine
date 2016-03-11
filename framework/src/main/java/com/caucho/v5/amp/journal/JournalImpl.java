@@ -41,7 +41,7 @@ import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.message.ReplayQueryMessage;
 import com.caucho.v5.amp.message.ReplaySendMessage;
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -468,7 +468,7 @@ public class JournalImpl implements JournalAmp
     public void completed()
     {
       _queue.wake();
-      _inbox.getWorker().wake();
+      _inbox.worker().wake();
       
       if (_result != null) {
         _result.ok(true);

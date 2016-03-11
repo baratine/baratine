@@ -34,13 +34,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.CurrentTime;
 
 /**
  * Ring blocking algorithm.
  */
-public class RingBlockerBasic implements RingBlocker {
+public class RingBlockerBasic implements RingBlocker
+{
   private static final Logger log
     = Logger.getLogger(RingBlockerBasic.class.getName());
 
@@ -218,30 +218,4 @@ public class RingBlockerBasic implements RingBlocker {
       }
     }
   }
-
-  @Override
-  public final void onActive()
-  {
-  }
-
-  @Override
-  public final void onInit()
-  {
-  }
-
-  @Override
-  public final void shutdown(ShutdownModeAmp mode)
-  {
-
-  }
-
-  /*
-  private void waitForAvailable(long headAlloc, long tail)
-  {
-  }
-
-  private void wakeAvailable()
-  {
-  }
-  */
 }

@@ -29,8 +29,6 @@
 
 package com.caucho.v5.amp.inbox;
 
-import io.baratine.service.ResultFuture;
-
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -38,18 +36,20 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpNull;
 import com.caucho.v5.amp.actor.ServiceRefImpl;
-import com.caucho.v5.amp.queue.OutboxDeliver;
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
+import io.baratine.service.ResultFuture;
+
 /**
  * Inbox that spawns threads to deliver messages.
  */
 public class InboxExecutor extends InboxBase
-  implements WorkerDeliver<MessageAmp>
+  implements WorkerOutbox<MessageAmp>
 {
   private final ServiceRefAmp _actorRef;
   private final ActorAmp _actor;
@@ -96,16 +96,18 @@ public class InboxExecutor extends InboxBase
   }
   
   @Override
-  public WorkerDeliver<MessageAmp> getWorker()
+  public WorkerOutbox<MessageAmp> worker()
   {
     return this;
   }
 
+  /*
   @Override
   public boolean wake()
   {
     return true;
   }
+  */
   
   @Override
   public boolean isClosed()
@@ -129,6 +131,12 @@ public class InboxExecutor extends InboxBase
     
     _actor.onInit(future);
   }
+
+  @Override
+  public boolean wake()
+  {
+    return false;
+  }
   
   @Override
   public void shutdownActors(ShutdownModeAmp mode)
@@ -137,14 +145,12 @@ public class InboxExecutor extends InboxBase
   }
   
   @Override
-  public MessageAmp runAs(OutboxDeliver<MessageAmp> outbox, MessageAmp tailMsg)
+  public void runAs(Outbox outbox, MessageAmp tailMsg)
                                
   {
     tailMsg.offerQueue(0);
     outbox.flushAndExecuteLast();
     wake();
-    
-    return null;
   }
 
   public String toString()

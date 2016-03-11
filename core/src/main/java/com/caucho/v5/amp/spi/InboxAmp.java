@@ -29,19 +29,18 @@
 
 package com.caucho.v5.amp.spi;
 
+import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
+
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
 import io.baratine.service.ResultStream;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.queue.OutboxContext;
-import com.caucho.v5.amp.queue.WorkerDeliver;
-
 /**
  * Mailbox for an actor
  */
-public interface InboxAmp extends OutboxContext<MessageAmp>
+public interface InboxAmp // extends OutboxContext<MessageAmp>
 {
   public static final long TIMEOUT_DEFAULT = 60000L;
   public static final long TIMEOUT_INFINITY = Integer.MAX_VALUE;
@@ -81,7 +80,9 @@ public interface InboxAmp extends OutboxContext<MessageAmp>
   
   ActorAmp getDirectActor();
   
-  WorkerDeliver<MessageAmp> getWorker();
+  WorkerOutbox<MessageAmp> worker();
+
+  //void wake();
   
   MessageAmp getMessage();
 

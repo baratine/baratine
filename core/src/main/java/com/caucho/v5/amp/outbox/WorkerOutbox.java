@@ -27,68 +27,73 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
-
-import java.util.ArrayList;
+package com.caucho.v5.amp.outbox;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
- * Interface for building a disruptor queue.
+ * Thread worker controller for a queue/inbox.
  */
-public class WorkerDeliverDisruptorJoin<M extends MessageDeliver>
-  implements WorkerDeliverLifecycle<M>
+public interface WorkerOutbox<M extends MessageOutbox<M>>
 {
-  private final WorkerDeliverLifecycle<M>[] _workers;
+  /**
+   * Wake the worker
+   * 
+   * @return true if the worker was newly woken.
+   */
+  boolean wake();
   
-  WorkerDeliverDisruptorJoin(ArrayList<WorkerDeliverLifecycle<M>> workers)
+  /*
+  default C context()
   {
-    _workers = new WorkerDeliverLifecycle[workers.size()];
+    return null;
+  }
+  */
+  
+  /**
+   * Executes the message in the target worker's context, returning the
+   * new tail message.
+   */
+  default void runAs(Outbox outbox, M tailMsg)
+  {
+    tailMsg.offerQueue(0);
+    outbox.flush();
+    wake();
+  }
+  
+  /**
+   * Executes the message in the target worker's context, returning the
+   * new tail message.
+   */
+  default boolean runOne(Outbox outbox, M tailMsg)
+  {
+    tailMsg.offerQueue(0);
+    outbox.flush();
+    wake();
     
-    workers.toArray(_workers);
+    return false;
+  }
+  
+  default void onInit()
+  {
+  }
+  
+  
+  default void onActive()
+  {
   }
 
-  @Override
-  public boolean wake()
+  default void shutdown(ShutdownModeAmp mode)
   {
-    boolean isWake = false;
-    
-    for (WorkerDeliver<M> worker : _workers) {
-      if (worker.wake()) {
-        isWake = true;
-      }
-    }
-    
-    return isWake;
   }
-
-  @Override
-  public void wakeAll()
+  
+  default void wakeAll()
   {
     wake();
   }
   
-  @Override
-  public void onActive()
+  default void wakeAllAndWait()
   {
-    for (WorkerDeliverLifecycle<M> worker : _workers) {
-      worker.onActive();
-    }
-  }
-  
-  @Override
-  public void onInit()
-  {
-    for (WorkerDeliverLifecycle<M> worker : _workers) {
-      worker.onInit();
-    }
-  }
-  
-  @Override
-  public void shutdown(ShutdownModeAmp mode)
-  {
-    for (WorkerDeliverLifecycle<M> worker : _workers) {
-      worker.shutdown(mode);
-    }
+    wakeAll();
   }
 }

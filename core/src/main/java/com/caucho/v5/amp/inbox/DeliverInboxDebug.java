@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.inbox;
 
-import com.caucho.v5.amp.queue.Outbox;
+import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -47,7 +47,7 @@ class DeliverInboxDebug extends DeliverInbox
 
   @Override
   public void deliver(final MessageAmp msg, 
-                      Outbox<MessageAmp> outboxDeliver)
+                          Outbox outboxDeliver)
     throws Exception
   {
     OutboxAmp outbox = (OutboxAmp) outboxDeliver;

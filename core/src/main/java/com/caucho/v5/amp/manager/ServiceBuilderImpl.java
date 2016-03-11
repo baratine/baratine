@@ -44,7 +44,6 @@ import com.caucho.v5.amp.inbox.QueueServiceFactoryInbox;
 import com.caucho.v5.amp.journal.ActorJournal;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
-import com.caucho.v5.amp.queue.OutboxContext;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.amp.session.SessionServiceManagerImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
@@ -879,13 +878,13 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     Thread thread = Thread.currentThread();
     ClassLoader oldLoader = thread.getContextClassLoader();
     OutboxAmp outbox = OutboxAmp.current();
-    OutboxContext<MessageAmp> inbox = null;
+    Object oldContext = null;
     
     try {
       thread.setContextClassLoader(_manager.classLoader());
       
       if (outbox != null) {
-        inbox = outbox.getAndSetContext(_manager.inboxSystem());
+        oldContext = outbox.getAndSetContext(_manager.inboxSystem());
       }
       
       //return serviceImpl(beanFactory, address, config);
@@ -906,7 +905,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
       thread.setContextClassLoader(oldLoader);
       
       if (outbox != null) {
-        outbox.getAndSetContext(inbox);
+        outbox.getAndSetContext(oldContext);
       }
     }
   }    
@@ -954,7 +953,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
       QueueServiceBuilderImpl<MessageAmp> queueBuilder
         = new QueueServiceBuilderImpl<>();
       
-      queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
+      //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
       queueBuilder.setClassLoader(_manager.classLoader());
       
       ServiceConfig config = actorFactory.config();
@@ -1134,7 +1133,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     QueueServiceBuilderImpl<MessageAmp> queueBuilder
       = new QueueServiceBuilderImpl<>();
     
-    queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
+    //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
     queueBuilder.setClassLoader(_manager.classLoader());
     
     queueBuilder.capacity(config.getQueueCapacity());

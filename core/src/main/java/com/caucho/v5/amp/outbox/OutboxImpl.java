@@ -27,20 +27,20 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
-
+package com.caucho.v5.amp.outbox;
 
 /**
  * Outbox for a delivery processor.
  */
-abstract public class OutboxDeliverBase<M extends MessageDeliver>
-  implements OutboxDeliver<M>
+public class OutboxImpl implements Outbox
 {
   //private static final long OFFER_TIMEOUT = 3600 * 1000;
   private static final long OFFER_TIMEOUT = 10 * 1000;
-  private M _msg;
   
-  protected OutboxDeliverBase()
+  private MessageOutbox<?> _msg;
+  private Object _context;
+  
+  public OutboxImpl()
   {
   }
   
@@ -51,9 +51,9 @@ abstract public class OutboxDeliverBase<M extends MessageDeliver>
   }
   
   @Override
-  public final void offer(M msg)
+  public final void offer(MessageOutbox<?> msg)
   {
-    M prevMsg = _msg;
+    MessageOutbox<?> prevMsg = _msg;
     _msg = msg;
     
     if (prevMsg != null) {
@@ -73,7 +73,9 @@ abstract public class OutboxDeliverBase<M extends MessageDeliver>
   @Override
   public void flush()
   {
-    M prevMsg;
+    MessageOutbox<?> prevMsg;
+
+    //Thread.dumpStack();
     
     if ((prevMsg = _msg) != null) {
       _msg = null;
@@ -84,47 +86,78 @@ abstract public class OutboxDeliverBase<M extends MessageDeliver>
   }
   
   @Override
-  public boolean flushAndExecuteLast()
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public final boolean flushAndExecuteLast()
   {
-    M tailMsg = _msg;
+    MessageOutbox<?> tailMsg = _msg;
     
     if (tailMsg == null) {
-      return true;
+      return false;
     }
     
     _msg = null;
     
-    WorkerDeliver nextWorker = tailMsg.worker();
-
-    if (! (nextWorker instanceof WorkerDeliverMessage)) {
-      tailMsg.offerQueue(OFFER_TIMEOUT);
-      nextWorker.wake();
-      return true;
-    }
-      
-    WorkerDeliverMessage<M> worker = (WorkerDeliverMessage<M>) nextWorker;
+    WorkerOutbox worker = tailMsg.worker();
       
     if (worker.runOne(this, tailMsg)) {
-      return _msg == null;
+      return _msg != null;
     }
     else {
       tailMsg.offerQueue(OFFER_TIMEOUT);
-      nextWorker.wake();
+      worker.wake();
       
-      return _msg == null;
+      return _msg != null;
     }
   }
-  
+
   @Override
-  public M flushAfterTask()
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public final void flushAndExecuteAll()
   {
-    M prevMsg = _msg;
+    MessageOutbox<?> tailMsg;
+    
+    while ((tailMsg = _msg) != null) {
+      _msg = null;
+      
+      WorkerOutbox worker = tailMsg.worker();
+      
+      worker.runAs(this, tailMsg);
+    }
+  }
+
+  /*
+  @Override
+  public MessageOutbox<?> tailMessage()
+  {
+    MessageOutbox<?> prevMsg = _msg;
     
     if (prevMsg != null) {
       _msg = null;
     }
     
     return prevMsg;
+  }
+  */
+  
+  @Override
+  public Object context()
+  {
+    return _context;
+  }
+  
+  @Override
+  public Object getAndSetContext(Object context)
+  {
+    Object oldContext = _context;
+    
+    _context = context;
+    
+    return oldContext;
+  }
+  
+  @Override
+  public void open()
+  {
   }
   
   @Override

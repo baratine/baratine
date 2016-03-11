@@ -27,44 +27,41 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
-import java.util.function.Supplier;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
-class WorkerDeliverMultiThread<M extends MessageDeliver>
-  extends WorkerDeliverBase<M>
+public final class WorkerOutboxMultiThread<M extends MessageOutbox<M>>
+  extends WorkerOutboxBase<M>
 {
-  private final BlockingQueue<M> _queue;
-  private final Deliver<M> _deliver;
+  private final QueueOutbox<M> _queue;
+  private final DeliverOutbox<M> _deliver;
     
-  WorkerDeliverMultiThread(Deliver<M> deliver,
-                           Supplier<OutboxDeliver<M>> outboxFactory,
-                           OutboxContext<M> outboxContext,
-                           Executor executor,
-                           ClassLoader loader,
-                           QueueDeliver<M> queue)
+  public WorkerOutboxMultiThread(DeliverOutbox<M> deliver,
+                                 Object outboxContext,
+                                 Executor executor,
+                                 ClassLoader loader,
+                                 QueueOutbox<M> queue)
   {
-    super(deliver, outboxFactory, outboxContext, executor, loader);
+    super(deliver, outboxContext, executor, loader);
       
     _queue = queue;
     _deliver = deliver;
   }
   
-  protected Deliver<M> getActor()
+  protected DeliverOutbox<M> getActor()
   {
     return _deliver;
   }
     
   @Override
-  public void runImpl(OutboxDeliver<M> outbox, M item)
+  public void runImpl(Outbox outbox, M item)
     throws Exception
   {
-    final BlockingQueue<M> queue = _queue;
-    final Deliver<M> deliver = getActor();
+    final QueueOutbox<M> queue = _queue;
+    final DeliverOutbox<M> deliver = getActor();
       
     deliver.beforeBatch();
       
@@ -85,10 +82,10 @@ class WorkerDeliverMultiThread<M extends MessageDeliver>
   }
 
   @Override
-  protected void runOneImpl(OutboxDeliver<M> outbox, M tailMsg) 
+  protected void runOneImpl(Outbox outbox, M tailMsg) 
     throws Exception
   {
-    final Deliver<M> deliver = getActor();
+    final DeliverOutbox<M> deliver = getActor();
       
     deliver.beforeBatch();
       

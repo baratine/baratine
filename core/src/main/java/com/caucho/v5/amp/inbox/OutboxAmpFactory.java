@@ -31,14 +31,13 @@ package com.caucho.v5.amp.inbox;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.queue.OutboxDeliver;
-import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.spi.OutboxAmp;
 
 /**
  * Supplier of outboxes for the system
  */
-public class OutboxAmpFactory implements Supplier<OutboxDeliver<MessageAmp>>
+public class OutboxAmpFactory implements Supplier<Outbox>
 {
   private static final OutboxAmpFactory _factory = new OutboxAmpFactory();
   

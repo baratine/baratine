@@ -31,20 +31,26 @@ package com.caucho.v5.amp.spi;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.inbox.OutboxProviderAmp;
-import com.caucho.v5.amp.queue.OutboxDeliver;
+import com.caucho.v5.amp.outbox.Outbox;
 
 /**
  * thread context for a ramp message.
  */
-public interface OutboxAmp extends OutboxDeliver<MessageAmp>
+public interface OutboxAmp extends Outbox
 {
   void flush();
   
-  InboxAmp inbox();
+  default InboxAmp inbox()
+  {
+    return (InboxAmp) context();
+  }
   
   MessageAmp message();
 
-  void inbox(InboxAmp inbox);
+  default void inbox(InboxAmp inbox)
+  {
+    getAndSetContext(inbox);
+  }
   
   void message(MessageAmp message);
   
@@ -55,7 +61,7 @@ public interface OutboxAmp extends OutboxDeliver<MessageAmp>
   
   static OutboxAmp currentOrCreate(ServiceManagerAmp manager)
   {
-    OutboxAmp outbox = OutboxProviderAmp.currentOrCreateAmp(manager.getOutboxFactory());
+    OutboxAmp outbox = OutboxProviderAmp.currentOrCreateAmp(manager.outboxFactory());
     
     return outbox;
   }

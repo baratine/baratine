@@ -30,20 +30,25 @@
 package com.caucho.v5.amp.queue;
 
 import java.util.concurrent.Executor;
-import java.util.function.Supplier;
+
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.outbox.WorkerOutboxSingleThread;
 
 
 /**
  * Interface for an actor queue
  */
-class DisruptorBuilderImpl<M extends MessageDeliver>
+class DisruptorBuilderImpl<M extends MessageOutbox<M>>
   extends DisruptorBuilderQueueBase<M>
 {
-  private final Deliver<M> _deliver;
+  private final DeliverOutbox<M> _deliver;
   
-  DisruptorBuilderImpl(Deliver<M> actor)
+  DisruptorBuilderImpl(DeliverOutbox<M> deliver)
   {
-    _deliver = actor;
+    _deliver = deliver;
   }
   
   @Override
@@ -54,24 +59,24 @@ class DisruptorBuilderImpl<M extends MessageDeliver>
   }
 
   @Override
-  public WorkerDeliverBase<M>
-  build(QueueDeliver<M> queue,
+  public WorkerOutbox<M>
+  build(QueueOutbox<M> queue,
         CounterBuilder prev,
         CounterBuilder next,
-        WorkerDeliverLifecycle<M> nextTask,
+        WorkerOutbox<M> nextTask,
         QueueDeliverBuilder<M> queueBuilder,
         boolean isTail)
   {
     Executor executor = queueBuilder.createExecutor();
     ClassLoader loader = queueBuilder.getClassLoader();
     
-    Supplier<OutboxDeliver<M>> outboxFactory = queueBuilder.getOutboxFactory();
-    OutboxContext<M> outboxContext = queueBuilder.getOutboxContext();
+    //Supplier<Outbox<M,C>> outboxFactory = queueBuilder.getOutboxFactory();
+    Object outboxContext = queueBuilder.getOutboxContext();
     
-    WorkerDeliverDisruptor<M> worker;
+    WorkerOutbox<M> worker;
 
-    worker = new WorkerDeliverDisruptor<M>(_deliver,
-                                           outboxFactory,
+    worker = new WorkerDeliverDisruptor<>(_deliver,
+                  //                         outboxFactory,
                                            outboxContext,
                                            executor,
                                            loader,
@@ -84,20 +89,19 @@ class DisruptorBuilderImpl<M extends MessageDeliver>
     return worker;
   }
 
-  public WorkerDeliverBase<M>
-  buildSingle(QueueDeliver<M> queue,
+  public WorkerOutbox<M>
+  buildSingle(QueueOutbox<M> queue,
               QueueDeliverBuilder<M> queueBuilder)
   {
     Executor executor = queueBuilder.createExecutor();
     ClassLoader loader = queueBuilder.getClassLoader();
     
-    Supplier<OutboxDeliver<M>> outboxFactory = queueBuilder.getOutboxFactory();
-    OutboxContext<M> outboxContext = queueBuilder.getOutboxContext();
+    //Supplier<Outbox<M,C>> outboxFactory = queueBuilder.getOutboxFactory();
+    Object outboxContext = queueBuilder.getOutboxContext();
     
-    WorkerDeliverSingleThread<M> worker;
+    WorkerOutboxSingleThread<M> worker;
     
-    worker = new WorkerDeliverSingleThread<M>(_deliver,
-                                              outboxFactory,
+    worker = new WorkerOutboxSingleThread<>(_deliver,
                                               outboxContext,
                                               executor,
                                               loader,

@@ -48,7 +48,7 @@ public class CounterBuilderSingle extends CounterBuilderBase
   }
 
   @Override
-  public final CounterGroup build(long initialIndex)
+  public final CounterRingGroup build(long initialIndex)
   {
     return new CounterSingle(initialIndex);
   }

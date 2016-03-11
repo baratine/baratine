@@ -29,17 +29,13 @@
 
 package com.caucho.v5.amp.actor;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionMethodNotFound;
-import io.baratine.service.ServiceRef;
-
 import java.lang.annotation.Annotation;
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.queue.QueueService;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.queue.QueueServiceBuilderBase;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -50,6 +46,10 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Result;
+import io.baratine.service.ServiceExceptionMethodNotFound;
+import io.baratine.service.ServiceRef;
 
 /**
  * Abstract stream for an actor.

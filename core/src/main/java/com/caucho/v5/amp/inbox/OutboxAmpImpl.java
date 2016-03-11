@@ -43,7 +43,7 @@ public class OutboxAmpImpl
 
   public OutboxAmpImpl()
   {
-    this((OutboxProviderAmp) OutboxProviderAmp.getProvider());
+    this(OutboxProviderAmp.getProvider());
   }
 
   public OutboxAmpImpl(OutboxProviderAmp provider)

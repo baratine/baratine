@@ -33,10 +33,10 @@ package com.caucho.v5.amp.queue;
 /**
  * Abstract counter for a multi-processor queue.
  */
-public final class CounterSingle implements CounterGroup
+public final class CounterSingle implements CounterRingGroup
 {
-  private final CounterActor _head = new CounterAtomic();
-  private final CounterActor _tail = new CounterAtomic();
+  private final CounterRing _head = new CounterAtomic();
+  private final CounterRing _tail = new CounterAtomic();
   
   public CounterSingle(long initialIndex)
   {
@@ -51,7 +51,7 @@ public final class CounterSingle implements CounterGroup
   }
 
   @Override
-  public final CounterActor getCounter(int index)
+  public final CounterRing counter(int index)
   {
     switch (index) {
     case 0:

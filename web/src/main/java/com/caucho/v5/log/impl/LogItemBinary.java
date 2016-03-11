@@ -29,7 +29,7 @@
 
 package com.caucho.v5.log.impl;
 
-import com.caucho.v5.amp.queue.WorkerDeliver;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 
 public final class LogItemBinary extends LogItem<LogItemBinaryHandler>
 {
@@ -51,7 +51,7 @@ public final class LogItemBinary extends LogItem<LogItemBinaryHandler>
   }
 
   @Override
-  public WorkerDeliver worker()
+  public WorkerOutbox worker()
   {
     return null;
   }

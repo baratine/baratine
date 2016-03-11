@@ -27,31 +27,56 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
+import java.util.function.Supplier;
 
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.inbox.OutboxProviderAmp;
 
 /**
- * Interface for an actor queue
+ * Outbox for the current worker thread.
  */
-public interface QueueService<M> extends BlockingQueue<M>, WorkerDeliver
+abstract public class OutboxProvider<O extends Outbox> implements Supplier<O>
 {
-  boolean isSingleWorker();
+  private static OutboxProvider<?> _provider;
   
-  @Override
-  boolean offer(M msg, long value, TimeUnit unit);
+  public static void setProvider(OutboxProvider<?> provider)
+  {
+    Objects.requireNonNull(provider);
+    
+    _provider = provider;
+  }
   
-  @Override
-  boolean wake();
-
-  void wakeAll();
-
-  WorkerDeliverLifecycle getWorker();
-
-  void shutdown(ShutdownModeAmp mode);
-
-  void wakeAllAndWait();
+  public static <O extends Outbox> OutboxProvider<O> getProvider()
+  {
+    return (OutboxProvider) _provider;
+  }
+  
+  abstract public O current();
+  
+  /*
+  public Outbox<M> currentOrCreate()
+  {
+    Outbox<M> outbox = current();
+    
+    if (outbox != null) {
+      // XXX: issues with updating count;
+      return outbox;
+    }
+    else {
+      return get();
+    }
+  }
+  */
+  
+  abstract public O currentOrCreate(Supplier<O> supplier);
+  
+  static {
+    try {
+      setProvider(new OutboxProviderAmp());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 }

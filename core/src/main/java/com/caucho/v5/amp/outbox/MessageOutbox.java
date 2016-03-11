@@ -27,16 +27,29 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.outbox;
 
 /**
- * Abstract counter for a multi-processor queue.
+ * abstract message that can be offered in a delayed mode.
  */
-public interface CounterGroup
+public interface MessageOutbox<M extends MessageOutbox<M>>
 {
-  int getSize();
-  
-  CounterActor getCounter(int index);
+  default void offerQueue(long timeout)
+  {
+    throw new UnsupportedOperationException();
+  }
 
-  CounterMultiTail getMultiCounter(int tailIndex);
+  /*
+  default M runAs(Outbox outbox)
+  {
+    WorkerOutbox<M> worker = worker();
+    
+    return worker.runAs(outbox, (M) this);
+  }
+  */
+  
+  default WorkerOutbox<M> worker()
+  {
+    throw new UnsupportedOperationException();
+  }
 }

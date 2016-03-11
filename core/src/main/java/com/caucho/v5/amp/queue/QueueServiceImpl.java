@@ -29,19 +29,22 @@
 
 package com.caucho.v5.amp.queue;
 
+import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 
 /**
  * queue with attached workers to process messages.
  */
-public final class QueueServiceImpl<M extends MessageDeliver>
+public final class QueueServiceImpl<M extends MessageOutbox<M>>
   extends QueueServiceBase<M>
 {
-  private final WorkerDeliverLifecycle _worker;
+  private final WorkerOutbox<M> _worker;
   
-  QueueServiceImpl(QueueDeliver<M> queue,
-                   WorkerDeliverLifecycle worker)
+  QueueServiceImpl(QueueOutbox<M> queue,
+                   WorkerOutbox<M> worker)
   {
     super(queue);
 
@@ -51,22 +54,30 @@ public final class QueueServiceImpl<M extends MessageDeliver>
   /**
    * Returns the head worker in the queue for late queuing.
    */
+  /*
   @Override
-  public WorkerDeliverLifecycle getWorker()
+  public WorkerOutbox<M,C> getWorker()
   {
     return _worker;
   }
+  */
   
   @Override
   public boolean isSingleWorker()
   {
-    return getQueue().getCounterGroup().getSize() == 2;
+    return getQueue().counterGroup().getSize() == 2;
   } 
   
   @Override
   public boolean wake()
   {
     return _worker.wake();
+  }
+  
+  @Override
+  public WorkerOutbox<M> worker()
+  {
+    return _worker;
   }
   
   @Override
