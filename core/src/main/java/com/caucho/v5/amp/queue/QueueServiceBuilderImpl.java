@@ -265,7 +265,8 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     });
   }
   
-  public QueueService<M> disruptor(DeliverOutbox<M> first,
+  //@Override
+  public QueueService<M> disruptor2(DeliverOutbox<M> first,
                                     DeliverOutbox<M> ...rest)
   {
     DisruptorBuilderQueue<M> builder = disruptorBuilder(first);
@@ -276,6 +277,51 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     }
     
     return builder.build();
+  }
+  
+  @Override
+  public QueueService<M> disruptor(DeliverOutbox<M> ...deliver)
+  {
+    Objects.requireNonNull(deliver);
+    
+    int count = deliver.length;
+    
+    if (count == 0) {
+      throw new IllegalArgumentException();
+    }
+    
+    if (count == 1) {
+      return build(deliver);
+    }
+    CounterBuilder counter = new CounterBuilderArray(count + 1);
+    
+    QueueOutbox<M> queue = buildQueue(counter);
+    
+    // Executor executor = queueBuilder.createExecutor();
+    
+    WorkerOutbox<M> nextTask = WorkerOutbox.createNull();
+    
+    WorkerDeliverDisruptor<M> []workers = new WorkerDeliverDisruptor[count];
+    
+    for (int i = count - 1; i >= 0; i--) {
+      boolean isTail = i == count - 1;
+
+      workers[i] = new WorkerDeliverDisruptor<M>(deliver[i],
+                                               _outboxContext,
+                                               createExecutor(),
+                                               _classLoader,
+                                               queue,
+                                               i,
+                                               i + 1,
+                                               isTail,
+                                               nextTask);
+      
+      nextTask = workers[i];
+    }
+    
+    workers[count - 1].setHeadWorker(workers[0]);
+
+    return new QueueServiceImpl<M>(queue, workers[0]);
   }
   
   /*

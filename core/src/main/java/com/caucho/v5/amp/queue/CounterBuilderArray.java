@@ -29,41 +29,58 @@
 
 package com.caucho.v5.amp.queue;
 
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.MessageOutbox;
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
+import java.util.Objects;
 
 /**
- * Builder for a service queue.
+ * Counter builder for a sequence of delivery workers.
  */
-public interface QueueServiceBuilder<M extends MessageOutbox<M>>
+public class CounterBuilderArray extends CounterBuilderBase
 {
-  QueueServiceBuilder<M> processors(DeliverOutbox<M> ...processors);
-  
-  QueueServiceBuilder<M> capacity(int capacity);
-  
-  int getCapacity();
-  
-  QueueServiceBuilder<M> initial(int initial);
-  
-  int getInitial();
-  
-  QueueServiceBuilder<M> multiworker(boolean isMultiworker);
-  
-  boolean isMultiworker();
-  
-  QueueServiceBuilder<M> multiworkerOffset(int offset);
-  
-  int getMultiworkerOffset();
+  private final int _length;
 
-  QueueService<M> build(DeliverOutbox<M> processor);
-
-  QueueService<M> build(DeliverOutbox<M> ...processors);
-
-  DisruptorBuilderQueue<M> disruptorBuilder(DeliverFactory<M> actorFactory);
+  CounterBuilderArray(int length)
+  {
+    if (length < 2) {
+      throw new IllegalArgumentException();
+    }
+    
+    _length = length;
+  }
   
-  DisruptorBuilderQueue<M> disruptorBuilder(DeliverOutbox<M> actorFactory);
+  @Override
+  public final int getHeadIndex()
+  {
+    return 0;
+  }
   
-  QueueService<M> disruptor(DeliverOutbox<M> ...deliver);
+  @Override
+  public final int getTailIndex()
+  {
+    return _length - 1;
+  }
+
+  @Override
+  public final CounterBuilder getTail()
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public CounterRingGroup build(long initialIndex)
+  {
+    CounterRing []counters = new CounterRing[_length];
+    
+    for (int i = 0; i < _length; i++) {
+      counters[i] = new CounterAtomic();
+      counters[i].set(initialIndex);
+    }
+    
+    return new CounterGroupSequence(counters);
+  }
+  
+  @Override
+  public CounterRing build(CounterRing[] counters, boolean isTail)
+  {
+    throw new UnsupportedOperationException();
+  }
 }

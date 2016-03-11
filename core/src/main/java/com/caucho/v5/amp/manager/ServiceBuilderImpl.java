@@ -657,66 +657,23 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
   {
     ServiceConfig config = config();
     
-    //ActorAmp actor = _manager.getProxyFactory().createSkeleton(mainWorker, _path, _path, null, config);
-    ActorAmp actor;
-    SupplierActor factory;
-    
-    if (_serviceClass != null || true) {
-      String path = address();
+    ActorFactoryAmp actorFactory = new ActorFactoryWorkers(_manager,
+                                                           _serviceSupplier,
+                                                           config);
       
-      /*
-      ActorAmp actorAmp
-        = _manager.createActor(_serviceSupplier.get(), path, config);
-        */
-      
-      ActorFactoryAmp actorFactory = new ActorFactoryWorkers(_manager,
-                                                             _serviceSupplier,
-                                                             config);
-      
-      ServiceRefAmp serviceRef = service(actorFactory);
-      /*
-        = new ServiceRefBean(_manager, _address, _serviceClass, _serviceSupplier, config);
-      */
-      if (_address != null) {
-        if (_manager.service(_address).isClosed()) {
-          serviceRef = serviceRef.bind(_address);
-        }
-      }
-      
-      if (config.isAutoStart()) {
-        _manager.addAutoStart(serviceRef);
-      }
-      
-      return serviceRef;
-    }
-    else {
-      if (true) throw new UnsupportedOperationException();
-      
-      ServiceRefAmp serviceRef = null;//_manager.service(_serviceSupplier, _address, config);
+    ServiceRefAmp serviceRef = service(actorFactory);
 
-      if (_address != null) {
+    if (_address != null) {
+      if (_manager.service(_address).isClosed()) {
         serviceRef = serviceRef.bind(_address);
       }
-    
-      return serviceRef;
     }
-  }
-  
-  private void configJournal(Journal journal)
-  {
-    if (journal != null) {
-      journal(true);
       
-      /*
-      if (journal.count() >= 0 && _builderConfig.getJournalMaxCount() < 0) {
-        _builderConfig.journalMaxCount(journal.count());
-      }
-      */
-      
-      if (journal.delay() >= 0 && journalDelay() < 0) {
-        journalDelay(journal.delay(), TimeUnit.MILLISECONDS);
-      }
+    if (config.isAutoStart()) {
+      _manager.addAutoStart(serviceRef);
     }
+      
+    return serviceRef;
   }
   
   @Override
@@ -742,25 +699,6 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
   private ServiceRefAmp buildSessionImpl()
   {
     Supplier<Object> supplier = newSupplier(_serviceClass);
-    /*
-    if (true) throw new UnsupportedOperationException();
-    
-    String path = _address;
-
-    if (path == null) {
-      return _manager.newService(supplier).ref();
-    }
-    */
-    
-    //boolean isJournal = _sessionClass.isAnnotationPresent(Journal.class);
-    
-    // XXX: needs to be refactored.
-    //ContextChannelFactory factory = new ContextChannelFactory(_manager);
-    //ContextSession context = factory.create(path, _sessionClass, isJournal);
-
-    //SkeletonClassSession skeleton = new SkeletonClassSession(_manager, _sessionClass);
-
-    //context.setSkeleton(skeleton);
 
     String address = _address;
     
@@ -773,13 +711,6 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
                                             _serviceClass,
                                             supplier,
                                             config);
-    
-    //ActorAmp actor = _manager.createActor(context, config);
-    
-    //ActorFactoryImpl factory = new ActorFactoryImpl(actor, config);
-
-    //ActorAmp actor = _manager.createActorSession(bean, key, context);
-    //System.out.println("SESS: " + actor);
 
     ServiceRefAmp serviceRef = _manager.newService(context).ref();
     

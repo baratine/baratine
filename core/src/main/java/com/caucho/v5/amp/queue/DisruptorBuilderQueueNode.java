@@ -332,7 +332,7 @@ public class DisruptorBuilderQueueNode<M extends MessageOutbox<M>>
     
       DeliverOutbox<M> deliver = _actorFactory.get();
       
-      worker = new WorkerDeliverDisruptor<M>(_actorFactory.get(),
+      worker = new WorkerDeliverDisruptor<M>(deliver,
                                              outboxContext,
                                              executor,
                                              loader,

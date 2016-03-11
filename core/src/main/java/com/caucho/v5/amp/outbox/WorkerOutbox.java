@@ -96,4 +96,10 @@ public interface WorkerOutbox<M extends MessageOutbox<M>>
   {
     wakeAll();
   }
+  
+  @SuppressWarnings("unchecked")
+  static <M extends MessageOutbox<M>> WorkerOutbox<M> createNull()
+  {
+    return WorkerOutboxNull.NULL;
+  }
 }
