@@ -190,7 +190,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   }
 
   
-  ServiceRefAmp getServiceRef(Object proxy);
+  ServiceRefAmp toServiceRef(Object proxy);
   
   InboxFactoryAmp inboxFactory();
 

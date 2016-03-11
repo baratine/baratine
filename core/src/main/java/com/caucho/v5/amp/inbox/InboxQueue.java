@@ -46,6 +46,7 @@ import com.caucho.v5.amp.message.OnActiveReplayMessage;
 import com.caucho.v5.amp.message.OnInitMessage;
 import com.caucho.v5.amp.message.OnShutdownMessage;
 import com.caucho.v5.amp.message.ReplayMessage;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.outbox.WorkerOutboxMultiThread;
@@ -299,6 +300,18 @@ public class InboxQueue extends InboxBase
     return new DeliverInboxFactory(this,
                                        supplierActor,
                                        config);
+  }
+  
+  public DeliverOutbox<MessageAmp> createDeliver(ActorAmp actor)
+  {
+    boolean isDebug = manager().isDebug() || log.isLoggable(Level.FINE);
+
+    if (isDebug) {
+      return new DeliverInboxDebug(this, actor);
+    }
+    else {
+      return new DeliverInbox(this, actor);
+    }
   }
 
   @Override

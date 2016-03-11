@@ -97,7 +97,7 @@ public final class ResultFuture<T> implements Result<T>
         // _thread = thread;
       }
       else {
-        if (! ServiceRef.flushOutboxAndExecuteLast()) {
+        if (ServiceRef.flushOutboxAndExecuteLast()) {
           // if pending messages, continue to process them
           continue;
         }

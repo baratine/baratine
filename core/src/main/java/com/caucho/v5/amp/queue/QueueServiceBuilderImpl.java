@@ -265,6 +265,19 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     });
   }
   
+  public QueueService<M> disruptor(DeliverOutbox<M> first,
+                                    DeliverOutbox<M> ...rest)
+  {
+    DisruptorBuilderQueue<M> builder = disruptorBuilder(first);
+    
+    DisruptorBuilderQueue<M> ptr = builder;
+    for (DeliverOutbox<M> deliver : rest) {
+      ptr = ptr.next(deliver);
+    }
+    
+    return builder.build();
+  }
+  
   /*
   public <X extends Runnable> QueueService<X> 
   buildSpawnTask(SpawnThreadManager threadManager)
@@ -300,7 +313,7 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     if (executor == null) {
       ThreadPool threadPool = ThreadPool.current();
           
-      executor = threadPool.getThrottleExecutor();
+      executor = threadPool.throttleExecutor();
       // executor = threadPool;
     }
     

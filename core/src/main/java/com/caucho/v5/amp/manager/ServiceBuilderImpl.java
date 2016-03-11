@@ -36,14 +36,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.actor.ActorAmpJournal;
 import com.caucho.v5.amp.actor.ActorFactoryImpl;
 import com.caucho.v5.amp.actor.ActorFactoryWorkers;
 import com.caucho.v5.amp.inbox.InboxQueue;
-import com.caucho.v5.amp.inbox.OutboxAmpFactory;
 import com.caucho.v5.amp.inbox.QueueServiceFactoryInbox;
 import com.caucho.v5.amp.journal.ActorJournal;
 import com.caucho.v5.amp.journal.JournalAmp;
+import com.caucho.v5.amp.outbox.DeliverOutbox;
+import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
+import com.caucho.v5.amp.proxy.SkeletonClass;
+import com.caucho.v5.amp.queue.QueueServiceBuilder;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.amp.session.SessionServiceManagerImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
@@ -1001,10 +1005,10 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
   {
     ServiceConfig config = actorFactory.config();
     
-    ActorAmp actor = actorFactory.mainActor();
+    ActorAmp actorMain = actorFactory.mainActor();
      
     // XXX: check on multiple names
-    String journalName = actor.getName();
+    String journalName = actorMain.getName();
 
     long journalDelay = config.getJournalDelay();
     
@@ -1016,32 +1020,24 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
                                           config.getJournalMaxCount(),
                                           journalDelay);
     
-    final ActorJournal journalActor = createJournalActor(actor, journal);
+    final ActorJournal actorJournal = createJournalActor(actorMain, journal);
 
-    actor.setJournal(journal);
+    actorMain.setJournal(journal);
 
-    DisruptorBuilderTop topBuilder = disruptor(actor.getApiClass(), journal);
-    topBuilder.name(actor.getName());
+    SkeletonClass skel = new SkeletonClass(_manager, actorMain.getApiClass(), config);
+    skel.introspect();
     
-    topBuilder.actorMain(actor);
+    // XXX: 
+    ActorAmp actorTop = new ActorAmpJournal(skel, journal, actorMain, _name);
     
-    DisruptorBuilderAmp builder = topBuilder;
-    
-    builder = builder.next(()->journalActor, config);
-    
-    builder.next(()->actor, config);
+    QueueServiceFactoryInbox serviceFactory
+      = new JournalServiceFactory(actorTop, actorJournal, actorMain, config);
 
-    ServiceRefAmp serviceRef = (ServiceRefAmp) topBuilder.build(config);
+    ServiceRefAmp serviceRef = service(serviceFactory, config);
 
-    journalActor.setInbox(serviceRef.inbox());
+    actorJournal.setInbox(serviceRef.inbox());
 
     return serviceRef;
-  }
-
-  private <T> DisruptorBuilderTop<T> disruptor(Class<T> api,
-                                               JournalAmp journal)
-  {
-    return new DisruptorBuilderTop<T>(this, _manager, api, journal);
   }
 
   protected ActorJournal createJournalActor(ActorAmp actor,
@@ -1057,76 +1053,10 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     
     return journalActor;
   }
-
-  /*
-  protected ActorJournal createJournalActorPeer(ActorAmp actor,
-                                            JournalAmp journal)
-  {
-    
-    // PodBartender pod = BartenderSystem.getCurrentPod();
-    NodePodAmp shard = BartenderSystem.getCurrentShard();
-    
-    String peerServerName = null;
-    int peerIndex = -1;
-    int selfIndex = -1;
-
-    if (shard != null) {
-      int serverCount = shard.getServerCount();
-
-      for (int i = 0; i < serverCount; i++) {
-        ServerBartender server = shard.getServer(i);
-        
-        if (server != null 
-            && server != null 
-            && server.isSelf()) {
-          selfIndex = i;
-          
-          ServerBartender serverPeer = null;
-          
-          if (i == 0) {
-            peerIndex = 1;
-            serverPeer = shard.getServer(peerIndex);
-          }
-          else if (i == 1) {
-            peerIndex = 0;
-            serverPeer = shard.getServer(peerIndex);
-          }
-            
-          if (serverPeer != null) {
-            peerServerName = serverPeer.getId();
-          }
-        }
-      }
-    }
-      JournalAmp journal = _journalFactory.open(journalName, 
-                                                config.getJournalMaxCount(),
-                                                journalDelay);
-      
-      JournalAmp toPeerJournal = null;
-      JournalAmp fromPeerJournal = null;
-      
-      if (peerServerName != null && peerIndex >= 0) {
-        toPeerJournal = _journalFactory.openPeer(peerIndex + ":" + journalName,
-                                                 peerServerName);
-      }
-      
-      if (selfIndex >= 0) {
-        fromPeerJournal = _journalFactory.open(selfIndex + ":" + journalName, -1, -1);
-      }
-
-      final ActorJournal journalActor
-        = new ActorJournal(actor, journal, toPeerJournal, fromPeerJournal);
-
-      actor.setJournal(journal);
-      
-      return journalActor;
-  }
-  */
   
   /**
-   * Used by disruptor builder.
+   * Used by journal builder.
    */
-  // @Override
   ServiceRefAmp service(QueueServiceFactoryInbox serviceFactory,
                         ServiceConfig config)
   {
@@ -1143,12 +1073,6 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
                                     queueBuilder,
                                     serviceFactory,
                                     config);
-    /*
-    InboxAmp inbox = inboxFactory.create(this, 
-                                         serviceFactory);
-                                         */
-    
-    //InboxAmp inbox = new InboxQueue(this, actorFactory);
 
     return inbox.serviceRef();
   }
@@ -1222,6 +1146,57 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
       } finally {
         thread.setContextClassLoader(oldLoader);
       }
+    }
+  }
+  
+  class JournalServiceFactory implements QueueServiceFactoryInbox
+  {
+    private ActorAmp _actorTop;
+    private ActorAmp _actorJournal;
+    private ActorAmp _actorMain;
+    private ServiceConfig _config;
+    
+    JournalServiceFactory(ActorAmp actorTop,
+                          ActorAmp actorJournal,
+                          ActorAmp actorMain,
+                          ServiceConfig config)
+    {
+      _actorTop = actorTop;
+      _actorJournal = actorJournal;
+      _actorMain = actorMain;
+      _config = config;
+    }
+    
+    public String getName()
+    {
+      return _actorTop.getName();
+    }
+    
+    public ActorAmp getMainActor()
+    {
+      return _actorTop;
+    }
+    
+    @Override
+    public QueueService<MessageAmp> build(QueueServiceBuilder<MessageAmp> queueBuilder,
+                                          InboxQueue inbox)
+    {
+      // return new       return inbox.createDeliverFactory(_supplier, _config);
+      //DeliverFactoryImpl(supplierActor, config);
+
+      DeliverOutbox<MessageAmp> factoryJournal
+        = inbox.createDeliver(_actorJournal);
+      
+      DeliverOutbox<MessageAmp> factoryMain
+        = inbox.createDeliver(_actorMain);
+      
+      //DisruptorBuilderQueue<MessageAmp> builder;
+      
+      return queueBuilder.disruptor(factoryJournal, factoryMain);
+      
+      //builder.next(factoryMain);
+
+      //return builder.build();
     }
   }
 }

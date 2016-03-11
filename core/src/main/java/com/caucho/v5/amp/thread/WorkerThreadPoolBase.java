@@ -39,7 +39,6 @@ abstract public class WorkerThreadPoolBase
   extends WorkerAmpBase
   implements WorkerAmp
 {
-  private final ThreadPool _threadPool;
   private final Executor _executor;
   
   protected WorkerThreadPoolBase()
@@ -74,7 +73,6 @@ abstract public class WorkerThreadPoolBase
   {
     super(classLoader);
     
-    _threadPool = threadPool;
     _executor = executor;
     
     Objects.requireNonNull(executor);
@@ -85,11 +83,5 @@ abstract public class WorkerThreadPoolBase
   {
     // _threadPool.schedulePriority(this);
     _executor.execute(this);
-  }
-
-  @Override
-  protected void unpark(Thread thread)
-  {
-    _threadPool.scheduleUnpark(thread);
   }
 }

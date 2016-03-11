@@ -76,7 +76,7 @@ class ConnectionWebSocketJni
     _selectManager = selectManager;
 //    _keepalive = new PollControllerTcp(this);
     
-    _executor = ThreadPool.current().getThrottleExecutor();
+    _executor = ThreadPool.current().throttleExecutor();
   }
   
   void start()

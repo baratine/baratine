@@ -54,7 +54,6 @@ import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.SystemMessage;
-import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmpImpl;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.remote.ServiceNodeBase;
@@ -132,7 +131,6 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
 
   private boolean _isAutoStart = true;
   private String _selfServer;
-  private String _peerServer;
   
   private final ArrayList<ServiceRef> _autoStart = new ArrayList<>();
   private final Lifecycle _lifecycle = new Lifecycle();
@@ -301,20 +299,6 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   {
     _selfServer = selfServer;
   }
-  
-  /*
-  @Override
-  public String getPeerServer()
-  {
-    return _peerServer;
-  }
-  
-  @Override
-  public void setPeerServer(String peerServer)
-  {
-    _peerServer = peerServer;
-  }
-  */
   
   @Override
   public RegistryAmp registry()
@@ -501,42 +485,6 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
     return getProxyFactory().createProxy(service, api);
   }
 
-  /*
-  public <T> T createReproxy(ServiceRefAmp service, Class<T> api)
-  {
-    return getProxyFactory().createProxy(service, api);
-  }
-  */
-
-  /*
-  @Override
-  public <T> T createPinProxy(ServiceRefAmp service, 
-                              Class<T> api,
-                              Class<?> ...apis)
-  {
-    // XXX: Needs to be integrated outside of the proxy
-    // return getProxyFactory().createProxyCallback(service, api);
-    return getProxyFactory().createProxy(service, api);
-  }
-  */
-
-  /**
-   * newService() creates a new service using a builder.
-   */
-  /*
-  //@Override
-  private ServiceConfig.Builder newServiceConfig()
-  {
-    ServiceConfig.Builder builder = ServiceConfig.Builder.create();
-    
-    if (_journalDelay > 0) {
-      builder.journalDelay(_journalDelay, TimeUnit.MILLISECONDS);
-    }
-    
-    return builder;
-  }
-  */
-
   /**
    * newService() creates a new service from a bean
    */
@@ -711,39 +659,6 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
       return getProxyFactory().createSkeleton(bean, path, path, null, config);
     }
   }
-
-  /*
-  @Override
-  public ActorAmp createActor(Object bean, 
-                              String path,
-                              String childPath,
-                              ActorContainerAmp container,
-                              ServiceConfig config)
-  {
-    if (bean instanceof ActorAmp) {
-      return (ActorAmp) bean;
-    }
-    else {
-      return getProxyFactory().createSkeleton(bean, path, childPath, container, config);
-    }
-  }
-  */
-
-  /*
-  @Override
-  public ActorAmp createActorSession(Object bean, 
-                                     String key,
-                                     ContextSession context,
-                                     ServiceConfig config)
-  {
-    if (bean instanceof ActorAmp) {
-      return (ActorAmp) bean;
-    }
-    else {
-      return getProxyFactory().createSkeletonSession(bean, key, context, config);
-    }
-  }
-  */
   
   protected InboxAmp createSystemInbox()
   {
@@ -808,7 +723,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   }
 
   @Override
-  public ServiceRefAmp getServiceRef(Object proxy)
+  public ServiceRefAmp toServiceRef(Object proxy)
   {
     if (proxy instanceof ProxyHandleAmp) {
       ProxyHandleAmp proxyHandle = (ProxyHandleAmp) proxy;

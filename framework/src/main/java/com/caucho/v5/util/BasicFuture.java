@@ -107,7 +107,7 @@ public class BasicFuture<T> implements Future<T>
     Thread thread = _thread;
     
     if (thread != null) {
-      ThreadPool.current().scheduleUnpark(thread);
+      LockSupport.unpark(thread);
     }
   }
   
@@ -120,7 +120,7 @@ public class BasicFuture<T> implements Future<T>
     Thread thread = _thread;
     
     if (thread != null) {
-      ThreadPool.current().scheduleUnpark(thread);
+      LockSupport.unpark(thread);
     }
   }
   

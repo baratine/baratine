@@ -114,7 +114,7 @@ public final class LogBuffer // extends MessageDeliverBase
     Thread thread = _thread;
     
     if (thread != null) {
-      ThreadPool.current().scheduleUnpark(thread);
+      LockSupport.unpark(thread);
     }
   }
 

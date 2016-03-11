@@ -83,7 +83,7 @@ class ThreadLauncher extends ThreadLauncherBase
   }
   
   @Override
-  protected long getCurrentTimeActual()
+  protected long currentTimeActual()
   {
     return System.currentTimeMillis();
   }
@@ -106,12 +106,6 @@ class ThreadLauncher extends ThreadLauncherBase
 
       HealthSystemFacade.shutdownActive(ExitCode.THREAD, msg);
     }
-  }
-  
-  @Override
-  protected void unpark(Thread thread)
-  {
-    LockSupport.unpark(thread);
   }
   
   //

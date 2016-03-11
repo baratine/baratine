@@ -64,4 +64,7 @@ public interface QueueServiceBuilder<M extends MessageOutbox<M>>
   DisruptorBuilderQueue<M> disruptorBuilder(DeliverFactory<M> actorFactory);
   
   DisruptorBuilderQueue<M> disruptorBuilder(DeliverOutbox<M> actorFactory);
+  
+  QueueService<M> disruptor(DeliverOutbox<M> first,
+                            DeliverOutbox<M> ...rest);
 }

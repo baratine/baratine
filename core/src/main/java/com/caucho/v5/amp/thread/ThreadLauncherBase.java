@@ -376,7 +376,7 @@ abstract public class ThreadLauncherBase extends WorkerAmpBase
     if (! _lifecycle.isActive())
       return true;
     
-    long now = getCurrentTimeActual();
+    long now = currentTimeActual();
     
     long idleExpire = _threadIdleExpireTime.get();
     
@@ -459,7 +459,7 @@ abstract public class ThreadLauncherBase extends WorkerAmpBase
     int startingCount = _startingCount.get();
     
     if (idleCount + startingCount < _idleMin) {
-      updateIdleExpireTime(getCurrentTimeActual());
+      updateIdleExpireTime(currentTimeActual());
       
       wake();
     }
@@ -526,7 +526,7 @@ abstract public class ThreadLauncherBase extends WorkerAmpBase
 
   protected void update()
   {
-    long now = getCurrentTimeActual();
+    long now = currentTimeActual();
     
     _threadIdleExpireTime.set(now + _idleTimeout);
 
@@ -542,7 +542,7 @@ abstract public class ThreadLauncherBase extends WorkerAmpBase
       boolean isValid = false;
 
       try {
-        long now = getCurrentTimeActual();
+        long now = currentTimeActual();
 
         updateIdleExpireTime(now);
 

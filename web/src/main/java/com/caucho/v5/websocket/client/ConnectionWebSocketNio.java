@@ -76,7 +76,7 @@ class ConnectionWebSocketNio
     //_is = _socketConn.getInputStream();
     
     _selectManager = PollTcpManagerNio.create();
-    _executor = ThreadPool.current().getThrottleExecutor();
+    _executor = ThreadPool.current().throttleExecutor();
     
     _keepalive = null;//new PollControllerTcp(this);
   }

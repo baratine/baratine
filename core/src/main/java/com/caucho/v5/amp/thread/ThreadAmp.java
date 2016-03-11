@@ -33,7 +33,6 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.outbox.MessageOutbox;
 import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.outbox.OutboxProvider;
 import com.caucho.v5.util.CurrentTime;
@@ -89,29 +88,6 @@ public final class ThreadAmp extends Thread
     return getId();
   }
 
-  /**
-   * Sets the thread's task.  Must be called inside _idleLock
-   */
-  /*
-  final boolean scheduleTask(Runnable task, ClassLoader loader)
-  {
-    if (_isClose) {
-      System.out.println("BAD: close");
-      return false;
-    }
-    
-    if (task == null) {
-      System.out.println("BAD2: task");
-      return false;
-    }
-    
-    _taskLoader = loader;
-    _task = task;
-
-    return true;
-  }
-  */
-
   @Override
   public final void interrupt()
   {
@@ -131,7 +107,7 @@ public final class ThreadAmp extends Thread
   /**
    * Sets timeouts.
    */
-  final void setExecutorTimeout(ExecutorThrottle executor, long timeout)
+  final void executorTimeout(ExecutorThrottle executor, long timeout)
   {
     _executor = executor;
     _activeSlowExpireTime = CurrentTime.getCurrentTimeActual() + timeout;
@@ -185,6 +161,9 @@ public final class ThreadAmp extends Thread
     }
   }
 
+  /**
+   * Main thread loop.
+   */
   private void runTasks()
   {
     ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
@@ -241,22 +220,7 @@ public final class ThreadAmp extends Thread
   {
     _wakeState = WakeState.THREAD;
   }
-
-  /**
-   * 
-   */
-  void setWakeUnpark()
-  {
-    _wakeState = WakeState.UNPARK;
-  }
   
-  /*
-  void unpark()
-  {
-    _isWake = true;
-    LockSupport.unpark(this);
-  }
-  */
   private void park()
   {
     if (_isClose) {
@@ -278,9 +242,6 @@ public final class ThreadAmp extends Thread
     else if (_wakeState == WakeState.THREAD) {
       _pool.onWakeThread();
     }
-    else if (_wakeState == WakeState.UNPARK) {
-      _pool.onWakeUnpark();
-    }
     else {
       log.warning("Illegal State: " + _wakeState + " " + this);
     }
@@ -288,7 +249,6 @@ public final class ThreadAmp extends Thread
   
   static enum WakeState {
     IDLE,
-    THREAD,
-    UNPARK;
+    THREAD;
   }
 }

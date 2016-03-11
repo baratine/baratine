@@ -143,17 +143,12 @@ abstract public class WorkerAmpBase
       Thread thread = _thread;
 
       if (thread != null) {
-        unpark(thread);
+        LockSupport.unpark(thread);
       }
     }
   }
   
   abstract protected void startWorkerThread();
-  
-  protected void unpark(Thread thread)
-  {
-    LockSupport.unpark(thread);
-  }
 
   protected String getThreadName()
   {
@@ -203,7 +198,7 @@ abstract public class WorkerAmpBase
       
       onThreadStart();
 
-      long now = getCurrentTimeActual();
+      long now = currentTimeActual();
       
       long idleTimeout = getIdleTimeout();
       
@@ -240,7 +235,7 @@ abstract public class WorkerAmpBase
           
           long delta = runTask();
           
-          now = getCurrentTimeActual();
+          now = currentTimeActual();
           
           if (delta > 0) {
             expires = now + delta;
@@ -268,7 +263,7 @@ abstract public class WorkerAmpBase
           _state.compareAndSet(State.PARK, State.ACTIVE);
         }
         
-        now = getCurrentTimeActual();
+        now = currentTimeActual();
         
         if (isPermanent() || isExpireRetry) {
           expires = now + idleTimeout;
@@ -309,7 +304,7 @@ abstract public class WorkerAmpBase
     }
   }
   
-  protected long getCurrentTimeActual()
+  protected long currentTimeActual()
   {
     // return CurrentTime.getCurrentTimeActual();
     

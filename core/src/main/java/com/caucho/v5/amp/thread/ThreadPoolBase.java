@@ -113,29 +113,17 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
   // private final ThreadTaskRing2 _taskQueue = new ThreadTaskRing2();
   private final QueueRing<RunnableItem> _taskQueue
     = new QueueRing<>(16 * 1024);
-  
-  //
-  // the unpark queue
-  //
-  
-  private final QueueRing<Thread> _unparkQueue
-    = new QueueRing<>(256);
     
   private final AtomicInteger _threadWakeStartCount = new AtomicInteger();
-  private final AtomicInteger _unparkWakeStartCount = new AtomicInteger();
   
   private long _spinTimeoutCount;
   
   private final AtomicInteger _taskCount = new AtomicInteger();
   private final AtomicInteger _spinIdleCount = new AtomicInteger();
-  private final AtomicInteger _unparkCount = new AtomicInteger();
   
   private final int _spinCpuMax;
 
   private int _waitCount;
-
-  private boolean _isUnparkSchedule = false;
-
 
   public ThreadPoolBase()
   {
@@ -171,7 +159,7 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
     //System.out.println("SPIN_TIMEOUT: " + _spinTimeoutCount);
   }
 
-  public static ThreadPoolBase getCurrent()
+  public static ThreadPoolBase current()
   {
     ThreadPoolBase threadPool = _globalThreadPool.get();
 
@@ -738,11 +726,9 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
   {
     return ("ThreadPool[queue:" + _taskQueue.size()
             + ",task:" + _taskCount.get()
-            + ",unpark:" + _unparkCount
             + ",spin:" + _spinIdleCount.get()
             + ",idle:" + _idleThreadRing.size()
             + ",start:" + _threadWakeStartCount.get()
-            + ",unpark-start:" + _unparkWakeStartCount.get()
             + "]");
   }
   
@@ -751,49 +737,10 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
   {
     _threadWakeStartCount.decrementAndGet();
   }
-  
-  @Friend(ThreadAmp.class)
-  void onWakeUnpark()
-  {
-    _unparkWakeStartCount.decrementAndGet();
-  }
 
   //
   // task methods
   //
-
-  @Friend(ThreadAmp.class)
-  void unparkIfIdle()
-  {
-    if (! _isUnparkSchedule) {
-      return;
-    }
-    
-    if (_spinIdleCount.get() == 0) {
-      unpark();
-    }
-  }
-  
-  @Friend(ThreadAmp.class)
-  boolean unpark()
-  {
-    if (! _isUnparkSchedule) {
-      return false;
-    }
-    
-    Thread unparkThread;
-    boolean isUnpark = false;
-    
-    
-    while ((unparkThread = _unparkQueue.poll()) != null) {
-      isUnpark = true;
-      
-      _unparkCount.decrementAndGet();
-      LockSupport.unpark(unparkThread);
-    }
-    
-    return isUnpark;
-  }
 
   @Friend(ThreadAmp.class)
   RunnableItem poll()
@@ -809,8 +756,6 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
       
       finishSpinIdle();
     }
-  
-    // pool.unparkIfIdle();
   
     // need to poll after the spin idle completes for timing, because the
     // caller might see this thread as spinning just as it completes
@@ -870,46 +815,6 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
       _threadWakeStartCount.incrementAndGet();
       thread.setWakeThread();
 
-      LockSupport.unpark(thread);
-    }
-
-  }
-
-  public final void scheduleUnpark(Thread thread)
-  {
-    if (! _isUnparkSchedule) {
-      LockSupport.unpark(thread);
-      return;
-    }
-    
-    if (true) { throw new IllegalStateException(); }
-    
-    // int taskCount = Math.max(0, _taskCount.get());
-    //
-    // if (_unparkCount.get() > 0) {
-    //   taskCount++;
-    // }
-    
-    int spinIdleCount = _spinIdleCount.get();
-    // int threadWakeStartCount = _threadWakeStartCount.get();
-    int unparkWakeStartCount = _threadWakeStartCount.get();
-    
-    int spinCount = spinIdleCount + unparkWakeStartCount;
-    
-    if (_spinCpuMax > 0 && _unparkQueue.offer(thread)) {
-      _unparkCount.incrementAndGet();
-      
-      if (spinCount <= 0) { // taskCount) {
-        ThreadAmp threadIdle = _idleThreadRing.poll();
-        
-        if (threadIdle != null) {
-          _unparkWakeStartCount.incrementAndGet();
-          threadIdle.setWakeUnpark();
-          LockSupport.unpark(threadIdle);
-        }
-      }
-    }
-    else {
       LockSupport.unpark(thread);
     }
   }

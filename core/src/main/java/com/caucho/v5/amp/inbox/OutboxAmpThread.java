@@ -41,7 +41,7 @@ public class OutboxAmpThread
   extends OutboxAmpBase
 {
   private static final InboxAmp _inboxThread
-    = new InboxExecutorBase("thread", ThreadPool.current().getThrottleExecutor());
+    = new InboxExecutorBase("thread", ThreadPool.current().throttleExecutor());
   
   @Override
   public InboxAmp inbox()

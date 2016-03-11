@@ -89,7 +89,7 @@ public final class ThreadPool extends ThreadPoolBase
     if (pool == null) {
       pool = new ThreadPool();
       
-      pool = pool.setAsGlobal();
+      pool = pool.asGlobal();
       
       if (_globalThreadPool.compareAndSet(null, pool)) {
         pool.start();
@@ -102,7 +102,7 @@ public final class ThreadPool extends ThreadPoolBase
     return pool;
   }
   
-  protected ThreadPool setAsGlobal()
+  protected ThreadPool asGlobal()
   {
     if (_globalThreadPool.compareAndSet(null, this)) {
       start();
@@ -116,12 +116,12 @@ public final class ThreadPool extends ThreadPoolBase
     }
   }
   
-  public ExecutorSpin getSpinExecutor()
+  public ExecutorSpin spinExecutor()
   {
     return _spinExecutor;
   }
   
-  public Executor getThrottleExecutor()
+  public Executor throttleExecutor()
   {
     return _throttleExecutor;
   }
@@ -215,7 +215,8 @@ public final class ThreadPool extends ThreadPoolBase
     }
   }
  
-  static class ExecutorQueueItem {
+  static class ExecutorQueueItem
+  {
     Runnable _runnable;
     ClassLoader _loader;
 

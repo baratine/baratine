@@ -183,7 +183,7 @@ public class ExecutorThrottle implements Executor, RunnableItemScheduler {
             ClassLoader loader = taskItem.getClassLoader();
             long timeout = taskItem.getTimeout();
 
-            thread.setExecutorTimeout(executor, timeout);
+            thread.executorTimeout(executor, timeout);
             thread.setContextClassLoader(loader);
           
             task.run();

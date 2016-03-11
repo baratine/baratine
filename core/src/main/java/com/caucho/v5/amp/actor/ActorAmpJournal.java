@@ -41,14 +41,14 @@ import com.caucho.v5.amp.spi.MethodAmp;
 /**
  * amp disruptor method
  */
-public class ActorAmpDisruptor extends ActorAmpBase
+public class ActorAmpJournal extends ActorAmpBase
 {
   private final SkeletonClass _skel;
   private final JournalAmp _journal;
   private final ActorAmp _actorMain;
   private final String _path;
   
-  public ActorAmpDisruptor(SkeletonClass skel,
+  public ActorAmpJournal(SkeletonClass skel,
                  JournalAmp journal,
                  ActorAmp actorMain,
                  String path)

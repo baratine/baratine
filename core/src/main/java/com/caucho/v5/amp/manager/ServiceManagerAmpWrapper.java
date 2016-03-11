@@ -353,9 +353,9 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   }
 
   @Override
-  public ServiceRefAmp getServiceRef(Object proxy)
+  public ServiceRefAmp toServiceRef(Object proxy)
   {
-    return delegate().getServiceRef(proxy);
+    return delegate().toServiceRef(proxy);
   }
 
   /*

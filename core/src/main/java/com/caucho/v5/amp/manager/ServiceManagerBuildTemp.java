@@ -317,7 +317,7 @@ public class ServiceManagerBuildTemp implements ServiceManagerAmp
   }
 
   @Override
-  public ServiceRefAmp getServiceRef(Object proxy)
+  public ServiceRefAmp toServiceRef(Object proxy)
   {
     // TODO Auto-generated method stub
     return null;
