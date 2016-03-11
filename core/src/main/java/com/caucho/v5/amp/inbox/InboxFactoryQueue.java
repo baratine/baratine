@@ -64,8 +64,8 @@ public class InboxFactoryQueue implements InboxFactoryAmp
     // Executor executor = ThreadPool.getCurrent();
     queueBuilder.setClassLoader(_manager.classLoader());
     
-    queueBuilder.capacity(config.getQueueCapacity());
-    queueBuilder.initial(config.getQueueInitialSize());
+    queueBuilder.capacity(config.queueSizeMax());
+    queueBuilder.initial(config.queueSize());
     
     return new InboxQueue(manager, 
                             queueBuilder,

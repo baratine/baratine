@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpJournal;
 import com.caucho.v5.amp.actor.ActorFactoryImpl;
@@ -47,8 +48,10 @@ import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.proxy.SkeletonClass;
+import com.caucho.v5.amp.queue.DisruptorBuilderQueue;
 import com.caucho.v5.amp.queue.QueueServiceBuilder;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
+import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 import com.caucho.v5.amp.session.SessionServiceManagerImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorFactoryAmp;
@@ -71,7 +74,7 @@ import io.baratine.service.Workers;
 /**
  * Service builder for services needing configuration.
  */
-public class ServiceBuilderImpl implements ServiceBuilderAmp
+public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
 {
   private static final L10N L = new L10N(ServiceBuilderImpl.class);
   private static final Logger log
@@ -127,11 +130,45 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     }
   }
   
+  /**
+   * snapshot/DTO to protect against changes. 
+   */
+  private ServiceBuilderImpl(ServiceBuilderImpl builder)
+  {
+    Objects.requireNonNull(builder);
+    
+    _manager = null;
+    
+    _address = builder.address();
+    
+    if (_address != null) {
+      _name = _address;
+    }
+    else {
+      _name = builder.name();
+    }
+    
+    _workers = builder.workers();
+    
+    _queueSize = builder.queueSize();
+    _queueSizeMax = builder.queueSizeMax();
+    
+    _offerTimeout = builder.queueTimeout();
+    _queueFullHandler = builder.queueFullHandler();
+    
+    _isPublic = builder.isPublic();
+    _isAutoStart = builder.isAutoStart();
+    _isJournal = builder.isJournal();
+    _journalMaxCount = builder.journalMaxCount();
+    _journalDelay = builder.journalDelay();
+  }
+  
   private void queueSizeMax(int size)
   {
     _queueSizeMax = size;
   }
 
+  @Override
   public int queueSizeMax()
   {
     return _queueSizeMax;
@@ -142,11 +179,13 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     _queueSize = size;
   }
   
+  @Override
   public int queueSize()
   {
     return _queueSize;
   }
   
+  @Override
   public long queueTimeout()
   {
     return 10 * 1000L;
@@ -157,7 +196,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     _journalDelay = unit.toMillis(delay);
   }
   
-  private ClassLoader getClassLoader()
+  private ClassLoader classLoader()
   {
     return _manager.classLoader();
   }
@@ -346,7 +385,8 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     _queueFullHandler = handler;
   }
   
-  QueueFullHandler queueFullHandler()
+  @Override
+  public QueueFullHandler queueFullHandler()
   {
     return _queueFullHandler;
   }
@@ -403,7 +443,8 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     return this;
   }
   
-  int workers()
+  @Override
+  public int workers()
   {
     return _workers;
   }
@@ -416,7 +457,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     return this;
   }
 
-  //@Override
+  @Override
   public String address()
   {
     return _address;
@@ -513,7 +554,8 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     return this;
   }
   
-  public boolean autoStart()
+  @Override
+  public boolean isAutoStart()
   {
     return _isAutoStart;
   }
@@ -554,6 +596,14 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     return this;
   }
 
+  /**
+   * Take a snapshot of the config to avoid changes.
+   */
+  private ServiceConfig config()
+  {
+    return new ServiceBuilderImpl(this);
+  }
+
   @Override
   public ServiceRefAmp ref()
   {
@@ -585,7 +635,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
   
   private ServiceRefAmp buildWorker()
   {
-    ServiceConfig config = new ServiceConfigImpl(this);
+    ServiceConfig config = config();
     
     ActorAmp actor = _manager.createActor(_worker, config);
     
@@ -605,7 +655,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
   
   private ServiceRefAmp buildWorkers()
   {
-    ServiceConfig config = new ServiceConfigImpl(this);
+    ServiceConfig config = config();
     
     //ActorAmp actor = _manager.getProxyFactory().createSkeleton(mainWorker, _path, _path, null, config);
     ActorAmp actor;
@@ -669,7 +719,8 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     }
   }
   
-  long journalDelay()
+  @Override
+  public long journalDelay()
   {
     return _journalDelay;
   }
@@ -713,7 +764,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
 
     String address = _address;
     
-    ServiceConfig config = new ServiceConfigImpl(this);
+    ServiceConfig config = config();
     
     SessionServiceManagerImpl context;
     
@@ -746,7 +797,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
   
   private ServiceRefAmp buildService()
   {
-    ServiceConfig config = new ServiceConfigImpl(this);
+    ServiceConfig config = config();
     
     ActorFactoryAmp factory = pluginFactory(_serviceClass, config);
     
@@ -803,7 +854,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
       return worker;
     }
     else {
-      return new SupplierClass(serviceClass, getClassLoader()).get();
+      return new SupplierClass(serviceClass, classLoader()).get();
     }
   }
   
@@ -825,7 +876,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     if (injectManager != null) {
       Key key = Key.of(serviceClass, ServiceImpl.class);
       
-      return new SupplierBean(key, injectManager, getClassLoader());
+      return new SupplierBean(key, injectManager, classLoader());
       /*
       Object worker = injectManager.instance(key);
       Objects.requireNonNull(worker);
@@ -834,7 +885,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
       */
     }
     else {
-      return new SupplierClass(serviceClass, getClassLoader());
+      return new SupplierClass(serviceClass, classLoader());
     }
   }
   
@@ -860,11 +911,11 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
   
   private <T> Supplier<T> newSupplier(Key<T> key)
   {
-    InjectManagerAmp injectManager = InjectManagerAmp.current(getClassLoader());
+    InjectManagerAmp injectManager = InjectManagerAmp.current(classLoader());
     
     Objects.requireNonNull(injectManager);
     
-    return (Supplier) new SupplierBean(key, injectManager, getClassLoader());
+    return (Supplier) new SupplierBean(key, injectManager, classLoader());
   }
   
   /**
@@ -962,8 +1013,8 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
       
       ServiceConfig config = actorFactory.config();
     
-      queueBuilder.capacity(config.getQueueCapacity());
-      queueBuilder.initial(config.getQueueInitialSize());
+      queueBuilder.capacity(config.queueSizeMax());
+      queueBuilder.initial(config.queueSize());
     
       InboxAmp inbox = new InboxQueue(_manager, 
                                       queueBuilder,
@@ -1010,14 +1061,14 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     // XXX: check on multiple names
     String journalName = actorMain.getName();
 
-    long journalDelay = config.getJournalDelay();
+    long journalDelay = config.journalDelay();
     
     if (journalDelay < 0) {
       journalDelay = _journalDelay;
     }
     
     JournalAmp journal = _manager.journal(journalName, 
-                                          config.getJournalMaxCount(),
+                                          config.journalMaxCount(),
                                           journalDelay);
     
     final ActorJournal actorJournal = createJournalActor(actorMain, journal);
@@ -1066,8 +1117,8 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
     queueBuilder.setClassLoader(_manager.classLoader());
     
-    queueBuilder.capacity(config.getQueueCapacity());
-    queueBuilder.initial(config.getQueueInitialSize());
+    queueBuilder.capacity(config.queueSizeMax());
+    queueBuilder.initial(config.queueSize());
   
     InboxAmp inbox = new InboxQueue(_manager, 
                                     queueBuilder,
@@ -1149,6 +1200,65 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp
     }
   }
   
+  class QueueServiceFactoryImpl implements QueueServiceFactoryInbox
+  {
+    private ServiceManagerAmp _manager;
+    private ActorFactoryAmp _actorFactory;
+
+    QueueServiceFactoryImpl(ServiceManagerAmp manager,
+                            ActorFactoryAmp actorFactory)
+    {
+      Objects.requireNonNull(manager);
+      Objects.requireNonNull(actorFactory);
+      
+      _manager = manager;
+      _actorFactory = actorFactory;
+
+      if (config().isJournal()) {
+        throw new IllegalStateException();
+      }
+    }
+
+    @Override
+    public String getName()
+    {
+      return _actorFactory.actorName();
+    }
+    
+    public ServiceConfig config()
+    {
+      return _actorFactory.config();
+    }
+
+    @Override
+    public ActorAmp getMainActor()
+    {
+      return _actorFactory.mainActor();
+    }
+
+    @Override
+    public QueueService<MessageAmp> build(QueueServiceBuilder<MessageAmp> queueBuilder,
+                                          InboxQueue inbox)
+    {
+      DeliverFactory<MessageAmp> factory
+        = inbox.createDeliverFactory(_actorFactory, config());
+
+      DisruptorBuilderQueue<MessageAmp> builder;
+      builder = queueBuilder.disruptorBuilder(factory);
+
+      if (config().isJournal()) {
+        throw new IllegalStateException();
+        /*
+        String name = "test";
+
+        builder.prologue(createJournalFactory(inbox, name));
+        */
+      }
+
+      return builder.build();
+    }
+  }
+
   class JournalServiceFactory implements QueueServiceFactoryInbox
   {
     private ActorAmp _actorTop;

@@ -147,7 +147,7 @@ public class InboxQueue extends InboxBase
     
     _isLifecycleAware = actor.isLifecycleAware() || ! _queue.isSingleWorker();
 
-    long timeout = config.getOfferTimeout();
+    long timeout = config.queueTimeout();
 
     if (timeout < 0) {
       timeout = 60 * 1000L;
@@ -155,7 +155,7 @@ public class InboxQueue extends InboxBase
 
     _sendTimeout = timeout;
 
-    QueueFullHandler handler = config.getQueueFullHandler();
+    QueueFullHandler handler = config.queueFullHandler();
 
     if (handler == null) {
       handler = manager.getQueueFullHandler();

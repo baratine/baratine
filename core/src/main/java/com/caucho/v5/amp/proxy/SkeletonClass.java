@@ -177,8 +177,8 @@ public class SkeletonClass
         isJournal = config.isJournal();
       }
       
-      if (config.getJournalDelay() >= 0) {
-        journalDelay = config.getJournalDelay();
+      if (config.journalDelay() >= 0) {
+        journalDelay = config.journalDelay();
       }
     }
     

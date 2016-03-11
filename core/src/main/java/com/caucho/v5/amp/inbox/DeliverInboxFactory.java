@@ -87,7 +87,7 @@ public class DeliverInboxFactory implements DeliverFactory<MessageAmp>
   public int getMaxWorkers()
   {
     if (_config != null) {
-      return _config.getMaxWorkers();
+      return _config.workers();
     }
     else {
       return 1;

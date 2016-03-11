@@ -29,9 +29,6 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import io.baratine.service.ServiceException;
-import io.baratine.service.ServiceExceptionIllegalArgument;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Array;
@@ -40,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +44,6 @@ import com.caucho.v5.amp.ErrorAmp;
 import com.caucho.v5.amp.ErrorCodesAmp;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.OutboxFactoryAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.SendMessage_N;
 import com.caucho.v5.amp.message.StreamCallMessage;
@@ -66,6 +61,9 @@ import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.ReadStream;
+
+import io.baratine.service.ServiceException;
+import io.baratine.service.ServiceExceptionIllegalArgument;
 
 /**
  * HmtpReader stream handles client packets received from the server.
@@ -87,7 +85,6 @@ public class InJamp
   // private OutboxAmp _outbox;
   
   private long _queueTimeout = 1000;
-  private Supplier<OutboxAmp> _outboxFactory;
 
   public InJamp(ChannelAmp channel)
   {
@@ -110,7 +107,7 @@ public class InJamp
     _channelIn = channel;
     
     // AmpManager ampManager = (AmpManager) ServiceManager.getCurrent();
-    _outboxFactory = OutboxFactoryAmp.createFactory();
+
     
     /*
     if (outbox == null) {
@@ -254,7 +251,7 @@ public class InJamp
   public MessageType readMessage(JsonReader jIn)
     throws IOException
   {
-    try (OutboxAmp outbox = _outboxFactory.get()) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(getManager())) {
       //OutboxThreadLocal.setCurrent(_outbox);
       
       return readMessage(jIn, outbox);

@@ -45,7 +45,7 @@ import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
-import com.caucho.v5.amp.manager.AutoBindService;
+import com.caucho.v5.amp.manager.InjectAutoBindService;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
@@ -166,7 +166,7 @@ public class WebAppBuilder
       ServiceManagerAmp serviceManager = _serviceBuilder.managerBuild();
       Amp.setContextManager(serviceManager);
 
-      _injectBuilder.autoBind(new AutoBindService(serviceManager));
+      _injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
 
       if (outbox != null) {
         InboxAmp inbox = serviceManager.inboxSystem();

@@ -29,46 +29,52 @@
 
 package com.caucho.v5.amp.manager;
 
-import java.util.function.Supplier;
+import javax.inject.Provider;
 
-import com.caucho.v5.amp.inbox.OutboxAmpImpl;
-import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.inject.impl.ServiceImpl;
+
+import io.baratine.inject.InjectManager;
+import io.baratine.inject.InjectManager.InjectAutoBind;
+import io.baratine.inject.Key;
+import io.baratine.service.Service;
 
 /**
- * factory for baratine outboxes.
+ * Baratine core service manager.
  */
-public class OutboxFactoryAmp implements Supplier<OutboxAmp>
+public class InjectAutoBindService implements InjectAutoBind
 {
-  private static OutboxFactoryAmp _factory = new OutboxFactoryAmp(null);
+  private ServiceManagerAmp _serviceManager;
   
-  private InboxAmp _inboxSystem;
-  
-  public static OutboxFactoryAmp createFactory()
+  public InjectAutoBindService(ServiceManagerAmp serviceManager)
   {
-    return _factory;
+    _serviceManager = serviceManager;
   }
-  
-  public OutboxFactoryAmp(InboxAmp inbox)
-  {
-    _inboxSystem = inbox;
-  }
-  
+
   @Override
-  public OutboxAmp get()
+  public <T> Provider<T> provider(InjectManager manager, Key<T> key)
   {
-    //return _outboxSystem;
+    Class<T> rawClass = key.rawClass();
     
-    OutboxAmp outbox = OutboxAmp.current();
+    Service service = rawClass.getAnnotation(Service.class);
     
-    if (outbox != null) {
-      return outbox;
+    if (service == null) {
+      return null;
+    }
+    
+    if (key.isAnnotationPresent(ServiceImpl.class)) {
+      return null;
+    }
+    
+    String address = _serviceManager.address(rawClass);
+
+    if (address != null && ! address.isEmpty()) {
+      T proxy = _serviceManager.service(address).as(rawClass);
+      
+      return ()->proxy;
     }
     else {
-      outbox = new OutboxAmpImpl();
-      outbox.inbox(_inboxSystem);
-      
-      return outbox;
+      return null;
     }
   }
 }
