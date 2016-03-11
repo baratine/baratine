@@ -32,7 +32,6 @@ package com.caucho.v5.amp.queue;
 import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.outbox.MessageOutbox;
 import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -46,13 +45,14 @@ public abstract class QueueServiceBuilderBase<M extends MessageOutbox<M>>
   private static final int DEFAULT_INITIAL = 16;
   private static final int DEFAULT_CAPACITY = 1024;
   
-  private DeliverOutbox<M> []_processors;
+  //private DeliverOutbox<M> []_processors;
   //private int _initial = 64;
   private int _initial = -1;
   private int _capacity = -1;
   private boolean _isMultiworker;
   private int _multiworkerOffset = 1;
   
+  /*
   public QueueServiceBuilderBase<M>
   processors(DeliverOutbox<M> ...processors)
   {
@@ -65,11 +65,14 @@ public abstract class QueueServiceBuilderBase<M extends MessageOutbox<M>>
     
     return this;
   }
+  */
   
+  /*
   public DeliverOutbox<M> []getProcessors()
   {
     return _processors;
   }
+  */
   
   public QueueServiceBuilderBase<M> capacity(int capacity)
   {
@@ -78,7 +81,7 @@ public abstract class QueueServiceBuilderBase<M extends MessageOutbox<M>>
     return this;
   }
   
-  public int getCapacity()
+  public int capacity()
   {
     if (_capacity > 0) {
       return _capacity;
@@ -96,13 +99,13 @@ public abstract class QueueServiceBuilderBase<M extends MessageOutbox<M>>
     return this;
   }
   
-  public int getInitial()
+  public int initial()
   {
     if (_initial > 0) {
       return _initial;
     }
     else if (_capacity > 0) {
-      return getCapacity();
+      return capacity();
     }
     else {
       return DEFAULT_INITIAL;
@@ -130,7 +133,7 @@ public abstract class QueueServiceBuilderBase<M extends MessageOutbox<M>>
     return this;
   }
   
-  public int getMultiworkerOffset()
+  public int multiworkerOffset()
   {
     return _multiworkerOffset;
   }
@@ -160,13 +163,17 @@ public abstract class QueueServiceBuilderBase<M extends MessageOutbox<M>>
     throw new UnsupportedOperationException(getClass().getName());
   }
 
+  /*
   public QueueService<M> build(DeliverOutbox<M> []processors)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
 
+  /*
   public DisruptorBuilderQueue<M> disruptorBuilder(DeliverFactory<M> actorFactory)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
 }

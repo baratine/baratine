@@ -31,6 +31,7 @@ package com.caucho.v5.amp.queue;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.outbox.MessageOutbox;
@@ -40,7 +41,6 @@ import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.outbox.WorkerOutboxMultiCoordinator;
 import com.caucho.v5.amp.outbox.WorkerOutboxMultiThread;
 import com.caucho.v5.amp.outbox.WorkerOutboxSingleThread;
-import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.util.L10N;
 
@@ -170,8 +170,8 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
   
   protected QueueOutbox<M> buildQueue()
   {
-    int initial = getInitial();
-    int capacity = getCapacity();
+    int initial = initial();
+    int capacity = capacity();
 
     if (initial < capacity && initial > 0) {
       return new QueueRingResizing<>(initial, capacity);
@@ -184,8 +184,8 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
   @Override
   public QueueOutbox<M> buildQueue(CounterBuilder counterBuilder)
   {
-    int initial = getInitial();
-    int capacity = getCapacity();
+    int initial = initial();
+    int capacity = capacity();
     
     if (initial < capacity && initial > 0) {
       return new QueueRingResizing<>(initial, capacity, counterBuilder);
@@ -195,32 +195,39 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     }
   }
   
+  /*
   public QueueService<M> build(DeliverOutbox<M> ...processors)
   {
     return buildMultiworker(processors);
   }
+  */
   
-  public QueueService<M> buildMultiworker(DeliverOutbox<M> ...processors)
+  @Override
+  public QueueService<M> build(Supplier<DeliverOutbox<M>> factory, 
+                               int workerCount)
   {
+    Objects.requireNonNull(factory);
     validateBuilder();
     
-    if (processors.length == 1) {
-      return build(processors[0]);
+    if (workerCount <= 0) {
+      throw new IllegalArgumentException();
+    }
+    
+    if (workerCount == 1) {
+      return build(factory.get());
     }
 
     QueueOutbox<M> queueDeliver = buildQueue();
-    Objects.requireNonNull(processors);
+    
+    //Objects.requireNonNull(processors);
       
-    WorkerOutbox<M>[] workers
-      = new WorkerOutbox[processors.length];
+    WorkerOutbox<M>[] workers = new WorkerOutbox[workerCount];
       
     Executor executor = createExecutor();
     ClassLoader loader = getClassLoader();
       
     for (int i = 0; i < workers.length; i++) {
-      DeliverOutbox<M> deliver = processors[i];
-      
-      //OutboxDeliver<M> outbox = _outboxFactory.createOutbox(deliver);
+      DeliverOutbox<M> deliver = factory.get();
       
       workers[i] = new WorkerOutboxMultiThread<M>(deliver,
                                                    _outboxContext,
@@ -231,7 +238,7 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     WorkerOutbox<M> worker
       = new WorkerOutboxMultiCoordinator<>(queueDeliver, 
                                           workers,
-                                          getMultiworkerOffset());
+                                          multiworkerOffset());
     
     return new QueueServiceImpl<M>(queueDeliver, worker);
   }
@@ -247,14 +254,16 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     return build(spawnProcessor);
   }
   */
-  
+  /*
   @Override
   public DisruptorBuilderQueue<M> 
   disruptorBuilder(DeliverFactory<M> actorFactory)
   {
     return new DisruptorBuilderQueueTop<M>(this, actorFactory);
   }
+  */
   
+  /*
   @Override
   public DisruptorBuilderQueue<M> 
   disruptorBuilder(final DeliverOutbox<M> deliver)
@@ -264,7 +273,9 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
       public int getMaxWorkers() { return 1; }
     });
   }
+  */
   
+  /*
   //@Override
   public QueueService<M> disruptor2(DeliverOutbox<M> first,
                                     DeliverOutbox<M> ...rest)
@@ -278,6 +289,7 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     
     return builder.build();
   }
+  */
   
   @Override
   public QueueService<M> disruptor(DeliverOutbox<M> ...deliver)
@@ -291,7 +303,7 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     }
     
     if (count == 1) {
-      return build(deliver);
+      return build(deliver[0]);
     }
     CounterBuilder counter = new CounterBuilderArray(count + 1);
     
@@ -352,6 +364,7 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     return executor;
   }
   
+  /*
   private Executor createBlockingExecutor()
   {
     Executor executor = _executor;
@@ -365,4 +378,5 @@ public class QueueServiceBuilderImpl<M extends MessageOutbox<M>>
     
     return executor;
   }
+  */
 }

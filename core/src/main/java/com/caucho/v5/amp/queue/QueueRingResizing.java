@@ -66,7 +66,7 @@ public final class QueueRingResizing<M>
   {
     this(minCapacity, 
          maxCapacity,
-         CounterBuilderSingle.create());
+         CounterBuilder.create(1));
   }
   
   public QueueRingResizing(int minCapacity, 
@@ -121,7 +121,7 @@ public final class QueueRingResizing<M>
   QueueOutbox<T> create(int min, int max)
   {
     return create(min, max,
-                  CounterBuilderSingle.create(),
+                  CounterBuilder.create(1),
                   new RingBlockerBasic());
   }
     
@@ -323,9 +323,9 @@ public final class QueueRingResizing<M>
   }
   */
   @Override
-  public final CounterRingGroup counterGroup()
+  public final int counterGroupSize()
   {
-    return _readQueue.counterGroup();
+    return _readQueue.counterGroupSize();
   }
   
   private QueueRing<M> createQueue(int capacity,

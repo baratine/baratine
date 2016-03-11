@@ -29,6 +29,8 @@
 
 package com.caucho.v5.amp.queue;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Abstract counter for a multi-processor queue.
  */
@@ -37,19 +39,26 @@ public interface CounterBuilder
   /**
    * Get index of this counter when used as a head counter by the next actor.
    */
-  int getHeadIndex();
+  //int getHeadIndex();
   
   /**
    * Get index of this counter when used as a tail counter by the prior actor.
    * @return
    */
-  int getTailIndex();
+  int size();
   
-  CounterBuilder getHead();
-  
-  CounterBuilder getTail();
-  
-  CounterRingGroup build(long initialIndex);
+  AtomicLong []build(long initialIndex);
 
-  CounterRing build(CounterRing[] counters, boolean isTail);
+  static CounterBuilder create(int count)
+  {
+    if (count < 1) {
+      throw new IllegalArgumentException();
+    }
+    else if (count == 1) {
+      return CounterBuilderArray.SINGLE;
+    }
+    else {
+      return new CounterBuilderArray(count);
+    }
+  }
 }

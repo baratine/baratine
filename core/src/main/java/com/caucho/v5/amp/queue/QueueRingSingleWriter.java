@@ -31,6 +31,7 @@ package com.caucho.v5.amp.queue;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.outbox.Outbox;
@@ -55,11 +56,11 @@ public final class QueueRingSingleWriter<M>
   // private final RingUnsafeArray<T> _ring;
   private final int _capacity;
   
-  private final CounterRingGroup _counterGroup;
+  private final AtomicLong []_counterGroup;
   
-  private final CounterRing _headRef;
+  private final AtomicLong _headRef;
   
-  private final CounterRing _tail;
+  private final AtomicLong _tail;
   
   private final RingBlocker _blocker;
   
@@ -67,7 +68,7 @@ public final class QueueRingSingleWriter<M>
   
   public QueueRingSingleWriter(int capacity)
   {
-    this(capacity, CounterBuilderSingle.create());
+    this(capacity, CounterBuilder.create(1));
   }
   
   public QueueRingSingleWriter(int capacity,
@@ -107,8 +108,8 @@ public final class QueueRingSingleWriter<M>
     
     _counterGroup = counterBuilder.build(initialIndex);
     
-    _headRef = _counterGroup.counter(0);
-    _tail = _counterGroup.counter(_counterGroup.getSize() - 1);
+    _headRef = _counterGroup[0];
+    _tail = _counterGroup[_counterGroup.length - 1];
     
     _blocker = blocker;
   }
@@ -168,9 +169,9 @@ public final class QueueRingSingleWriter<M>
   }
   
   @Override
-  public CounterRingGroup counterGroup()
+  public int counterGroupSize()
   {
-    return _counterGroup;
+    return _counterGroup.length;
   }
   
   /*
@@ -212,8 +213,8 @@ public final class QueueRingSingleWriter<M>
     
     // completePoll();
     
-    final CounterRing headRef = _headRef;
-    final CounterRing tailRef = _tail;
+    final AtomicLong headRef = _headRef;
+    final AtomicLong tailRef = _tail;
     final int capacity = _capacity;
     
     while (true) {
@@ -223,7 +224,7 @@ public final class QueueRingSingleWriter<M>
       final long nextHead = head + 1;
 
       if (nextHead - tail < capacity) {
-        headRef.setLazy(nextHead);
+        headRef.lazySet(nextHead);
         _ring.setLazy(head, value);
 
         return true;
@@ -256,8 +257,8 @@ public final class QueueRingSingleWriter<M>
   public final M poll(long timeout, TimeUnit unit)
   {
     // final AtomicLong tailAllocRef = _tailAlloc;
-    final CounterRing headRef = _headRef;
-    final CounterRing tailRef = _tail;
+    final AtomicLong headRef = _headRef;
+    final AtomicLong tailRef = _tail;
     
     final ArrayRing<M> ring = _ring;
 
@@ -303,8 +304,8 @@ public final class QueueRingSingleWriter<M>
                       final Outbox outbox)
     throws Exception
   {
-    final CounterRing headCounter = _headRef;
-    final CounterRing tailCounter = _tail;
+    final AtomicLong headCounter = _headRef;
+    final AtomicLong tailCounter = _tail;
     
     long initialTail = tailCounter.get();
     long tail = initialTail;
@@ -333,7 +334,7 @@ public final class QueueRingSingleWriter<M>
   {
     final int tailChunk = 32;
     final ArrayRing<M> ring = _ring;
-    final CounterRing tailCounter = _tail;
+    final AtomicLong tailCounter = _tail;
     
     long lastTail = tail;
 
@@ -372,9 +373,9 @@ public final class QueueRingSingleWriter<M>
                       boolean isTail)
     throws Exception
   {
-    final CounterRingGroup counterGroup = counterGroup();
-    final CounterRing headCounter = counterGroup.counter(headIndex);
-    final CounterRing tailCounter = counterGroup.counter(tailIndex);
+    final AtomicLong []counterGroup = _counterGroup;
+    final AtomicLong headCounter = counterGroup[headIndex];
+    final AtomicLong tailCounter = counterGroup[tailIndex];
     
     final RingGetter<M> ringGetter = isTail ? _tailGetter : _nonTailGetter;
     

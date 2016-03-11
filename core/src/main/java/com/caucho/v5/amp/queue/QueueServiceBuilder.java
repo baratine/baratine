@@ -29,25 +29,26 @@
 
 package com.caucho.v5.amp.queue;
 
+import java.util.function.Supplier;
+
 import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.outbox.MessageOutbox;
 import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 
 /**
  * Builder for a service queue.
  */
 public interface QueueServiceBuilder<M extends MessageOutbox<M>>
 {
-  QueueServiceBuilder<M> processors(DeliverOutbox<M> ...processors);
+  //QueueServiceBuilder<M> processors(DeliverOutbox<M> ...processors);
   
   QueueServiceBuilder<M> capacity(int capacity);
   
-  int getCapacity();
+  int capacity();
   
   QueueServiceBuilder<M> initial(int initial);
   
-  int getInitial();
+  int initial();
   
   QueueServiceBuilder<M> multiworker(boolean isMultiworker);
   
@@ -55,15 +56,17 @@ public interface QueueServiceBuilder<M extends MessageOutbox<M>>
   
   QueueServiceBuilder<M> multiworkerOffset(int offset);
   
-  int getMultiworkerOffset();
+  int multiworkerOffset();
 
+  QueueService<M> build(Supplier<DeliverOutbox<M>> factory, int workers);
+  
   QueueService<M> build(DeliverOutbox<M> processor);
 
-  QueueService<M> build(DeliverOutbox<M> ...processors);
+  //QueueService<M> build(DeliverOutbox<M> ...processors);
 
-  DisruptorBuilderQueue<M> disruptorBuilder(DeliverFactory<M> actorFactory);
+  //DisruptorBuilderQueue<M> disruptorBuilder(DeliverFactory<M> actorFactory);
   
-  DisruptorBuilderQueue<M> disruptorBuilder(DeliverOutbox<M> actorFactory);
+  //DisruptorBuilderQueue<M> disruptorBuilder(DeliverOutbox<M> actorFactory);
   
   QueueService<M> disruptor(DeliverOutbox<M> ...deliver);
 }

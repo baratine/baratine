@@ -48,10 +48,8 @@ import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.proxy.SkeletonClass;
-import com.caucho.v5.amp.queue.DisruptorBuilderQueue;
 import com.caucho.v5.amp.queue.QueueServiceBuilder;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
-import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 import com.caucho.v5.amp.session.SessionServiceManagerImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorFactoryAmp;
@@ -1171,22 +1169,23 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     public QueueService<MessageAmp> build(QueueServiceBuilder<MessageAmp> queueBuilder,
                                           InboxQueue inbox)
     {
-      DeliverFactory<MessageAmp> factory
-        = inbox.createDeliverFactory(_actorFactory, config());
-
-      DisruptorBuilderQueue<MessageAmp> builder;
-      builder = queueBuilder.disruptorBuilder(factory);
-
-      if (config().isJournal()) {
+      ServiceConfig config = config();
+      
+      if (config.isJournal()) {
         throw new IllegalStateException();
-        /*
-        String name = "test";
-
-        builder.prologue(createJournalFactory(inbox, name));
-        */
       }
-
-      return builder.build();
+      
+      Supplier<DeliverOutbox<MessageAmp>> factory
+        = inbox.createDeliverFactory(_actorFactory, config);
+      
+      if (config.workers() > 0) {
+        queueBuilder.multiworker(true);
+        //queueBuilder.multiworerOffset(sdf
+        return queueBuilder.build(factory, config.workers());
+      }
+      else {
+        return queueBuilder.build(factory.get());
+      }
     }
   }
 

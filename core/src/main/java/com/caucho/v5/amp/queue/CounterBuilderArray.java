@@ -29,13 +29,15 @@
 
 package com.caucho.v5.amp.queue;
 
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Counter builder for a sequence of delivery workers.
  */
-public class CounterBuilderArray extends CounterBuilderBase
+class CounterBuilderArray implements CounterBuilder
 {
+  static final CounterBuilder SINGLE = new CounterBuilderArray(2);
+  
   private final int _length;
 
   CounterBuilderArray(int length)
@@ -47,40 +49,30 @@ public class CounterBuilderArray extends CounterBuilderBase
     _length = length;
   }
   
+  /*
   @Override
   public final int getHeadIndex()
   {
     return 0;
   }
+  */
   
   @Override
-  public final int getTailIndex()
+  public final int size()
   {
-    return _length - 1;
+    return _length;
   }
 
   @Override
-  public final CounterBuilder getTail()
+  public AtomicLong []build(long initialIndex)
   {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public CounterRingGroup build(long initialIndex)
-  {
-    CounterRing []counters = new CounterRing[_length];
+    AtomicLong []counters = new AtomicLong[_length];
     
     for (int i = 0; i < _length; i++) {
-      counters[i] = new CounterAtomic();
+      counters[i] = new AtomicLong();
       counters[i].set(initialIndex);
     }
     
-    return new CounterGroupSequence(counters);
-  }
-  
-  @Override
-  public CounterRing build(CounterRing[] counters, boolean isTail)
-  {
-    throw new UnsupportedOperationException();
+    return counters;
   }
 }

@@ -35,14 +35,13 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.manager.ServiceConfig;
 import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 
 /**
  * worker factory for the queue inbox.
  */
-public class DeliverInboxFactory implements DeliverFactory<MessageAmp>
+public class DeliverInboxFactory implements Supplier<DeliverOutbox<MessageAmp>>
 {
   private static final Logger log 
     = Logger.getLogger(DeliverInboxFactory.class.getName());
@@ -60,7 +59,7 @@ public class DeliverInboxFactory implements DeliverFactory<MessageAmp>
     _supplier = supplierActor;
     _config = config;
     
-    if (getMaxWorkers() > 1) {
+    if (workers() > 1) {
       _stateMultiWorker = new DeliverInboxState();
     }
   }
@@ -72,7 +71,7 @@ public class DeliverInboxFactory implements DeliverFactory<MessageAmp>
     
     boolean isDebug = _inbox.manager().isDebug() || log.isLoggable(Level.FINE);
 
-    if (getMaxWorkers() > 1) {
+    if (workers() > 1) {
       return new DeliverInboxMultiWorker(_inbox, actor, _stateMultiWorker);
     }
     else if (isDebug) {
@@ -83,8 +82,7 @@ public class DeliverInboxFactory implements DeliverFactory<MessageAmp>
     }
   }
 
-  @Override
-  public int getMaxWorkers()
+  private int workers()
   {
     if (_config != null) {
       return _config.workers();

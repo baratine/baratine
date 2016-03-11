@@ -65,7 +65,7 @@ public final class QueueServiceImpl<M extends MessageOutbox<M>>
   @Override
   public boolean isSingleWorker()
   {
-    return getQueue().counterGroup().getSize() == 2;
+    return getQueue().counterGroupSize() == 2;
   } 
   
   @Override

@@ -50,7 +50,6 @@ import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.outbox.WorkerOutboxMultiThread;
-import com.caucho.v5.amp.queue.DisruptorBuilderQueue.DeliverFactory;
 import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -293,7 +292,7 @@ public class InboxQueue extends InboxBase
     return ! (_worker instanceof WorkerOutboxMultiThread);
   }
 
-  public DeliverFactory<MessageAmp>
+  public Supplier<DeliverOutbox<MessageAmp>>
   createDeliverFactory(Supplier<ActorAmp> supplierActor,
                        ServiceConfig config)
   {

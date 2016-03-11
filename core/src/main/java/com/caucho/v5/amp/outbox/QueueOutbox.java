@@ -32,8 +32,6 @@ package com.caucho.v5.amp.outbox;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.queue.CounterRingGroup;
-
 
 /**
  * Blocking queue with a processor.
@@ -74,7 +72,7 @@ public interface QueueOutbox<M>
                Outbox outbox)
     throws Exception;
   
-  CounterRingGroup counterGroup();
+  int counterGroupSize();
   
   /**
    * Disruptor delivery.
