@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -106,7 +106,7 @@ abstract public class MessageOutboxBase implements MessageAmp
   }
 
   @Override
-  public WorkerOutbox<MessageAmp> worker()
+  public WorkerDeliver<MessageAmp> worker()
   {
     return inboxTarget().worker();
   }

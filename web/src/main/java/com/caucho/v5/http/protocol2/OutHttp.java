@@ -37,10 +37,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.QueueDeliver;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteBuffer;
@@ -65,7 +65,7 @@ public class OutHttp implements AutoCloseable
   
   private AtomicBoolean _isClosed = new AtomicBoolean();
 
-  private final QueueService<MessageHttp> _queue;
+  private final QueueDeliver<MessageHttp> _queue;
   
   private SettingsHttp _settings = new SettingsHttp();
 
@@ -147,11 +147,11 @@ public class OutHttp implements AutoCloseable
     return _writerHeader;
   }
   
-  private QueueService<MessageHttp> createQueue()
+  private QueueDeliver<MessageHttp> createQueue()
   {
-    QueueServiceBuilderImpl<MessageHttp> builder
-      = new QueueServiceBuilderImpl<>();
-    builder.capacity(64);
+    QueueDeliverBuilderImpl<MessageHttp> builder
+      = new QueueDeliverBuilderImpl<>();
+    builder.sizeMax(64);
     
     return builder.build(new WriterServiceImpl());
   }
@@ -482,7 +482,7 @@ public class OutHttp implements AutoCloseable
     }
   }
   
-  private class WriterServiceImpl implements DeliverOutbox<MessageHttp> 
+  private class WriterServiceImpl implements Deliver<MessageHttp> 
   {
     @Override
     public void deliver(MessageHttp message, Outbox outbox)

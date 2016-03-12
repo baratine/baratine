@@ -31,7 +31,7 @@ package com.caucho.v5.amp.journal;
 
 import io.baratine.service.Result;
 
-import com.caucho.v5.amp.outbox.QueueService;
+import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -55,7 +55,7 @@ public interface JournalAmp
   
   void replayStart(Result<Boolean> cont,
                    InboxAmp inbox,
-                   QueueService<MessageAmp> queue); 
+                   QueueDeliver<MessageAmp> queue); 
 
   void setInbox(InboxAmp inbox);
 

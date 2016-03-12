@@ -33,15 +33,15 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.manager.ServiceConfig;
-import com.caucho.v5.amp.outbox.DeliverOutbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 
 /**
  * worker factory for the queue inbox.
  */
-public class DeliverInboxFactory implements Supplier<DeliverOutbox<MessageAmp>>
+public class DeliverInboxFactory implements Supplier<Deliver<MessageAmp>>
 {
   private static final Logger log 
     = Logger.getLogger(DeliverInboxFactory.class.getName());
@@ -65,7 +65,7 @@ public class DeliverInboxFactory implements Supplier<DeliverOutbox<MessageAmp>>
   }
 
   @Override
-  public DeliverOutbox<MessageAmp> get()
+  public Deliver<MessageAmp> get()
   {
     ActorAmp actor = _supplier.get();
     

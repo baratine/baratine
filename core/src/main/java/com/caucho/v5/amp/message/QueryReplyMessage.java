@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -87,7 +87,7 @@ public final class QueryReplyMessage implements MessageAmp
   }
 
   @Override
-  public WorkerOutbox worker()
+  public WorkerDeliver worker()
   {
     return _serviceRef.inbox().worker();
   }

@@ -33,7 +33,7 @@ import io.baratine.service.Result;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.outbox.QueueService;
+import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -47,11 +47,11 @@ public class ReplayMessage extends MessageAmpBase
     = Logger.getLogger(ReplayMessage.class.getName());
   
   private InboxAmp _inbox;
-  private QueueService<MessageAmp> _queue;
+  private QueueDeliver<MessageAmp> _queue;
   private Result<Boolean> _result;
 
   public ReplayMessage(InboxAmp mailbox,
-                       QueueService<MessageAmp> queue,
+                       QueueDeliver<MessageAmp> queue,
                        Result<Boolean> result)
   {
     _inbox = mailbox;

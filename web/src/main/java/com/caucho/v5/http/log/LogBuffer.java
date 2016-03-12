@@ -31,15 +31,13 @@ package com.caucho.v5.http.log;
 
 import java.util.concurrent.locks.LockSupport;
 
-import com.caucho.v5.amp.thread.ThreadPool;
-
 /**
  * Holds the HTTP buffers for keepalive reuse.  Because a request needs a
  * large number of buffers, but a keepalive doesn't need those buffers,
  * Resin can recycle the buffers during keepalives to keep the memory
  * consumption low.
  */
-public final class LogBuffer // extends MessageDeliverBase
+public final class LogBuffer // implements MessageOutbox<LogBuffer>
 {
   private final boolean _isPrivate;
   private final byte []_logBuffer;

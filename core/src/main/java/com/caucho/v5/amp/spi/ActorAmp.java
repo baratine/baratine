@@ -33,10 +33,10 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.deliver.QueueDeliver;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
 import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.QueueServiceBuilderBase;
 
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
@@ -234,8 +234,10 @@ public interface ActorAmp
   /**
    * Queue building.
    */
-  QueueService<MessageAmp> buildQueue(QueueServiceBuilderBase<MessageAmp> queueBuilder,
+  /*
+  QueueService<MessageAmp> buildQueue(QueueServiceBuilder<MessageAmp> queueBuilder,
                                        InboxQueue queueMailbox);
+                                       */
 
   JournalAmp getJournal();
   void setJournal(JournalAmp journal);
@@ -267,7 +269,7 @@ public interface ActorAmp
   
   void onInit(Result<? super Boolean> result);
   void replay(InboxAmp inbox,
-              QueueService<MessageAmp> queue, 
+              QueueDeliver<MessageAmp> queue, 
               Result<Boolean> cont);
   //void afterReplay();
   

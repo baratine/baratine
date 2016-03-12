@@ -37,9 +37,9 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.message.HeadersNull;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -186,7 +186,7 @@ public class ResultJampRpc<T> implements MessageAmp
   }
 
   @Override
-  public WorkerOutbox worker()
+  public WorkerDeliver worker()
   {
     return _queue;
   }

@@ -27,12 +27,12 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 /**
  * abstract message that can be offered in a delayed mode.
  */
-public interface MessageOutbox<M extends MessageOutbox<M>>
+public interface MessageDeliver<M extends MessageDeliver<M>>
 {
   default void offerQueue(long timeout)
   {
@@ -48,7 +48,7 @@ public interface MessageOutbox<M extends MessageOutbox<M>>
   }
   */
   
-  default WorkerOutbox<M> worker()
+  default WorkerDeliver<M> worker()
   {
     throw new UnsupportedOperationException();
   }

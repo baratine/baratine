@@ -27,27 +27,24 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.deliver;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.outbox.MessageOutbox;
-import com.caucho.v5.amp.outbox.QueueOutbox;
-import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
  * Queue with an attached processor.
  */
-abstract public class QueueServiceBase<M extends MessageOutbox<M>>
-  implements QueueService<M>
+abstract public class QueueDeliverBase<M> // extends MessageOutbox<M>>
+  implements QueueDeliver<M>
 {
-  private final QueueOutbox<M> _queue;
+  private final QueueRing<M> _queue;
  
-  public QueueServiceBase(QueueOutbox<M> queue)
+  public QueueDeliverBase(QueueRing<M> queue)
   {
     Objects.requireNonNull(queue);
     
@@ -61,7 +58,7 @@ abstract public class QueueServiceBase<M extends MessageOutbox<M>>
   }
   */
   
-  protected final QueueOutbox<M> getQueue()
+  protected final QueueRing<M> getQueue()
   {
     return _queue;
   }

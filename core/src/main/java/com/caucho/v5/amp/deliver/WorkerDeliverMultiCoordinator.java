@@ -27,22 +27,22 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
  * queue with delivery workers that consume its messages.
  */
-public class WorkerOutboxMultiCoordinator<M extends MessageOutbox<M>>
-  implements WorkerOutbox<M>
+public class WorkerDeliverMultiCoordinator<M> // extends MessageOutbox<M>>
+  implements WorkerDeliver<M>
 {
-  private QueueOutbox<M> _queue;
-  private WorkerOutbox<M>[] _workers;
+  private QueueRing<M> _queue;
+  private WorkerDeliver<M>[] _workers;
   private int _multiworkerOffset;
   
-  public WorkerOutboxMultiCoordinator(QueueOutbox<M> queue,
-                                      WorkerOutbox<M> []workers,
+  public WorkerDeliverMultiCoordinator(QueueRing<M> queue,
+                                      WorkerDeliver<M> []workers,
                                       int multiworkerOffset)
   {
     _queue = queue;
@@ -70,11 +70,12 @@ public class WorkerOutboxMultiCoordinator<M extends MessageOutbox<M>>
   @Override
   public void wakeAll()
   {
-    for (WorkerOutbox<M> worker : _workers) {
+    for (WorkerDeliver<M> worker : _workers) {
       worker.wakeAll();
     }
   }
 
+  /*
   @Override
   public void onActive()
   {
@@ -90,11 +91,12 @@ public class WorkerOutboxMultiCoordinator<M extends MessageOutbox<M>>
       worker.onInit();
     }
   }
+  */
 
   @Override
   public void shutdown(ShutdownModeAmp mode)
   {
-    for (WorkerOutbox<M> worker : _workers) {
+    for (WorkerDeliver<M> worker : _workers) {
       worker.shutdown(mode);
     }
   }

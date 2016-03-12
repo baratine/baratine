@@ -31,7 +31,7 @@ package com.caucho.v5.amp.inbox;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.spi.OutboxAmp;
 
 /**

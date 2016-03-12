@@ -33,10 +33,8 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.inbox.InboxQueue;
+import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.QueueServiceBuilderBase;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -303,24 +301,14 @@ public class ActorAmpBase implements ActorAmp
   {
   }
 
+  /*
   @Override
-  public QueueService<MessageAmp> buildQueue(QueueServiceBuilderBase<MessageAmp> queueBuilder,
+  public QueueService<MessageAmp> buildQueue(QueueServiceBuilder<MessageAmp> queueBuilder,
                                               InboxQueue queueMailbox)
   {
     throw new UnsupportedOperationException(getClass().getName());
-    /*
-    ActorFactory<RampMessage> factory
-      = queueMailbox.createActorFactory(getRampManager(),
-                                        new RampActorSupplier(this),
-                                        null);
-    
-    ActorDisruptorBuilder<RampMessage> builder;
-    
-    builder = queueBuilder.createDisruptorBuilder(factory);
-    
-    return builder.build(queueBuilder);
-    */
   }
+  */
   
   @Override
   public boolean isLifecycleAware()
@@ -336,7 +324,7 @@ public class ActorAmpBase implements ActorAmp
   
   @Override
   public void replay(InboxAmp mailbox,
-                     QueueService<MessageAmp> queue,
+                     QueueDeliver<MessageAmp> queue,
                      Result<Boolean> cont)
   {
   }

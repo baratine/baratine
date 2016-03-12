@@ -37,11 +37,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.message.ReplayQueryMessage;
 import com.caucho.v5.amp.message.ReplaySendMessage;
-import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -292,7 +292,7 @@ public class JournalImpl implements JournalAmp
   //
   
   private void readItem(InputStream is,
-                        QueueService<MessageAmp> queue)
+                        QueueDeliver<MessageAmp> queue)
     throws IOException
   {
     //_hIn.initPacket(is);
@@ -313,7 +313,7 @@ public class JournalImpl implements JournalAmp
   }
   
   private void readSend(InH3 hIn,
-                        QueueService<MessageAmp> queue)
+                        QueueDeliver<MessageAmp> queue)
     throws IOException
   {
     String keyPath = hIn.readString();
@@ -334,7 +334,7 @@ public class JournalImpl implements JournalAmp
   }
   
   private void readQuery(InH3 hIn,
-                         QueueService<MessageAmp> queue)
+                         QueueDeliver<MessageAmp> queue)
     throws IOException
   {
     String keyPath = hIn.readString();
@@ -362,7 +362,7 @@ public class JournalImpl implements JournalAmp
   @Override
   public void replayStart(Result<Boolean> result,
                           InboxAmp inbox,
-                          QueueService<MessageAmp> queue)
+                          QueueDeliver<MessageAmp> queue)
   {
     Objects.requireNonNull(inbox);
     
@@ -443,11 +443,11 @@ public class JournalImpl implements JournalAmp
   private class ReplayCallbackImpl implements ReplayCallback
   {
     private InboxAmp _inbox;
-    private QueueService<MessageAmp> _queue;
+    private QueueDeliver<MessageAmp> _queue;
     private Result<Boolean> _result;
     
     ReplayCallbackImpl(InboxAmp inbox,
-                       QueueService<MessageAmp> queue,
+                       QueueDeliver<MessageAmp> queue,
                        Result<Boolean> result)
     {
       Objects.requireNonNull(inbox);

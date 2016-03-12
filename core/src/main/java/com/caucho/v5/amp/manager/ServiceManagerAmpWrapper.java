@@ -35,8 +35,8 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;

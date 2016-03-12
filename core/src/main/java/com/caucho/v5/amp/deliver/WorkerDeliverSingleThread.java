@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 import java.util.concurrent.Executor;
 
@@ -40,17 +40,17 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
  * Received messages are passed to a delivery handler that implements
  * {@code DeliveryOutbox}.
  */
-public final class WorkerOutboxSingleThread<M extends MessageOutbox<M>>
-  extends WorkerOutboxBase<M>
+public final class WorkerDeliverSingleThread<M> // extends MessageOutbox<M>>
+  extends WorkerDeliverBase<M>
 {
-  private final QueueOutbox<M> _queue;
-  private final DeliverOutbox<M> _deliver;
+  private final QueueRing<M> _queue;
+  private final Deliver<M> _deliver;
  
-  public WorkerOutboxSingleThread(DeliverOutbox<M> deliver,
+  public WorkerDeliverSingleThread(Deliver<M> deliver,
                                   Object context,
                                   Executor executor,
                                   ClassLoader loader,
-                                  QueueOutbox<M> queue)
+                                  QueueRing<M> queue)
   {
     super(deliver, context, executor, loader);
     
@@ -61,7 +61,7 @@ public final class WorkerOutboxSingleThread<M extends MessageOutbox<M>>
   /**
    * The message delivery handler.
    */
-  private final DeliverOutbox<M> deliver()
+  private final Deliver<M> deliver()
   {
     return _deliver;
   }
@@ -76,8 +76,8 @@ public final class WorkerOutboxSingleThread<M extends MessageOutbox<M>>
   public void runImpl(Outbox outbox, M tailMsg)
     throws Exception
   {
-    DeliverOutbox<M> deliver = deliver();
-    QueueOutbox<M> queue = _queue;
+    Deliver<M> deliver = deliver();
+    QueueRing<M> queue = _queue;
     
     try {
       deliver.beforeBatch();
@@ -104,8 +104,8 @@ public final class WorkerOutboxSingleThread<M extends MessageOutbox<M>>
   protected void runOneImpl(Outbox outbox, M tailMsg)
     throws Exception
   {
-    DeliverOutbox<M> deliver = deliver();
-    QueueOutbox<M> queue = _queue;
+    Deliver<M> deliver = deliver();
+    QueueRing<M> queue = _queue;
     
     try {
       deliver.beforeBatch();
@@ -131,6 +131,7 @@ public final class WorkerOutboxSingleThread<M extends MessageOutbox<M>>
   }
   */
  
+  /*
   @Override
   public void onActive()
   {
@@ -146,6 +147,7 @@ public final class WorkerOutboxSingleThread<M extends MessageOutbox<M>>
     
     super.onInit();
   }
+  */
   
   @Override
   public void shutdown(ShutdownModeAmp mode)

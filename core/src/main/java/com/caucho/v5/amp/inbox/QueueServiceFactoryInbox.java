@@ -29,8 +29,8 @@
 
 package com.caucho.v5.amp.inbox;
 
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.QueueServiceBuilder;
+import com.caucho.v5.amp.deliver.QueueDeliver;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 
@@ -43,7 +43,7 @@ public interface QueueServiceFactoryInbox
   
   ActorAmp getMainActor();
   
-  QueueService<MessageAmp> 
-  build(QueueServiceBuilder<MessageAmp> queueBuilder,
+  QueueDeliver<MessageAmp> 
+  build(QueueDeliverBuilder<MessageAmp> queueBuilder,
              InboxQueue inbox);
 }

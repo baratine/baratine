@@ -30,8 +30,8 @@
 package com.caucho.v5.amp.spi;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.inbox.OutboxProviderAmp;
-import com.caucho.v5.amp.outbox.Outbox;
 
 /**
  * thread context for a ramp message.

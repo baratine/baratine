@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.io.SocketBar;
@@ -466,7 +466,7 @@ public class PollContext
   }
 
   @Override
-  public WorkerOutbox worker()
+  public WorkerDeliver worker()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

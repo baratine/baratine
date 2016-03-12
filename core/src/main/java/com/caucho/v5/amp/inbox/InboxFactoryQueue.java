@@ -30,8 +30,8 @@
 package com.caucho.v5.amp.inbox;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
 import com.caucho.v5.amp.manager.ServiceConfig;
-import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.InboxFactoryAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -57,15 +57,15 @@ public class InboxFactoryQueue implements InboxFactoryAmp
                             QueueServiceFactoryInbox serviceQueueFactory,
                             ServiceConfig config)
   {
-    QueueServiceBuilderImpl<MessageAmp> queueBuilder
-      = new QueueServiceBuilderImpl<>();
+    QueueDeliverBuilderImpl<MessageAmp> queueBuilder
+      = new QueueDeliverBuilderImpl<>();
       
     //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
     // Executor executor = ThreadPool.getCurrent();
     queueBuilder.setClassLoader(_manager.classLoader());
     
-    queueBuilder.capacity(config.queueSizeMax());
-    queueBuilder.initial(config.queueSize());
+    queueBuilder.sizeMax(config.queueSizeMax());
+    queueBuilder.size(config.queueSize());
     
     return new InboxQueue(manager, 
                             queueBuilder,

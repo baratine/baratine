@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.queue.SpawnThreadManager;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.CurrentTime;

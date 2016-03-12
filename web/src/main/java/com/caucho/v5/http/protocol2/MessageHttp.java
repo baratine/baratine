@@ -31,14 +31,14 @@ package com.caucho.v5.http.protocol2;
 
 import java.io.IOException;
 
-import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.deliver.MessageDeliver;
 import com.caucho.v5.io.WriteBuffer;
 
 
 /**
  * InputStreamHttp reads a single HTTP frame.
  */
-public class MessageHttp implements MessageOutbox<MessageHttp>
+public class MessageHttp implements MessageDeliver<MessageHttp>
 {
   /**
    * Deliver the message

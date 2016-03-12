@@ -27,35 +27,18 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
+package com.caucho.v5.amp.thread;
 
 /**
- * Interface for an actor queue
+ * Queue that spawns threads to handle requests.
  */
-public interface QueueService<M>
-  extends BlockingQueue<M>
+public interface SpawnThreadManager
 {
-  boolean isSingleWorker();
+  public boolean allocateThread();
   
-  @Override
-  boolean offer(M msg, long value, TimeUnit unit);
+  public void onThreadBegin();
   
-  //@Override
-  boolean wake();
+  public void onThreadEnd();
 
-  void wakeAll();
-
-  //WorkerDeliverLifecycle getWorker();
-
-  void shutdown(ShutdownModeAmp mode);
-
-  void wakeAllAndWait();
-
-  // build
-  WorkerOutbox<?> worker();
+  public int getSpawnCount();
 }

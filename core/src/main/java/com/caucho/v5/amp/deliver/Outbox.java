@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 import java.util.function.Supplier;
 
@@ -44,7 +44,7 @@ public interface Outbox extends AutoCloseable
   /**
    * Adds the message to the outgoing queue.
    */
-  void offer(MessageOutbox<?> msg);
+  void offer(MessageDeliver<?> msg);
   
   void flush();
   

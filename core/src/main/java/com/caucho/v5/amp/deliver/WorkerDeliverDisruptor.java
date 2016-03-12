@@ -27,51 +27,44 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.deliver;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.MessageOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.QueueOutbox;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
-import com.caucho.v5.amp.outbox.WorkerOutboxBase;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 
 /**
  * Interface for the transaction log.
  */
-public final class WorkerDeliverDisruptor<M extends MessageOutbox<M>>
-  extends WorkerOutboxBase<M>
+public final class WorkerDeliverDisruptor<M> // extends MessageOutbox<M>>
+  extends WorkerDeliverBase<M>
 {
   private static final Logger log
     = Logger.getLogger(WorkerDeliverDisruptor.class.getName());
   
-  private final QueueOutbox<M> _queue;
-  private final DeliverOutbox<M> _deliver;
+  private final QueueRing<M> _queue;
+  private final Deliver<M> _deliver;
   
   private final int _headCounter;
   private final int _tailCounter;
   private final boolean _isTail;
   
-  private WorkerOutbox<M> _headWorker;
-  private final WorkerOutbox<M> _tailWorker;
+  private WorkerDeliver<M> _headWorker;
+  private final WorkerDeliver<M> _tailWorker;
   
-  public WorkerDeliverDisruptor(DeliverOutbox<M> deliver,
+  public WorkerDeliverDisruptor(Deliver<M> deliver,
                                 Object outboxContext,
                                 Executor executor,
                                 ClassLoader loader,
-                                QueueOutbox<M> queue,
+                                QueueRing<M> queue,
                                 int headCounterIndex, 
                                 int tailCounterIndex,
                                 boolean isTail,
-                                WorkerOutbox<M> tailWorker)
+                                WorkerDeliver<M> tailWorker)
   {
     super(deliver, outboxContext, executor, loader);
 
@@ -83,7 +76,7 @@ public final class WorkerDeliverDisruptor<M extends MessageOutbox<M>>
     _isTail = isTail;
   }
   
-  void setHeadWorker(WorkerOutbox<M> headWorker)
+  public void setHeadWorker(WorkerDeliver<M> headWorker)
   {
     _headWorker = headWorker;
     
@@ -99,9 +92,9 @@ public final class WorkerDeliverDisruptor<M extends MessageOutbox<M>>
   public void runImpl(Outbox outbox, M msg)
   {
     
-    final DeliverOutbox<M> deliver = _deliver;
-    final QueueOutbox<M> queue = _queue;
-    final WorkerOutbox<M> tailWorker = _tailWorker;
+    final Deliver<M> deliver = _deliver;
+    final QueueRing<M> queue = _queue;
+    final WorkerDeliver<M> tailWorker = _tailWorker;
     final boolean isTail = _isTail;
     
     if (msg != null) {
@@ -138,6 +131,7 @@ public final class WorkerDeliverDisruptor<M extends MessageOutbox<M>>
     }
   }
 
+  /*
   @Override
   public void onActive()
   {
@@ -157,6 +151,7 @@ public final class WorkerDeliverDisruptor<M extends MessageOutbox<M>>
       _tailWorker.onInit();
     }
   }
+  */
 
   @Override
   public void shutdown(ShutdownModeAmp mode)

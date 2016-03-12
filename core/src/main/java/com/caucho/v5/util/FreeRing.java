@@ -29,7 +29,7 @@
 
 package com.caucho.v5.util;
 
-import com.caucho.v5.amp.queue.QueueRing;
+import com.caucho.v5.amp.queue.QueueRingFixed;
 
 
 /**
@@ -41,7 +41,7 @@ import com.caucho.v5.amp.queue.QueueRing;
  */
 public final class FreeRing<T>
 {
-  private final QueueRing<T> _ringQueue;
+  private final QueueRingFixed<T> _ringQueue;
 
   /**
    * Create a new free list.
@@ -50,7 +50,7 @@ public final class FreeRing<T>
    */
   public FreeRing(int capacity)
   {
-    _ringQueue = new QueueRing<T>(capacity);
+    _ringQueue = new QueueRingFixed<T>(capacity);
   }
 
   public int getSize()

@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -51,13 +51,13 @@ import io.baratine.service.ResultFuture;
  * A new thread will be assigned if the worker is currently idle, otherwise
  * the current thread is used.
  */
-public abstract class WorkerOutboxBase<M extends MessageOutbox<M>>
-  implements WorkerOutbox<M>, Runnable
+public abstract class WorkerDeliverBase<M> // extends MessageOutbox<M>>
+  implements WorkerDeliver<M>, Runnable
 {
   private static final Logger log
-    = Logger.getLogger(WorkerOutboxBase.class.getName());
+    = Logger.getLogger(WorkerDeliverBase.class.getName());
   
-  private final DeliverOutbox<M> _deliver;
+  private final Deliver<M> _deliver;
   
   //private final Supplier<Outbox> _outboxFactory;  
   private final Object _context;
@@ -77,7 +77,7 @@ public abstract class WorkerOutboxBase<M extends MessageOutbox<M>>
   private final ClassLoader _classLoader;
   private final Launcher _launcher;
 
-  protected WorkerOutboxBase(DeliverOutbox<M> deliver,
+  protected WorkerDeliverBase(Deliver<M> deliver,
                              Object context,
                              Executor executor,
                              ClassLoader classLoader)
@@ -137,6 +137,7 @@ public abstract class WorkerOutboxBase<M extends MessageOutbox<M>>
     return _stateRef.get().isClosed();
   }
   
+  /*
   @Override
   public void onInit()
   {
@@ -148,6 +149,7 @@ public abstract class WorkerOutboxBase<M extends MessageOutbox<M>>
   {
     
   }
+  */
 
   @Override
   public void shutdown(ShutdownModeAmp mode)
@@ -179,12 +181,15 @@ public abstract class WorkerOutboxBase<M extends MessageOutbox<M>>
   }
   
   @Override
-  public void runAs(Outbox outbox, M tailMsg)
+  public boolean runAs(Outbox outbox, M tailMsg)
   {
     if (toStart()) {
       runStarted(outbox, tailMsg);
+      return true;
     }
     else {
+      return false;
+      /*
       long timeout = 10000;
       
       tailMsg.offerQueue(timeout);
@@ -194,6 +199,7 @@ public abstract class WorkerOutboxBase<M extends MessageOutbox<M>>
         
         runStarted(outbox, null);
       }
+      */
     }
   }
   
@@ -602,31 +608,4 @@ public abstract class WorkerOutboxBase<M extends MessageOutbox<M>>
       }
     }
   }
-  
-  /*
-  public static class RunTask
-  {
-    public static final RunTask TASK = new RunTask();
-    
-    public <N extends MessageDeliver>
-    void runImpl(WorkerDeliverBase<N> worker, N tailMsg)
-      throws Exception
-    {
-      worker.runImpl(tailMsg);
-    }
-  }
-  
-  public static class RunTaskOne extends RunTask
-  {
-    public static final RunTask TASK = new RunTaskOne();
-    
-    @Override
-    public <N extends MessageDeliver>
-    void runImpl(WorkerDeliverBase<N> worker, N tailMsg)
-      throws Exception
-    {
-      worker.runOneImpl(tailMsg);
-    }
-  }
-  */
 }

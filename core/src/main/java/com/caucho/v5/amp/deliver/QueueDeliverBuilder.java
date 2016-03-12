@@ -27,65 +27,42 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import java.util.function.Supplier;
 
 /**
- * Delivers a message to a handler.
+ * Builder for a service queue.
  */
-public interface DeliverOutbox<M>
+public interface QueueDeliverBuilder<M> // extends MessageOutbox<M>>
 {
-  /**
-   * name for debugging
-   */
-  default String getName()
+  /*
+  static <M extends MessageOutbox<M>> QueueServiceBuilder<M> newQueue()
   {
-    return getClass().getSimpleName();
+    return new QueueServiceBuilderImpl<>();
   }
+  */
   
-  /**
-   * Deliver a single message.
-   */
-  void deliver(M msg, Outbox outbox)
-    throws Exception;
+  QueueDeliverBuilder<M> size(int initial);
+  
+  int size();
+  
+  QueueDeliverBuilder<M> sizeMax(int capacity);
+  
+  int sizeMax();
+  
+  QueueDeliverBuilder<M> multiworker(boolean isMultiworker);
+  
+  boolean isMultiworker();
+  
+  QueueDeliverBuilder<M> multiworkerOffset(int offset);
+  
+  int multiworkerOffset();
 
-  /**
-   * Called before items in the queue are processed. This can be
-   * used to flush buffers.
-   */
-  default void beforeBatch()
-  {
-  }
-
-  /**
-   * Called when all items in the queue are processed. This can be
-   * used to flush buffers.
-   * @throws Exception 
-   */
-  default void afterBatch()
-    throws Exception
-  {
-  }
-
-  /**
-   * Initialize the processor
-   */
-  default void onInit()
-  {
-  }
-
-  /**
-   * Activate the processor
-   */
-  default void onActive()
-  {
-  }
-
-  /**
-   * Closes the processor
-   */
-  default void shutdown(ShutdownModeAmp mode)
-  {
-  }
+  QueueDeliver<M> build(Supplier<Deliver<M>> factory, int workers);
+  
+  QueueDeliver<M> build(Deliver<M> processor);
+  
+  @SuppressWarnings("unchecked")
+  QueueDeliver<M> disruptor(Deliver<M> ...deliver);
 }

@@ -29,14 +29,14 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.queue.QueueRingResizing;
 import com.caucho.v5.amp.spi.MessageAmp;
 
 /**
  * Inbox to unpark threads.
  */
-public class QueueJampUnpark implements WorkerOutbox<MessageAmp>
+public class QueueJampUnpark implements WorkerDeliver<MessageAmp>
 {
   private QueueRingResizing<ResultJampRpc<?>> _queue;
 

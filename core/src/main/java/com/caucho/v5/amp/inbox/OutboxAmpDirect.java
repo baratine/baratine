@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.inbox;
 
-import com.caucho.v5.amp.outbox.MessageOutbox;
+import com.caucho.v5.amp.deliver.MessageDeliver;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -73,7 +73,7 @@ public class OutboxAmpDirect implements OutboxAmp
   }
   
   @Override
-  public void offer(MessageOutbox<?> msg)
+  public void offer(MessageDeliver<?> msg)
   {
     msg.offerQueue(1000);
     msg.worker().wake();

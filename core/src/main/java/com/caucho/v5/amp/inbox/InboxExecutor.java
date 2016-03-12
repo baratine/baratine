@@ -36,8 +36,8 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpNull;
 import com.caucho.v5.amp.actor.ServiceRefImpl;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -49,7 +49,7 @@ import io.baratine.service.ResultFuture;
  * Inbox that spawns threads to deliver messages.
  */
 public class InboxExecutor extends InboxBase
-  implements WorkerOutbox<MessageAmp>
+  implements WorkerDeliver<MessageAmp>
 {
   private final ServiceRefAmp _actorRef;
   private final ActorAmp _actor;
@@ -96,7 +96,7 @@ public class InboxExecutor extends InboxBase
   }
   
   @Override
-  public WorkerOutbox<MessageAmp> worker()
+  public WorkerDeliver<MessageAmp> worker()
   {
     return this;
   }
@@ -144,14 +144,15 @@ public class InboxExecutor extends InboxBase
     _actor.onShutdown(mode);
   }
   
+  /*
   @Override
-  public void runAs(Outbox outbox, MessageAmp tailMsg)
-                               
+  public boolean runAs(Outbox outbox, MessageAmp tailMsg)
   {
     tailMsg.offerQueue(0);
     outbox.flushAndExecuteLast();
     wake();
   }
+  */
 
   public String toString()
   {

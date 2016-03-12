@@ -29,10 +29,10 @@
 
 package com.caucho.v5.log.impl;
 
-import com.caucho.v5.amp.outbox.MessageOutbox;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.MessageDeliver;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 
-abstract public class LogItem<H extends LogItemHandler> implements MessageOutbox 
+abstract public class LogItem<H extends LogItemHandler> implements MessageDeliver 
 {
   abstract void deliver(H handler);
     
@@ -42,7 +42,7 @@ abstract public class LogItem<H extends LogItemHandler> implements MessageOutbox
   }
 
   @Override
-  public WorkerOutbox worker()
+  public WorkerDeliver worker()
   {
     return null;
   }

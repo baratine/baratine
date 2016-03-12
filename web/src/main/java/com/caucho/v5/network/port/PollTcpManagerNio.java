@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.queue.QueueRing;
-import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
+import com.caucho.v5.amp.queue.QueueRingFixed;
 import com.caucho.v5.health.meter.ActiveMeter;
 import com.caucho.v5.health.meter.MeterService;
 import com.caucho.v5.health.shutdown.ExitCode;
@@ -73,12 +73,12 @@ public class PollTcpManagerNio
       throw new RuntimeException(e);
     }
     
-    QueueServiceBuilderImpl builder
-      = new QueueServiceBuilderImpl<>();
-    builder.capacity(8 * 1024);
+    QueueDeliverBuilderImpl builder
+      = new QueueDeliverBuilderImpl<>();
+    builder.sizeMax(8 * 1024);
     
     _registerQueue = builder.build(new RegisterProcessor());
-    _newRegisterQueue = new QueueRing<>(8 * 1024);
+    _newRegisterQueue = new QueueRingFixed<>(8 * 1024);
   }
 
   /**
@@ -517,7 +517,7 @@ public class PollTcpManagerNio
   }
   
   private class RegisterProcessor
-    implements DeliverOutbox<PollController>
+    implements Deliver<PollController>
   {
     @Override
     public void deliver(PollController item, Outbox outbox)

@@ -27,23 +27,23 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 import java.util.concurrent.Executor;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
-public final class WorkerOutboxMultiThread<M extends MessageOutbox<M>>
-  extends WorkerOutboxBase<M>
+public final class WorkerDeliverMultiThread<M> // extends MessageOutbox<M>>
+  extends WorkerDeliverBase<M>
 {
-  private final QueueOutbox<M> _queue;
-  private final DeliverOutbox<M> _deliver;
+  private final QueueRing<M> _queue;
+  private final Deliver<M> _deliver;
     
-  public WorkerOutboxMultiThread(DeliverOutbox<M> deliver,
+  public WorkerDeliverMultiThread(Deliver<M> deliver,
                                  Object outboxContext,
                                  Executor executor,
                                  ClassLoader loader,
-                                 QueueOutbox<M> queue)
+                                 QueueRing<M> queue)
   {
     super(deliver, outboxContext, executor, loader);
       
@@ -51,7 +51,7 @@ public final class WorkerOutboxMultiThread<M extends MessageOutbox<M>>
     _deliver = deliver;
   }
   
-  protected DeliverOutbox<M> getActor()
+  protected Deliver<M> getActor()
   {
     return _deliver;
   }
@@ -60,8 +60,8 @@ public final class WorkerOutboxMultiThread<M extends MessageOutbox<M>>
   public void runImpl(Outbox outbox, M item)
     throws Exception
   {
-    final QueueOutbox<M> queue = _queue;
-    final DeliverOutbox<M> deliver = getActor();
+    final QueueRing<M> queue = _queue;
+    final Deliver<M> deliver = getActor();
       
     deliver.beforeBatch();
       
@@ -85,7 +85,7 @@ public final class WorkerOutboxMultiThread<M extends MessageOutbox<M>>
   protected void runOneImpl(Outbox outbox, M tailMsg) 
     throws Exception
   {
-    final DeliverOutbox<M> deliver = getActor();
+    final Deliver<M> deliver = getActor();
       
     deliver.beforeBatch();
       
@@ -103,6 +103,7 @@ public final class WorkerOutboxMultiThread<M extends MessageOutbox<M>>
     return _queue.isEmpty();
   }
   
+  /*
   @Override
   public void onInit()
   {
@@ -118,6 +119,7 @@ public final class WorkerOutboxMultiThread<M extends MessageOutbox<M>>
 
     _deliver.onActive();
   }
+  */
   
   @Override
   public void shutdown(ShutdownModeAmp mode)

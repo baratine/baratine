@@ -31,7 +31,7 @@ package com.caucho.v5.amp.spi;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
@@ -80,7 +80,7 @@ public interface InboxAmp // extends OutboxContext<MessageAmp>
   
   ActorAmp getDirectActor();
   
-  WorkerOutbox<MessageAmp> worker();
+  WorkerDeliver<MessageAmp> worker();
 
   //void wake();
   

@@ -39,7 +39,7 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.queue.QueueRing;
+import com.caucho.v5.amp.queue.QueueRingFixed;
 import com.caucho.v5.health.HealthSystemFacade;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.ConcurrentArrayList;
@@ -103,16 +103,16 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
   // the idle queue
   //
 
-  private final QueueRing<ThreadAmp> _idleThreadRing
-    = new QueueRing<>(8192);
+  private final QueueRingFixed<ThreadAmp> _idleThreadRing
+    = new QueueRingFixed<>(8192);
 
   //
   // task queues
   //
 
   // private final ThreadTaskRing2 _taskQueue = new ThreadTaskRing2();
-  private final QueueRing<RunnableItem> _taskQueue
-    = new QueueRing<>(16 * 1024);
+  private final QueueRingFixed<RunnableItem> _taskQueue
+    = new QueueRingFixed<>(16 * 1024);
     
   private final AtomicInteger _threadWakeStartCount = new AtomicInteger();
   
@@ -747,7 +747,7 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
   {
     RunnableItem item = null;
     
-    QueueRing<RunnableItem> taskQueue = _taskQueue;
+    QueueRingFixed<RunnableItem> taskQueue = _taskQueue;
     
     if (startSpinIdle()) {
       for (long i = getSpinCount(); i >= 0 && item == null; i--) {

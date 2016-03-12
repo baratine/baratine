@@ -27,21 +27,22 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.queue;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.deliver.QueueRing;
 import com.caucho.v5.util.L10N;
 
 /**
  * Value queue with atomic reference.
  */
-abstract public class QueueOutboxBase<M>
-  implements QueueOutbox<M>
+abstract public class QueueRingBase<M>
+  implements QueueRing<M>
 {
-  private static final L10N L = new L10N(QueueOutboxBase.class);
+  private static final L10N L = new L10N(QueueRingBase.class);
   
   //
   // general size information

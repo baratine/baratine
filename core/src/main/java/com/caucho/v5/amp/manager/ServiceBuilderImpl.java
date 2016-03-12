@@ -40,16 +40,16 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpJournal;
 import com.caucho.v5.amp.actor.ActorFactoryImpl;
 import com.caucho.v5.amp.actor.ActorFactoryWorkers;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.QueueDeliver;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
 import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.inbox.QueueServiceFactoryInbox;
 import com.caucho.v5.amp.journal.ActorJournal;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.proxy.SkeletonClass;
-import com.caucho.v5.amp.queue.QueueServiceBuilder;
-import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.amp.session.SessionServiceManagerImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorFactoryAmp;
@@ -934,16 +934,16 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
       
       serviceFactory = new QueueServiceFactoryImpl(_manager, actorFactory);
       
-      QueueServiceBuilderImpl<MessageAmp> queueBuilder
-        = new QueueServiceBuilderImpl<>();
+      QueueDeliverBuilderImpl<MessageAmp> queueBuilder
+        = new QueueDeliverBuilderImpl<>();
       
       //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
       queueBuilder.setClassLoader(_manager.classLoader());
       
       ServiceConfig config = actorFactory.config();
     
-      queueBuilder.capacity(config.queueSizeMax());
-      queueBuilder.initial(config.queueSize());
+      queueBuilder.sizeMax(config.queueSizeMax());
+      queueBuilder.size(config.queueSize());
     
       InboxAmp inbox = new InboxQueue(_manager, 
                                       queueBuilder,
@@ -1040,14 +1040,14 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
   ServiceRefAmp service(QueueServiceFactoryInbox serviceFactory,
                         ServiceConfig config)
   {
-    QueueServiceBuilderImpl<MessageAmp> queueBuilder
-      = new QueueServiceBuilderImpl<>();
+    QueueDeliverBuilderImpl<MessageAmp> queueBuilder
+      = new QueueDeliverBuilderImpl<>();
     
     //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
     queueBuilder.setClassLoader(_manager.classLoader());
     
-    queueBuilder.capacity(config.queueSizeMax());
-    queueBuilder.initial(config.queueSize());
+    queueBuilder.sizeMax(config.queueSizeMax());
+    queueBuilder.size(config.queueSize());
   
     InboxAmp inbox = new InboxQueue(_manager, 
                                     queueBuilder,
@@ -1166,7 +1166,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     }
 
     @Override
-    public QueueService<MessageAmp> build(QueueServiceBuilder<MessageAmp> queueBuilder,
+    public QueueDeliver<MessageAmp> build(QueueDeliverBuilder<MessageAmp> queueBuilder,
                                           InboxQueue inbox)
     {
       ServiceConfig config = config();
@@ -1175,7 +1175,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
         throw new IllegalStateException();
       }
       
-      Supplier<DeliverOutbox<MessageAmp>> factory
+      Supplier<Deliver<MessageAmp>> factory
         = inbox.createDeliverFactory(_actorFactory, config);
       
       if (config.workers() > 0) {
@@ -1218,16 +1218,16 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     }
     
     @Override
-    public QueueService<MessageAmp> build(QueueServiceBuilder<MessageAmp> queueBuilder,
+    public QueueDeliver<MessageAmp> build(QueueDeliverBuilder<MessageAmp> queueBuilder,
                                           InboxQueue inbox)
     {
       // return new       return inbox.createDeliverFactory(_supplier, _config);
       //DeliverFactoryImpl(supplierActor, config);
 
-      DeliverOutbox<MessageAmp> factoryJournal
+      Deliver<MessageAmp> factoryJournal
         = inbox.createDeliver(_actorJournal);
       
-      DeliverOutbox<MessageAmp> factoryMain
+      Deliver<MessageAmp> factoryMain
         = inbox.createDeliver(_actorMain);
       
       //DisruptorBuilderQueue<MessageAmp> builder;

@@ -33,8 +33,8 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.OutboxProvider;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.OutboxProvider;
 import com.caucho.v5.util.CurrentTime;
 
 

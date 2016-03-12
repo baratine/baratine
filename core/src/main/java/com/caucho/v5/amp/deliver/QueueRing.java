@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Blocking queue with a processor.
  */
-public interface QueueOutbox<M>
+public interface QueueRing<M>
   extends BlockingQueue<M>
 {
   long head();
@@ -68,7 +68,7 @@ public interface QueueOutbox<M>
    * @param deliver handler to process the message 
    * @param outbox message context
    */
-  void deliver(DeliverOutbox<M> deliver,
+  void deliver(Deliver<M> deliver,
                Outbox outbox)
     throws Exception;
   
@@ -87,27 +87,11 @@ public interface QueueOutbox<M>
    * @param nextWorker next worker to wake in the chain
    * @param isTail true for the last delivery in the chain
    */
-  void deliver(DeliverOutbox<M> deliver,
+  void deliver(Deliver<M> deliver,
                Outbox outbox,
                int headIndex,
                int tailIndex,
-               WorkerOutbox<?> nextWorker,
+               WorkerDeliver<?> nextWorker,
                boolean isTail)
     throws Exception;
-  
-  /*
-  void deliverMulti(DeliverOutbox<M> deliver,
-                    Outbox outbox,
-                    int headIndex,
-                    int tailIndex,
-                    WorkerOutbox<?> tailWorker)
-    throws Exception;
-  
-  void deliverMultiTail(DeliverOutbox<M> deliver,
-                        Outbox outbox,
-                        int headIndex,
-                        int tailIndex,
-                        WorkerOutbox<?> tailWorker)
-    throws Exception;
-    */
 }

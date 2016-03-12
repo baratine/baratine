@@ -34,8 +34,9 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.queue.DeliverQueueBase;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.config.types.Bytes;
 import com.caucho.v5.log.impl.RolloverLogBase;
 import com.caucho.v5.store.temp.TempFileSystem;
@@ -53,9 +54,9 @@ public class AccessLogWriter extends RolloverLogBase
   protected static final Logger log
     = Logger.getLogger(AccessLogWriter.class.getName());
 
-  private final AccessLogBase _log;
+  //private final AccessLogBase _log;
 
-  private boolean _isAutoFlush;
+  // private boolean _isAutoFlush;
   private final Object _bufferLock = new Object();
   
   private int _logBufferSize = 1024;
@@ -63,14 +64,20 @@ public class AccessLogWriter extends RolloverLogBase
   private final FreeRing<LogBuffer> _freeList
     = new FreeRing<LogBuffer>(512);
 
-  private final LogWriterTask _logWriterTask = new LogWriterTask();
+  //private final LogWriterTask _logWriterTask = new LogWriterTask();
+  private final QueueDeliver<LogBuffer> _logWriterQueue;
   
   private TempFileSystem _tempService;
 
   AccessLogWriter(AccessLogBase log)
   {
-    _log = log;
+    //_log = log;
 
+    // LogWriterTask task = new LogWriterTask();
+    
+    _logWriterQueue = QueueDeliver.<LogBuffer>newQueue()
+                                  .size(16 * 1024)
+                                  .build(new LogWriterTask());
     /*
     _logBuffer = getLogBuffer();
     _buffer = _logBuffer.getBuffer();
@@ -102,7 +109,7 @@ public class AccessLogWriter extends RolloverLogBase
   {
     super.init();
 
-    _isAutoFlush = _log.isAutoFlush();
+    // _isAutoFlush = _log.isAutoFlush();
     
     for (int i = 0; i < 64; i++) {
       _freeList.free(new LogBuffer(_logBufferSize));
@@ -126,8 +133,8 @@ public class AccessLogWriter extends RolloverLogBase
 
   void writeBuffer(LogBuffer buffer)
   {
-    _logWriterTask.offer(buffer);
-    _logWriterTask.wake();
+    _logWriterQueue.offer(buffer);
+    _logWriterQueue.wake();
   }
 
   // must be synchronized by _bufferLock.
@@ -135,7 +142,7 @@ public class AccessLogWriter extends RolloverLogBase
   public void flush()
   {
     // server/021g
-    _logWriterTask.wake();
+    _logWriterQueue.wake();
     
     waitForFlush(10);
     
@@ -148,7 +155,7 @@ public class AccessLogWriter extends RolloverLogBase
   
   protected void wake()
   {
-    _logWriterTask.wake();
+    _logWriterQueue.wake();
   }
 
   protected void waitForFlush(long timeout)
@@ -158,7 +165,7 @@ public class AccessLogWriter extends RolloverLogBase
     expire = CurrentTime.getCurrentTimeActual() + timeout;
 
     while (true) {
-      if (_logWriterTask.isEmpty()) {
+      if (_logWriterQueue.isEmpty()) {
         return;
       }
 
@@ -173,7 +180,7 @@ public class AccessLogWriter extends RolloverLogBase
       }
 
       try {
-        _logWriterTask.wake();
+        _logWriterQueue.wake();
 
         Thread.sleep(delta);
       } catch (Exception e) {
@@ -223,14 +230,14 @@ public class AccessLogWriter extends RolloverLogBase
   public void destroy()
     throws IOException
   {
-    _logWriterTask.close();
+    _logWriterQueue.close();
   }
 
-  class LogWriterTask extends DeliverQueueBase<LogBuffer>
+  class LogWriterTask implements Deliver<LogBuffer>
   {
     LogWriterTask()
     {
-      super(16 * 1024);
+      //super(16 * 1024);
     }
 
     @Override

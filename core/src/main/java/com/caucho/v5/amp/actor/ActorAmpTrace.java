@@ -29,18 +29,15 @@
 
 package com.caucho.v5.amp.actor;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.deliver.QueueDeliver;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
 import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.QueueServiceBuilderBase;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -49,6 +46,9 @@ import com.caucho.v5.amp.spi.LoadState;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 /**
  * Trace actor for debugging.
@@ -281,12 +281,14 @@ public class ActorAmpTrace implements ActorAmpState
     delegate().afterBatch();
   }
 
+  /*
   @Override
-  public QueueService<MessageAmp> buildQueue(QueueServiceBuilderBase<MessageAmp> queueBuilder,
-                                             InboxQueue queueMailbox)
+  public QueueService<MessageAmp> buildQueue(QueueServiceBuilder<MessageAmp> queueBuilder,
+                                             InboxQueue inbox)
   {
-    return delegate().buildQueue(queueBuilder, queueMailbox);
+    return delegate().buildQueue(queueBuilder, inbox);
   }
+  */
   
   @Override
   public boolean isLifecycleAware()
@@ -302,7 +304,7 @@ public class ActorAmpTrace implements ActorAmpState
   
   @Override
   public void replay(InboxAmp inbox,
-                     QueueService<MessageAmp> queue,
+                     QueueDeliver<MessageAmp> queue,
                      Result<Boolean> result)
   {
     delegate().replay(inbox, queue, result);

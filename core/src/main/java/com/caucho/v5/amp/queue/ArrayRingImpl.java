@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import com.caucho.v5.util.L10N;
 
-
 final class ArrayRingImpl<T> implements ArrayRing<T>
 {
   private static final L10N L = new L10N(ArrayRingImpl.class);
@@ -73,11 +72,6 @@ final class ArrayRingImpl<T> implements ArrayRing<T>
     int index = getIndex(ptr);
     
      _ring.set(index, value);
-    
-     /*
-    while (! _ring.compareAndSet(index, null, value)) {
-    }
-    */
   }
   
   @Override
@@ -94,13 +88,6 @@ final class ArrayRingImpl<T> implements ArrayRing<T>
     
     T value;
 
-    /*
-    while ((value = ring.get(index)) == null) {
-    }
-    
-    ring.set(index, null);
-    */
-    
     while ((value = ring.getAndSet(index, null)) == null) {
     }
     
@@ -122,7 +109,8 @@ final class ArrayRingImpl<T> implements ArrayRing<T>
       return null;
     }
   }
-  
+
+  @Override
   public final int getIndex(long ptr)
   {
     return (int) (ptr & _mask);

@@ -33,8 +33,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.actor.ActorAmpMultiWorker;
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -48,7 +48,7 @@ import io.baratine.service.ServiceException;
 /**
  * Worker for an inbox
  */
-class DeliverInboxMultiWorker implements DeliverOutbox<MessageAmp>
+class DeliverInboxMultiWorker implements Deliver<MessageAmp>
 {
   private static final Logger log
     = Logger.getLogger(DeliverInboxMultiWorker.class.getName());

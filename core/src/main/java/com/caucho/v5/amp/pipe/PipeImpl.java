@@ -36,10 +36,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.message.PipeWakeInMessage;
 import com.caucho.v5.amp.message.PipeWakeOutMessage;
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
 import com.caucho.v5.amp.queue.QueueRingSingleWriter;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
@@ -50,7 +50,7 @@ import io.baratine.io.PipeOut;
 /**
  * pipe implementation
  */
-public class PipeImpl<T> implements PipeOut<T>, DeliverOutbox<T>
+public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
 {
   private static final L10N L = new L10N(PipeImpl.class);
   private static final Logger log = Logger.getLogger(PipeImpl.class.getName());

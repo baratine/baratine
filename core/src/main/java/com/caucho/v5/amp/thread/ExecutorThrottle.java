@@ -34,7 +34,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.caucho.v5.amp.queue.QueueRing;
+import com.caucho.v5.amp.queue.QueueRingFixed;
 
 /**
  * Executor throttling threads to the cpu max, allowing extras to be
@@ -74,7 +74,7 @@ public class ExecutorThrottle implements Executor, RunnableItemScheduler {
     _timeout = timeout;
 
     // _ringQueue = new RingResizingBlockingQueue<>(64, 256 * 1024);
-    _ringQueue = new QueueRing<>(16 * 1024);
+    _ringQueue = new QueueRingFixed<>(16 * 1024);
     
     _spinTaskItem = new RunnableItem(_spinTask, getClass().getClassLoader());
     

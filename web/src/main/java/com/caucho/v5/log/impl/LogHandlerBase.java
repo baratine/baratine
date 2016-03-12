@@ -39,10 +39,10 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.QueueDeliver;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -50,7 +50,7 @@ import com.caucho.v5.util.L10N;
  */
 abstract public class LogHandlerBase extends Handler
 {
-  private QueueService<LogItem<?>> _logQueue;
+  private QueueDeliver<LogItem<?>> _logQueue;
 
   private Filter _filter;
   
@@ -79,12 +79,12 @@ abstract public class LogHandlerBase extends Handler
     Objects.requireNonNull(_logQueue);
   }
   
-  protected QueueService createQueue()
+  protected QueueDeliver createQueue()
   {
-    QueueServiceBuilderImpl builder
-      = new QueueServiceBuilderImpl();
-    builder.initial(256);
-    builder.capacity(16 * 1024);
+    QueueDeliverBuilderImpl builder
+      = new QueueDeliverBuilderImpl();
+    builder.size(256);
+    builder.sizeMax(16 * 1024);
     
     return builder.build(new LogQueue());
   }
@@ -288,7 +288,7 @@ abstract public class LogHandlerBase extends Handler
   }
 
   private class LogQueue
-    implements LogItemStringHandler, DeliverOutbox<LogItemString>
+    implements LogItemStringHandler, Deliver<LogItemString>
   {
     @Override
     public void deliver(LogItemString value, Outbox outbox)

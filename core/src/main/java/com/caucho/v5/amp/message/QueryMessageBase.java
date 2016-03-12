@@ -37,7 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -253,7 +253,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
   }
   
   @Override
-  public final WorkerOutbox worker()
+  public final WorkerDeliver worker()
   {
     return _state.getWorker(this);
   }
@@ -318,7 +318,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       State toSent() { return SENT; }
 
       @Override
-      WorkerOutbox getWorker(QueryMessageBase<?> query)
+      WorkerDeliver getWorker(QueryMessageBase<?> query)
       {
         return query.inboxTarget().worker();
       }
@@ -485,7 +485,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       throw new IllegalStateException(toString());
     }
     
-    WorkerOutbox getWorker(QueryMessageBase<?> query)
+    WorkerDeliver getWorker(QueryMessageBase<?> query)
     {
       return query.inboxCaller().worker();
     }

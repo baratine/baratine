@@ -33,20 +33,19 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.QueueOutboxBase;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
 
 /**
  * Value queue with atomic reference.
  */
-public final class QueueRing<M >
-  extends QueueOutboxBase<M>
+public final class QueueRingFixed<M >
+  extends QueueRingBase<M>
 {
-  private static final L10N L = new L10N(QueueRing.class);
+  private static final L10N L = new L10N(QueueRingFixed.class);
 
   private final ArrayRing<M> _ring;
   private final RingTailGetter<M> _tailGetter;
@@ -62,23 +61,23 @@ public final class QueueRing<M >
 
   private volatile boolean _isWriteClosed;
 
-  public QueueRing(int capacity)
+  public QueueRingFixed(int capacity)
   {
     this(capacity, CounterBuilder.create(1));
   }
 
-  public QueueRing(int capacity, RingBlocker blocker)
+  public QueueRingFixed(int capacity, RingBlocker blocker)
   {
     this(capacity, CounterBuilder.create(1), 0, blocker);
   }
 
-  public QueueRing(int capacity,
+  public QueueRingFixed(int capacity,
                    CounterBuilder counterBuilder)
   {
     this(capacity, counterBuilder, 0, new RingBlockerBasic());
   }
 
-  public QueueRing(int capacity,
+  public QueueRingFixed(int capacity,
                    CounterBuilder counterBuilder,
                    long initialIndex,
                    RingBlocker blocker)
@@ -286,17 +285,17 @@ public final class QueueRing<M >
   }
 
   @Override
-  public void deliver(final DeliverOutbox<M> deliver,
+  public void deliver(final Deliver<M> deliver,
                       final Outbox outbox)
     throws Exception
   {
     final int tailChunk = 64;
     final ArrayRing<M> ring = _ring;
-    final AtomicLong headCounter = _head;
-    final AtomicLong tailCounter = _tail;
+    final AtomicLong headRef = _head;
+    final AtomicLong tailRef = _tail;
 
-    long head = _head.get();
-    long tail = _tail.get();
+    long head = headRef.get();
+    long tail = tailRef.get();
     long lastTail = tail;
     
     try {
@@ -311,17 +310,17 @@ public final class QueueRing<M >
           deliver.deliver(item, outbox);
         }
 
-        tailCounter.set(tail);
+        tailRef.set(tail);
         lastTail = tail;
 
         // XXX: verify
         _blocker.offerWake();
 
-        head = headCounter.get();
+        head = headRef.get();
       }
     } finally {
       if (tail != lastTail) {
-        tailCounter.set(tail);
+        tailRef.set(tail);
       }
 
       _blocker.offerWake();
@@ -329,11 +328,11 @@ public final class QueueRing<M >
   }
 
   @Override
-  public void deliver(final DeliverOutbox<M> deliver,
+  public void deliver(final Deliver<M> deliver,
                       final Outbox outbox,
                       final int headIndex,
                       final int tailIndex,
-                      final WorkerOutbox<?> nextWorker,
+                      final WorkerDeliver<?> nextWorker,
                       boolean isTail)
     throws Exception
   {
@@ -488,7 +487,8 @@ public final class QueueRing<M >
     abstract public T get(long index);
   }
 
-  private final static class RingTailGetter<T> extends RingGetter<T> {
+  private final static class RingTailGetter<T> extends RingGetter<T> 
+  {
     private final ArrayRing<T> _ring;
 
     RingTailGetter(ArrayRing<T> ring)
@@ -503,7 +503,8 @@ public final class QueueRing<M >
     }
   }
 
-  private final static class RingNonTailGetter<T> extends RingGetter<T> {
+  private final static class RingNonTailGetter<T> extends RingGetter<T>
+  {
     private final ArrayRing<T> _ring;
 
     RingNonTailGetter(ArrayRing<T> ring)

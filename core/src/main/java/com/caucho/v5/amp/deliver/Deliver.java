@@ -27,26 +27,65 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.deliver;
 
-import java.util.concurrent.Executor;
-
-import com.caucho.v5.amp.outbox.MessageOutbox;
-import com.caucho.v5.amp.outbox.QueueOutbox;
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
- * Interface for an actor queue
+ * Delivers a message to a handler.
  */
-public interface QueueDeliverBuilder<M extends MessageOutbox<M>>
+public interface Deliver<M>
 {
-  QueueOutbox<M> buildQueue(CounterBuilder counterBuilder);
-
-  Executor createExecutor();
-
-  ClassLoader getClassLoader();
-
-  //Supplier<Outbox<M,C>> getOutboxFactory();
-  Object getOutboxContext();
+  /**
+   * name for debugging
+   */
+  default String getName()
+  {
+    return getClass().getSimpleName();
+  }
   
-  // OutboxDeliver<M> createOutbox(Deliver<M> deliver);
+  /**
+   * Deliver a single message.
+   */
+  void deliver(M msg, Outbox outbox)
+    throws Exception;
+
+  /**
+   * Called before items in the queue are processed. This can be
+   * used to flush buffers.
+   */
+  default void beforeBatch()
+  {
+  }
+
+  /**
+   * Called when all items in the queue are processed. This can be
+   * used to flush buffers.
+   * @throws Exception 
+   */
+  default void afterBatch()
+    throws Exception
+  {
+  }
+
+  /**
+   * Initialize the processor
+   */
+  default void onInit()
+  {
+  }
+
+  /**
+   * Activate the processor
+   */
+  default void onActive()
+  {
+  }
+
+  /**
+   * Closes the processor
+   */
+  default void shutdown(ShutdownModeAmp mode)
+  {
+  }
 }

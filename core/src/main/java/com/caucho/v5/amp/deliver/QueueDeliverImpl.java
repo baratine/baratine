@@ -27,79 +27,79 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
+
 /**
- * Thread worker controller for a queue/inbox.
+ * queue with attached workers to process messages.
  */
-public interface WorkerOutbox<M extends MessageOutbox<M>>
+public final class QueueDeliverImpl<M> // extends MessageOutbox<M>>
+  extends QueueDeliverBase<M>
 {
-  /**
-   * Wake the worker
-   * 
-   * @return true if the worker was newly woken.
-   */
-  boolean wake();
+  private final WorkerDeliver<M> _worker;
   
-  /*
-  default C context()
+  QueueDeliverImpl(QueueRing<M> queue,
+                   WorkerDeliver<M> worker)
   {
-    return null;
+    super(queue);
+
+    _worker = worker;
+  }
+  
+  /**
+   * Returns the head worker in the queue for late queuing.
+   */
+  /*
+  @Override
+  public WorkerOutbox<M,C> getWorker()
+  {
+    return _worker;
   }
   */
   
-  /**
-   * Executes the message in the target worker's context, returning the
-   * new tail message.
-   */
-  default void runAs(Outbox outbox, M tailMsg)
+  @Override
+  public boolean isSingleWorker()
   {
-    tailMsg.offerQueue(0);
-    outbox.flush();
-    wake();
+    return getQueue().counterGroupSize() == 2;
+  } 
+  
+  @Override
+  public boolean wake()
+  {
+    return _worker.wake();
   }
   
-  /**
-   * Executes the message in the target worker's context, returning the
-   * new tail message.
-   */
-  default boolean runOne(Outbox outbox, M tailMsg)
+  @Override
+  public WorkerDeliver<M> worker()
   {
-    tailMsg.offerQueue(0);
-    outbox.flush();
-    wake();
+    return _worker;
+  }
+  
+  @Override
+  public void wakeAll()
+  {
+    _worker.wakeAll();
+  }
+  
+  @Override
+  public void wakeAllAndWait()
+  {
+    _worker.wakeAllAndWait();
+  }
+  
+  @Override
+  public void shutdown(ShutdownModeAmp mode)
+  {
+    super.shutdown(mode);
     
-    return false;
+    _worker.shutdown(mode);
   }
   
-  default void onInit()
+  @Override
+  public String toString()
   {
-  }
-  
-  
-  default void onActive()
-  {
-  }
-
-  default void shutdown(ShutdownModeAmp mode)
-  {
-  }
-  
-  default void wakeAll()
-  {
-    wake();
-  }
-  
-  default void wakeAllAndWait()
-  {
-    wakeAll();
-  }
-  
-  @SuppressWarnings("unchecked")
-  static <M extends MessageOutbox<M>> WorkerOutbox<M> createNull()
-  {
-    return WorkerOutboxNull.NULL;
+    return getClass().getSimpleName() + "[" + _worker + "]";
   }
 }

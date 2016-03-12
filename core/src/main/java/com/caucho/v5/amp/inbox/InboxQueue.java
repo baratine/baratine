@@ -38,6 +38,11 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ServiceRefCore;
 import com.caucho.v5.amp.actor.ServiceRefPublic;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.QueueDeliver;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
+import com.caucho.v5.amp.deliver.WorkerDeliverMultiThread;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.manager.ServiceConfig;
 import com.caucho.v5.amp.message.InboxMessage;
@@ -46,11 +51,6 @@ import com.caucho.v5.amp.message.OnActiveReplayMessage;
 import com.caucho.v5.amp.message.OnInitMessage;
 import com.caucho.v5.amp.message.OnShutdownMessage;
 import com.caucho.v5.amp.message.ReplayMessage;
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
-import com.caucho.v5.amp.outbox.WorkerOutboxMultiThread;
-import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -78,9 +78,9 @@ public class InboxQueue extends InboxBase
   private final String _anonAddress;
   private String _bindAddress;
 
-  private final QueueService<MessageAmp> _queue;
+  private final QueueDeliver<MessageAmp> _queue;
   private final ActorAmp _actor;
-  private final WorkerOutbox<MessageAmp> _worker;
+  private final WorkerDeliver<MessageAmp> _worker;
   
   private final boolean _isLifecycleAware;
   
@@ -97,7 +97,7 @@ public class InboxQueue extends InboxBase
 
 
   public InboxQueue(ServiceManagerAmp manager,
-                    QueueServiceBuilderImpl<MessageAmp> queueBuilder,
+                    QueueDeliverBuilderImpl<MessageAmp> queueBuilder,
                     QueueServiceFactoryInbox serviceQueueFactory,
                     ServiceConfig config)
   {
@@ -139,7 +139,7 @@ public class InboxQueue extends InboxBase
 
     _queue = serviceQueueFactory.build(queueBuilder, this);
 
-    _worker = (WorkerOutbox<MessageAmp>) _queue.worker();
+    _worker = (WorkerDeliver<MessageAmp>) _queue.worker();
     //_worker = _queue.worker();
 
     _actor = actor;
@@ -289,10 +289,10 @@ public class InboxQueue extends InboxBase
   @Override
   protected boolean isSingle()
   {
-    return ! (_worker instanceof WorkerOutboxMultiThread);
+    return ! (_worker instanceof WorkerDeliverMultiThread);
   }
 
-  public Supplier<DeliverOutbox<MessageAmp>>
+  public Supplier<Deliver<MessageAmp>>
   createDeliverFactory(Supplier<ActorAmp> supplierActor,
                        ServiceConfig config)
   {
@@ -301,7 +301,7 @@ public class InboxQueue extends InboxBase
                                        config);
   }
   
-  public DeliverOutbox<MessageAmp> createDeliver(ActorAmp actor)
+  public Deliver<MessageAmp> createDeliver(ActorAmp actor)
   {
     boolean isDebug = manager().isDebug() || log.isLoggable(Level.FINE);
 
@@ -356,7 +356,7 @@ public class InboxQueue extends InboxBase
     return size;
   }
 
-  protected final QueueService<MessageAmp> getQueue()
+  protected final QueueDeliver<MessageAmp> getQueue()
   {
     return _queue;
   }
@@ -399,7 +399,7 @@ public class InboxQueue extends InboxBase
       return true;
     }
     
-    QueueService<MessageAmp> queue = _queue;
+    QueueDeliver<MessageAmp> queue = _queue;
     
     long timeout = Math.min(_sendTimeout, callerTimeout);
 
@@ -428,7 +428,7 @@ public class InboxQueue extends InboxBase
       return true;
     }
     
-    QueueService<MessageAmp> queue = _queue;
+    QueueDeliver<MessageAmp> queue = _queue;
 
     boolean value = queue.offer(message, 0, TimeUnit.MILLISECONDS);
     //boolean value = queue.offer(message, 10, TimeUnit.MILLISECONDS, 0);
@@ -470,7 +470,7 @@ public class InboxQueue extends InboxBase
       return;
     }
     
-    QueueService<MessageAmp> queue = _queue;
+    QueueDeliver<MessageAmp> queue = _queue;
     
     long timeout = Math.min(callerTimeout, _sendTimeout);
 
@@ -486,7 +486,7 @@ public class InboxQueue extends InboxBase
   }
 
   @Override
-  public final WorkerOutbox worker()
+  public final WorkerDeliver worker()
   {
     return _worker;
   }

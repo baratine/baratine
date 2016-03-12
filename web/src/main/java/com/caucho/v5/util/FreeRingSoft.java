@@ -31,14 +31,14 @@ package com.caucho.v5.util;
 
 import java.lang.ref.SoftReference;
 
-import com.caucho.v5.amp.queue.QueueRing;
+import com.caucho.v5.amp.queue.QueueRingFixed;
 
 
 /**
  * A free list with soft references.
  */
 public final class FreeRingSoft<T> {
-  private final QueueRing<SoftReference<T>> _ringQueue;
+  private final QueueRingFixed<SoftReference<T>> _ringQueue;
 
   /**
    * Create a new free list.
@@ -47,7 +47,7 @@ public final class FreeRingSoft<T> {
    */
   public FreeRingSoft(int capacity)
   {
-    _ringQueue = new QueueRing<SoftReference<T>>(capacity);
+    _ringQueue = new QueueRingFixed<SoftReference<T>>(capacity);
   }
 
   public int getSize()

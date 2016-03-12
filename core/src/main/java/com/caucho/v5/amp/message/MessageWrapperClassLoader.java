@@ -31,7 +31,7 @@ package com.caucho.v5.amp.message;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -74,7 +74,7 @@ public class MessageWrapperClassLoader implements MessageAmp
   }
 
   @Override
-  public WorkerOutbox worker()
+  public WorkerDeliver worker()
   {
     return getDelegate().worker();
   }

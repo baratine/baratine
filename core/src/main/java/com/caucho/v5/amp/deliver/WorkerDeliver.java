@@ -27,56 +27,57 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
-import java.util.Objects;
-import java.util.function.Supplier;
-
-import com.caucho.v5.amp.inbox.OutboxProviderAmp;
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
- * Outbox for the current worker thread.
+ * Thread worker controller for a queue/inbox.
  */
-abstract public class OutboxProvider<O extends Outbox> implements Supplier<O>
+public interface WorkerDeliver<M>
 {
-  private static OutboxProvider<?> _provider;
+  /**
+   * Wake the worker
+   * 
+   * @return true if the worker was newly woken.
+   */
+  boolean wake();
   
-  public static void setProvider(OutboxProvider<?> provider)
+  default void wakeAll()
   {
-    Objects.requireNonNull(provider);
-    
-    _provider = provider;
+    wake();
   }
   
-  public static <O extends Outbox> OutboxProvider<O> getProvider()
+  default void wakeAllAndWait()
   {
-    return (OutboxProvider) _provider;
+    wakeAll();
+  }
+  /**
+   * Executes the message in the target worker's context, returning the
+   * new tail message.
+   */
+  default boolean runAs(Outbox outbox, M tailMsg)
+  {
+    return false;
   }
   
-  abstract public O current();
-  
-  /*
-  public Outbox<M> currentOrCreate()
+  /**
+   * Executes the message in the target worker's context, returning the
+   * new tail message.
+   */
+  default boolean runOne(Outbox outbox, M tailMsg)
   {
-    Outbox<M> outbox = current();
-    
-    if (outbox != null) {
-      // XXX: issues with updating count;
-      return outbox;
-    }
-    else {
-      return get();
-    }
+    return false;
   }
-  */
+
+  default void shutdown(ShutdownModeAmp mode)
+  {
+  }
   
-  abstract public O currentOrCreate(Supplier<O> supplier);
   
-  static {
-    try {
-      setProvider(new OutboxProviderAmp());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+  @SuppressWarnings("unchecked")
+  static <M> WorkerDeliver<M> createNull()
+  {
+    return WorkerDeliverNull.NULL;
   }
 }

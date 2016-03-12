@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.inbox;
 
-import com.caucho.v5.amp.outbox.OutboxImpl;
+import com.caucho.v5.amp.deliver.OutboxImpl;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;

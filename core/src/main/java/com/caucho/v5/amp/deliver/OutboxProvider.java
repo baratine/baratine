@@ -27,29 +27,56 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
+
+import java.util.Objects;
+import java.util.function.Supplier;
+
+import com.caucho.v5.amp.inbox.OutboxProviderAmp;
 
 /**
- * Dummy worker
+ * Outbox for the current worker thread.
  */
-class WorkerOutboxNull<M extends MessageOutbox<M>>
-  implements WorkerOutbox<M>
+abstract public class OutboxProvider<O extends Outbox> implements Supplier<O>
 {
-  @SuppressWarnings("rawtypes")
-  static final WorkerOutboxNull NULL = new WorkerOutboxNull();
+  private static OutboxProvider<?> _provider;
   
-  private WorkerOutboxNull()
+  public static void setProvider(OutboxProvider<?> provider)
   {
+    Objects.requireNonNull(provider);
+    
+    _provider = provider;
   }
   
-  /**
-   * Wake the worker
-   * 
-   * @return true if the worker was newly woken.
-   */
-  @Override
-  public boolean wake()
+  public static <O extends Outbox> OutboxProvider<O> getProvider()
   {
-    return true;
+    return (OutboxProvider) _provider;
+  }
+  
+  abstract public O current();
+  
+  /*
+  public Outbox<M> currentOrCreate()
+  {
+    Outbox<M> outbox = current();
+    
+    if (outbox != null) {
+      // XXX: issues with updating count;
+      return outbox;
+    }
+    else {
+      return get();
+    }
+  }
+  */
+  
+  abstract public O currentOrCreate(Supplier<O> supplier);
+  
+  static {
+    try {
+      setProvider(new OutboxProviderAmp());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }

@@ -27,55 +27,44 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.deliver;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
- * Queue that spawns threads to handle requests.
+ * Interface for an actor queue
  */
-public class SpawnThreadManagerImpl
+public interface QueueDeliver<M>
+  extends BlockingQueue<M>
 {
-  private final int _spawnConcurrentMax = 4;
-  private final int _threadMax;
-  
-  private AtomicInteger _threadCount = new AtomicInteger();
-  private AtomicInteger _startCount = new AtomicInteger();
-  
-  public SpawnThreadManagerImpl(int threadMax)
+  static <M> QueueDeliverBuilder<M> newQueue()
   {
-    _threadMax = threadMax;
+    return new QueueDeliverBuilderImpl<>();
   }
   
-  public boolean start()
-  {
-    int spawnCount = _startCount.get();
-    int threadCount = _threadCount.get();
-    
-    if (spawnCount < _spawnConcurrentMax
-        && threadCount < _threadMax) {
-      _startCount.incrementAndGet();
-      _threadCount.incrementAndGet();
-      
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
+  boolean isSingleWorker();
   
-  public void onThreadBegin()
-  {
-    _startCount.decrementAndGet();
-  }
+  @Override
+  boolean offer(M msg, long value, TimeUnit unit);
   
-  public void onThreadEnd()
-  {
-    _threadCount.decrementAndGet();
-  }
+  //@Override
+  boolean wake();
 
-  public int getSpawnCount()
+  void wakeAll();
+
+  //WorkerDeliverLifecycle getWorker();
+
+  void shutdown(ShutdownModeAmp mode);
+
+  void wakeAllAndWait();
+
+  // build
+  WorkerDeliver<?> worker();
+
+  default void close()
   {
-    return _startCount.get();
   }
 }

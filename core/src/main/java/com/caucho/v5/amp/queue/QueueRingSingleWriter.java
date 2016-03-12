@@ -33,10 +33,9 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.QueueOutboxBase;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
 
@@ -44,7 +43,7 @@ import com.caucho.v5.util.L10N;
  * Value queue with atomic reference.
  */
 public final class QueueRingSingleWriter<M>
-  extends QueueOutboxBase<M>
+  extends QueueRingBase<M>
 {
   private static final L10N L = new L10N(QueueRingSingleWriter.class);
   
@@ -300,7 +299,7 @@ public final class QueueRingSingleWriter<M>
   }
   
   @Override
-  public void deliver(final DeliverOutbox<M> deliver,
+  public void deliver(final Deliver<M> deliver,
                       final Outbox outbox)
     throws Exception
   {
@@ -328,7 +327,7 @@ public final class QueueRingSingleWriter<M>
 
   private long deliver(long head, 
                        long tail,
-                       final DeliverOutbox<M> deliver,
+                       final Deliver<M> deliver,
                        final Outbox outbox)
     throws Exception
   {
@@ -365,11 +364,11 @@ public final class QueueRingSingleWriter<M>
   }
   
   @Override
-  public void deliver(final DeliverOutbox<M> processor,
+  public void deliver(final Deliver<M> processor,
                       final Outbox outbox,
                       final int headIndex,
                       final int tailIndex,
-                      final WorkerOutbox<?> nextWorker,
+                      final WorkerDeliver<?> nextWorker,
                       boolean isTail)
     throws Exception
   {

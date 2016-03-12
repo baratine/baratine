@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.outbox;
+package com.caucho.v5.amp.deliver;
 
 /**
  * Outbox for a delivery processor.
@@ -37,7 +37,7 @@ public class OutboxImpl implements Outbox
   //private static final long OFFER_TIMEOUT = 3600 * 1000;
   private static final long OFFER_TIMEOUT = 10 * 1000;
   
-  private MessageOutbox<?> _msg;
+  private MessageDeliver<?> _msg;
   private Object _context;
   
   public OutboxImpl()
@@ -51,9 +51,9 @@ public class OutboxImpl implements Outbox
   }
   
   @Override
-  public final void offer(MessageOutbox<?> msg)
+  public final void offer(MessageDeliver<?> msg)
   {
-    MessageOutbox<?> prevMsg = _msg;
+    MessageDeliver<?> prevMsg = _msg;
     _msg = msg;
     
     if (prevMsg != null) {
@@ -73,7 +73,7 @@ public class OutboxImpl implements Outbox
   @Override
   public void flush()
   {
-    MessageOutbox<?> prevMsg;
+    MessageDeliver<?> prevMsg;
 
     //Thread.dumpStack();
     
@@ -89,7 +89,7 @@ public class OutboxImpl implements Outbox
   @SuppressWarnings({"unchecked", "rawtypes"})
   public final boolean flushAndExecuteLast()
   {
-    MessageOutbox<?> tailMsg = _msg;
+    MessageDeliver<?> tailMsg = _msg;
     
     if (tailMsg == null) {
       return false;
@@ -97,7 +97,7 @@ public class OutboxImpl implements Outbox
     
     _msg = null;
     
-    WorkerOutbox worker = tailMsg.worker();
+    WorkerDeliver worker = tailMsg.worker();
       
     if (worker.runOne(this, tailMsg)) {
       return _msg != null;
@@ -114,14 +114,18 @@ public class OutboxImpl implements Outbox
   @SuppressWarnings({"unchecked", "rawtypes"})
   public final void flushAndExecuteAll()
   {
-    MessageOutbox<?> tailMsg;
+    MessageDeliver<?> tailMsg;
     
     while ((tailMsg = _msg) != null) {
       _msg = null;
       
-      WorkerOutbox worker = tailMsg.worker();
+      WorkerDeliver worker = tailMsg.worker();
       
-      worker.runAs(this, tailMsg);
+      if (! worker.runAs(this, tailMsg)) {
+        tailMsg.offerQueue(OFFER_TIMEOUT);
+        tailMsg.worker().wake();
+        return;
+      }
     }
   }
 

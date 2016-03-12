@@ -35,7 +35,7 @@ import io.baratine.service.ResultStream;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.outbox.WorkerOutbox;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -94,7 +94,7 @@ abstract public class InboxWrapper implements InboxAmp
   }
   
   @Override
-  public WorkerOutbox<MessageAmp> worker()
+  public WorkerDeliver<MessageAmp> worker()
   {
     return delegate().worker();
   }

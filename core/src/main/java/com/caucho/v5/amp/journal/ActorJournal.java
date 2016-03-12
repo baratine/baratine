@@ -34,8 +34,8 @@ import io.baratine.service.Result;
 import java.util.Objects;
 
 import com.caucho.v5.amp.actor.ActorAmpBase;
+import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
-import com.caucho.v5.amp.outbox.QueueService;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
@@ -154,7 +154,7 @@ public final class ActorJournal extends ActorAmpBase
   
   @Override
   public void replay(InboxAmp inbox,
-                     QueueService<MessageAmp> queue,
+                     QueueDeliver<MessageAmp> queue,
                      Result<Boolean> result)
   {
     JournalTask task = new JournalTask(inbox, queue, result);
@@ -256,11 +256,11 @@ public final class ActorJournal extends ActorAmpBase
   
   private class JournalTask implements Runnable {
     private InboxAmp _inbox;
-    private QueueService<MessageAmp> _queue;
+    private QueueDeliver<MessageAmp> _queue;
     private Result<Boolean> _result;
     
     JournalTask(InboxAmp inbox,
-                QueueService<MessageAmp> queue, 
+                QueueDeliver<MessageAmp> queue, 
                 Result<Boolean> result)
     {
       Objects.requireNonNull(inbox);

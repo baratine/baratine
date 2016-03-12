@@ -27,18 +27,29 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.amp.deliver;
 
 /**
- * Queue that spawns threads to handle requests.
+ * Dummy worker
  */
-public interface SpawnThreadManager
+class WorkerDeliverNull<M> // extends MessageDeliver<M>>
+  implements WorkerDeliver<M>
 {
-  public boolean allocateThread();
+  @SuppressWarnings("rawtypes")
+  static final WorkerDeliverNull NULL = new WorkerDeliverNull();
   
-  public void onThreadBegin();
+  private WorkerDeliverNull()
+  {
+  }
   
-  public void onThreadEnd();
-
-  public int getSpawnCount();
+  /**
+   * Wake the worker
+   * 
+   * @return true if the worker was newly woken.
+   */
+  @Override
+  public boolean wake()
+  {
+    return true;
+  }
 }

@@ -32,10 +32,10 @@ package com.caucho.v5.log.impl;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.outbox.DeliverOutbox;
-import com.caucho.v5.amp.outbox.Outbox;
-import com.caucho.v5.amp.outbox.QueueService;
-import com.caucho.v5.amp.queue.QueueServiceBuilderImpl;
+import com.caucho.v5.amp.deliver.Deliver;
+import com.caucho.v5.amp.deliver.Outbox;
+import com.caucho.v5.amp.deliver.QueueDeliver;
+import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
 import com.caucho.v5.util.ConcurrentArrayList;
 
 import io.baratine.service.ResultFuture;
@@ -44,12 +44,12 @@ import io.baratine.service.ResultFuture;
  * Queue for the rotating stream.
  */
 public class RotateStreamQueue //extends DeliverAmpBase<LogItem<?>>
-  implements LogItemBinaryHandler, LogItemStringHandler, DeliverOutbox<LogItem<?>>
+  implements LogItemBinaryHandler, LogItemStringHandler, Deliver<LogItem<?>>
 {
   private final ConcurrentArrayList<RotateStream> _streamList
     = new ConcurrentArrayList<>(RotateStream.class);
 
-  private final QueueService<LogItem<?>> _queue;
+  private final QueueDeliver<LogItem<?>> _queue;
 
   private RotateStream _lastStream;
 
@@ -75,12 +75,12 @@ public class RotateStreamQueue //extends DeliverAmpBase<LogItem<?>>
     _streamList.add(stream);
   }
   
-  private QueueService<LogItem<?>> buildQueue()
+  private QueueDeliver<LogItem<?>> buildQueue()
   {
-    QueueServiceBuilderImpl builder
-      = new QueueServiceBuilderImpl<>();
-    builder.initial(256);
-    builder.capacity(16 * 1024);
+    QueueDeliverBuilderImpl builder
+      = new QueueDeliverBuilderImpl<>();
+    builder.size(256);
+    builder.sizeMax(16 * 1024);
     
     //return builder.build(new RotateLogQueue(stream));
     return builder.build(this);
