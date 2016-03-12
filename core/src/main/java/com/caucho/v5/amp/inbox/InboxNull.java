@@ -29,16 +29,16 @@
 
 package com.caucho.v5.amp.inbox;
 
-import io.baratine.service.ServiceExceptionNotFound;
-
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.ServiceExceptionNotFound;
 
 /**
  * Mailbox for an actor
@@ -132,6 +132,12 @@ public class InboxNull extends InboxBase
   {
     // TODO Auto-generated method stub
     return null;
+  }
+  
+  @Override
+  public WorkerDeliver<MessageAmp> worker()
+  {
+    return WorkerDeliver.createNull();
   }
 
   /*
