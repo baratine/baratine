@@ -52,7 +52,7 @@ public class WebServerBuilderBaratine extends WebServerBuilderImpl
   @Override
   public WebServerImpl build(WebServerBuilderImpl builder)
   {
-    builder.bind(new Key<ViewWeb<Object>>() {}).to(ViewJsonDefault.class);
+    builder.bean(ViewJsonDefault.class).to(new Key<ViewWeb<Object>>() {});
 
     //ServerBuilderBaratine serverBuilder;
     //serverBuilder = new ServerBuilderBaratine(builder.config());

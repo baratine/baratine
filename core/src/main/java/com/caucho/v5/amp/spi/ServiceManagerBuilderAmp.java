@@ -64,7 +64,7 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   ServiceManagerBuilderAmp classLoader(ClassLoader classLoader);
   ClassLoader classLoader();
   
-  void setDebugId(String name);
+  void debugId(String name);
   
   String getDebugId();
   
@@ -104,7 +104,7 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   long getJournalDelay();
 
   QueueFullHandler getQueueFullHandler();
-  ServiceManagerBuilderAmp setQueueFullHandler(QueueFullHandler handler);
+  ServiceManagerBuilderAmp queueFullHandler(QueueFullHandler handler);
   
   ServiceManagerBuilderAmp contextManager(boolean isContext);
   boolean isContextManager();

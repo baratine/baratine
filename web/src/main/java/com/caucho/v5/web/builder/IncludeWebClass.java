@@ -232,7 +232,7 @@ class IncludeWebClass implements IncludeWeb
         builder.service(()->newInstance(beanSupplier,m)).address(address);
       }
       else if (isProduces(m)) {
-        builder.bind(Key.of(m)).toProvider(()->newInstance(beanSupplier,m));
+        builder.provider(()->newInstance(beanSupplier,m)).to(Key.of(m));
       }
     }
   }
@@ -948,7 +948,8 @@ class IncludeWebClass implements IncludeWeb
       _builder = builder;
       _type = type;
     }
-    
+
+    @Override
     public Object get()
     {
       if (_bean == null) {

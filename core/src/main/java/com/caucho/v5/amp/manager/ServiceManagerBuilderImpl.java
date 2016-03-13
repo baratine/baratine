@@ -138,7 +138,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     return _loader;
   }
   
-  public void setDebugId(String debugId)
+  public void debugId(String debugId)
   {
     _debugId = debugId;
   }
@@ -243,7 +243,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceManagerBuilderAmp setQueueFullHandler(QueueFullHandler handler)
+  public ServiceManagerBuilderAmp queueFullHandler(QueueFullHandler handler)
   {
     _queueFullHandler = handler;
     

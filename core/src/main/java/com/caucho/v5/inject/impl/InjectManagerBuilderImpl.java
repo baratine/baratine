@@ -55,7 +55,6 @@ import io.baratine.inject.InjectManager.BindingBuilder;
 import io.baratine.inject.InjectManager.InjectAutoBind;
 import io.baratine.inject.InjectManager.InjectBuilder;
 import io.baratine.inject.InjectManager.InjectBuilderRoot;
-import io.baratine.inject.InjectManager.ScopeBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.Lookup;
 
@@ -121,13 +120,13 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
   }
   
   @Override
-  public <T> BindingBuilder<T> bind(Class<T> type)
+  public <T> BindingBuilder<T> bean(Class<T> type)
   {
     clearManager();
     
     Objects.requireNonNull(type);
     
-    BindingBuilderImpl<T> binding = new BindingBuilderImpl<>(this, Key.of(type));
+    BindingBuilderImpl<T> binding = new BindingBuilderImpl<>(this, type);
     
     _bindings.add(binding);
     
@@ -135,17 +134,37 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
   }
   
   @Override
-  public <T> BindingBuilder<T> bind(Key<T> key)
+  public <T> BindingBuilder<T> bean(T bean)
   {
     clearManager();
     
-    Objects.requireNonNull(key);
+    Objects.requireNonNull(bean);
     
-    BindingBuilderImpl<T> binding = new BindingBuilderImpl<>(this, key);
+    BindingBuilderImpl<T> binding = new BindingBuilderImpl<>(this, bean);
     
     _bindings.add(binding);
     
     return binding;
+  }
+
+  @Override
+  public <T> BindingBuilder<T> provider(Provider<T> provider)
+  {
+    clearManager();
+    
+    Objects.requireNonNull(provider);
+    
+    BindingBuilderImpl<T> binding = new BindingBuilderImpl<>(this, provider);
+    
+    _bindings.add(binding);
+    
+    return binding;
+  }
+
+  @Override
+  public <T, U> BindingBuilder<T> provider(Key<U> parent, Method m)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
   }
   
   @Override
@@ -221,6 +240,7 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
     manager.addProvider(producer);
   }
   
+  /*
   private static class InjectBuilderChild implements InjectBuilder
   {
     private final InjectBuilderRoot _builder;
@@ -249,39 +269,73 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
     {
       return _builder.autoBind(autoBind);
     }
-
-    /*
-    @Override
-    public InjectManager get()
-    {
-      return _builder.get();
-    }
-    */
   }
+  */
   
-  private static class BindingBuilderImpl<T> extends InjectBuilderChild
-    implements BindingBuilder<T>, ScopeBuilder
+  private static class BindingBuilderImpl<T>
+    implements BindingBuilder<T>
   {
-    private Key<T> _key;
+    private InjectBuilderRoot _builder;
+    private Key<? super T> _key;
     
     private Class<? extends T> _impl;
-    private Provider<? extends T> _supplier;
+    private Provider<T> _supplier;
     private int _priority;
     
     BindingBuilderImpl(InjectBuilderRoot builder, 
-                       Key<T> key)
+                       Class<T> type)
     {
-      super(builder);
+      Objects.requireNonNull(builder);
       
-      Objects.requireNonNull(key);
+      _builder = builder;
       
-      _key = key;
+      Objects.requireNonNull(type);
+      
+      _key = Key.of(type);
+      _impl = type;
+    }
+    
+    BindingBuilderImpl(InjectBuilderRoot builder, 
+                       T bean)
+    {
+      Objects.requireNonNull(builder);
+      
+      _builder = builder;
+      
+      Objects.requireNonNull(bean);
+      
+      _key = (Key) Key.of(bean.getClass());
+      _supplier = ()->bean;
+    }
+    
+    BindingBuilderImpl(InjectBuilderRoot builder, 
+                       Provider<T> provider)
+    {
+      Objects.requireNonNull(builder);
+      
+      _builder = builder;
+      
+      Objects.requireNonNull(provider);
+      
+      _supplier = provider;
     }
     
     @Override
-    public <U extends T> ScopeBuilder to(Class<U> impl)
+    public BindingBuilder<T> to(Class<? super T> type)
     {
-      _impl = impl;
+      Objects.requireNonNull(type);
+      
+      _key = Key.of(type);
+      
+      return this;
+    }
+    
+    @Override
+    public BindingBuilder<T> to(Key<? super T> key)
+    {
+      Objects.requireNonNull(key);
+      
+      _key = key;
       
       return this;
     }
@@ -294,21 +348,11 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
       return this;
     }
     
-    @Override
-    public <U extends T> ScopeBuilder toProvider(Provider<U> supplier)
-    {
-      Objects.requireNonNull(supplier);
-      
-      _supplier = supplier;
-      
-      return this;
-    }
-    
     void build(InjectManagerImpl manager)
     {
       BindingAmp<T> producer;
       
-      Provider<? extends T> supplier;
+      Provider<T> supplier;
       
       if (_impl != null) {
         ProviderConstructor<T> provider
@@ -322,20 +366,23 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
         supplier = _supplier;
       }
       else {
-        supplier = ()->manager.instance(_key);
+        //supplier = ()->manager.instance(_key);
+        throw new UnsupportedOperationException();
       }
       
-      producer = new ProviderDelegate<>(manager, _key, _priority, supplier); 
+      producer = new ProviderDelegate<T>(manager, (Key) _key, _priority, (Provider) supplier); 
       
       manager.addProvider(producer);
     }
 
+    /*
     @Override
     public void toSupplier(Key<?> baseKey, Method m)
     {
       // TODO Auto-generated method stub
       
     }
+    */
   }
 }
 

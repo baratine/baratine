@@ -29,6 +29,7 @@
 
 package com.caucho.v5.web.webapp;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -273,9 +274,15 @@ public class WebAppBuilder
 
     _autoBind = new WebAppAutoBind(webApp);
     _injectBuilder.autoBind(_autoBind);
+    /*
     _injectBuilder.bind(Config.class).toProvider(()->webApp.config());
     _injectBuilder.bind(InjectManager.class).toProvider(()->webApp.inject());
     _injectBuilder.bind(ServiceManager.class).toProvider(()->webApp.serviceManager());
+    */
+    
+    _injectBuilder.provider(()->webApp.config()).to(Config.class);
+    _injectBuilder.provider(()->webApp.inject()).to(InjectManager.class);
+    _injectBuilder.provider(()->webApp.serviceManager()).to(ServiceManager.class);
 
     generateFromFactory();
 
@@ -421,16 +428,36 @@ public class WebAppBuilder
   //
 
   @Override
-  public <T> BindingBuilder<T> bind(Class<T> api)
+  public <T> BindingBuilder<T> bean(Class<T> type)
   {
-    return _injectBuilder.bind(api);
+    return _injectBuilder.bean(type);
   }
 
   @Override
-  public <T> BindingBuilder<T> bind(Key<T> key)
+  public <T> BindingBuilder<T> bean(T bean)
   {
-    return _injectBuilder.bind(key);
+    return _injectBuilder.bean(bean);
   }
+
+  @Override
+  public <T> BindingBuilder<T> provider(Provider<T> provider)
+  {
+    return _injectBuilder.provider(provider);
+  }
+
+  @Override
+  public <T,U> BindingBuilder<T> provider(Key<U> parent, Method m)
+  {
+    return _injectBuilder.provider(parent, m);
+  }
+
+  /*
+  @Override
+  public <T> BindingBuilder<T> bean(T bean)
+  {
+    return _injectBuilder.bean(bean);
+  }
+  */
 
   @Override
   public <S,T> Convert<S,T> converter(Class<S> source, Class<T> target)
@@ -439,17 +466,17 @@ public class WebAppBuilder
   }
 
   @Override
-  public <T> ServiceRef.ServiceBuilder service(Class<T> api)
+  public <T> ServiceRef.ServiceBuilder service(Class<T> type)
   {
-    if (Vault.class.isAssignableFrom(api)) {
-      addResourceConverter(api);
+    if (Vault.class.isAssignableFrom(type)) {
+      addResourceConverter(type);
     }
 
     if (_webApp != null && _webApp.serviceManager() != null) {
-      return _webApp.serviceManager().newService(api);
+      return _webApp.serviceManager().newService(type);
     }
 
-    ServiceRef.ServiceBuilder builder = _serviceBuilder.service(api);
+    ServiceRef.ServiceBuilder builder = _serviceBuilder.service(type);
 
     return builder;
   }
@@ -489,7 +516,7 @@ public class WebAppBuilder
     Convert<String,?> convert
        = new ConvertResource(address, itemType);
 
-    bind(Key.of(convertRef.type())).to(convert);
+    bean(convert).to(Key.of(convertRef.type()));
   }
 
   @Override

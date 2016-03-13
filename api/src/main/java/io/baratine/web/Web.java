@@ -129,18 +129,26 @@ public interface Web
   // injection
   //
   
-  static <T> InjectManager.BindingBuilder<T> bind(Class<T> type)
+  /**
+   * Registers a bean for injection.
+   * 
+   * @param type instance class of the bean
+   */
+  static <T> InjectManager.BindingBuilder<T> bean(Class<T> type)
   {
     Objects.requireNonNull(type);
     
-    return builder().bind(type);
+    return builder().bean(type);
   }
   
-  static <T> InjectManager.BindingBuilder<T> bind(Key<T> key)
+  /**
+   * Registers a bean instance for injection.
+   */
+  static <T> InjectManager.BindingBuilder<T> bean(T bean)
   {
-    Objects.requireNonNull(key);
+    Objects.requireNonNull(bean);
     
-    return builder().bind(key);
+    return builder().bean(bean);
   }
   
   //

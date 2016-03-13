@@ -66,6 +66,9 @@ public interface InjectManager
    */
   <T> T instance(Key<T> key);
   
+  /**
+   * Returns an injected instance for the given InjectionPoint.
+   */
   <T> T instance(InjectionPoint<T> ip);
   
   /**
@@ -73,10 +76,19 @@ public interface InjectManager
    */
   void inject(Object bean);
 
+  /**
+   * Returns the bindings associated with a key.
+   */
   <T> List<Binding<T>> bindings(Key<T> key);
-
+  
+  /**
+   * Returns the type converter from a source class to a target class.
+   */
   <S,T> Convert<S, T> converter(Class<S> source, Class<T> target);
 
+  /**
+   * Creates a new manager.
+   */
   public static InjectBuilderRoot newManager(ClassLoader classLoader)
   {
     return ServiceManagerProvider.current().injectManager(classLoader);
@@ -94,8 +106,16 @@ public interface InjectManager
       throw new UnsupportedOperationException(getClass().getName());
     }
     
+    /*
     <T> BindingBuilder<T> bind(Class<T> api);
     <T> BindingBuilder<T> bind(Key<T> key);
+    */
+    
+    <T> BindingBuilder<T> bean(Class<T> impl);
+    <T> BindingBuilder<T> bean(T instance);
+    
+    <T> BindingBuilder<T> provider(Provider<T> provider);
+    <T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
     
     InjectBuilder autoBind(InjectAutoBind autoBind);
   }
@@ -107,23 +127,19 @@ public interface InjectManager
   
   public interface BindingBuilder<T>
   {
-    <U extends T> ScopeBuilder to(Class<U> impl);
-    
-    <U extends T> ScopeBuilder toProvider(Provider<U> impl);
-    
-    default <U extends T> ScopeBuilder to(U impl)
-    {
-      return toProvider(()->impl);
-    }
+    BindingBuilder<T> to(Class<? super T> api);
+    BindingBuilder<T> to(Key<? super T> key);
 
-    void toSupplier(Key<?> baseKey, Method m);
+    //void toSupplier(Key<?> baseKey, Method m);
 
     BindingBuilder<T> priority(int priority);
   }
   
+  /*
   public interface ScopeBuilder
   {
   }
+  */
   
   public interface IncludeInject extends IncludeGenerator<InjectBuilder>
   {

@@ -31,6 +31,7 @@ package com.caucho.v5.web.builder;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +48,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Provider;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -378,30 +380,71 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   //
   
   @Override
-  public <T> InjectBuilderWebImpl<T> bind(Class<T> type)
+  public <T> BindingBuilder<T> bean(Class<T> type)
   {
     Objects.requireNonNull(type);
     
+    /*
     InjectBuilderWebImpl<T> binding
       = new InjectBuilderWebImpl<>(_injectServer, type);
     
     _includes.add(binding);
     
     return binding;
-    
+    */
+    return _injectServer.bean(type);
   }
 
   @Override
-  public <T> BindingBuilder<T> bind(Key<T> key)
+  public <T> BindingBuilder<T> bean(T bean)
   {
-    Objects.requireNonNull(key);
+    Objects.requireNonNull(bean);
     
-    InjectBuilderKeyImpl<T> binding
-      = new InjectBuilderKeyImpl<>(_injectServer, key);
+    return _injectServer.bean(bean);
+    
+    /*
+    InjectBuilderBeanImpl<T> binding
+      = new InjectBuilderBeanImpl<>(_injectServer, bean);
     
     _includes.add(binding);
     
     return binding;
+    */
+  }
+
+  @Override
+  public <T> BindingBuilder<T> provider(Provider<T> provider)
+  {
+    Objects.requireNonNull(provider);
+    
+    return _injectServer.provider(provider);
+    
+    /*
+    InjectBuilderBeanImpl<T> binding
+      = new InjectBuilderBeanImpl<>(_injectServer, bean);
+    
+    _includes.add(binding);
+    
+    return binding;
+    */
+  }
+
+  @Override
+  public <T,U> BindingBuilder<T> provider(Key<U> parent, Method m)
+  {
+    Objects.requireNonNull(parent);
+    Objects.requireNonNull(m);
+    
+    return _injectServer.provider(parent, m);
+    
+    /*
+    InjectBuilderBeanImpl<T> binding
+      = new InjectBuilderBeanImpl<>(_injectServer, bean);
+    
+    _includes.add(binding);
+    
+    return binding;
+    */
   }
 
   @Override

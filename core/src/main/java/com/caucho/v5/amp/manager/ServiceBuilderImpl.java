@@ -204,6 +204,10 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   {
     Objects.requireNonNull(worker);
     
+    if (worker instanceof Class<?>) {
+      throw new IllegalStateException();
+    }
+    
     if (_worker != null || _serviceSupplier != null) {
       throw new IllegalStateException();
     }
@@ -219,7 +223,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return this;
   }
 
-  public ServiceBuilderAmp service(Supplier<T> serviceSupplier)
+  public ServiceBuilderAmp serviceSupplier(Supplier<T> serviceSupplier)
   {
     Objects.requireNonNull(serviceSupplier);
     
@@ -228,7 +232,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return this;
   }
 
-  public ServiceBuilderAmp service(Class<T> serviceClass)
+  public ServiceBuilderAmp serviceClass(Class<T> serviceClass)
   {
     Objects.requireNonNull(serviceClass);
     

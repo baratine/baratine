@@ -50,7 +50,7 @@ public class WebServerFactoryBaratine implements WebServerFactory
   @Override
   public WebServerImpl build(WebServerBuilderImpl builder)
   {
-    builder.bind(new Key<ViewWeb<Object>>() {}).to(ViewJsonDefault.class);
+    builder.bean(ViewJsonDefault.class).to(new Key<ViewWeb<Object>>() {});
     System.out.println("BUILD: " + this);
     //ServerBuilderBaratine serverBuilder;
     //serverBuilder = new ServerBuilderBaratine(builder.config());

@@ -29,7 +29,10 @@
 
 package com.caucho.v5.web.builder;
 
+import java.lang.reflect.Method;
 import java.util.function.Supplier;
+
+import javax.inject.Provider;
 
 import io.baratine.convert.Convert;
 import io.baratine.inject.InjectManager;
@@ -85,9 +88,33 @@ class WebServerBuilderBase implements WebServerBuilder
   }
 
   @Override
-  public <T> BindingBuilder<T> bind(Class<T> api)
+  public <T> BindingBuilder<T> bean(Class<T> type)
   {
-    return delegate().bind(api);
+    return delegate().bean(type);
+  }
+
+  @Override
+  public <T> BindingBuilder<T> bean(T bean)
+  {
+    return delegate().bean(bean);
+  }
+
+  @Override
+  public <T> BindingBuilder<T> provider(Provider<T> provider)
+  {
+    return delegate().provider(provider);
+  }
+
+  @Override
+  public <T,U> BindingBuilder<T> provider(Key<U> parent, Method m)
+  {
+    return delegate().provider(parent, m);
+  }
+
+  @Override
+  public InjectBuilder autoBind(InjectAutoBind autoBind)
+  {
+    return delegate().autoBind(autoBind);
   }
   
   //
@@ -192,17 +219,5 @@ class WebServerBuilderBase implements WebServerBuilder
   public void go(String ...args)
   {
     throw new IllegalStateException(getClass().getName());
-  }
-
-  @Override
-  public <T> BindingBuilder<T> bind(Key<T> key)
-  {
-    return delegate().bind(key);
-  }
-
-  @Override
-  public InjectBuilder autoBind(InjectAutoBind autoBind)
-  {
-    return delegate().autoBind(autoBind);
   }
 }

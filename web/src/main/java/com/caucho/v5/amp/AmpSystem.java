@@ -86,9 +86,10 @@ public class AmpSystem extends SubSystemBase
     
     //addJournalFactory(builder);
     
+    builder.autoServices(true);
     builder.name("amp-system");
-    builder.setDebugId(address);
-    builder.setQueueFullHandler(new QueueFullHandlerAmp());
+    builder.debugId(address);
+    builder.queueFullHandler(new QueueFullHandlerAmp());
     
     if (log.isLoggable(Level.FINER)) {
       builder.debug(true);

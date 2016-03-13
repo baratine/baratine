@@ -35,7 +35,7 @@ import io.baratine.spi.ServiceManagerProvider;
 /**
  * Injection static constructors
  */
-public interface Injects
+public interface Injection
 {
   static InjectBuilderRoot newManager(ClassLoader classLoader)
   {
