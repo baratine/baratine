@@ -29,8 +29,6 @@
 
 package com.caucho.v5.amp.inbox;
 
-import io.baratine.service.ResultFuture;
-
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -41,6 +39,8 @@ import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.service.ResultFuture;
 
 /**
  * Inbox that spawns threads to deliver messages.
@@ -103,6 +103,13 @@ public class InboxExecutorBase extends InboxBase
     return false;
   }
 
+  @Override
+  public MessageAmp getMessage()
+  {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   /**
    * Closes the mailbox
    */
@@ -160,6 +167,7 @@ public class InboxExecutorBase extends InboxBase
     return getClass().getSimpleName() + "[" + serviceRef() + "]";
   }
   
+  /*
   private class SpawnMessage implements Runnable {
     private final MessageAmp _msg;
     
@@ -191,13 +199,7 @@ public class InboxExecutorBase extends InboxBase
       return getClass().getSimpleName() + "[" + _msg + "]";
     }
   }
-
-  @Override
-  public MessageAmp getMessage()
-  {
-    // TODO Auto-generated method stub
-    return null;
-  }
+  */
 
   /*
   @Override

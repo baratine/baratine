@@ -39,7 +39,6 @@ import io.baratine.function.FunctionSync;
 import io.baratine.function.PredicateAsync;
 import io.baratine.function.PredicateSync;
 import io.baratine.function.SupplierSync;
-import io.baratine.service.ResultStream;
 
 import java.util.stream.Stream;
 

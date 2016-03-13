@@ -230,7 +230,7 @@ abstract public class BartenderSystem extends SubSystemBase
 
   abstract public PodBartender findActivePod(String podName);
   
-  abstract public SchemeBartenderBase getSchemeBartenderPod();
+  abstract public SchemeBartenderBase schemeBartenderPod();
 
   /*
   protected ServiceRef getServiceRef()

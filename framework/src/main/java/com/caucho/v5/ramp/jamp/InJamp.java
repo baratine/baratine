@@ -356,7 +356,7 @@ public class InJamp
     
     String methodName = jIn.getString();
 
-    MethodRefAmp method = _channelIn.lookupMethod(address, methodName);
+    MethodRefAmp method = _channelIn.method(address, methodName);
     
     Type []paramTypes = method.getParameterTypes();
     boolean isVarArgs = method.isVarArgs();
@@ -468,7 +468,7 @@ public class InJamp
     boolean isVarArgs;
     
     try {
-      method = _channelIn.lookupMethod(address, methodName);
+      method = _channelIn.method(address, methodName);
       
       paramTypes = method.getParameterTypes();
       isVarArgs = method.isVarArgs();
@@ -727,7 +727,7 @@ public class InJamp
     boolean isVarArgs;
 
     try {
-      method = _channelIn.lookupMethod(address, methodName);
+      method = _channelIn.method(address, methodName);
 
       paramTypes = method.getParameterTypes();
       isVarArgs = method.isVarArgs();

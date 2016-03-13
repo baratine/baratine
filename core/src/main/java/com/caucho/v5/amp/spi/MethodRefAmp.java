@@ -32,8 +32,8 @@ package com.caucho.v5.amp.spi;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
-import io.baratine.service.ResultStream;
 import io.baratine.spi.Headers;
+import io.baratine.stream.ResultStream;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;

@@ -38,7 +38,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 
 import io.baratine.db.Cursor;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
 /**

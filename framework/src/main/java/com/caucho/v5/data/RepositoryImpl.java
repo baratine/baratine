@@ -44,8 +44,8 @@ import io.baratine.db.DatabaseService;
 import io.baratine.service.Data;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceManager;
+import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
 public class RepositoryImpl<ID, T>

@@ -29,14 +29,11 @@
 
 package com.caucho.v5.bartender.link;
 
-import io.baratine.service.ServiceRef;
-
 import java.io.Closeable;
 
-import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.manager.ServiceManagerWrapper;
+import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.baratine.client.ServiceManagerClient;
 import com.caucho.v5.util.L10N;
@@ -44,7 +41,7 @@ import com.caucho.v5.util.L10N;
 /**
  * Client for connecting to the champ service.
  */
-public class ClientBartenderLocal extends ServiceManagerWrapper
+public class ClientBartenderLocal extends ServiceManagerAmpWrapper
   implements ServiceManagerClient, Closeable
 {
   private static final L10N L = new L10N(ClientBartenderLocal.class);
@@ -55,13 +52,17 @@ public class ClientBartenderLocal extends ServiceManagerWrapper
   
   public ClientBartenderLocal()
   {
-    super(Amp.newManager());
-    
-    _ampManager = AmpSystem.currentManager();
+    _ampManager = ServiceManagerAmp.newManager().get();
   }
   
   @Override
-  public ServiceRef service(String address)
+  public ServiceManagerAmp delegate()
+  {
+    return _ampManager;
+  }
+  
+  @Override
+  public ServiceRefAmp service(String address)
   {
     if (address.startsWith("remote://")) {
       String tail = address.substring("remote://".length());

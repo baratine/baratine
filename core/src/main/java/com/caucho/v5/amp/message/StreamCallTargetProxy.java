@@ -29,11 +29,11 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.ResultStream;
-
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+
+import io.baratine.stream.ResultStream;
 
 /**
  * service proxy for a stream call. The proxy will queue result messages to 

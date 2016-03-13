@@ -40,6 +40,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpJournal;
 import com.caucho.v5.amp.actor.ActorFactoryImpl;
 import com.caucho.v5.amp.actor.ActorFactoryWorkers;
+import com.caucho.v5.amp.actor.ActorGenerator;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
@@ -72,16 +73,16 @@ import io.baratine.service.Workers;
 /**
  * Service builder for services needing configuration.
  */
-public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
+public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
 {
   private static final L10N L = new L10N(ServiceBuilderImpl.class);
   private static final Logger log
     = Logger.getLogger(ServiceBuilderImpl.class.getName());
   
-  private final AmpManager _manager;
+  private final ServiceManagerAmpImpl _manager;
 
   private Object _worker;
-  private Supplier<?> _serviceSupplier;
+  private Supplier<T> _serviceSupplier;
   
   private String _address;
   
@@ -97,7 +98,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
 
   private boolean _isForeign;
 
-  private Class<?> _serviceClass;
+  private Class<T> _serviceClass;
 
   private long _journalDelay;
 
@@ -113,7 +114,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
 
   private String _name;
   
-  ServiceBuilderImpl(AmpManager manager)
+  ServiceBuilderImpl(ServiceManagerAmpImpl manager)
   {
     Objects.requireNonNull(manager);
     
@@ -131,7 +132,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
   /**
    * snapshot/DTO to protect against changes. 
    */
-  private ServiceBuilderImpl(ServiceBuilderImpl builder)
+  private ServiceBuilderImpl(ServiceBuilderImpl<T> builder)
   {
     Objects.requireNonNull(builder);
     
@@ -218,7 +219,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     return this;
   }
 
-  public ServiceBuilderAmp service(Supplier<?> serviceSupplier)
+  public ServiceBuilderAmp service(Supplier<T> serviceSupplier)
   {
     Objects.requireNonNull(serviceSupplier);
     
@@ -227,37 +228,13 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     return this;
   }
 
-  public ServiceBuilderAmp service(Class<?> serviceClass)
+  public ServiceBuilderAmp service(Class<T> serviceClass)
   {
     Objects.requireNonNull(serviceClass);
     
     _serviceClass = serviceClass;
-    //SessionService channel = serviceClass.getAnnotation(SessionService.class);
     
     introspectAnnotations(serviceClass);
-    /*
-    Service service = serviceClass.getAnnotation(Service.class);
-    
-    boolean isSession = false;
-    
-    if (service != null) {
-      if (_address == null && ! service.value().isEmpty()) {
-        String address = service.value();
-        
-        _address = getPath(address);
-        //_path = address;
-        
-        String podName = getPod(address);
-        
-        if (! podName.isEmpty()
-            && ! podName.equals(_manager.node().podName())) {
-          _isForeign = true;
-        }
-      }
-    }
-
-    _serviceSupplier = newSupplier(serviceClass);
-    */
 
     return this;
   }
@@ -267,34 +244,11 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     Objects.requireNonNull(key);
     Objects.requireNonNull(apiClass);
     
-    _serviceClass = apiClass;
-    //SessionService channel = serviceClass.getAnnotation(SessionService.class);
+    _serviceClass = (Class) apiClass;
     
     introspectAnnotations(apiClass);
 
-    /*
-    Service service = apiClass.getAnnotation(Service.class);
-    
-    boolean isSession = false;
-    
-    if (service != null) {
-      if (_address == null && service.value().length() > 0) {
-        String address = service.value();
-        
-        _address = getPath(address);
-        //_path = address;
-        
-        String podName = getPod(address);
-        
-        if (! podName.isEmpty()
-            && ! podName.equals(_manager.node().podName())) {
-          _isForeign = true;
-        }
-      }
-    }
-    */
-
-    _serviceSupplier = newSupplier(key);
+    _serviceSupplier = (Supplier) newSupplier(key);
 
     return this;
   }
@@ -696,7 +650,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
   
   private ServiceRefAmp buildSessionImpl()
   {
-    Supplier<Object> supplier = newSupplier(_serviceClass);
+    Supplier<?> supplier = newSupplier(_serviceClass);
 
     String address = _address;
     
@@ -759,14 +713,6 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
   
   private Object newWorker(Class<?> serviceClass)
   {
-    /*
-    Supplier<Object> supplier = null;//pluginSupplier(serviceClass);
-    
-    if (supplier != null) {
-      return supplier;
-    }
-    */
-    
     if (_serviceSupplier != null) {
       return _serviceSupplier.get();
     }
@@ -774,7 +720,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     InjectManagerAmp injectManager = _manager.inject();
     
     if (injectManager != null) {
-      Key key = Key.of(serviceClass, ServiceImpl.class);
+      Key<?> key = Key.of(serviceClass, ServiceImpl.class);
       
       //return new SupplierBean(key, injectManager, getClassLoader());
       Object worker = injectManager.instance(key);
@@ -783,38 +729,26 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
       return worker;
     }
     else {
-      return new SupplierClass(serviceClass, classLoader()).get();
+      return new SupplierClass<>(serviceClass, classLoader()).get();
     }
   }
   
-  private Supplier<Object> newSupplier(Class<?> serviceClass)
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private <T> Supplier<T> newSupplier(Class<T> serviceClass)
   {
     if (_serviceSupplier != null) {
       return (Supplier) _serviceSupplier;
     }
-    /*
-    Supplier<Object> supplier = null;//pluginSupplier(serviceClass);
-    
-    if (supplier != null) {
-      return supplier;
-    }
-    */
     
     InjectManagerAmp injectManager = _manager.inject();
     
     if (injectManager != null) {
-      Key key = Key.of(serviceClass, ServiceImpl.class);
+      Key<T> key = Key.of(serviceClass, ServiceImpl.class);
       
-      return new SupplierBean(key, injectManager, classLoader());
-      /*
-      Object worker = injectManager.instance(key);
-      Objects.requireNonNull(worker);
-      
-      return worker;
-      */
+      return new SupplierBean<>(key, injectManager, classLoader());
     }
     else {
-      return new SupplierClass(serviceClass, classLoader());
+      return new SupplierClass<>(serviceClass, classLoader());
     }
   }
   
@@ -844,7 +778,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     
     Objects.requireNonNull(injectManager);
     
-    return (Supplier) new SupplierBean(key, injectManager, classLoader());
+    return new SupplierBean<>(key, injectManager, classLoader());
   }
   
   /**
@@ -1057,13 +991,13 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     return inbox.serviceRef();
   }
 
-  private static class SupplierBean implements Supplier<Object>
+  private static class SupplierBean<T> implements Supplier<T>
   {
-    private Key<?> _key;
+    private Key<T> _key;
     private InjectManagerAmp _injectManager;
     private ClassLoader _loader;
     
-    SupplierBean(Key<?> key, 
+    SupplierBean(Key<T> key, 
                  InjectManagerAmp injectManager,
                  ClassLoader loader)
     {
@@ -1074,7 +1008,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     }
 
     @Override
-    public Object get()
+    public T get()
     {
       Thread thread = Thread.currentThread();
       ClassLoader oldLoader = thread.getContextClassLoader();
@@ -1098,19 +1032,19 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     }
   }
   
-  private static class SupplierClass implements Supplier<Object>
+  private static class SupplierClass<T> implements Supplier<T>
   {
-    private Class<?> _cl;
+    private Class<T> _cl;
     private ClassLoader _loader;
     
-    SupplierClass(Class<?> cl, ClassLoader loader)
+    SupplierClass(Class<T> cl, ClassLoader loader)
     {
       _cl = cl;
       _loader = loader;
     }
 
     @Override
-    public Object get()
+    public T get()
     {
       Thread thread = Thread.currentThread();
       ClassLoader oldLoader = thread.getContextClassLoader();
@@ -1129,9 +1063,9 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     }
   }
   
-  class QueueServiceFactoryImpl implements QueueServiceFactoryInbox
+  private class QueueServiceFactoryImpl implements QueueServiceFactoryInbox
   {
-    private ServiceManagerAmp _manager;
+    //private ServiceManagerAmp _manager;
     private ActorFactoryAmp _actorFactory;
 
     QueueServiceFactoryImpl(ServiceManagerAmp manager,
@@ -1140,7 +1074,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
       Objects.requireNonNull(manager);
       Objects.requireNonNull(actorFactory);
       
-      _manager = manager;
+      //_manager = manager;
       _actorFactory = actorFactory;
 
       if (config().isJournal()) {
@@ -1194,7 +1128,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     private ActorAmp _actorTop;
     private ActorAmp _actorJournal;
     private ActorAmp _actorMain;
-    private ServiceConfig _config;
+    //private ServiceConfig _config;
     
     JournalServiceFactory(ActorAmp actorTop,
                           ActorAmp actorJournal,
@@ -1204,7 +1138,7 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
       _actorTop = actorTop;
       _actorJournal = actorJournal;
       _actorMain = actorMain;
-      _config = config;
+      //_config = config;
     }
     
     public String getName()
@@ -1218,25 +1152,17 @@ public class ServiceBuilderImpl implements ServiceBuilderAmp, ServiceConfig
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public QueueDeliver<MessageAmp> build(QueueDeliverBuilder<MessageAmp> queueBuilder,
                                           InboxQueue inbox)
     {
-      // return new       return inbox.createDeliverFactory(_supplier, _config);
-      //DeliverFactoryImpl(supplierActor, config);
-
-      Deliver<MessageAmp> factoryJournal
+      Deliver<MessageAmp> deliverJournal
         = inbox.createDeliver(_actorJournal);
       
-      Deliver<MessageAmp> factoryMain
+      Deliver<MessageAmp> deliverMain
         = inbox.createDeliver(_actorMain);
       
-      //DisruptorBuilderQueue<MessageAmp> builder;
-      
-      return queueBuilder.disruptor(factoryJournal, factoryMain);
-      
-      //builder.next(factoryMain);
-
-      //return builder.build();
+      return queueBuilder.disruptor(deliverJournal, deliverMain);
     }
   }
 }

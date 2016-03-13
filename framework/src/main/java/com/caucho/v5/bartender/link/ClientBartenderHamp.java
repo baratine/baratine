@@ -60,7 +60,7 @@ public class ClientBartenderHamp extends ClientAmpBase
   public ClientBartenderHamp(String uri,
                               String user, String password)
   {
-    super(Amp.newManager(), uri);
+    super(ServiceManagerAmp.newManager().get(), uri);
     
     try {
       URI userUri = new URI(uri);

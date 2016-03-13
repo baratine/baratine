@@ -31,8 +31,8 @@ package com.caucho.v5.ramp.compute;
 
 import java.util.Spliterator;
 
-import io.baratine.service.ResultStream;
 import io.baratine.service.Service;
+import io.baratine.stream.ResultStream;
 
 /**
  * Timer service.

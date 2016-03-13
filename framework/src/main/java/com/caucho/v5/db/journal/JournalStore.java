@@ -440,7 +440,7 @@ public class JournalStore
       throws IOException
     {
       if (_rampManager == null) {
-        _rampManager = Amp.newManager();
+        _rampManager = ServiceManagerAmp.newManager().get();
       }
       
       return new JournalStore(this);

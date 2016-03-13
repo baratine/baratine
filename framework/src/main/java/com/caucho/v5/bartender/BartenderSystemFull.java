@@ -295,7 +295,7 @@ public class BartenderSystemFull extends BartenderSystem
   /**
    * Return the champ scheme for pod messages.
    */
-  public SchemeBartenderBase getSchemeBartenderPod()
+  public SchemeBartenderBase schemeBartenderPod()
   {
     return _linkSystem.getSchemeBartenderPod();
   }

@@ -35,7 +35,6 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 
 /**

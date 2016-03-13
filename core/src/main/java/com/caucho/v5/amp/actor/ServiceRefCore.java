@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.actor;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.AmpManager;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 
@@ -49,7 +49,7 @@ public class ServiceRefCore extends ServiceRefActorBase
   @Override
   public ServiceRefAmp bind(String address)
   {
-    address = AmpManager.toCanonical(address);
+    address = ServiceManagerAmpImpl.toCanonical(address);
     
     InboxAmp inbox = inbox();
     

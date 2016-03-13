@@ -54,8 +54,8 @@ import io.baratine.service.Cancel;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceRef;
+import io.baratine.stream.ResultStream;
 
 /**
  * Manages the distributed cache

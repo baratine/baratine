@@ -30,11 +30,12 @@
 package com.caucho.v5.amp.remote;
 
 import java.io.Closeable;
+import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ServiceRefWrapper;
-import com.caucho.v5.amp.manager.ServiceManagerWrapper;
+import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.baratine.client.ServiceManagerClient;
 
@@ -42,7 +43,7 @@ import com.caucho.v5.baratine.client.ServiceManagerClient;
  * Endpoint for receiving hamp message
  */
 abstract public class ClientAmpBase
-  extends ServiceManagerWrapper
+  extends ServiceManagerAmpWrapper
   implements ServiceManagerClient, Closeable
 {
   private final String _uri;
@@ -51,10 +52,14 @@ abstract public class ClientAmpBase
   private OutAmpManager _outManager;
 
   private ChannelClient _channel;
+
+  private ServiceManagerAmp _manager;
   
   protected ClientAmpBase(ServiceManagerAmp manager, String uri)
   {
-    super(manager);
+    Objects.requireNonNull(manager);
+    
+    _manager = manager;
     
     _uri = uri;
     
@@ -74,6 +79,12 @@ abstract public class ClientAmpBase
     bindRemote();
   }
   
+  @Override
+  protected ServiceManagerAmp delegate()
+  {
+    return _manager;
+  }
+
   protected void bindRemote()
   {
     delegate().bind(new ServiceRefRemote(), "remote://");
@@ -97,12 +108,6 @@ abstract public class ClientAmpBase
                                    delegate().service("/system"));
     
     return client;
-  }
-  
-  @Override
-  protected ServiceManagerAmp delegate()
-  {
-    return (ServiceManagerAmp) super.delegate();
   }
   
   protected OutAmpManager getOutAmpManager()

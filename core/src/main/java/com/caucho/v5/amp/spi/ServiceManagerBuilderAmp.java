@@ -29,26 +29,32 @@
 
 package com.caucho.v5.amp.spi;
 
-import io.baratine.service.QueueFullHandler;
-import io.baratine.service.ServiceManager;
-import io.baratine.service.ServiceNode;
-
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.actor.ActorGenerator;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
-import com.caucho.v5.amp.manager.ActorGenerator;
+import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
+
+import io.baratine.service.QueueFullHandler;
+import io.baratine.service.ServiceManager;
+import io.baratine.service.ServiceNode;
 
 /**
  * Creates a AMP domain.
  */
-public interface ServiceManagerBuilderAmp extends ServiceManager.Builder
+public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerBuilder
 {
+  public static ServiceManagerBuilderAmp newManager()
+  {
+    return new ServiceManagerBuilderImpl();
+  }
+  
   /**
    * Gets the name of the manager.
    */
-  public String getName();
+  public String name();
 
   /**
    * Sets the name of the manager
@@ -56,7 +62,7 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.Builder
   ServiceManagerBuilderAmp name(String name);
 
   ServiceManagerBuilderAmp classLoader(ClassLoader classLoader);
-  ClassLoader getClassLoader();
+  ClassLoader classLoader();
   
   void setDebugId(String name);
   
@@ -65,12 +71,12 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.Builder
   /**
    * Returns the domain's broker.
    */
-  LookupManagerBuilderAmp getBrokerFactory();
+  //LookupManagerBuilderAmp getBrokerFactory();
   
   /**
    * Sets the domain's broker.
    */
-  ServiceManagerBuilderAmp setBrokerFactory(LookupManagerBuilderAmp factory);
+  //ServiceManagerBuilderAmp setBrokerFactory(LookupManagerBuilderAmp factory);
 
   /**
    * Returns the actor proxy factory.
@@ -85,14 +91,14 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.Builder
   /**
    * Returns the actor journal factory.
    */
-  JournalFactoryAmp getJournalFactory();
+  JournalFactoryAmp journalFactory();
 
   /**
    * Sets the journal context factory.
    */
-  ServiceManagerBuilderAmp setJournalFactory(JournalFactoryAmp factory);
+  ServiceManagerBuilderAmp journalFactory(JournalFactoryAmp factory);
   
-  ServiceManagerBuilderAmp setJournalMaxCount(int journalMaxCount);
+  ServiceManagerBuilderAmp journalMaxCount(int journalMaxCount);
   
   ServiceManagerBuilderAmp setJournalDelay(long journalTimeout);
   long getJournalDelay();
@@ -105,9 +111,10 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.Builder
 
   ServiceManagerBuilderAmp autoStart(boolean isAutoStart);
   boolean isAutoStart();
+  
+  ServiceManagerBuilderAmp autoServices(boolean isAutoServices);
+  boolean isAutoServices();
 
-  ServiceManagerBuilderAmp bare(boolean isBare);
-  boolean isBare();
 
   ServiceManagerBuilderAmp actorGenerator(ActorGenerator factory);
   ActorGenerator[] actorGenerators();
@@ -137,14 +144,19 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.Builder
   ServiceManagerBuilderAmp debugQueryTimeout(long timeout);
   
   /**
-   * Creates the manager.
+   * Creates the manager and start the services.
    */
+  @Override
   ServiceManagerAmp start();
-
+  
+  /**
+   * Creates the manager without starting the services.
+   */
+  @Override
   ServiceManagerAmp get();
 
   /**
    * returns the build manager
    */
-  ServiceManagerAmp managerBuild();
+  //ServiceManagerAmp managerBuild();
 }

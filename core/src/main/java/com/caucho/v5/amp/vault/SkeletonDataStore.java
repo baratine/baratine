@@ -56,7 +56,7 @@ import io.baratine.service.Id;
 import io.baratine.service.Ids;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 /**
  * Actor skeleton for a resource.

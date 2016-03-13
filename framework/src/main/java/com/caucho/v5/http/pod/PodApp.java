@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.AmpManager;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
@@ -177,8 +177,8 @@ public class PodApp implements DeployInstance2, PodManagerApp
 
   private void setAmpConfigException(Throwable e)
   {
-    if (_ampManager instanceof AmpManager) {
-      ((AmpManager) _ampManager).setConfigException(e);
+    if (_ampManager instanceof ServiceManagerAmpImpl) {
+      ((ServiceManagerAmpImpl) _ampManager).setConfigException(e);
     }
   }
 
@@ -283,7 +283,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
   public void postClassLoaderInit()
   {
     // bartender.setLocalShard(pod.getNode(podNode));
-    ServiceManagerBuilderAmp builder = Amp.newManagerBuilder();
+    ServiceManagerBuilderAmp builder = ServiceManagerAmp.newManager();
     builder.name(EnvLoader.getEnvironmentName());
     
     BartenderSystem bartender = BartenderSystem.current();
@@ -316,7 +316,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
     }
     */
    
-    Amp.setContextManager(_ampManager);
+    Amp.contextManager(_ampManager);
     
     /*
     _ampManager.run(()->{

@@ -41,7 +41,6 @@ import io.baratine.function.PredicateSync;
 import io.baratine.function.SupplierSync;
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 
 import java.util.stream.Stream;
 
@@ -169,7 +168,7 @@ import java.util.stream.Stream;
  * be executed via result(...) or exec() operations.
  *
  * @param <T> A type of item in resulting stream.
- * @see io.baratine.service.ResultStream
+ * @see io.baratine.stream.ResultStream
  */
 
 public interface ResultStreamBuilder<T>

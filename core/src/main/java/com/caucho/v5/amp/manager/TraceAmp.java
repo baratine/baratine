@@ -48,15 +48,15 @@ public class TraceAmp implements Trace
 {
   private static final Logger log = Logger.getLogger(TraceAmp.class.getName());
   
-  private AmpManager _manager;
+  //private AmpManager _manager;
   
   private OutboxAmp _outbox;
 
   private MessageAmp _message;
   
-  TraceAmp(AmpManager manager)
+  TraceAmp(ServiceManagerAmpImpl manager)
   {
-    _manager = manager;
+    //_manager = manager;
     
     OutboxAmp outboxAmp = OutboxAmp.current();
     

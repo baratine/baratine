@@ -40,9 +40,9 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.io.ResultPipeOut;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;
+import io.baratine.stream.ResultStream;
 
 /**
  * Creates MPC skeletons and stubs.

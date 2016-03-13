@@ -29,10 +29,12 @@
 
 package com.caucho.v5.amp.spi;
 
+import java.util.Collections;
+
 import com.caucho.v5.amp.ServiceRefAmp;
 
 /**
- * AmpRouter routes messages to mailboxes.
+ * RegistryAmp maps addresses to services.
  */
 public interface RegistryAmp extends LookupAmp
 {
@@ -45,27 +47,38 @@ public interface RegistryAmp extends LookupAmp
    * @return the mailbox with the given address or null
    */
   @Override
-  ServiceRefAmp service(String address);
-  
-  default MethodRefAmp lookupMethod(String address, String methodName)
+  default ServiceRefAmp service(String address)
   {
-    return service(address).getMethod(methodName);
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   /**
    * Adds an service ref (optional operation).
    */
-  void bind(String address, ServiceRefAmp serviceRef);
-  
+  default void bind(String address, ServiceRefAmp actorRef)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
   /**
    * Removes an actor ref(optional operation).
    */
-  void unbind(String address);
+  default void unbind(String address)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
 
-  Iterable<ServiceRefAmp> getServices();
+  
+  default Iterable<ServiceRefAmp> getServices()
+  {
+    return Collections.emptyList();
+  }
   
   /**
    * Shutdown the broker.
    */
-  void shutdown(ShutdownModeAmp mode);
+  default void shutdown(ShutdownModeAmp mode)
+  {
+    
+  }
 }

@@ -44,9 +44,9 @@ import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;
+import io.baratine.stream.ResultStream;
 
 /**
  * Creates MPC skeletons and stubs.

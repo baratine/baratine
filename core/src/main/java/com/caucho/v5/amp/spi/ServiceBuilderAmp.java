@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.spi;
 
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 

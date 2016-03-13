@@ -175,7 +175,7 @@ public class BartenderSystemBare extends BartenderSystem
   }
 
   @Override
-  public SchemeBartenderBase getSchemeBartenderPod()
+  public SchemeBartenderBase schemeBartenderPod()
   {
     // TODO Auto-generated method stub
     return null;

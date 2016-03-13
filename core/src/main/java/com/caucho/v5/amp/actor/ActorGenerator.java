@@ -27,17 +27,18 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.manager;
+package com.caucho.v5.amp.actor;
 
-import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
+import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.spi.ActorFactoryAmp;
 
 /**
- * Baratine core service manager.
+ * Creates an actor supplier based on a custom plugin.
  */
-public class AmpManagerBartender extends AmpManager
+public interface ActorGenerator
 {
-  public AmpManagerBartender(ServiceManagerBuilderAmp builder)
-  {
-    super(builder);
-  }
+  ActorFactoryAmp factory(Class<?> serviceClass,
+                           ServiceManagerAmp ampManager,
+                           ServiceConfig config);
 }

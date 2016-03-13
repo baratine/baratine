@@ -27,7 +27,9 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.service;
+package io.baratine.stream;
+
+import io.baratine.service.Result;
 
 /**
  * Container for ResultStream impl classes.

@@ -70,7 +70,7 @@ public interface ServiceManager
    *                         .start();
    * </code></pre>
    */
-  static ServiceManager.Builder newManager()
+  static ServiceManager.ServiceManagerBuilder newManager()
   {
     return ServiceManagerProvider.current().newManager();
   }
@@ -91,7 +91,7 @@ public interface ServiceManager
    * Creates a new service programmatically.
    * 
    * <pre><code>
-   * manager.service(myServiceImpl)
+   * manager.newService(myServiceImpl)
    *        .ref();
    * </code></pre>
    * 
@@ -110,7 +110,13 @@ public interface ServiceManager
    */
   ServiceNode node();
   
-  public interface Builder {
+  public interface ServiceManagerBuilder
+  {
+    /**
+     * Scans META-INF/services for built-in services.
+     */
+    ServiceManagerBuilder autoServices(boolean isAutoServices);
+    
     <T> ServiceRef.ServiceBuilder service(Class<T> type);
     
     <T> ServiceRef.ServiceBuilder service(Key<?> key, Class<T> api);
@@ -125,7 +131,9 @@ public interface ServiceManager
      * 
      * @param factory the supplied factory for thread execution context
      */
-    Builder systemExecutor(Supplier<Executor> factory);
+    ServiceManagerBuilder systemExecutor(Supplier<Executor> factory);
+    
+    ServiceManager get();
     
     ServiceManager start();
   }

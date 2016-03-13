@@ -51,7 +51,7 @@ import org.junit.runners.model.TestClass;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ServiceRefDynamic;
-import com.caucho.v5.amp.manager.ServiceManagerWrapper;
+import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.baratine.ServicePod;
 import com.caucho.v5.baratine.client.BaratineClient;
 import com.caucho.v5.bartender.pod.PodBartender;
@@ -691,10 +691,10 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       }
     }
 
-    class ServiceManagerProxy extends ServiceManagerWrapper
+    class ServiceManagerProxy extends ServiceManagerAmpWrapper
     {
       @Override
-      public ServiceManager delegate()
+      public ServiceManagerAmp delegate()
       {
         return getServiceManager();
       }

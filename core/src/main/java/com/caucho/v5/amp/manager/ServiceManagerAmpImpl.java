@@ -43,10 +43,10 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpSystem;
+import com.caucho.v5.amp.actor.ActorGenerator;
 import com.caucho.v5.amp.actor.SchemeLocal;
 import com.caucho.v5.amp.actor.ServiceRefChild;
 import com.caucho.v5.amp.actor.ServiceRefPin;
-import com.caucho.v5.amp.inbox.InboxFactoryQueue;
 import com.caucho.v5.amp.inbox.OutboxAmpDirect;
 import com.caucho.v5.amp.inbox.OutboxAmpExecutorFactory;
 import com.caucho.v5.amp.inbox.OutboxAmpImpl;
@@ -61,7 +61,6 @@ import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.session.ContextSessionFactory;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.InboxFactoryAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ProxyFactoryAmp;
@@ -89,11 +88,11 @@ import io.baratine.spi.Message;
 /**
  * Baratine core service manager.
  */
-public class AmpManager implements ServiceManagerAmp, AutoCloseable
+public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
 {
-  private static final L10N L = new L10N(AmpManager.class);
+  private static final L10N L = new L10N(ServiceManagerAmpImpl.class);
   private static final Logger log
-    = Logger.getLogger(AmpManager.class.getName());
+    = Logger.getLogger(ServiceManagerAmpImpl.class.getName());
   
   private final String _name;
   private final ClassLoader _classLoader;
@@ -102,7 +101,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   
   private final RegistryAmp _registry;
   
-  private final InboxFactoryAmp _inboxFactory;
+  //private final InboxFactoryAmp _inboxFactory;
   private final ProxyFactoryAmp _proxyFactory;
   private final JournalFactoryAmp _journalFactory;
   private final ContextSessionFactory _channelFactory;
@@ -146,12 +145,12 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   private long _journalDelay = -1;
   
   
-  public AmpManager(ServiceManagerBuilderAmp builder)
+  public ServiceManagerAmpImpl(ServiceManagerBuilderAmp builder)
   {
-    _name = builder.getName();
+    _name = builder.name();
     _debugId = builder.getDebugId();
     
-    _classLoader = builder.getClassLoader();
+    _classLoader = builder.classLoader();
     
     _isDebug = builder.isDebug();
     
@@ -161,12 +160,12 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
       _debugQueryMap = new DebugQueryMap(capacity, builder.getDebugQueryTimeout());
     }
     
-    _registry = new LookupManagerImpl(this);
+    _registry = new RegistryImpl(this);
     
-    _inboxFactory = new InboxFactoryQueue(this);
+    //_inboxFactory = new InboxFactoryQueue(this);
     
     _proxyFactory = new ProxyFactoryAmpImpl(this);
-    _journalFactory = builder.getJournalFactory();
+    _journalFactory = builder.journalFactory();
     _journalDelay = builder.getJournalDelay();
     
     _channelFactory = new ContextSessionFactory(this);
@@ -211,7 +210,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
     // _broker.bind("/", root);
     _registry.bind("local://", new SchemeLocal(this));
     
-    InjectManagerAmp.create(builder.getClassLoader());
+    InjectManagerAmp.create(builder.classLoader());
   }
 
   /*
@@ -363,11 +362,12 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
     return _systemContext;
   }
   
-  @Override
-  public final MessageAmp systemMessage()
+  /*
+  private final MessageAmp systemMessage()
   {
     return _systemMessage;
   }
+  */
   
   @Override
   public ServiceNode node()
@@ -443,7 +443,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
       }
       
       int slash = address.indexOf("/");
-      int colon = address.indexOf(":");
+      //int colon = address.indexOf(":");
       
       if (address.endsWith(":") && slash < 0) {
         address += "//";
@@ -538,7 +538,7 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   /**
    * newService() creates a new service from a bean
    */
-  //@Override
+  @Override
   public ServiceBuilderAmp service(Key<?> key, Class<?> api)
   {
     Objects.requireNonNull(api);
@@ -549,10 +549,9 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   /**
    * newService() creates a new service using a builder.
    */
-  @Override
-  public ServiceBuilderImpl newService()
+  private <T> ServiceBuilderImpl<T> newService()
   {
-    return new ServiceBuilderImpl(this);
+    return new ServiceBuilderImpl<>(this);
   }
 
   /**
@@ -683,12 +682,6 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
   }
   
   @Override
-  public InboxFactoryAmp inboxFactory()
-  {
-    return _inboxFactory;
-  }
-  
-  @Override
   public Supplier<OutboxAmp> outboxFactory()
   {
     return _outboxFactory;
@@ -793,12 +786,14 @@ public class AmpManager implements ServiceManagerAmp, AutoCloseable
     _lifecycle.toDestroy();
   }
 
+  /*
   @Override
   public <T> DisruptorBuilder<T> disruptor(Class<T> api)
   {
     //return new DisruptorBuilderTop<T>(this, api, null);
     throw new UnsupportedOperationException();
   }
+  */
   
   @Override
   public boolean isDebug()

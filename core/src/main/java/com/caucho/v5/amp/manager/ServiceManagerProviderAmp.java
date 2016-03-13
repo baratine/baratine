@@ -48,7 +48,7 @@ import io.baratine.service.ServiceRef;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**
- * Default AMP provider.
+ * Provider for the Services.
  */
 public class ServiceManagerProviderAmp extends ServiceManagerProvider
 {
@@ -62,26 +62,13 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
   @Override
   public ServiceManager currentManager()
   {
-    /*
-    OutboxAmp outbox = OutboxAmp.current();
-
-    if (outbox != null) {
-      ServiceManagerAmp manager = outbox.getInbox().getManager();
-      
-      if (manager != null) {
-        return manager;
-      }
-    }
-
-    return Amp.getContextManager();
-    */
     return Amp.getCurrentManager();
   }
   
   @Override
-  public ServiceManager.Builder newManager()
+  public ServiceManager.ServiceManagerBuilder newManager()
   {
-    return Amp.newManagerBuilder();
+    return new ServiceManagerBuilderImpl();
   }
   
   @Override
@@ -145,11 +132,6 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
   @Override
   public boolean flushOutboxAndExecuteLast()
   {
-    if (false) {
-      flushOutbox();
-      return true;
-    }
-    
     OutboxAmp outbox = OutboxAmp.current();
 
     if (outbox != null) {

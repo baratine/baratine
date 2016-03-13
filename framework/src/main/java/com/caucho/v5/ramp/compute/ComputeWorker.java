@@ -29,9 +29,9 @@
 
 package com.caucho.v5.ramp.compute;
 
-import io.baratine.service.ResultStream;
-
 import java.util.Spliterator;
+
+import io.baratine.stream.ResultStream;
 
 
 /**

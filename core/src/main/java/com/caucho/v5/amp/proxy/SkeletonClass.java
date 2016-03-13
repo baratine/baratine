@@ -70,10 +70,10 @@ import io.baratine.service.OnSubscribe;
 import io.baratine.service.OnUnsubscribe;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
-import io.baratine.service.ResultStream;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
+import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
 /**

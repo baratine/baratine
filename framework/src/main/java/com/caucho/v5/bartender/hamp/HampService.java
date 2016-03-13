@@ -51,7 +51,7 @@ import com.caucho.v5.ramp.hamp.OutHamp;
 import com.caucho.v5.websocket.io.CloseReason.CloseCode;
 
 import io.baratine.io.Buffer;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;
 

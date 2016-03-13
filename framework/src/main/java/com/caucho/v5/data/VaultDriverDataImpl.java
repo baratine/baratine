@@ -54,9 +54,9 @@ import io.baratine.db.DatabaseServiceSync;
 import io.baratine.service.Data;
 import io.baratine.service.Ids;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
+import io.baratine.stream.ResultStream;
 
 public class VaultDriverDataImpl<ID, T>
   extends VaultDriverBase<ID,T>

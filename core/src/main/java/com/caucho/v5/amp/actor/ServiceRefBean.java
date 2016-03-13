@@ -27,15 +27,14 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.manager;
+package com.caucho.v5.amp.actor;
 
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorFactoryImpl;
-import com.caucho.v5.amp.actor.MethodRefImpl;
-import com.caucho.v5.amp.actor.ServiceRefLazy;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorFactoryAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
@@ -54,7 +53,7 @@ public class ServiceRefBean extends ServiceRefLazy
   private Class<?> _serviceClass;
   private ActorAmp _skel;
 
-  public ServiceRefBean(AmpManager manager, 
+  public ServiceRefBean(ServiceManagerAmpImpl manager, 
                         String path,
                         Class<?> serviceClass, 
                         Supplier<?> serviceSupplier, 
@@ -73,9 +72,9 @@ public class ServiceRefBean extends ServiceRefLazy
   }
   
   @Override
-  public AmpManager manager()
+  public ServiceManagerAmpImpl manager()
   {
-    return (AmpManager) super.manager();
+    return (ServiceManagerAmpImpl) super.manager();
   }
   
   @Override

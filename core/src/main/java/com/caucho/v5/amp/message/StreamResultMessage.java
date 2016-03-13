@@ -29,14 +29,14 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.ResultStream;
-
 import java.util.ArrayList;
 import java.util.Objects;
 
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+
+import io.baratine.stream.ResultStream;
 
 /**
  * Handles the context for an actor, primarily including its

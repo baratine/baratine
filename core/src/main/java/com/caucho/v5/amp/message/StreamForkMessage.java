@@ -29,8 +29,6 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.ResultStream;
-
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
@@ -41,6 +39,8 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+
+import io.baratine.stream.ResultStream;
 
 /**
  * Handles the context for an actor, primarily including its

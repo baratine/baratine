@@ -29,8 +29,6 @@
 
 package com.caucho.v5.amp.manager;
 
-import io.baratine.service.ResultFuture;
-
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,18 +40,21 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ServiceRefException;
 import com.caucho.v5.amp.actor.ServiceRefLazyProxy;
+import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.LruCache;
 
+import io.baratine.service.ResultFuture;
+
 /**
- * AmpRouter routes messages to mailboxes.
+ * Lookup manager manages the address lookup.
  */
-public class LookupManagerImpl extends RegistryBase
+class RegistryImpl implements RegistryAmp
 {
   private static final Logger log
-    = Logger.getLogger(LookupManagerImpl.class.getName());
-  private static final L10N L = new L10N(LookupManagerImpl.class);
+    = Logger.getLogger(RegistryImpl.class.getName());
+  private static final L10N L = new L10N(RegistryImpl.class);
   
   private final ServiceManagerAmp _manager;
   
@@ -62,19 +63,14 @@ public class LookupManagerImpl extends RegistryBase
   
   private final LruCache<String,ServiceRefAmp> _cacheServiceMap;
   
-  /*
-  private final ConcurrentHashMap<String,RampBroker> _brokerMap
-    = new ConcurrentHashMap<String,RampBroker>();
-    */
-  
-  public LookupManagerImpl(ServiceManagerAmp manager)
+  public RegistryImpl(ServiceManagerAmp manager)
   {
     _manager = manager;
     
     // XXX: need this configurable
     int cacheSize = 1024;
     
-    _cacheServiceMap = new LruCache(cacheSize);
+    _cacheServiceMap = new LruCache<>(cacheSize);
   }
 
   @Override
@@ -91,7 +87,7 @@ public class LookupManagerImpl extends RegistryBase
       }
     }
     else {
-      serviceRef = lookupImpl(AmpManager.toCanonical(address));
+      serviceRef = lookupImpl(ServiceManagerAmpImpl.toCanonical(address));
 
       if (serviceRef != null) {
         //_cacheServiceMap.putIfAbsent(address, serviceRef);

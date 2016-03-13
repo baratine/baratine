@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.AmpManager;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryMessageDebug_N;
@@ -51,7 +51,7 @@ import io.baratine.io.ResultPipeIn;
 import io.baratine.io.ResultPipeOut;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 /**
  * Factory for proxy message
@@ -63,12 +63,12 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
   
   private static final long TIMEOUT = 10 * 1000L;
   
-  private final AmpManager _manager;
+  private final ServiceManagerAmpImpl _manager;
   private final DebugQueryMap _debugQueryMap;
   
   private boolean _isFiner;
 
-  MessageFactoryDebug(AmpManager ampManager)
+  MessageFactoryDebug(ServiceManagerAmpImpl ampManager)
   {
     _manager = ampManager;
     

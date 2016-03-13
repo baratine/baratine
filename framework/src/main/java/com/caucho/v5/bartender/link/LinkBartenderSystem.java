@@ -172,7 +172,7 @@ public class LinkBartenderSystem extends SubSystemBase
 
   private HampManager createLinkManagerPublic()
   {
-    ServiceManagerAmp ampManager = Amp.newManager();
+    ServiceManagerAmp ampManager = ServiceManagerAmp.newManager().start();
     
     HeartbeatSeedServiceImpl seedService
       = new HeartbeatSeedServiceImpl((ServerHeartbeat) _serverSelf);
@@ -252,12 +252,12 @@ public class LinkBartenderSystem extends SubSystemBase
     PodContainer podContainer = PodContainer.getCurrent();
     
     if (podContainer != null) {
-      ServiceManagerBuilderAmp ampBuilder = Amp.newManagerBuilder();
+      ServiceManagerBuilderAmp ampBuilder = ServiceManagerAmp.newManager();
       //ServiceManagerBartender ampManagerChamp = new ServiceManagerBartender(rampBuilder);
       // ServiceManagerAmp ampManagerPod = Amp.newManager();
       
       ampBuilder.name("system-pod," + _serverSelf.getDisplayName());
-      ampBuilder.bare(true);
+      ampBuilder.autoServices(true);
       ServiceManagerAmp ampManagerPod = ampBuilder.start();
       
       ampManagerPod.inboxSystem().serviceRef().bind("public:///system");

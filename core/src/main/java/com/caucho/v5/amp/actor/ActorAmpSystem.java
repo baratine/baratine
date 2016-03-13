@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.actor;
 
-import com.caucho.v5.amp.manager.AmpManager;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -40,10 +40,10 @@ import com.caucho.v5.amp.spi.QueryRefAmp;
  */
 public final class ActorAmpSystem extends ActorAmpNull
 {
-  private final AmpManager _manager;
+  private final ServiceManagerAmpImpl _manager;
   private InboxAmp _inbox;
   
-  public ActorAmpSystem(String address, AmpManager manager)
+  public ActorAmpSystem(String address, ServiceManagerAmpImpl manager)
   {
     super(address);
     

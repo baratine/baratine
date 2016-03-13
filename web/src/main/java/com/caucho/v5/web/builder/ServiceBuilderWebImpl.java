@@ -64,17 +64,6 @@ public class ServiceBuilderWebImpl implements ServiceRef.ServiceBuilder, Include
     throw new UnsupportedOperationException();
   }
   
-  /*
-  ServiceBuilderWebImpl(WebServerBuilderImpl serverBuilder,
-                        Class<?> serviceClass)
-  {
-    Objects.requireNonNull(serviceClass);
-    
-    _serverBuilder = serverBuilder;
-    _serviceClass = serviceClass;
-  }
-  */
-  
   ServiceBuilderWebImpl(WebServerBuilderImpl serverBuilder,
                         Key<?> key,
                         Class<?> serviceClass)

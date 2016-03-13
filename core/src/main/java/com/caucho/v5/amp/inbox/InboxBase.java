@@ -45,7 +45,7 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 /**
  * Mailbox for an actor
@@ -113,7 +113,7 @@ abstract public class InboxBase
   }
   
   @Override
-  public WorkerDeliver worker()
+  public WorkerDeliver<MessageAmp> worker()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -130,7 +130,7 @@ abstract public class InboxBase
                               Result<?> result,
                               ClassLoader loaderCaller)
   {
-    return getQueryMap().addQuery(address, result, loaderCaller);
+    return queryMap().addQuery(address, result, loaderCaller);
   }
   
   @Override
@@ -139,7 +139,7 @@ abstract public class InboxBase
                               ServiceRefAmp targetRef,
                               ClassLoader loaderCaller)
   {
-    return getQueryMap().addQuery(address, result, targetRef, loaderCaller);
+    return queryMap().addQuery(address, result, targetRef, loaderCaller);
   }
   
   @Override
@@ -147,19 +147,19 @@ abstract public class InboxBase
                               ResultStream<Object> result,
                               Cancel cancel)
   {
-    return getQueryMap().addQuery(qid, result, cancel);
+    return queryMap().addQuery(qid, result, cancel);
   }
   
   @Override
   public QueryRefAmp removeQueryRef(long id)
   {
-    return getQueryMap().extractQuery(id);
+    return queryMap().extractQuery(id);
   }
   
   @Override
   public QueryRefAmp getQueryRef(long id)
   {
-    return getQueryMap().getQuery(id);
+    return queryMap().getQuery(id);
   }
   
   @Override
@@ -187,7 +187,7 @@ abstract public class InboxBase
     return true;
   }
   
-  private QueryMap getQueryMap()
+  private QueryMap queryMap()
   {
     QueryMap queryMap = _queryMapRef.get();
     

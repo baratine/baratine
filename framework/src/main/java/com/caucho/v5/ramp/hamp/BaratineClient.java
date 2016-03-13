@@ -57,7 +57,7 @@ public class BaratineClient extends ClientAmpBase
   
   private static ServiceManagerAmp createRampManager()
   {
-    ServiceManagerBuilderAmp builder = Amp.newManagerBuilder();
+    ServiceManagerBuilderAmp builder = ServiceManagerAmp.newManager();
     
     builder.name("hamp:");
     builder.contextManager(false);

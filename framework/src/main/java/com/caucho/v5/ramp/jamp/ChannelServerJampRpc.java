@@ -96,7 +96,7 @@ public class ChannelServerJampRpc implements ChannelServer
     
     _outbox = new OutboxAmpBase();
     _outbox.inbox(manager.inboxSystem());
-    _outbox.message(manager.systemMessage());
+    //_outbox.message(manager.systemMessage());
   }
 
   /*
@@ -232,7 +232,7 @@ public class ChannelServerJampRpc implements ChannelServer
   }
   
   @Override
-  public MethodRefAmp lookupMethod(String address, String methodName)
+  public MethodRefAmp method(String address, String methodName)
   {
     ServiceRefAmp linkService = getLink(address);
 
@@ -240,7 +240,7 @@ public class ChannelServerJampRpc implements ChannelServer
       return linkService.getMethod(methodName);
     }
     
-    MethodRefAmp methodRef = _registry.lookupMethod(address, methodName);
+    MethodRefAmp methodRef = _registry.method(address, methodName);
     ServiceRefAmp serviceRef = methodRef.getService();
     String addressService = serviceRef.address();
 

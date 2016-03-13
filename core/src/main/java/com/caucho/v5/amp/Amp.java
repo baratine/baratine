@@ -32,14 +32,10 @@ package com.caucho.v5.amp;
 import java.lang.ref.SoftReference;
 import java.util.Objects;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.manager.AmpProvider2;
-import com.caucho.v5.amp.spi.AmpProvider;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.loader.EnvironmentLocal;
 
@@ -48,8 +44,6 @@ import com.caucho.v5.loader.EnvironmentLocal;
  */
 public final class Amp
 {
-  private static final Logger log = Logger.getLogger(Amp.class.getName());
-  
   private static final EnvironmentLocal<ServiceManagerAmp> _contextManager
     = new EnvironmentLocal<>();
   
@@ -58,6 +52,7 @@ public final class Amp
   
   private Amp() {}
   
+  /*
   public static ServiceManagerAmp newManager()
   {
     ServiceManagerBuilderAmp builder = newManagerBuilder();
@@ -66,6 +61,7 @@ public final class Amp
     
     return builder.start();
   }
+  */
   
   public static ServiceManagerAmp getContextManager()
   {
@@ -134,7 +130,7 @@ public final class Amp
     */
   }
 
-  public static void setContextManager(ServiceManagerAmp manager)
+  public static void contextManager(ServiceManagerAmp manager)
   {
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     
@@ -152,18 +148,6 @@ public final class Amp
     else {
       _contextMap.put(loader, new SoftReference<>(manager));
     }
-  }
-  
-  public static ServiceManagerBuilderAmp newManagerBuilder()
-  {
-    AmpProvider provider = getProvider();
-    
-    return provider.createManagerBuilder();
-  }
-  
-  private static AmpProvider getProvider()
-  {
-    return new AmpProvider2();
   }
 
   public static InboxAmp getCurrentInbox()

@@ -29,9 +29,9 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.ResultStream;
-
 import com.caucho.v5.amp.spi.InboxAmp;
+
+import io.baratine.stream.ResultStream;
 
 /**
  * Handles the context for an actor, primarily including its

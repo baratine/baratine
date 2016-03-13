@@ -29,7 +29,7 @@
 
 package io.baratine.pubsub;
 
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 /**
  * Streaming pub/sub service

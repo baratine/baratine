@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.manager;
+package com.caucho.v5.amp.deliver;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,14 +47,12 @@ import io.baratine.spi.Message;
 /**
  * Handler for queue full messages.
  */
-public class AmpQueueFullHandler implements QueueFullHandler
+public class QueueFullHandlerAmp implements QueueFullHandler
 {
   private static final Logger log
-    = Logger.getLogger(AmpQueueFullHandler.class.getName());
+    = Logger.getLogger(QueueFullHandlerAmp.class.getName());
   
-  private static final L10N L = new L10N(AmpQueueFullHandler.class);
-  
-  // private final SystemManager _resinSystem;
+  private static final L10N L = new L10N(QueueFullHandlerAmp.class);
   
   private final long _duplicateTimeout = 60 * 1000L;
   private final long _fatalTimeout = 180 * 1000L;
@@ -63,9 +61,8 @@ public class AmpQueueFullHandler implements QueueFullHandler
   private final AtomicLong _firstSequenceTime = new AtomicLong();
   private final AtomicInteger _repeatCount = new AtomicInteger();
   
-  public AmpQueueFullHandler()
+  public QueueFullHandlerAmp()
   {
-    // _resinSystem = resinSystem;
   }
 
   @Override

@@ -29,16 +29,15 @@
 
 package com.caucho.v5.bartender.pod;
 
-import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceManager;
-
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.AmpManagerBartender;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.ServiceInitializer;
+import io.baratine.service.ServiceManager;
 
 /**
  * Binding the pod service to Baratine's directory.
@@ -54,18 +53,14 @@ public class ServiceInitPod implements ServiceInitializer
   {
     ServiceManagerAmp ampManager = (ServiceManagerAmp) manager;
     
-    if (ampManager instanceof AmpManagerBartender) {
-      return;
-    }
-    
     BartenderSystem bartender = BartenderSystem.current();
     
     if (bartender == null) {
-      log.finer(L.l("pod: and champ: are not available in this system."));
+      log.finest(L.l("pod: and champ: are not available in this system."));
       return;
     }
     
-    if (bartender.getSchemeBartenderPod() == null) {
+    if (bartender.schemeBartenderPod() == null) {
       return;
     }
     

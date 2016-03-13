@@ -46,7 +46,7 @@ import com.caucho.v5.h3.H3;
 import com.caucho.v5.h3.OutFactoryH3;
 import com.caucho.v5.h3.OutH3;
 
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 /**
  * OutHamp writes HAMP messages to an OutputStream.

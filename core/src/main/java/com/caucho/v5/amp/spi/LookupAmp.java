@@ -46,7 +46,7 @@ public interface LookupAmp
    */
   ServiceRefAmp service(String address);
 
-  default MethodRefAmp lookupMethod(String address, String methodName)
+  default MethodRefAmp method(String address, String methodName)
   {
     return service(address).getMethod(methodName);
   }

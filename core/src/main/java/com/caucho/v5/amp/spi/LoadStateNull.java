@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.spi;
 
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 
 /**

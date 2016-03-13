@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.stream;
 
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 @SuppressWarnings("serial")
 abstract public class ResultStreamLocalBaseAsync<T,A>

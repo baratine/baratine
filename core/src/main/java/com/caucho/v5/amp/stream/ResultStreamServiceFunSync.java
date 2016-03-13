@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.stream;
 
 import io.baratine.function.BiFunctionSync;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 @SuppressWarnings("serial")
 public class ResultStreamServiceFunSync<T> extends ResultStreamServiceBase<T,T>

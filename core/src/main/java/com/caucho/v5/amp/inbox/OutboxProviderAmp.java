@@ -43,6 +43,7 @@ public class OutboxProviderAmp
 {
   private static ThreadLocal<OutboxAmp> _outboxLocal = new ThreadLocal<>();
   
+  @SuppressWarnings("unchecked")
   public static OutboxProviderAmp getProvider()
   {
     OutboxProvider<OutboxAmp> provider = OutboxProvider.getProvider();

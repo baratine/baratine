@@ -40,7 +40,7 @@ import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ServiceRefWrapper;
-import com.caucho.v5.amp.manager.AmpManager;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.marshal.ImportAware;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
@@ -99,7 +99,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   @Override
   public ServiceRefAmp bind(String address)
   {
-    address = AmpManager.toCanonical(address);
+    address = ServiceManagerAmpImpl.toCanonical(address);
 
     manager().bind(this, address);
 

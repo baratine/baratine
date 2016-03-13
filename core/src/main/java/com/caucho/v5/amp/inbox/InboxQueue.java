@@ -95,7 +95,6 @@ public class InboxQueue extends InboxBase
 
   private final InboxMessage _inboxMessage;
 
-
   public InboxQueue(ServiceManagerAmp manager,
                     QueueDeliverBuilderImpl<MessageAmp> queueBuilder,
                     QueueServiceFactoryInbox serviceQueueFactory,
@@ -139,8 +138,7 @@ public class InboxQueue extends InboxBase
 
     _queue = serviceQueueFactory.build(queueBuilder, this);
 
-    _worker = (WorkerDeliver<MessageAmp>) _queue.worker();
-    //_worker = _queue.worker();
+    _worker = worker(_queue);
 
     _actor = actor;
     
@@ -163,6 +161,13 @@ public class InboxQueue extends InboxBase
     _fullHandler = handler;
 
     // start(actor);
+  }
+  
+  
+  @SuppressWarnings("unchecked")
+  private WorkerDeliver<MessageAmp> worker(QueueDeliver<MessageAmp> queue)
+  {
+    return (WorkerDeliver<MessageAmp>) queue.worker();
   }
 
   MessageAmp getMessageInbox()
@@ -486,7 +491,7 @@ public class InboxQueue extends InboxBase
   }
 
   @Override
-  public final WorkerDeliver worker()
+  public final WorkerDeliver<MessageAmp> worker()
   {
     return _worker;
   }

@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.marshal;
 
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 /**
  * Handles the context for an actor, primarily including its

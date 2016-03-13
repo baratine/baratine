@@ -35,9 +35,9 @@ import io.baratine.service.OnInit;
 import io.baratine.service.OnLoad;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
+import io.baratine.stream.ResultStream;
 
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.pod.PodBartender;

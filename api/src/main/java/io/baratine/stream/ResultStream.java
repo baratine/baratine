@@ -27,9 +27,7 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.service;
-
-import io.baratine.service.ResultStreamImpl.ResultAsync;
+package io.baratine.stream;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -37,6 +35,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.stream.ResultStreamImpl.ResultAsync;
 
 
 /**

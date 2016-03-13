@@ -157,14 +157,15 @@ public class WebAppBuilder
 
       _serviceBuilder = ServiceManagerAmp.newManager();
       _serviceBuilder.name("webapp");
+      _serviceBuilder.autoServices(true);
       //_serviceBuilder.setJournalFactory(new JournalFactoryImpl());
       addJournalFactory(_serviceBuilder);
       addActorResources(_serviceBuilder);
       _serviceBuilder.contextManager(true);
 
 
-      ServiceManagerAmp serviceManager = _serviceBuilder.managerBuild();
-      Amp.setContextManager(serviceManager);
+      ServiceManagerAmp serviceManager = _serviceBuilder.get();
+      Amp.contextManager(serviceManager);
 
       _injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
 
@@ -211,7 +212,7 @@ public class WebAppBuilder
 
       factory = (JournalFactoryAmp) journal.newInstance();
 
-      builder.setJournalFactory(factory);
+      builder.journalFactory(factory);
     } catch (Exception e) {
       log.finer(e.toString());
     }

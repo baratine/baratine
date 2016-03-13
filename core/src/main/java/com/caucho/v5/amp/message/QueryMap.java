@@ -31,8 +31,8 @@ package com.caucho.v5.amp.message;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceExceptionClosed;
+import io.baratine.stream.ResultStream;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;

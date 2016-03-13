@@ -29,8 +29,6 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.ResultStream;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.QueryErrorMessage;
 import com.caucho.v5.amp.message.QueryReplyMessage;
@@ -38,6 +36,8 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
+
+import io.baratine.stream.ResultStream;
 
 /**
  * Interface for a reply to a gateway query.

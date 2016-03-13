@@ -35,13 +35,10 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.InboxFactoryAmp;
-import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
@@ -84,11 +81,13 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   }
   */
 
+  /*
   @Override
   public <T> DisruptorBuilder<T> disruptor(Class<T> api)
   {
     return delegate().disruptor(api);
   }
+  */
 
   @Override
   public String address(Class<?> api)
@@ -358,20 +357,6 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
     return delegate().toServiceRef(proxy);
   }
 
-  /*
-  @Override
-  public OutboxDeliver<MessageAmp> getCurrentActorContext()
-  {
-    return _delegate.getCurrentActorContext();
-  }
-  */
-
-  @Override
-  public InboxFactoryAmp inboxFactory()
-  {
-    return delegate().inboxFactory();
-  }
-
   @Override
   public OutboxAmp getOutboxSystem()
   {
@@ -384,11 +369,13 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
     return delegate().openJournal(name);
   }
 
+  /*
   @Override
   public MessageAmp systemMessage()
   {
     return delegate().systemMessage();
   }
+  */
   
   //
   // modules
@@ -516,11 +503,13 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
     return delegate().createContextServiceSession(path, beanClass);
   }
 
+  /*
   @Override
   public ServiceBuilderAmp newService()
   {
     return delegate().newService();
   }
+  */
 
   /*
   @Override

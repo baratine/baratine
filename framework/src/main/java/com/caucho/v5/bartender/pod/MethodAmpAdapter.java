@@ -42,7 +42,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.io.ResultPipeIn;
 import io.baratine.io.ResultPipeOut;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 /**
  * MethodAmp adapted from a MethodRef, where the MethodRef has the sending

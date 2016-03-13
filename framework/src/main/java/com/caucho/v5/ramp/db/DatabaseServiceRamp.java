@@ -36,8 +36,8 @@ import io.baratine.db.DatabaseWatch;
 import io.baratine.service.Cancel;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.Service;
+import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
 import java.util.Arrays;

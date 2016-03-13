@@ -43,8 +43,8 @@ import com.caucho.v5.util.L10N;
 import io.baratine.function.RunnableSync;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.Service;
+import io.baratine.stream.ResultStream;
 
 /**
  * Timer service.

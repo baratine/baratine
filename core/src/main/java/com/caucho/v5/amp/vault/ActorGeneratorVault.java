@@ -35,7 +35,7 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.actor.ActorFactoryImpl;
-import com.caucho.v5.amp.manager.ActorGenerator;
+import com.caucho.v5.amp.actor.ActorGenerator;
 import com.caucho.v5.amp.manager.ServiceConfig;
 import com.caucho.v5.amp.proxy.ActorAmpBean;
 import com.caucho.v5.amp.proxy.SkeletonClass;

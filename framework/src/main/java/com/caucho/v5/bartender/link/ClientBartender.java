@@ -29,12 +29,10 @@
 
 package com.caucho.v5.bartender.link;
 
-import io.baratine.service.ServiceExceptionConnect;
-
 import java.net.URI;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.manager.ServiceManagerWrapper;
+import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.baratine.client.ServiceManagerClient;
 import com.caucho.v5.bartender.heartbeat.HeartbeatSeedService;
@@ -42,10 +40,12 @@ import com.caucho.v5.bartender.heartbeat.HeartbeatSeedServiceSync;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.service.ServiceExceptionConnect;
+
 /**
  * Client for connecting to the champ service.
  */
-public class ClientBartender extends ServiceManagerWrapper
+public class ClientBartender extends ServiceManagerAmpWrapper
   implements ServiceManagerClient
 {
   private static final L10N L = new L10N(ClientBartender.class);

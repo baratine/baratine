@@ -31,7 +31,7 @@ package com.caucho.v5.amp.stream;
 
 import io.baratine.function.BiFunctionAsync;
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 import java.util.Objects;
 

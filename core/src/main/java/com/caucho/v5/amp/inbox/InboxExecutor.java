@@ -36,7 +36,6 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpNull;
 import com.caucho.v5.amp.actor.ServiceRefImpl;
-import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;

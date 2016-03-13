@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.stream;
 
 import io.baratine.function.PredicateSync;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 @SuppressWarnings("serial")
 public class ResultStreamServiceFilterSync<T> extends ResultStreamServiceBase<T,T>

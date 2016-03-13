@@ -29,8 +29,8 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceExceptionIllegalState;
+import io.baratine.stream.ResultStream;
 
 import java.util.ArrayList;
 import java.util.HashMap;

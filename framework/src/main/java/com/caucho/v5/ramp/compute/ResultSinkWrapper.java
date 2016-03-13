@@ -29,7 +29,7 @@
 
 package com.caucho.v5.ramp.compute;
 
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 /**
  * Timer service.

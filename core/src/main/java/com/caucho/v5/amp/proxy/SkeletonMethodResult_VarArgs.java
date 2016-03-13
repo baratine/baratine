@@ -30,8 +30,8 @@
 package com.caucho.v5.amp.proxy;
 
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceExceptionIllegalArgument;
+import io.baratine.stream.ResultStream;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

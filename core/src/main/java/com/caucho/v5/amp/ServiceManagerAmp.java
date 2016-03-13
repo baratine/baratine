@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -89,7 +90,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
 
   String address(Class<?> type);
 
-  ServiceBuilderAmp newService();
+  //ServiceBuilderAmp newService();
   
   ServiceRefAmp toService(Object value);
 
@@ -192,8 +193,6 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   
   ServiceRefAmp toServiceRef(Object proxy);
   
-  InboxFactoryAmp inboxFactory();
-
   QueueFullHandler getQueueFullHandler();
   
   Supplier<OutboxAmp> outboxFactory();
@@ -202,7 +201,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   
   JournalAmp openJournal(String name);
 
-  MessageAmp systemMessage();
+  //MessageAmp systemMessage();
   // OutboxAmp getSystemOutbox();
   
   boolean isClosed();
@@ -217,7 +216,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   
   //RampSystem getSystem();
   
-  <T> DisruptorBuilder<T> disruptor(Class<T> api);
+  //<T> DisruptorBuilder<T> disruptor(Class<T> api);
   
   /**
    * Creates a module builder.
@@ -257,7 +256,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   
   static ServiceManagerBuilderAmp newManager()
   {
-    return Amp.newManagerBuilder();
+    return new ServiceManagerBuilderImpl();
   }
   
   interface Trace extends AutoCloseable {
@@ -265,6 +264,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
     void close();
   }
   
+  /*
   interface DisruptorBuilder<T>
   {
     //DisruptorBuilder<T> peer(T serviceImpl);
@@ -275,4 +275,5 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
     
     ServiceRef build(ServiceConfig config);
   }
+  */
 }

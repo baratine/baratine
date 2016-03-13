@@ -30,10 +30,7 @@
 package io.baratine.service;
 
 
-import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.spi.ServiceManagerProvider;
-
-import java.util.function.Supplier;
 
 /**
  * ServiceRef allows an actor service to get to its service reference.

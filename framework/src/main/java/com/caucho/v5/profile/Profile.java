@@ -28,7 +28,7 @@ public class Profile
 
   private Profile()
   {
-    ServiceManagerAmp manager = Amp.newManager();
+    ServiceManagerAmp manager = ServiceManagerAmp.newManager().start();
     
     ProfileTask task = ProfileTask.create();
     _profilerService = manager.newService(new ProfilerServiceImpl(task))

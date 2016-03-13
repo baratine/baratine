@@ -29,8 +29,6 @@
 
 package com.caucho.v5.bartender.hamp;
 
-import io.baratine.service.ServiceRef;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +37,6 @@ import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
@@ -49,6 +46,8 @@ import com.caucho.v5.amp.remote.OutAmp;
 import com.caucho.v5.amp.remote.OutAmpFactory;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.ramp.hamp.InHamp;
+
+import io.baratine.service.ServiceRef;
 
 /**
  * HMTP client protocol
@@ -74,7 +73,7 @@ public class LinkHamp extends ClientAmpBase implements Runnable
   public LinkHamp(InputStream is,
                   OutputStream os)
   {
-    this(Amp.newManager(),
+    this(ServiceManagerAmp.newManager().start(),
          "remote://",
          is, os);
   }

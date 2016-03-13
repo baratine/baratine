@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.actor;
 
 import io.baratine.service.Result;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;

@@ -78,7 +78,7 @@ public interface ChannelAmp extends LookupAmp
   /**
    * Lookup a methodRef specific to the channel.
    */
-  default MethodRefAmp lookupMethod(String address, String methodName)
+  default MethodRefAmp method(String address, String methodName)
   {
     return service(address).getMethod(methodName);
   }

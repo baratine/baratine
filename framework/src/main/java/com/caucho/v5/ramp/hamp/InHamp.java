@@ -68,8 +68,8 @@ import com.caucho.v5.ramp.jamp.InAmpWebSocket;
 import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceException;
+import io.baratine.stream.ResultStream;
 
 /**
  * HmtpReader stream handles client packets received from the server.
@@ -98,7 +98,7 @@ public class InHamp implements InAmpWebSocket
   private GatewayReply []_fromAddressCacheRing = new GatewayReply[256];
 
   private ServiceManagerAmp _ampManager;
-  private Supplier<OutboxAmp> _outboxFactory;
+  //private Supplier<OutboxAmp> _outboxFactory;
   
   private final Level _logLevel = Level.FINEST;
   // private final Level _logLevel = Level.FINER;
@@ -114,7 +114,7 @@ public class InHamp implements InAmpWebSocket
                 ChannelAmp channel)
   {
     _ampManager = rampManager;
-    _outboxFactory = rampManager.outboxFactory();
+    //_outboxFactory = rampManager.outboxFactory();
     
     if (_ampManager.isClosed()) {
       throw new IllegalStateException(String.valueOf(_ampManager));

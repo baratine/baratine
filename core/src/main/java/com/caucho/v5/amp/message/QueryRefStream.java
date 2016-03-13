@@ -29,13 +29,13 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.ResultStream;
-
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+
+import io.baratine.stream.ResultStream;
 
 /**
  * Handles the context for an actor, primarily including its

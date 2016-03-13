@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.message;
 
 import io.baratine.service.Cancel;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 

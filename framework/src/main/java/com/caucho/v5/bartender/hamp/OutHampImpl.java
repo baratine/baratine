@@ -29,8 +29,6 @@
 
 package com.caucho.v5.bartender.hamp;
 
-import io.baratine.service.ResultStream;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
@@ -41,6 +39,8 @@ import com.caucho.v5.amp.remote.OutAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.bartender.pod.PodRef;
 import com.caucho.v5.ramp.hamp.OutHamp;
+
+import io.baratine.stream.ResultStream;
 
 /**
  * Websocket endpoint for receiving hamp message

@@ -32,9 +32,7 @@ package com.caucho.v5.amp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.journal.JournalFactoryAmp;
-import com.caucho.v5.amp.manager.AmpQueueFullHandler;
-import com.caucho.v5.amp.manager.ServiceManagerBuilderBartender;
+import com.caucho.v5.amp.deliver.QueueFullHandlerAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.config.ConfigException;
@@ -82,7 +80,7 @@ public class AmpSystem extends SubSystemBase
     
     _address = address;
     
-    ServiceManagerBuilderAmp builder = new ServiceManagerBuilderBartender();
+    ServiceManagerBuilderAmp builder = ServiceManagerBuilderAmp.newManager();
     
     //builder.setJournalFactory(new JournalFactoryImpl());
     
@@ -90,7 +88,7 @@ public class AmpSystem extends SubSystemBase
     
     builder.name("amp-system");
     builder.setDebugId(address);
-    builder.setQueueFullHandler(new AmpQueueFullHandler());
+    builder.setQueueFullHandler(new QueueFullHandlerAmp());
     
     if (log.isLoggable(Level.FINER)) {
       builder.debug(true);

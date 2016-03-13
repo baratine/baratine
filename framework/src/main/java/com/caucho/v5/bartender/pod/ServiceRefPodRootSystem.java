@@ -40,7 +40,7 @@ import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ServiceRefWrapper;
-import com.caucho.v5.amp.manager.AmpManager;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.util.L10N;
 

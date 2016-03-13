@@ -35,7 +35,7 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.MethodRefNull;
 import com.caucho.v5.amp.actor.ServiceRefBase;
-import com.caucho.v5.amp.manager.AmpManager;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.BartenderSystem;
@@ -67,7 +67,7 @@ public class SchemeBartenderPodProxy extends ServiceRefBase
       _podRef = null;
     }
     
-    _schemeBartenderPod = bartender.getSchemeBartenderPod();
+    _schemeBartenderPod = bartender.schemeBartenderPod();
     
     Objects.requireNonNull(_schemeBartenderPod);
   }
@@ -96,7 +96,7 @@ public class SchemeBartenderPodProxy extends ServiceRefBase
   @Override
   public ServiceRefAmp bind(String address)
   {
-    address = AmpManager.toCanonical(address);
+    address = ServiceManagerAmpImpl.toCanonical(address);
 
     manager().bind(this, address);
 

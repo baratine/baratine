@@ -30,8 +30,8 @@
 package com.caucho.v5.ramp.compute;
 
 import io.baratine.function.RunnableSync;
-import io.baratine.service.ResultStream;
 import io.baratine.service.Service;
+import io.baratine.stream.ResultStream;
 
 import java.util.Spliterator;
 

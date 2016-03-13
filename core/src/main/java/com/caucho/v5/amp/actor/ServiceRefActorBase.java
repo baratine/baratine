@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.AmpManager;
+import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.manager.ServiceConfig;
 import com.caucho.v5.amp.message.ConsumeMessage;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
@@ -238,7 +238,7 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   @Override
   public ServiceRefAmp bind(String address)
   {
-    address = AmpManager.toCanonical(address);
+    address = ServiceManagerAmpImpl.toCanonical(address);
     
     ServiceRefAmp bindRef = new ServiceRefBound(address, _actor, _inbox);
     

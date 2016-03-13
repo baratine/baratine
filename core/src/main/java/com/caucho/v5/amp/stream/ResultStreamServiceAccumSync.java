@@ -31,7 +31,7 @@ package com.caucho.v5.amp.stream;
 
 import io.baratine.function.BiConsumerSync;
 import io.baratine.function.SupplierSync;
-import io.baratine.service.ResultStream;
+import io.baratine.stream.ResultStream;
 
 @SuppressWarnings("serial")
 public class ResultStreamServiceAccumSync<T,A> extends ResultStreamServiceBase<T,A>

@@ -64,7 +64,7 @@ public class RegistryAmpServerShared implements RegistryAmp
   }
   
   @Override
-  public MethodRefAmp lookupMethod(String address, String methodName)
+  public MethodRefAmp method(String address, String methodName)
   {
     MethodKey key = new MethodKey(address, methodName);
     

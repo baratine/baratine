@@ -29,14 +29,14 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.ResultStream;
-
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.bartender.pod.PodRef;
+
+import io.baratine.stream.ResultStream;
 
 /**
  * Output to a remote connection for amp messages.

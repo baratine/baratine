@@ -417,7 +417,7 @@ public class DatabaseKelpBuilder
     }
 
     if (_rampManager == null) {
-      _rampManager = Amp.newManager();
+      _rampManager = ServiceManagerAmp.newManager().get();
     }
     
     if (_tempStore == null) {

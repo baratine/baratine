@@ -34,10 +34,10 @@ import java.util.ServiceLoader;
 import java.util.WeakHashMap;
 
 import io.baratine.inject.InjectManager.InjectBuilderRoot;
-import io.baratine.service.ResultStream;
 import io.baratine.service.ServiceClient.Builder;
 import io.baratine.service.ServiceManager;
 import io.baratine.service.ServiceRef;
+import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 import io.baratine.web.WebServerBuilder;
 
@@ -82,7 +82,7 @@ abstract public class ServiceManagerProvider implements AutoCloseable
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  public ServiceManager.Builder newManager()
+  public ServiceManager.ServiceManagerBuilder newManager()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
