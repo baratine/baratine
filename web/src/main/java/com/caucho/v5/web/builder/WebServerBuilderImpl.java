@@ -384,15 +384,13 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     Objects.requireNonNull(type);
     
-    /*
+
     InjectBuilderWebImpl<T> binding
       = new InjectBuilderWebImpl<>(_injectServer, type);
     
     _includes.add(binding);
     
     return binding;
-    */
-    return _injectServer.bean(type);
   }
 
   @Override
@@ -400,16 +398,12 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     Objects.requireNonNull(bean);
     
-    return _injectServer.bean(bean);
-    
-    /*
-    InjectBuilderBeanImpl<T> binding
-      = new InjectBuilderBeanImpl<>(_injectServer, bean);
-    
+    InjectBuilderWebImpl<T> binding
+      = new InjectBuilderWebImpl<>(_injectServer, bean);
+  
     _includes.add(binding);
-    
+  
     return binding;
-    */
   }
 
   @Override

@@ -521,7 +521,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   {
     Objects.requireNonNull(supplier);
     
-    return newService().service(supplier);
+    return newService().serviceSupplier((Supplier) supplier);
   }
 
   /**

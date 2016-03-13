@@ -222,6 +222,8 @@ public interface ServiceRef
     
     ServiceBuilder workers(int workers);
     
+    ServiceBuilder api(Class<?> api);
+    
     ServiceRef ref();
     
     default ServiceRef start()

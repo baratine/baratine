@@ -149,6 +149,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     _workers = builder.workers();
     
+    _api = builder.api();
+    
     _queueSize = builder.queueSize();
     _queueSizeMax = builder.queueSizeMax();
     
@@ -497,7 +499,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return this;
   }
 
-  public Class<?> getApi()
+  public Class<?> api()
   {
     return _api;
   }

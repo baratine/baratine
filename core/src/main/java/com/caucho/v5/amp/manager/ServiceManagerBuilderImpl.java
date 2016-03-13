@@ -531,6 +531,16 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     }
 
     @Override
+    public ServiceBuilder api(Class<?> api)
+    {
+      Objects.requireNonNull(api);
+      
+      _type = api;
+      
+      return this;
+    }
+
+    @Override
     public ServiceBuilder address(String address)
     {
       _address = address;
@@ -567,6 +577,10 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
       
       if (_supplier != null) {
         builder = manager.newService(_supplier);
+        
+        if (_type != null) {
+          builder.api(_type);
+        }
       }
       else {
         builder = manager.service(_key, _type);

@@ -161,4 +161,12 @@ public class ServiceBuilderWebImpl implements ServiceRef.ServiceBuilder, Include
   {
     return this;
   }
+
+  @Override
+  public ServiceBuilder api(Class<?> api)
+  {
+    System.out.println("API: " + api);
+
+    return this;
+  }
 }

@@ -219,17 +219,17 @@ class IncludeWebClass implements IncludeWeb
         
         String address = service.value();
         
-        if (address.isEmpty() && api != null) {
-          Class<?> apiClass = api.value();
-          
+        Class<?> apiClass = m.getReturnType();
+        
+        if (api != null) {
+          apiClass = api.value();
+        }
+
+        if (address.isEmpty()) {
           address = "/" + apiClass.getSimpleName();
         }
-        else {
-          address = "/" + m.getReturnType().getSimpleName();
-        }
         
-        //Key key = Key.of(m.getGenericReturnType(), 
-        builder.service(()->newInstance(beanSupplier,m)).address(address);
+        builder.service(()->newInstance(beanSupplier,m)).api(apiClass).address(address);
       }
       else if (isProduces(m)) {
         builder.provider(()->newInstance(beanSupplier,m)).to(Key.of(m));
@@ -287,9 +287,11 @@ class IncludeWebClass implements IncludeWeb
   private Object newInstance(Supplier<Object> supplier, Method m)
   {
     try {
-      Object bean = supplier.get();
+      Object parent = supplier.get();
       
-      return m.invoke(bean);
+      Object bean = m.invoke(parent);
+
+      return bean;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
