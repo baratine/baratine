@@ -318,6 +318,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     return _journalDelay;
   }
 
+  @Override
   public InjectManagerAmp inject()
   {
     return InjectManagerAmp.current(classLoader());

@@ -155,6 +155,8 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   @Override
   ServiceManagerAmp get();
 
+  ServiceManagerAmp getRaw();
+
   /**
    * returns the build manager
    */

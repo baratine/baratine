@@ -89,14 +89,17 @@ public class WebApp
     
     _config = builder.config();
     
+    InjectBuilderRootAmp injectBuilder = builder.injectBuilder();
+    injectBuilder.context(true);
+    
+    _ampManager = builder.serviceBuilder().getRaw();
+    
     builder.build(this);
     
     _configException = builder.configException();
     
     _config = builder.config();
     
-    InjectBuilderRootAmp injectBuilder = builder.injectBuilder();
-    injectBuilder.context(true);
     
     //builder.bind(injectBuilder);
     
@@ -104,6 +107,7 @@ public class WebApp
     _injectManager = injectBuilder.get();
     
     try {
+      //_ampManager = builder.serviceBuilder().getRaw();
       _ampManager = builder.serviceBuilder().start();
       
       //Amp.setContextManager(_ampManager);

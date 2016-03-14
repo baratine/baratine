@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorGenerator;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.journal.JournalFactoryBase;
@@ -374,7 +375,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceManagerAmp get()
+  public ServiceManagerAmp getRaw()
   {
     ServiceManagerAmp manager = _manager;
     
@@ -392,11 +393,25 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
       }
     }
     
-    for (ServiceBuilderStart service : _services) {
-      service.build(manager);
-    }
+    return manager;
+  }
+  
+  @Override
+  public ServiceManagerAmp get()
+  {
+    ServiceManagerAmp manager = getRaw();
     
+    ArrayList<ServiceBuilderStart> services = new ArrayList<>(_services);
     _services.clear();
+    
+    try {
+      for (ServiceBuilderStart service : services) {
+        ServiceRef ref = service.ref();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+    }
     
     return manager;
   }
@@ -518,6 +533,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     private String _address = "";
     private int _workers = -1;
     private boolean _isAddressAuto = true;
+    private ServiceRefAmp _ref;
     
     ServiceBuilderStart(Key<?> key, Class<?> type)
     {
@@ -567,14 +583,14 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     @Override
     public ServiceRef ref()
     {
-      //throw new UnsupportedOperationException();
-      return null;
-    }
-
-    private void build(ServiceManagerAmp manager)
-    {
+      if (_ref != null) {
+        return _ref;
+      }
+      
       ServiceBuilderAmp builder;
       
+      ServiceManagerAmp manager = _manager;
+
       if (_supplier != null) {
         builder = manager.newService(_supplier);
         
@@ -597,7 +613,9 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
         builder.workers(_workers);
       }
       
-      builder.ref();
+      _ref = builder.ref();
+      
+      return _ref;
     }
   }
 }

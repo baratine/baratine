@@ -164,7 +164,6 @@ public class WebAppBuilder
       addActorResources(_serviceBuilder);
       _serviceBuilder.contextManager(true);
 
-
       ServiceManagerAmp serviceManager = _serviceBuilder.get();
       Amp.contextManager(serviceManager);
 
@@ -274,11 +273,6 @@ public class WebAppBuilder
 
     _autoBind = new WebAppAutoBind(webApp);
     _injectBuilder.autoBind(_autoBind);
-    /*
-    _injectBuilder.bind(Config.class).toProvider(()->webApp.config());
-    _injectBuilder.bind(InjectManager.class).toProvider(()->webApp.inject());
-    _injectBuilder.bind(ServiceManager.class).toProvider(()->webApp.serviceManager());
-    */
     
     _injectBuilder.provider(()->webApp.config()).to(Config.class);
     _injectBuilder.provider(()->webApp.inject()).to(InjectManager.class);
@@ -288,6 +282,9 @@ public class WebAppBuilder
 
     // defaults
     get("/**").to(WebStaticFile.class);
+    
+    _injectBuilder.get();
+    _serviceBuilder.start();
   }
 
   //@Override
@@ -472,11 +469,17 @@ public class WebAppBuilder
       addResourceConverter(type);
     }
 
+    ServiceRef.ServiceBuilder builder;
+    
+    /*
     if (_webApp != null && _webApp.serviceManager() != null) {
-      return _webApp.serviceManager().newService(type);
+      builder = _webApp.serviceManager().newService(type).addressAuto();
     }
-
-    ServiceRef.ServiceBuilder builder = _serviceBuilder.service(type);
+    else {
+      builder = _serviceBuilder.service(type);
+    }
+    */
+    builder = _serviceBuilder.service(type);
 
     return builder;
   }

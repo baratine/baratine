@@ -50,6 +50,7 @@ import io.baratine.inject.Key;
 import io.baratine.service.Api;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
+import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.service.Vault;
 import io.baratine.web.Body;
 import io.baratine.web.Cookie;
@@ -162,7 +163,7 @@ class IncludeWebClass implements IncludeWeb
           address = "/" + entityType.getSimpleName();
         }
         
-        builder.service(_type).addressAuto();
+        //builder.service(_type).addressAuto();
         
         Function<RequestWeb,Object> beanFactoryChild;
         Supplier<Object> beanSupplierChild = null;
@@ -941,6 +942,7 @@ class IncludeWebClass implements IncludeWeb
     private WebBuilder _builder;
     private Class<?> _type;
     private Object _bean;
+    private ServiceBuilder _serviceBuilder;
     
     SupplierService(WebBuilder builder, Class<?> type)
     {
@@ -949,13 +951,15 @@ class IncludeWebClass implements IncludeWeb
       
       _builder = builder;
       _type = type;
+      
+      _serviceBuilder = _builder.service(_type);
     }
 
     @Override
     public Object get()
     {
       if (_bean == null) {
-        _bean = _builder.service(_type).as(_type);
+        _bean = _serviceBuilder.as(_type);
       }
       
       return _bean;
