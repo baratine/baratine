@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.RandomUtil;
 
-import io.baratine.service.Ids;
+import io.baratine.service.AssetId;
 
 public class VaultIdGenerator
 {
@@ -77,7 +77,7 @@ public class VaultIdGenerator
     {
       _sequence.set(RandomUtil.getRandomLong());
       
-      _sequenceMask = (1L << (64 - Ids.TIME_BITS - _nodeBits)) - 1;
+      _sequenceMask = (1L << (64 - AssetId.TIME_BITS - _nodeBits)) - 1;
     }
 
     @Override
@@ -86,11 +86,11 @@ public class VaultIdGenerator
       long now = CurrentTime.getCurrentTime() / 1000;
       long sequence = _sequence.incrementAndGet();
       
-      long id = ((now << (64 - Ids.TIME_BITS))
-                | (_node << (64 - Ids.TIME_BITS - _nodeBits))
+      long id = ((now << (64 - AssetId.TIME_BITS))
+                | (_node << (64 - AssetId.TIME_BITS - _nodeBits))
                 | (sequence & _sequenceMask));
       
-      return Ids.encode(id);
+      return AssetId.encode(id);
     }
   }
 }

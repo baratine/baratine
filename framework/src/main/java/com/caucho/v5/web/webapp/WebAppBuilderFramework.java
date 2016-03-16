@@ -39,7 +39,7 @@ import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.data.VaultDriverDataImpl;
 import com.caucho.v5.http.websocket.WebSocketManager;
 
-import io.baratine.service.Data;
+import io.baratine.service.Asset;
 
 /**
  * Baratine's web-app instance builder
@@ -97,7 +97,7 @@ public class WebAppBuilderFramework extends WebAppBuilder
            Class<ID> idType,
            String address)
     {
-      if (entityType.isAnnotationPresent(Data.class)) {
+      if (entityType.isAnnotationPresent(Asset.class)) {
         return new VaultDriverDataImpl(ampManager, entityType, idType, address);
       }
       else {

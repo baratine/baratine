@@ -45,7 +45,7 @@ import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.inject.type.TypeRef;
 
 import io.baratine.inject.Key;
-import io.baratine.service.Data;
+import io.baratine.service.Asset;
 import io.baratine.service.Vault;
 
 /**
@@ -64,7 +64,7 @@ public class ActorGeneratorVault implements ActorGenerator
     if (Vault.class.isAssignableFrom(serviceClass)) {
       return factoryResource(serviceClass, ampManager, configService);
     }
-    else if (serviceClass.isAnnotationPresent(Data.class)) {
+    else if (serviceClass.isAnnotationPresent(Asset.class)) {
       return factoryStore(serviceClass, ampManager, configService);
     }
     else {
@@ -141,7 +141,7 @@ public class ActorGeneratorVault implements ActorGenerator
                                        ServiceManagerAmp ampManager,
                                        ServiceConfig configService)
   {
-    if (! serviceClass.isAnnotationPresent(Data.class)) {
+    if (! serviceClass.isAnnotationPresent(Asset.class)) {
       throw new IllegalStateException();
     }
     

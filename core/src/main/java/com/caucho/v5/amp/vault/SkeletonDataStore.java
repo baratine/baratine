@@ -53,7 +53,7 @@ import com.caucho.v5.amp.spi.MethodAmp;
 import io.baratine.convert.Convert;
 import io.baratine.inject.Key;
 import io.baratine.service.Id;
-import io.baratine.service.Ids;
+import io.baratine.service.AssetId;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
 import io.baratine.stream.ResultStream;
@@ -343,7 +343,7 @@ public class SkeletonDataStore extends SkeletonClass
         return Long.decode(source);
       }
       else {
-        return Ids.decode(source);
+        return AssetId.decode(source);
       }
     }
     

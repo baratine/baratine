@@ -37,7 +37,12 @@ public interface PipeOut<T> extends Pipe<T>
   /**
    * Returns the available credits in the queue.
    */
-  int credits();
+  int available();
+  
+  /**
+   * Returns the credit sequence for the queue.
+   */
+  long credits();
   
   /**
    * True if the stream has been cancelled by the reader.
@@ -61,6 +66,10 @@ public interface PipeOut<T> extends Pipe<T>
     void ready(PipeOut<T> pipe);
     
     default void fail(Throwable exn)
+    {
+    }
+    
+    default void cancel()
     {
     }
   }

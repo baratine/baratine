@@ -72,15 +72,10 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   private PipeInFlowImpl _inFlow = new PipeInFlowImpl();
 
   private int _prefetch;
-  private boolean _isPaused;
-  private volatile long _inCredit;
+  private volatile long _creditsIn;
 
   private ServiceRefAmp _outRef;
 
-  // credit as seen by out. Used because of timing between
-  // available() and offer()
-  private long _outCredit;
-  
   private PipeOut.Flow<T> _outFlow;
   
   public PipeImpl(ServiceRefAmp inRef, 
@@ -102,6 +97,9 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     int capacity = _inPipe.capacity();
     
     if (capacity > 0) {
+    }
+    else if (credits >= 0) {
+      capacity = Math.max(32, 2 * Integer.highestOneBit(credits));
     }
     else {
       if (prefetch <= 0) {
@@ -134,15 +132,6 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
       }
       
       wakeIn();
-      
-      long sent = _queue.head();
-      
-      // _outCredit is used instead of _queue.isEmpty() because of
-      // timing between available() and next(). The application might think
-      // it's used the last available, but the queue has just been drained.
-      if (_outCredit <= sent && _outCredit > 0) {
-        outFull();
-      }
     }
   }
 
@@ -166,19 +155,32 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   }
 
   @Override
-  public int credits()
+  public int available()
   {
     long sent = _queue.head();
     
-    int available = Math.max(0, (int) (_inCredit - sent));
+    int available = Math.max(0, (int) (_creditsIn - sent));
     
-    _outCredit = sent + available;
+    available = Math.min(available, _queue.remainingCapacity());
     
     if (available <= 0) {
       outFull();
     }
 
     return available;
+  }
+  
+  @Override
+  public long credits()
+  {
+    return _creditsIn;
+  }
+  
+  void credits(long credits)
+  {
+    _creditsIn = Math.max(credits, _creditsIn);
+    
+    wakeOut();
   }
   
   private void outFull()
@@ -199,7 +201,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
 
     long sent = _queue.head();
     
-    if (sent < _inCredit) {
+    if (sent < _creditsIn) {
       do {
         stateOld = _stateOutRef.get();
         stateNew = stateOld.toWake();
@@ -275,8 +277,10 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   
   private void updatePrefetchCredits()
   {
-    if (! _isPaused) {
-      _inCredit = _queue.getTail() + _prefetch;
+    int prefetch = _prefetch;
+    
+    if (prefetch > 0) {
+      _creditsIn = _queue.getTail() + _prefetch;
     }
   }
   
@@ -315,10 +319,11 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     if (outFlow == null) {
       return;
     }
-
-    OutboxAmp outbox = OutboxAmp.current();
-    Objects.requireNonNull(outbox);
     
+    if (_creditsIn <= _queue.head()) {
+      return;
+    }
+
     StateOutPipe stateOld;
     StateOutPipe stateNew;
     
@@ -332,6 +337,9 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
       stateNew = stateOld.toWake();
     } while (! _stateOutRef.compareAndSet(stateOld, stateNew));
       
+    OutboxAmp outbox = OutboxAmp.current();
+    Objects.requireNonNull(outbox);
+    
     PipeWakeOutMessage<T> msg = new PipeWakeOutMessage<>(outbox, _outRef, this, outFlow);
     
     outbox.offer(msg);
@@ -342,29 +350,21 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     void init()
     {
     }
-
+    
     @Override
-    public void pause()
+    public long credits()
     {
-      // XXX: check for prefetch mode
-      _isPaused = true;
+      return PipeImpl.this.credits();
     }
 
     @Override
-    public void resume()
+    public void credits(long credits)
     {
-      // XXX: check for prefetch mode
-      _isPaused = false;
-      updatePrefetchCredits();
-      wakeOut();
-    }
-
-    @Override
-    public void credits(int newCredits)
-    {
-      if (newCredits < 0) {
-        throw new IllegalArgumentException(String.valueOf(newCredits));
+      if (credits < _creditsIn) {
+        throw new IllegalArgumentException(String.valueOf(credits));
       }
+      
+      PipeImpl.this.credits(credits);
     }
   }
   

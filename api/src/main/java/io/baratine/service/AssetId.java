@@ -32,13 +32,45 @@ package io.baratine.service;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Objects;
 
-public class Ids
+public final class AssetId
 {
   public static final int TIME_BITS = 34;
   
   private static final int _decode[];
   private static final char _encode[];
+  
+  private final String _vaultId;
+  private final long _assetId;
+  
+  private final String _address;
+  
+  public AssetId(String vaultId, long assetId)
+  {
+    Objects.requireNonNull(vaultId);
+    
+    _vaultId = vaultId;
+    _assetId = assetId;
+    
+    _address = "/" + vaultId + "/" + encode(assetId);
+  }
+  
+  public final String vaultId()
+  {
+    return _vaultId;
+  }
+  
+  public final long assetId()
+  {
+    return _assetId;
+  }
+  
+  @Override
+  public String toString()
+  {
+    return _address;
+  }
   
   public static long toMillis(long id)
   {

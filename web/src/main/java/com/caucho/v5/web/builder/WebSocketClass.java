@@ -24,19 +24,37 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Alex Rojkov
+ * @author Scott Ferguson
  */
 
-package io.baratine.service;
+package com.caucho.v5.web.builder;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import io.baratine.web.IncludeWeb;
+import io.baratine.web.ServiceWebSocket;
+import io.baratine.web.WebBuilder;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Data
+class WebSocketClass<S,C> implements IncludeWeb
 {
-  String value() default "";
+  private String _path;
+  
+  private Class<? extends ServiceWebSocket<S,C>> _type;
+  
+  WebSocketClass(String path,
+                 Class<? extends ServiceWebSocket<S,C>> type)
+  {
+    _path = path;
+    _type = type;
+  }
+
+  @Override
+  public void build(WebBuilder builder)
+  {
+    builder.websocket(_path).to(_type);
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _path + "," + _type.getSimpleName() + "]";
+  }
 }

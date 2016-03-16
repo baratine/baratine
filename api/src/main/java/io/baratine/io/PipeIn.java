@@ -86,35 +86,21 @@ public interface PipeIn<T> extends Pipe<T>
   public interface Flow
   {
     /**
-     * Pause publisher from adding to the prefetch queue by stopping the
-     * automatic adding of credits.
-     * 
-     * Items currently in the prefetch queue will be delivered, and the
-     * publisher can still add up to the current prefetch credit, but the 
-     * publisher cannot add more items after that.
-     * 
-     * @throws IllegalStateException if credits are used
+     * Returns the current credit sequence.
      */
-    void pause();
+    long credits();
     
     /**
-     * Resumes the publisher.
-     * 
-     * @throws IllegalStateException if credits are used
-     */
-    void resume();
-    
-    /**
-     * Adds to the credits when prefetch is disabled. Used by applications
-     * that need finer control.
+     * Sets the new credit sequence when prefetch is disabled. Used by 
+     * applications that need finer control.
      * 
      * Applications using credit need to continually add credits.
      * 
-     * @param newCredits additional credits for the publisher
+     * @param creditSequence next credit in the sequence
      * 
      * @throws IllegalStateException if prefetch is used
      */
-    void credits(int newCredits);
+    void credits(long creditSequence);
   }
   
   public interface InHandler<T>

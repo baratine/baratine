@@ -51,8 +51,8 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseServiceSync;
-import io.baratine.service.Data;
-import io.baratine.service.Ids;
+import io.baratine.service.Asset;
+import io.baratine.service.AssetId;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
@@ -110,7 +110,7 @@ public class VaultDriverDataImpl<ID, T>
 
   private void introspect()
   {
-    Data table = _entityClass.getAnnotation(Data.class);
+    Asset table = _entityClass.getAnnotation(Asset.class);
 
     _entityDesc = new EntityInfo<>(_entityClass, _idClass, table);
 
@@ -309,7 +309,7 @@ public class VaultDriverDataImpl<ID, T>
       return null;
     }
     else if (id instanceof Long) {
-      return getAddress() + '/' + Ids.encode((Long) id);
+      return getAddress() + '/' + AssetId.encode((Long) id);
     }
     else {
       return getAddress() + '/' + id;

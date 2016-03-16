@@ -33,14 +33,14 @@ import io.baratine.web.IncludeWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebBuilder;
 
-class WebSocketItem implements IncludeWeb
+class WebSocketItem<S,C> implements IncludeWeb
 {
   private String _path;
   
-  private ServiceWebSocket _service;
+  private ServiceWebSocket<S,C> _service;
   
   WebSocketItem(String path,
-            ServiceWebSocket service)
+                ServiceWebSocket<S,C> service)
   {
     _path = path;
     _service = service;

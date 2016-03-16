@@ -41,7 +41,7 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseService;
-import io.baratine.service.Data;
+import io.baratine.service.Asset;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceManager;
@@ -86,7 +86,7 @@ public class RepositoryImpl<ID, T>
   @OnInit
   public void init()
   {
-    Data table = _entityClass.getAnnotation(Data.class);
+    Asset table = _entityClass.getAnnotation(Asset.class);
 
     _entityDesc = new EntityInfo<>(_entityClass, _idClass, table);
 

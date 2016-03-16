@@ -59,14 +59,18 @@ public class WebSocketBuilderImpl implements WebSocketBuilder
   {
     Objects.requireNonNull(service);
     
-    _serverBuilder.include(new WebSocketItem(_path, service));
+    _serverBuilder.include(new WebSocketItem<>(_path, service));
   }
 
   @Override
   public <T,S> InstanceBuilder<ServiceWebSocket<T,S>>
   to(Class<? extends ServiceWebSocket<T,S>> type)
   {
-    throw new UnsupportedOperationException();
+    Objects.requireNonNull(type);
+    
+    _serverBuilder.include(new WebSocketClass<>(_path, type));
+    
+    return null;
   }
 
   @Override

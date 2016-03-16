@@ -48,7 +48,7 @@ import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import io.baratine.db.Cursor;
-import io.baratine.service.Data;
+import io.baratine.service.Asset;
 
 class EntityInfo<ID,T>
 {
@@ -82,7 +82,7 @@ class EntityInfo<ID,T>
 
   public EntityInfo(Class<T> type,
                     Class<ID> idType,
-                    Data table)
+                    Asset table)
   {
     Objects.requireNonNull(type);
     Objects.requireNonNull(idType);
@@ -531,7 +531,7 @@ class EntityInfo<ID,T>
     return t;
   }
 
-  private Data makeDefaultTable(Class type)
+  private Asset makeDefaultTable(Class type)
   {
     String name = type.getSimpleName();
 
@@ -666,7 +666,7 @@ class EntityInfo<ID,T>
     }
   }
 
-  private static class TableLiteral extends AnnotationLiteral<Data> implements Data
+  private static class TableLiteral extends AnnotationLiteral<Asset> implements Asset
   {
     private final String _name;
 

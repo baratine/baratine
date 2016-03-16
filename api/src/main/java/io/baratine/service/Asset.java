@@ -24,40 +24,19 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.websocket;
+package io.baratine.service;
 
-import java.io.IOException;
-import java.util.Objects;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import com.caucho.v5.websocket.client.WebSocketClientBaratine;
-
-import io.baratine.web.ServiceWebSocket;
-
-/**
- * WebSocketClient
- */
-public interface WebSocketClient
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface Asset
 {
-  static <T,S> WebSocketClient open(String address, 
-                                  ServiceWebSocket<T,S> service)
-    throws IOException
-  {
-    Objects.requireNonNull(service);
-    
-    WebSocketClientBaratine ws = new WebSocketClientBaratine(address, service);
-    ws.connect();
-    
-    return ws;
-  }
-    
-  void write(String text)
-    throws IOException;
-  
-  void write(byte []buffer, int offset, int length)
-      throws IOException;
-  
-  void close();
+  String value() default "";
 }
