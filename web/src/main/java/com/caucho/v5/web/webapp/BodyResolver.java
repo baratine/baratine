@@ -36,5 +36,5 @@ import io.baratine.web.RequestWeb;
  */
 public interface BodyResolver
 {
-  <T> T body(RequestWeb request, Class<T> type);
+  <T> T body(RequestWeb request, Class<T> type, String name);
 }

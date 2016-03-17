@@ -29,6 +29,7 @@
 
 package com.caucho.v5.web.builder;
 
+import javax.inject.Qualifier;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -381,9 +382,10 @@ class IncludeWebClass implements IncludeWeb
       return new WebParamCookie(cookie.value(), convert);
     }
     else if (param.isAnnotationPresent(Body.class)) {
-      //Body body = param.getAnnotation(Body.class);
+      Body body = param.getAnnotation(Body.class);
+      String name = body.value().isEmpty() ? null : body.value();
       
-      return new WebParamBody(param.getType());
+      return new WebParamBody(param.getType(), name);
     }
     else if (param.getType().isAnnotationPresent(Service.class)) {
       Service service = param.getType().getAnnotation(Service.class);
@@ -506,10 +508,12 @@ class IncludeWebClass implements IncludeWeb
   private static class WebParamBody<T> implements WebParam
   {
     private final Class<T> _type;
+    private final String _paramName;
     
-    WebParamBody(Class<T> type)
+    WebParamBody(Class<T> type, String paramName)
     {
       _type = type;
+      _paramName = paramName;
     }
     
     @Override
@@ -528,7 +532,7 @@ class IncludeWebClass implements IncludeWeb
     @Override
     public void evalAsync(RequestWeb request, Result<Object> result)
     {
-      request.body(_type, (Result<T>) result);
+      request.body(_type, _paramName, (Result<T>) result);
     }
   }
 
