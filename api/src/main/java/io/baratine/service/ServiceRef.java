@@ -170,6 +170,16 @@ public interface ServiceRef
 
   boolean isClosed();
   void close();
+
+  static ServiceRef valueOf(String address)
+  {
+    if (address == null || address.isEmpty()) {
+      return null;
+    }
+    else {
+      return ServiceManager.current().service(address);
+    }
+  }
   
   /**
    * Returns the ServiceRef for a proxy. <code>toServiceRef()</code>

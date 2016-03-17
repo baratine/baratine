@@ -27,16 +27,13 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import io.baratine.db.Cursor;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE})
-public @interface ColumnVault
+public interface FieldVault<T>
 {
-  String name() default "";
+  void set(T bean, Cursor cursor, int index);
+    
+  void set(T bean, Object value);
 }

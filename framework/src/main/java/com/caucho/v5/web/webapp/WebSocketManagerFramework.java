@@ -67,7 +67,7 @@ public class WebSocketManagerFramework extends WebSocketManager
   createSerializer(Class<T> type,
                    ServiceWebSocket<T, S> service)
   {
-    SerializerJson ser = _serializer.deserializer(type);
+    SerializerJson ser = _serializer.serializer(type);
     
     return new ServiceWebSocketJson<T,S>(ser, service); 
   }

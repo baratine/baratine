@@ -24,28 +24,32 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.json.ser;
+package com.caucho.v5.vault;
 
-import java.util.TreeMap;
+import java.lang.reflect.Field;
 
-import com.caucho.v5.inject.type.TypeRef;
+import io.baratine.service.IdAsset;
 
-public class TreeMapSerializer<T extends TreeMap<K,V>,K,V>
-  extends MapJavaSerializer<T,K,V>
+class FieldInfoIdAsset<T,V> extends FieldReflected<T,V>
 {
-  TreeMapSerializer(TypeRef typeRef, JsonFactory factory)
+  public FieldInfoIdAsset(Field field, ColumnVault column)
   {
-    super(typeRef, factory, TreeMap.class);
+    super(field, column);
   }
 
-  /*
   @Override
-  protected TreeMap<Object,Object> newInstance()
+  public Object toParam(Object value)
   {
-    return new TreeMap<>();
+    IdAsset id = (IdAsset) value;
+    
+    if (id != null) {
+      return id.id();
+    }
+    else {
+      return null;
+    }
   }
-  */
 }

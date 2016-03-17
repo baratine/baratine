@@ -30,11 +30,12 @@
 package com.caucho.v5.json.ser;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
+import java.util.Deque;
 
 import com.caucho.v5.inject.type.TypeRef;
 
-public class DequeSerializer extends CollectionSerializer
+public class DequeSerializer<T extends Deque<V>,V>
+  extends CollectionSerializerJson<T,V>
 {
   DequeSerializer(TypeRef typeRef,
                     JsonFactory factory)
@@ -43,8 +44,18 @@ public class DequeSerializer extends CollectionSerializer
   }
   
   @Override
-  protected Collection<Object> newInstance()
+  public DequeSerializer<T,V> withType(TypeRef type, JsonFactory factory)
   {
-    return new ArrayDeque<>();
+    if (getClass() != DequeSerializer.class) {
+      throw new UnsupportedOperationException(getClass().getName());
+    }
+    
+    return new DequeSerializer<>(type, factory);
+  }
+  
+  @Override
+  protected T newInstance()
+  {
+    return (T) new ArrayDeque<>();
   }
 }

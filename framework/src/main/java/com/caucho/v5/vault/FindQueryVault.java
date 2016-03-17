@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
 import java.util.ArrayList;
 import java.util.List;

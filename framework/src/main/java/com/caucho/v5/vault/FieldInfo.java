@@ -27,16 +27,50 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Map;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Sql
+import com.caucho.v5.kraken.info.TableInfo;
+
+import io.baratine.db.Cursor;
+
+interface FieldInfo<T,V>
 {
-  String value();
+  boolean isId();
+  
+  default boolean isColumn()
+  {
+    return false;
+  }
+
+  String columnName();
+
+  Class<?> getJavaType();
+
+  String sqlType();
+  
+  default String sqlTerm()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  V getValue(T bean);
+
+  void setValue(T bean, Cursor cursor, int index)
+    throws IllegalAccessException;
+
+  default void setValueFromDocument(T bean, Map<String,Object> doc)
+    throws IllegalAccessException
+  {
+  }
+
+  void setValue(T bean, V value);
+
+  void fillColumn(TableInfo tableInfo);
+
+  default Object toParam(Object value)
+  {
+    return value;
+  }
 }

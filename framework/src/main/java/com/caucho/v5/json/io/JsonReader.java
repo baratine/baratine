@@ -99,7 +99,7 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
 
   public Object readObject(Type type)
   {
-    SerializerJson deser = _factory.deserializer(type);
+    SerializerJson deser = _factory.serializer(type);
 
     return deser.read(this);
   }

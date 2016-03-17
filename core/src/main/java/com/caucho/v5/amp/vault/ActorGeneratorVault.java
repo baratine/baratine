@@ -116,8 +116,8 @@ public class ActorGeneratorVault implements ActorGenerator
       bean = ampManager.inject().instance(Key.of(serviceClass, ServiceImpl.class));
     }
     
-    if (bean instanceof DataStoreBase && driver instanceof VaultStore) {
-      DataStoreBase beanData = (DataStoreBase) bean;
+    if (bean instanceof VaultBase && driver instanceof VaultStore) {
+      VaultBase beanData = (VaultBase) bean;
       
       beanData.store((VaultStore) driver);
     }

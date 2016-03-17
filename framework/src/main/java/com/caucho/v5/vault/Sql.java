@@ -24,28 +24,19 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.json.ser;
+package com.caucho.v5.vault;
 
-import java.util.TreeMap;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import com.caucho.v5.inject.type.TypeRef;
-
-public class TreeMapSerializer<T extends TreeMap<K,V>,K,V>
-  extends MapJavaSerializer<T,K,V>
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Sql
 {
-  TreeMapSerializer(TypeRef typeRef, JsonFactory factory)
-  {
-    super(typeRef, factory, TreeMap.class);
-  }
-
-  /*
-  @Override
-  protected TreeMap<Object,Object> newInstance()
-  {
-    return new TreeMap<>();
-  }
-  */
+  String value();
 }

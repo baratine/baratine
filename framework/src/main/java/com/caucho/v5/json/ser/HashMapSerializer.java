@@ -38,24 +38,28 @@ import com.caucho.v5.json.io.InJson.Event;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.util.L10N;
 
-public class HashMapSerializer extends MapSerializer
+public class HashMapSerializer<T extends HashMap<K,V>,K,V>
+  extends MapSerializerJson<K,V>
 {
   private static final L10N L = new L10N(HashMapSerializer.class);
   
-  private final SerializerJson _valueDeser;
+  private final SerializerJson<V> _valueDeser;
   
   HashMapSerializer(TypeRef typeRef, JsonFactory factory)
   {
+    super(typeRef, factory, HashMap::new);
+    
     Objects.requireNonNull(typeRef);
     
     TypeRef valueRef = typeRef.to(Map.class).param(1);
     
     //_keyDeser = keyDeser;
-    _valueDeser = factory.createDeserializer(valueRef.type());
+    _valueDeser = factory.serializer(valueRef.type());
   }
 
+  /*
   @Override
-  public Map<Object,Object> read(JsonReader in)
+  public T read(JsonReader in)
   {
     Event event = in.next();
     
@@ -81,8 +85,9 @@ public class HashMapSerializer extends MapSerializer
     
     in.next();
     
-    return map;
+    return (T) map;
   }
+  */
   
   protected Map<Object,Object> newInstance()
   {

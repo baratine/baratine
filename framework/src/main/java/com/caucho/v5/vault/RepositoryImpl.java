@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +42,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseService;
 import io.baratine.service.Asset;
+import io.baratine.service.IdAsset;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceManager;
@@ -59,6 +60,7 @@ public class RepositoryImpl<ID, T>
   private Class<T> _entityClass;
 
   private EntityInfo<ID,T> _entityDesc;
+  private FieldInfo<T,ID> _idDesc;
 
   private DatabaseService _db;
 
@@ -71,6 +73,7 @@ public class RepositoryImpl<ID, T>
   {
     Objects.requireNonNull(entityClass);
     Objects.requireNonNull(idClass);
+    
     _entityClass = entityClass;
     _idClass = idClass;
 
@@ -90,6 +93,7 @@ public class RepositoryImpl<ID, T>
 
     _entityDesc = new EntityInfo<>(_entityClass, _idClass, table);
 
+    _idDesc = _entityDesc.id();
     /*
     //xxx: inect hack
     _schemaManager = new SchemaManager();
@@ -131,7 +135,7 @@ public class RepositoryImpl<ID, T>
 
     _db.findOne(getSelectOneSql(),
                 result.of((c, r) -> readObject(c, id, r)),
-                id);
+                _idDesc.toParam(id));
   }
 
   @Override
@@ -392,20 +396,20 @@ public class RepositoryImpl<ID, T>
   private final static Map<Class,String> typeMap = new HashMap<>();
 
   static {
-    typeMap.put(byte.class, "integer");
-    typeMap.put(Byte.class, "integer");
+    typeMap.put(byte.class, "int8");
+    typeMap.put(Byte.class, "int8");
 
-    typeMap.put(short.class, "integer");
-    typeMap.put(Short.class, "integer");
+    typeMap.put(short.class, "int16");
+    typeMap.put(Short.class, "int16");
 
     typeMap.put(char.class, "char");
     typeMap.put(Character.class, "char");
 
-    typeMap.put(int.class, "integer");
-    typeMap.put(Integer.class, "integer");
+    typeMap.put(int.class, "int32");
+    typeMap.put(Integer.class, "int32");
 
-    typeMap.put(long.class, "long");
-    typeMap.put(Long.class, "long");
+    typeMap.put(long.class, "int64");
+    typeMap.put(Long.class, "int64");
 
     typeMap.put(float.class, "float");
     typeMap.put(Float.class, "float");
@@ -414,5 +418,6 @@ public class RepositoryImpl<ID, T>
     typeMap.put(Double.class, "double");
 
     typeMap.put(String.class, "varchar");
+    typeMap.put(IdAsset.class, "int64");
   }
 }

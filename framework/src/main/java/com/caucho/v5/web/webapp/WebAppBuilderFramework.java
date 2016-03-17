@@ -36,8 +36,8 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.vault.ActorGeneratorVault;
 import com.caucho.v5.amp.vault.VaultDriver;
-import com.caucho.v5.data.VaultDriverDataImpl;
 import com.caucho.v5.http.websocket.WebSocketManager;
+import com.caucho.v5.vault.VaultDriverDataImpl;
 
 import io.baratine.service.Asset;
 

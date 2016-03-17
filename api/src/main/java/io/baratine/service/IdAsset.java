@@ -29,41 +29,53 @@
 
 package io.baratine.service;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.Objects;
 
-public final class AssetId
+@SuppressWarnings("serial")
+public final class IdAsset implements Serializable
 {
   public static final int TIME_BITS = 34;
   
   private static final int _decode[];
   private static final char _encode[];
   
-  private final String _vaultId;
-  private final long _assetId;
+  private final long _id;
   
-  private final String _address;
+  private final transient String _address;
   
-  public AssetId(String vaultId, long assetId)
+  public IdAsset(long assetId)
   {
-    Objects.requireNonNull(vaultId);
+    _id = assetId;
     
-    _vaultId = vaultId;
-    _assetId = assetId;
-    
-    _address = "/" + vaultId + "/" + encode(assetId);
+    _address = encode(assetId);
   }
   
-  public final String vaultId()
+  public IdAsset(String assetId)
   {
-    return _vaultId;
+    this(decode(assetId));
   }
   
-  public final long assetId()
+  public final long id()
   {
-    return _assetId;
+    return _id;
+  }
+  
+  public final long millis()
+  {
+    return toMillis(id());
+  }
+  
+  public final LocalDateTime dateTime()
+  {
+    return toDateTime(id());
+  }
+  
+  public final long sequence()
+  {
+    return toSequence(id());
   }
   
   @Override
@@ -90,6 +102,11 @@ public final class AssetId
   public static LocalDateTime toDateTime(long id)
   {
     return LocalDateTime.ofEpochSecond(toSeconds(id), 0, ZoneOffset.UTC);
+  }
+  
+  public static IdAsset valueOf(String code)
+  {
+    return new IdAsset(decode(code));
   }
   
   public static String encode(long id)

@@ -138,7 +138,7 @@ public class JampPodManager
     jsonFactory.addSerializer(ServiceRefHandle.class,
                               new JsonSerializerServiceRef());
     
-    jsonFactory.addDeserializer(ServiceRef.class,
+    jsonFactory.addSerializer(ServiceRef.class,
                                 new JsonDeserializerServiceRef());
     
     return jsonFactory;

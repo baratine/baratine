@@ -27,35 +27,76 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.amp.vault;
+package com.caucho.v5.vault;
 
-import java.util.Objects;
+import com.caucho.v5.kraken.info.TableInfo;
 
-import io.baratine.service.Vault;
+import io.baratine.db.Cursor;
 
-/**
- * Provides resource load() and save()
- *
- * @param <ID> the identifier type
- * @param <T> the resource type
- */
-public class DataStoreBase<ID,T> implements Vault<ID,T>
+class FieldIdSolo<T> implements FieldInfo<T,Integer>
 {
-  private VaultStore<ID,T> _store;
+  @Override
+  public boolean isId()
+  {
+    return true;
+  }
+
+  @Override
+  public String columnName()
+  {
+    return "id";
+  }
+
+  @Override
+  public Class<?> getJavaType()
+  {
+    return Void.class;
+  }
   
-  public DataStoreBase()
+  @Override
+  public boolean isColumn()
+  {
+    return true;
+  }
+  
+  @Override
+  public String sqlTerm()
+  {
+    return "id";
+  }
+
+  @Override
+  public String sqlType()
+  {
+    return "int32";
+  }
+
+  @Override
+  public Integer getValue(T t)
+  {
+    return 1;
+  }
+
+  @Override
+  public void setValue(T target, Cursor cursor, int index)
+  {
+    //throw new IllegalStateException();
+  }
+
+  @Override
+  public void setValue(T target, Integer value)
+  {
+    //throw new IllegalStateException();
+  }
+
+  @Override
+  public void fillColumn(TableInfo tableInfo)
   {
   }
   
-  protected void store(VaultStore<ID,T> store)
+  @Override
+  public String toString()
   {
-    Objects.requireNonNull(store);
-    
-    _store = store;
-  }
-  
-  protected VaultStore<ID,T> store()
-  {
-    return _store;
+    return getClass().getSimpleName() + "[" + columnName() + "]";
   }
 }

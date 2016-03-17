@@ -24,27 +24,27 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.json.ser;
+package com.caucho.v5.vault;
 
-import java.util.Collection;
-import java.util.TreeSet;
+import io.baratine.service.Result;
+import io.baratine.stream.ResultStreamBuilder;
 
-import com.caucho.v5.inject.type.TypeRef;
-
-public class TreeSetDeserializer extends CollectionSerializer
+public interface Repository<ID,T>
 {
-  TreeSetDeserializer(TypeRef typeRef,
-                         JsonFactory factory)
-  {
-    super(typeRef, factory);
-  }
-  
-  @Override
-  protected Collection<Object> newInstance()
-  {
-    return new TreeSet<>();
-  }
+  <S extends T> void save(S entity, Result<Boolean> result);
+
+  void findOne(ID id, Result<T> result);
+
+  ResultStreamBuilder<T> findMatch(String[] columns, Object[] values);
+
+  ResultStreamBuilder<T> find(Iterable<ID> ids);
+
+  ResultStreamBuilder<T> findAll();
+
+  void delete(ID id, Result<Boolean> result);
+
+  void deleteIds(Iterable<ID> ids, Result<Boolean> result);
 }

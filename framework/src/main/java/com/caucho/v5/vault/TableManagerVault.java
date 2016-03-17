@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,16 +60,19 @@ public class TableManagerVault<ID,T>
   private final static L10N L = new L10N(TableManagerVault.class);
 
   private DatabaseServiceSync _db;
-  private EntityInfo<ID,T> _entityDesc;
+  private EntityInfo<ID,T> _entityInfo;
   private Config _config;
 
   public TableManagerVault(DatabaseServiceSync db,
                            EntityInfo<ID,T> entityDesc)
   {
+    Objects.requireNonNull(db);
+    
     _db = db;
-    _entityDesc = entityDesc;
+    _entityInfo = entityDesc;
     
     _config = InjectManagerAmp.current().instance(Config.class);
+    Objects.requireNonNull(_config);
   }
 
   public TableInfo initializeSchema()
@@ -78,12 +82,12 @@ public class TableManagerVault<ID,T>
     if (tableInfo != null) {
       return tableInfo;
     }
-    else if ((tableInfo = createTableSql(_entityDesc.type())) != null) {
+    else if ((tableInfo = createTableSql(_entityInfo.type())) != null) {
       initTableData();
       
       return tableInfo;
     }
-    else if ((tableInfo = createTableSql(_entityDesc.type().getPackage())) != null) {
+    else if ((tableInfo = createTableSql(_entityInfo.type().getPackage())) != null) {
       initTableData();
       
       return tableInfo;
@@ -95,7 +99,7 @@ public class TableManagerVault<ID,T>
     }
     else {
       throw new RuntimeException(L.l("Unable to create table {0}",
-                                     _entityDesc));
+                                     _entityInfo));
     }
   }
 
@@ -167,7 +171,7 @@ public class TableManagerVault<ID,T>
   {
     StringBuilder sb = new StringBuilder();
     sb.append("create table " + tableName() + " (");
-    sb.append("id " + _entityDesc.id().sqlType() + " primary key");
+    sb.append("id " + _entityInfo.id().sqlType() + " primary key");
     sb.append(", __doc object");
     sb.append(")");
 
@@ -180,7 +184,7 @@ public class TableManagerVault<ID,T>
   
   private void initTableData()
   {
-    Class<?> type = _entityDesc.type();
+    Class<?> type = _entityInfo.type();
     
     String location = initLocation();
     
@@ -219,7 +223,7 @@ public class TableManagerVault<ID,T>
   
   private String initLocation()
   {
-    String location = _config.get("baratine.data.init.location",
+    String location = _config.get("baratine.vault.init.location",
                                   "classpath:");
     
     if (location.indexOf(':') > 0 || location.indexOf("/") > 0) {
@@ -238,7 +242,7 @@ public class TableManagerVault<ID,T>
       return;
     }
     
-    String sql = ("insert into " + _entityDesc.tableName()
+    String sql = ("insert into " + _entityInfo.tableName()
                   + " (id,__doc) values (?,?)");
     
     while ((token = in.next()) == Event.START_OBJECT) {
@@ -255,11 +259,13 @@ public class TableManagerVault<ID,T>
         System.out.println("Expected end");
         return;
       }
-      
-      if (map.size() > 0) {
-        ID id = _entityDesc.nextId();
 
-        _db.exec(sql, id, map);
+      if (map.size() > 0) {
+        ID id = _entityInfo.nextId();
+        
+        Objects.requireNonNull(id);
+
+        _db.exec(sql, _entityInfo.id().toParam(id), map);
       }
     }
   }
@@ -281,6 +287,6 @@ public class TableManagerVault<ID,T>
   
   private String tableName()
   {
-    return _entityDesc.tableName();
+    return _entityInfo.tableName();
   }
 }

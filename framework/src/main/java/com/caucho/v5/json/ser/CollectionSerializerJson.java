@@ -39,14 +39,14 @@ import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.util.L10N;
 
-public class CollectionSerializer<T extends Collection<V>,V> 
+public class CollectionSerializerJson<T extends Collection<V>,V> 
   extends JsonSerializerBase<T>
 {
-  private static final L10N L = new L10N(CollectionSerializer.class);
+  private static final L10N L = new L10N(CollectionSerializerJson.class);
   
   private SerializerJson<V> _ser;
   
-  CollectionSerializer(TypeRef typeRef,
+  CollectionSerializerJson(TypeRef typeRef,
                        JsonFactory factory)
   {
     Objects.requireNonNull(typeRef);
@@ -55,13 +55,13 @@ public class CollectionSerializer<T extends Collection<V>,V>
   }
   
   @Override
-  public CollectionSerializer<T,V> withType(TypeRef type, JsonFactory factory)
+  public CollectionSerializerJson<T,V> withType(TypeRef type, JsonFactory factory)
   {
-    if (getClass() != CollectionSerializer.class) {
+    if (getClass() != CollectionSerializerJson.class) {
       throw new UnsupportedOperationException(getClass().getName());
     }
     
-    return new CollectionSerializer<>(type, factory);
+    return new CollectionSerializerJson<>(type, factory);
   }
 
   @Override

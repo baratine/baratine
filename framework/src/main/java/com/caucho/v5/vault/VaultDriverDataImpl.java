@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseServiceSync;
 import io.baratine.service.Asset;
-import io.baratine.service.AssetId;
+import io.baratine.service.IdAsset;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
@@ -71,7 +71,7 @@ public class VaultDriverDataImpl<ID, T>
   private Class<ID> _idClass;
   private Class<T> _entityClass;
 
-  private EntityInfo<ID,T> _entityDesc;
+  private EntityInfo<ID,T> _entityInfo;
 
   private DatabaseServiceSync _db;
 
@@ -112,13 +112,13 @@ public class VaultDriverDataImpl<ID, T>
   {
     Asset table = _entityClass.getAnnotation(Asset.class);
 
-    _entityDesc = new EntityInfo<>(_entityClass, _idClass, table);
+    _entityInfo = new EntityInfo<>(_entityClass, _idClass, table);
 
-    TableManagerVault<ID,T> schemaManager = new TableManagerVault<>(_db, _entityDesc);
+    TableManagerVault<ID,T> schemaManager = new TableManagerVault<>(_db, _entityInfo);
 
     _tableInfo = schemaManager.initializeSchema();
     
-    _entityDesc.fillColumns(_tableInfo);
+    _entityInfo.fillColumns(_tableInfo);
 
     /*
                                     (b, e) -> {
@@ -130,13 +130,13 @@ public class VaultDriverDataImpl<ID, T>
                                     });
                                     */
 
-    _saveSql = _entityDesc.saveSql();
-    _loadSql = _entityDesc.loadSql();
+    _saveSql = _entityInfo.saveSql();
+    _loadSql = _entityInfo.loadSql();
   }
   
   EntityInfo<ID,T> entityInfo()
   {
-    return _entityDesc;
+    return _entityInfo;
   }
 
   @Override
@@ -150,17 +150,17 @@ public class VaultDriverDataImpl<ID, T>
   {
     if (log.isLoggable(Level.FINER)) {
       log.finer(L.l("loading entity {0} for id {1}",
-                    _entityDesc,
+                    _entityInfo,
                     id));
     }
     
-    if (_entityDesc.isSolo()) {
+    if (_entityInfo.isSolo()) {
       id = (ID) new Integer(1);
     }
 
     _db.findOne(_loadSql,
                 result.of(c -> onLoad(c, entity)),
-                id);
+                _entityInfo.id().toParam(id));
   }
 
   /**
@@ -170,7 +170,7 @@ public class VaultDriverDataImpl<ID, T>
   {
     if (cursor == null) {
       if (log.isLoggable(Level.FINEST)) {
-        log.finest(L.l("{0} cursor is null", _entityDesc));
+        log.finest(L.l("{0} cursor is null", _entityInfo));
       }
 
       return false;
@@ -178,7 +178,7 @@ public class VaultDriverDataImpl<ID, T>
     else {
       try {
         // T t = _entityDesc.readObject(c, false);
-        _entityDesc.load(cursor, entity);
+        _entityInfo.load(cursor, entity);
         // _entityDesc.setPk(t, id);
 
         if (log.isLoggable(Level.FINER)) {
@@ -201,16 +201,7 @@ public class VaultDriverDataImpl<ID, T>
       log.finer("saving entity " + entity);
     }
 
-    Object[] values = _entityDesc.saveValues(entity);
-    /*
-    Object[] values = new Object[_entityDesc.getSize()];
-
-    for (int i = 0; i < values.length; i++) {
-      Object value = _entityDesc.getValue(i, entity);
-
-      values[i] = value;
-    }
-    */
+    Object[] values = _entityInfo.saveValues(entity);
     
     _db.exec(_saveSql, result.of(o -> { return null; }), values);
   }
@@ -309,7 +300,7 @@ public class VaultDriverDataImpl<ID, T>
       return null;
     }
     else if (id instanceof Long) {
-      return getAddress() + '/' + AssetId.encode((Long) id);
+      return getAddress() + '/' + IdAsset.encode((Long) id);
     }
     else {
       return getAddress() + '/' + id;
@@ -374,7 +365,7 @@ public class VaultDriverDataImpl<ID, T>
     if (_idReader != null)
       return _idReader;
 
-    Class idType = _entityDesc.id().getJavaType();
+    Class idType = _entityInfo.id().getJavaType();
 
     if (isInteger(idType)) {
       _idReader = (IdReader<ID>) new IntIdReader();
@@ -382,11 +373,14 @@ public class VaultDriverDataImpl<ID, T>
     else if (long.class == idType || Long.class == idType) {
       _idReader = (IdReader<ID>) new LongIdReader();
     }
+    else if (IdAsset.class == idType) {
+      _idReader = (IdReader<ID>) new IdAssetReader();
+    }
     else if (String.class == idType) {
       _idReader = (IdReader<ID>) new StringIdReader();
     }
     else {
-      throw new IllegalStateException();
+      throw new IllegalStateException(String.valueOf(idType));
     }
 
     return _idReader;
@@ -406,7 +400,7 @@ public class VaultDriverDataImpl<ID, T>
   public void create(T bean, Result<T> result)
   {
     try {
-      _entityDesc.nextId(bean);
+      _entityInfo.nextId(bean);
 
       result.ok(bean);
     } catch (Throwable e) {
@@ -417,7 +411,7 @@ public class VaultDriverDataImpl<ID, T>
   @Override
   public T service(ID id)
   {
-    String address = _entityDesc.generateAddress(id);
+    String address = _entityInfo.generateAddress(id);
 
     return _ampManager.service(address).as(_entityClass);
   }
@@ -455,7 +449,7 @@ public class VaultDriverDataImpl<ID, T>
   {
     try {
       for (Cursor cursor : it) {
-        T bean = _entityDesc.readObject(cursor, true);
+        T bean = _entityInfo.readObject(cursor, true);
 
         r.accept(bean);
       }
@@ -481,7 +475,7 @@ public class VaultDriverDataImpl<ID, T>
 
   private TableInfo createTable()
   {
-    String tableInfoSql = "show tableinfo " + _entityDesc.tableName();
+    String tableInfoSql = "show tableinfo " + _entityInfo.tableName();
 
     try {
       TableInfo tableInfo = (TableInfo) _db.exec(tableInfoSql);
@@ -494,8 +488,8 @@ public class VaultDriverDataImpl<ID, T>
     }
 
     StringBuilder sb = new StringBuilder();
-    sb.append("create table " + _entityDesc.tableName() + " (");
-    sb.append("id " + _entityDesc.id().sqlType() + " primary key");
+    sb.append("create table " + _entityInfo.tableName() + " (");
+    sb.append("id " + _entityInfo.id().sqlType() + " primary key");
     sb.append(", __id");
     sb.append(")");
 
@@ -509,8 +503,8 @@ public class VaultDriverDataImpl<ID, T>
   public String getSelectPkSql(String[] where)
   {
     StringBuilder sql = new StringBuilder("select ")
-      .append(_entityDesc.id().columnName())
-      .append(" FROM ").append(_entityDesc.tableName())
+      .append(_entityInfo.id().columnName())
+      .append(" FROM ").append(_entityInfo.tableName())
       .append(" where ");
 
     for (int i = 0; i < where.length; i++) {
@@ -526,8 +520,8 @@ public class VaultDriverDataImpl<ID, T>
   public String getSelectPkSql(String where)
   {
     StringBuilder sql = new StringBuilder("select ")
-      .append(_entityDesc.id().columnName())
-      .append(" FROM ").append(_entityDesc.tableName())
+      .append(_entityInfo.id().columnName())
+      .append(" FROM ").append(_entityInfo.tableName())
       .append(' ').append(where);
 
     return sql.toString();
@@ -537,7 +531,7 @@ public class VaultDriverDataImpl<ID, T>
   {
     StringBuilder sql = new StringBuilder("select ");
 
-    FieldInfo[] fields = _entityDesc.getFields();
+    FieldInfo[] fields = _entityInfo.getFields();
 
     for (int i = 0; i < fields.length; i++) {
       FieldInfo field = fields[i];
@@ -547,7 +541,7 @@ public class VaultDriverDataImpl<ID, T>
         sql.append(", ");
     }
 
-    sql.append(" FROM ").append(_entityDesc.tableName());
+    sql.append(" FROM ").append(_entityInfo.tableName());
 
     return sql;
   }
@@ -555,8 +549,8 @@ public class VaultDriverDataImpl<ID, T>
   public String getSelectIds()
   {
     StringBuilder sql = new StringBuilder("select ")
-      .append(_entityDesc.id().columnName())
-      .append(" FROM ").append(_entityDesc.tableName());
+      .append(_entityInfo.id().columnName())
+      .append(" FROM ").append(_entityInfo.tableName());
 
     return sql.toString();
   }
@@ -564,10 +558,10 @@ public class VaultDriverDataImpl<ID, T>
   public String getDeleteSql()
   {
     StringBuilder sql = new StringBuilder("delete from ")
-      .append(_entityDesc.tableName())
+      .append(_entityInfo.tableName())
       .append(" where ");
 
-    for (FieldInfo field : _entityDesc.getFields()) {
+    for (FieldInfo field : _entityInfo.getFields()) {
       if (field.isId()) {
         sql.append(field.columnName());
         break;
@@ -583,12 +577,12 @@ public class VaultDriverDataImpl<ID, T>
   public String createDdl()
   {
     StringBuilder createDdl = new StringBuilder("create table ")
-      .append(_entityDesc.tableName()).append('(');
+      .append(_entityInfo.tableName()).append('(');
 
-    FieldInfo[] fields = _entityDesc.getFields();
+    FieldInfo[] fields = _entityInfo.getFields();
 
     for (int i = 0; i < fields.length; i++) {
-      FieldInfo field = _entityDesc.getFields()[i];
+      FieldInfo field = _entityInfo.getFields()[i];
 
       createDdl.append(field.columnName())
                .append(' ')
@@ -612,7 +606,7 @@ public class VaultDriverDataImpl<ID, T>
   public <V> MethodVault<V> newMethod(Method method)
   {
     MethodParserVault parser
-      = new MethodParserVault(this, _entityDesc, method);
+      = new MethodParserVault(this, _entityInfo, method);
 
     FindQueryVault<?,?,V> query = parser.parse();
     
@@ -720,6 +714,19 @@ public class VaultDriverDataImpl<ID, T>
         return null;
 
       return c.getLong(1);
+    }
+  }
+
+  private static class IdAssetReader implements IdReader<IdAsset>
+  {
+    @Override
+    public IdAsset read(Cursor c)
+    {
+      if (c == null) {
+        return null;
+      }
+
+      return new IdAsset(c.getLong(1));
     }
   }
 

@@ -32,7 +32,7 @@ package com.caucho.v5.amp.vault;
 import io.baratine.service.Result;
 
 /**
- * Driver for producing repository methods
+ * Driver for producing vault methods
  */
 public interface MethodVault<T>
 {

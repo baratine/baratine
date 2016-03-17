@@ -41,12 +41,10 @@ import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryWithResultMessage_N;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
-import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
-import io.baratine.service.ServiceException;
 
 public class VaultDriverBase<ID,T>
   implements VaultDriver<ID,T>
@@ -99,11 +97,11 @@ public class VaultDriverBase<ID,T>
         return newCreateMethod(target);
       }
       else {
-        return new ResourceMethodNull<>(method.getName() + " " + getClass().getName());
+        return new MethodVaultNull<>(method.getName() + " " + getClass().getName());
       }
     }
     else {
-      return new ResourceMethodNull<>(method.getName() + " " + getClass().getName());
+      return new MethodVaultNull<>(method.getName() + " " + getClass().getName());
     }
   }
   
@@ -115,7 +113,7 @@ public class VaultDriverBase<ID,T>
       //targetMethod.setAccessible(true);
       //MethodHandle targetHandle = MethodHandles.lookup().unreflect(targetMethod);
     
-      return new ResourceMethodCreate<S>(_ampManager, idGen, targetMethod.getName());
+      return new MethodVaultCreate<S>(_ampManager, idGen, targetMethod.getName());
     } catch (Exception e) {
       e.printStackTrace();;
       throw new IllegalStateException(e);
@@ -153,12 +151,12 @@ public class VaultDriverBase<ID,T>
            + "]";
   }
 
-  private static class ResourceMethodNull<S> implements MethodVault<S>
+  private static class MethodVaultNull<S> implements MethodVault<S>
   {
     private String _methodName;
     private RuntimeException _sourceExn;
     
-    ResourceMethodNull(String methodName)
+    MethodVaultNull(String methodName)
     {
       _methodName = methodName;
       
@@ -173,13 +171,14 @@ public class VaultDriverBase<ID,T>
     }
   }
 
-  private class ResourceMethodCreate<S> implements MethodVault<S>
+  private class MethodVaultCreate<S> implements MethodVault<S>
   {
     private ServiceManagerAmp _ampManager;
     private Supplier<String> _idGen;
+    private String _methodName;
     private MethodAmp _method;
     
-    ResourceMethodCreate(ServiceManagerAmp ampManager,
+    MethodVaultCreate(ServiceManagerAmp ampManager,
                          Supplier<String> idGen,
                          String methodName)
     {
@@ -188,18 +187,30 @@ public class VaultDriverBase<ID,T>
       
       _ampManager = ampManager;
       _idGen = idGen;
+      _methodName = methodName;
       
+      /*
       ServiceRefAmp child = _ampManager.service(_prefix + "0");
       MethodRefAmp methodRef = child.getMethod(methodName);
       
       _method = methodRef.method();
+      */
+    }
+    
+    private MethodAmp method(ServiceRefAmp childRef)
+    {
+      if (_method == null) {
+        _method = childRef.getMethod(_methodName).method();
+      }
+      
+      return _method;
     }
     
     @Override
     public void invoke(Result<S> result, Object[] args)
     {
       String id = _idGen.get();
-      
+
       /*
       int resultIndex = _resultIndex;
       
@@ -210,8 +221,8 @@ public class VaultDriverBase<ID,T>
                        args.length - _resultIndex);
       */
       
-      ServiceRefAmp serviceRef = _ampManager.service(_prefix + id);
-      
+      ServiceRefAmp childRef = _ampManager.service(_prefix + id);
+
       long timeout = 10000L;
       
       try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_ampManager)) {
@@ -222,8 +233,8 @@ public class VaultDriverBase<ID,T>
                                          headers,
                                          result, 
                                          timeout, 
-                                         serviceRef,
-                                         _method,
+                                         childRef,
+                                         method(childRef),
                                          args);
 
         msg.offer(timeout);

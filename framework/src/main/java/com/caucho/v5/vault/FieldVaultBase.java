@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -45,15 +45,16 @@ import com.caucho.v5.convert.bean.FieldShort;
 import com.caucho.v5.convert.bean.FieldString;
 
 import io.baratine.db.Cursor;
+import io.baratine.service.IdAsset;
 
-class FieldDataBase
+class FieldVaultBase
 {
-  private static HashMap<Class<?>,Function<Field,FieldData<?>>> _fieldTypeMap
+  private static HashMap<Class<?>,Function<Field,FieldVault<?>>> _fieldTypeMap
     = new HashMap<>();
   
-  public static FieldData getField(Field field)
+  public static FieldVault getField(Field field)
   {
-    Function<Field,FieldData<?>> fun = _fieldTypeMap.get(field.getType());
+    Function<Field,FieldVault<?>> fun = _fieldTypeMap.get(field.getType());
     
     if (fun != null) {
       return fun.apply(field);
@@ -67,7 +68,7 @@ class FieldDataBase
    * boolean fields
    */
   private static class FieldDataBoolean<T> extends FieldBoolean<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataBoolean(Field field)
     {
@@ -93,7 +94,7 @@ class FieldDataBase
    * char fields
    */
   private static class FieldDataChar<T> extends FieldChar<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataChar(Field field)
     {
@@ -117,7 +118,7 @@ class FieldDataBase
    * byte fields
    */
   private static class FieldDataByte<T> extends FieldByte<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataByte(Field field)
     {
@@ -143,7 +144,7 @@ class FieldDataBase
    * short fields
    */
   private static class FieldDataShort<T> extends FieldShort<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataShort(Field field)
     {
@@ -169,7 +170,7 @@ class FieldDataBase
    * int fields
    */
   private static class FieldDataInt<T> extends FieldInt<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataInt(Field field)
     {
@@ -195,7 +196,7 @@ class FieldDataBase
    * long fields
    */
   private static class FieldDataLong<T> extends FieldLong<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataLong(Field field)
     {
@@ -221,7 +222,7 @@ class FieldDataBase
    * float fields
    */
   private static class FieldDataFloat<T> extends FieldFloat<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataFloat(Field field)
     {
@@ -247,7 +248,7 @@ class FieldDataBase
    * double fields
    */
   private static class FieldDataDouble<T> extends FieldDouble<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataDouble(Field field)
     {
@@ -270,7 +271,7 @@ class FieldDataBase
   }
   
   private static class FieldDataString<T> extends FieldString<T>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataString(Field field)
     {
@@ -289,8 +290,41 @@ class FieldDataBase
       setString(bean, String.valueOf(value));
     }
   }
+  
+  /**
+   * IdAsset fields
+   */
+  private static class FieldDataAsset<T> extends FieldObject<T,IdAsset>
+    implements FieldVault<T>
+  {
+    FieldDataAsset(Field field)
+    {
+      super(field);
+    }
+    
+    @Override
+    public void set(T bean, Cursor cursor, int index)
+    {
+      setObject(bean, new IdAsset(cursor.getLong(index)));
+    }
+    
+    @Override
+    public void set(T bean, Object value)
+    {
+      if (value instanceof Number) {
+        setObject(bean, new IdAsset(((Number) value).longValue()));
+      }
+      else if (value instanceof String) {
+        setObject(bean, new IdAsset(((String) value)));
+      }
+      else {
+        System.out.println("Unknown value: " + value + " " + this);
+      }
+    }
+  }
+  
   private static class FieldDataObject<T> extends FieldObject<T,Object>
-    implements FieldData<T>
+    implements FieldVault<T>
   {
     FieldDataObject(Field field)
     {
@@ -320,5 +354,6 @@ class FieldDataBase
     _fieldTypeMap.put(float.class, FieldDataFloat::new);
     _fieldTypeMap.put(double.class, FieldDataDouble::new);
     _fieldTypeMap.put(String.class, FieldDataString::new);
+    _fieldTypeMap.put(IdAsset.class, FieldDataAsset::new);
   }
 }

@@ -24,82 +24,63 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Alex Rojkov
+ * @author Scott Ferguson
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.json.ser;
 
-import io.baratine.db.Cursor;
-
+import java.lang.reflect.Method;
 import java.util.Objects;
 
-import com.caucho.v5.kraken.info.TableInfo;
+import com.caucho.v5.json.io.InJson;
+import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonWriter;
 
-class FieldInfoObject implements FieldInfo
+class StringValueOfSerializer<T> extends JsonSerializerBase<T>
 {
-  private ColumnVault _column;
-  private Class<?> _type;
-
-  public FieldInfoObject(Class<?> type, ColumnVault column)
+  private Class<T> _type;
+  private Method _valueOf;
+  
+  StringValueOfSerializer(Class<T> type, Method valueOf)
   {
     Objects.requireNonNull(type);
-    Objects.requireNonNull(column);
-
+    Objects.requireNonNull(valueOf);
+    
     _type = type;
-    _column = column;
-  }
-
-  @Override
-  public boolean isId()
-  {
-    return false;
-  }
-
-  @Override
-  public String columnName()
-  {
-    String name = _column.name();
-
-    if (name == null) {
-      name = _type.getSimpleName();
+    _valueOf = valueOf;
+    
+    if (! type.equals(_valueOf.getReturnType())) {
+      throw new IllegalArgumentException(_valueOf.toString());
     }
-
-    return name;
   }
-
+  
   @Override
-  public Class<?> getJavaType()
+  public T read(JsonReader in)
   {
-    return Object.class;
+    if (in.peek() == InJson.Event.VALUE_NULL) {
+      in.next();
+      
+      return null;
+    }
+    else {
+      String value = in.readString();
+      
+      try {
+        return (T) _valueOf.invoke(null, value);
+      } catch (Exception e) {
+        throw new JsonException(e);
+      }
+    }
   }
-
+  
   @Override
-  public String sqlType()
+  public void write(JsonWriter out, T value)
   {
-    return "object";
-  }
-
-  @Override
-  public Object getValue(Object t)
-  {
-    return t;
-  }
-
-  @Override
-  public void setValue(Object target, Cursor cursor, int index)
-  {
-    throw new IllegalStateException();
-  }
-
-  @Override
-  public void setValue(Object target, Object object)
-  {
-    throw new IllegalStateException();
-  }
-
-  @Override
-  public void fillColumn(TableInfo tableInfo)
-  {
-    System.out.println("FC: " + this);
+    if (value != null) {
+      out.write(value.toString());
+    }
+    else {
+      out.writeNull();
+    }
   }
 }

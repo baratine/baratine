@@ -27,45 +27,35 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.amp.vault;
 
-import java.util.Map;
+import java.util.Objects;
 
-import com.caucho.v5.kraken.info.TableInfo;
+import io.baratine.service.Vault;
 
-import io.baratine.db.Cursor;
-
-interface FieldInfo<T,V>
+/**
+ * Provides resource load() and save()
+ *
+ * @param <ID> the identifier type
+ * @param <T> the resource type
+ */
+public class VaultBase<ID,T> implements Vault<ID,T>
 {
-  boolean isId();
+  private VaultStore<ID,T> _store;
   
-  default boolean isColumn()
+  public VaultBase()
   {
-    return false;
   }
-
-  String columnName();
-
-  Class<?> getJavaType();
-
-  String sqlType();
   
-  default String sqlTerm()
+  protected void store(VaultStore<ID,T> store)
   {
-    throw new UnsupportedOperationException(getClass().getName());
+    Objects.requireNonNull(store);
+    
+    _store = store;
   }
-
-  V getValue(T bean);
-
-  void setValue(T bean, Cursor cursor, int index)
-    throws IllegalAccessException;
-
-  default void setValueFromDocument(T bean, Map<String,Object> doc)
-    throws IllegalAccessException
+  
+  protected VaultStore<ID,T> store()
   {
+    return _store;
   }
-
-  void setValue(T bean, V value);
-
-  void fillColumn(TableInfo tableInfo);
 }

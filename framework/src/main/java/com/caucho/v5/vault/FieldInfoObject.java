@@ -27,76 +27,79 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
+
+import java.util.Objects;
 
 import com.caucho.v5.kraken.info.TableInfo;
 
 import io.baratine.db.Cursor;
 
-class FieldIdSolo<T> implements FieldInfo<T,Integer>
+class FieldInfoObject implements FieldInfo
 {
+  private ColumnVault _column;
+  private Class<?> _type;
+
+  public FieldInfoObject(Class<?> type, ColumnVault column)
+  {
+    Objects.requireNonNull(type);
+    Objects.requireNonNull(column);
+
+    _type = type;
+    _column = column;
+  }
+
   @Override
   public boolean isId()
   {
-    return true;
+    return false;
   }
 
   @Override
   public String columnName()
   {
-    return "id";
+    String name = _column.name();
+
+    if (name == null) {
+      name = _type.getSimpleName();
+    }
+
+    return name;
   }
 
   @Override
   public Class<?> getJavaType()
   {
-    return Void.class;
-  }
-  
-  @Override
-  public boolean isColumn()
-  {
-    return true;
-  }
-  
-  @Override
-  public String sqlTerm()
-  {
-    return "id";
+    return Object.class;
   }
 
   @Override
   public String sqlType()
   {
-    return "int32";
+    return "object";
   }
 
   @Override
-  public Integer getValue(T t)
+  public Object getValue(Object t)
   {
-    return 1;
+    return t;
   }
 
   @Override
-  public void setValue(T target, Cursor cursor, int index)
+  public void setValue(Object target, Cursor cursor, int index)
   {
-    //throw new IllegalStateException();
+    throw new IllegalStateException();
   }
 
   @Override
-  public void setValue(T target, Integer value)
+  public void setValue(Object target, Object object)
   {
-    //throw new IllegalStateException();
+    throw new IllegalStateException();
   }
 
   @Override
   public void fillColumn(TableInfo tableInfo)
   {
-  }
-  
-  @Override
-  public String toString()
-  {
-    return getClass().getSimpleName() + "[" + columnName() + "]";
+    System.out.println("FC: " + this);
   }
 }

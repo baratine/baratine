@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -49,6 +49,7 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import io.baratine.db.Cursor;
 import io.baratine.service.Asset;
+import io.baratine.service.IdAsset;
 
 class EntityInfo<ID,T>
 {
@@ -64,7 +65,7 @@ class EntityInfo<ID,T>
 
   private final String _tableName;
   
-  private final FieldInfo[] _fields;
+  private final FieldInfo<T,?>[] _fields;
   private Class<T> _type;
   
   private boolean _isDocument;
@@ -103,12 +104,12 @@ class EntityInfo<ID,T>
     _fields = introspect();
   }
   
-  private FieldInfo []introspect()
+  private FieldInfo<T,?> []introspect()
   {
-    List<FieldInfo> fields = new ArrayList<>();
+    List<FieldInfo<T,?>> fields = new ArrayList<>();
     
     if (Void.class.equals(_idType)) {
-      FieldIdSolo fieldId = new FieldIdSolo();
+      FieldIdSolo<T> fieldId = new FieldIdSolo<>();
       
       _isSolo = true;
       
@@ -126,7 +127,14 @@ class EntityInfo<ID,T>
         column = makeDefaultColumn(field);
       }
 
-      FieldInfo fieldInfo = new FieldReflected(field, column);
+      FieldInfo<T,?> fieldInfo;
+      
+      if (IdAsset.class.equals(field.getType())) {
+        fieldInfo = new FieldInfoIdAsset<>(field, column);
+      }
+      else {
+        fieldInfo = new FieldReflected<>(field, column);
+      }
       
       if (! fieldInfo.isColumn()) {
         _isDocument = true;
@@ -135,9 +143,9 @@ class EntityInfo<ID,T>
       fields.add(fieldInfo);
     }
 
-    List<FieldInfo> ids = new ArrayList<>();
+    List<FieldInfo<T,?>> ids = new ArrayList<>();
 
-    for (FieldInfo field : fields) {
+    for (FieldInfo<T,?> field : fields) {
       if (field.isId()) {
         ids.add(field);
       }
@@ -166,7 +174,7 @@ class EntityInfo<ID,T>
       fields.add(new FieldInfoObject(_type, objColumn));
     }
 
-    FieldInfo[] fieldsArray = fields.toArray(new FieldInfo[fields.size()]);
+    FieldInfo<T,?>[] fieldsArray = fields.toArray(new FieldInfo[fields.size()]);
     
     Function<EntityInfo<?,?>,IdGenerator<ID>> idGenFun
       = (Function) _idGenMap.get(_idType);
@@ -188,7 +196,7 @@ class EntityInfo<ID,T>
     return fieldsArray;
   }
 
-  private boolean isIdTypeMatch(Class repIdType, Class idType)
+  private boolean isIdTypeMatch(Class<?> repIdType, Class<?> idType)
   {
     if (repIdType.equals(idType)) {
       return true;
@@ -236,9 +244,10 @@ class EntityInfo<ID,T>
 
   public FieldInfo<T,ID> id()
   {
-    for (FieldInfo field : _fields) {
-      if (field.isId())
-        return field;
+    for (FieldInfo<T,?> field : _fields) {
+      if (field.isId()) {
+        return (FieldInfo<T,ID>) field;
+      }
     }
 
     return null;
@@ -285,7 +294,7 @@ class EntityInfo<ID,T>
     return _idGen.generateAddress(id);
   }
 
-  public FieldInfo[] getFields()
+  public FieldInfo<T,?>[] getFields()
   {
     return _fields;
   }
@@ -319,13 +328,13 @@ class EntityInfo<ID,T>
 
     StringBuilder tail = new StringBuilder(") values (");
 
-    FieldInfo[] fields = getFields();
+    FieldInfo<T,?>[] fields = getFields();
     
     boolean isDocument = false;
     int saveColumns = 0;
 
     for (int i = 0; i < fields.length; i++) {
-      FieldInfo field = getFields()[i];
+      FieldInfo<T,?> field = getFields()[i];
       
       if (! field.isColumn()) {
         isDocument = true;
@@ -361,11 +370,11 @@ class EntityInfo<ID,T>
     StringBuilder head = new StringBuilder("select ");
     StringBuilder where = new StringBuilder(" where ");
 
-    FieldInfo[] fields = getFields();
+    FieldInfo<T,?>[] fields = getFields();
     boolean isFirst = true;
 
     for (int i = 0; i < fields.length; i++) {
-      FieldInfo field = fields[i];
+      FieldInfo<T,?> field = fields[i];
 
       if (field.isId()) {
         where.append(field.columnName()).append(" = ?");
@@ -412,9 +421,9 @@ class EntityInfo<ID,T>
     }
     
     int i = 0;
-    for (FieldInfo field : _fields) {
+    for (FieldInfo<T,?> field : _fields) {
       if (field.isColumn()) {
-        values[i++] = field.getValue(entity);
+        values[i++] = field.toParam(field.getValue(entity));
       }
       else {
         doc.put(field.columnName(), field.getValue(entity));
@@ -424,9 +433,9 @@ class EntityInfo<ID,T>
     return values;
   }
 
-  public Object getValue(int index, T t)
+  public Object getValue(int index, T bean)
   {
-    Object value = _fields[index].getValue(t);
+    Object value = _fields[index].getValue(bean);
     
     if (value == null && _fields[index].isId()) {
       value = new Long(0);
@@ -444,7 +453,7 @@ class EntityInfo<ID,T>
 
     int index = 0;
     for (int i = 0; i < _fields.length; i++) {
-      FieldInfo field = _fields[i];
+      FieldInfo<T,?> field = _fields[i];
 
       if (! field.isId() || isInitPk)
         index++;
@@ -482,7 +491,7 @@ class EntityInfo<ID,T>
   {
     int index = 0;
     for (int i = 0; i < _fields.length; i++) {
-      FieldInfo field = _fields[i];
+      FieldInfo<T,?> field = _fields[i];
 
       if (! isInitId && field.isId()) {
         continue;
@@ -500,7 +509,7 @@ class EntityInfo<ID,T>
       if (doc instanceof Map) {
         Map<String,Object> docMap = (Map) doc;
       
-        for (FieldInfo field : _fields) {
+        for (FieldInfo<T,?> field : _fields) {
           field.setValueFromDocument(bean, docMap);
         }
       }
@@ -553,7 +562,7 @@ class EntityInfo<ID,T>
 
   public void fillColumns(TableInfo tableInfo)
   {
-    for (FieldInfo field : _fields) {
+    for (FieldInfo<T,?> field : _fields) {
       field.fillColumn(tableInfo);
     }
     
@@ -568,13 +577,13 @@ class EntityInfo<ID,T>
 
   public FieldInfo findFieldByType(TypeRef resultType)
   {
-    Class rawResult = resultType.rawClass();
+    Class<?> rawResult = resultType.rawClass();
 
-    for (FieldInfo field : _fields) {
+    for (FieldInfo<T,?> field : _fields) {
       if (field.isId())
         continue;
 
-      Class fieldType = field.getJavaType();
+      Class<?> fieldType = field.getJavaType();
 
       if (rawResult.equals(fieldType))
         return field;
@@ -665,6 +674,37 @@ class EntityInfo<ID,T>
       return new Long(idValue);
     }
   }
+  
+  private static class IdGeneratorIdAsset extends IdGenerator<IdAsset>
+  {
+    private IdGeneratorIdAsset(EntityInfo<?,?> entity)
+    {
+      super(entity);
+    }
+    
+    @Override
+    public IdAsset generate(IdAsset id)
+    {
+      if (id != null) {
+        return id;
+      }
+      
+      long now = CurrentTime.getCurrentTime() / 1000;
+      long node = entity().node();
+      long sequence = entity().nextSequence();
+      
+      int timeBits = 34;
+      int nodeBits = 10;
+      int seqBits = 64 - timeBits - nodeBits;
+      long seqMask = (1L << seqBits) - 1;
+      
+      long idValue = ((now << (64 - timeBits))
+                     | (node << (64 - timeBits - nodeBits))
+                     | (sequence & seqMask));
+      
+      return new IdAsset(idValue);
+    }
+  }
 
   private static class TableLiteral extends AnnotationLiteral<Asset> implements Asset
   {
@@ -704,6 +744,8 @@ class EntityInfo<ID,T>
 
     _idGenMap.put(Long.class, IdGeneratorLong::new);
     _idGenMap.put(long.class, IdGeneratorLong::new);
+    
+    _idGenMap.put(IdAsset.class, IdGeneratorIdAsset::new);
 
     _primitiveWrappers.put(boolean.class, Boolean.class);
     _primitiveWrappers.put(char.class, Character.class);

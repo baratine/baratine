@@ -24,27 +24,37 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Alex Rojkov
+ * @author Scott Ferguson
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.json.ser;
 
-import io.baratine.service.Result;
-import io.baratine.stream.ResultStreamBuilder;
+import java.util.TreeSet;
 
-public interface Repository<ID,T>
+import com.caucho.v5.inject.type.TypeRef;
+
+public class TreeSetSerializer<T extends TreeSet<V>,V>
+  extends CollectionSerializerJson<T,V>
 {
-  <S extends T> void save(S entity, Result<Boolean> result);
-
-  void findOne(ID id, Result<T> result);
-
-  ResultStreamBuilder<T> findMatch(String[] columns, Object[] values);
-
-  ResultStreamBuilder<T> find(Iterable<ID> ids);
-
-  ResultStreamBuilder<T> findAll();
-
-  void delete(ID id, Result<Boolean> result);
-
-  void deleteIds(Iterable<ID> ids, Result<Boolean> result);
+  TreeSetSerializer(TypeRef typeRef,
+                         JsonFactory factory)
+  {
+    super(typeRef, factory);
+  }
+  
+  @Override
+  public TreeSetSerializer<T,V> withType(TypeRef type, JsonFactory factory)
+  {
+    if (getClass() != TreeSetSerializer.class) {
+      throw new UnsupportedOperationException(getClass().getName());
+    }
+    
+    return new TreeSetSerializer<>(type, factory);
+  }
+  
+  @Override
+  protected T newInstance()
+  {
+    return (T) new TreeSet<>();
+  }
 }

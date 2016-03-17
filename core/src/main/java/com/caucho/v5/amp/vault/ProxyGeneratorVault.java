@@ -160,7 +160,7 @@ public class ProxyGeneratorVault<T>
     */
     
     ProxyGeneratorVault<?> generator
-      = new ProxyGeneratorVault(cl, loader);
+      = new ProxyGeneratorVault<>(cl, loader);
     
     Class<?> proxyClass = generator.generate();
     

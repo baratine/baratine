@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.data;
+package com.caucho.v5.vault;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -164,7 +164,7 @@ class FindDataVault<ID,T,V>
         continue;
       }
       
-      FieldData<V> fieldData = FieldDataBase.getField(field);
+      FieldVault<V> fieldData = FieldVaultBase.getField(field);
       
       if (fieldInfo.isColumn()) {
         fieldList.add(new DataFieldColumn<>(fieldInfo, fieldData, ++index));
@@ -210,11 +210,11 @@ class FindDataVault<ID,T,V>
   private static class DataFieldColumn<T> extends DataFieldItem<T>
   {
     private FieldInfo _fieldInfo;
-    private FieldData<T> _fieldData;
+    private FieldVault<T> _fieldData;
     private int _index;
     
     DataFieldColumn(FieldInfo fieldInfo, 
-                    FieldData<T> fieldData,
+                    FieldVault<T> fieldData,
                     int index)
     {
       _fieldInfo = fieldInfo;
@@ -262,9 +262,9 @@ class FindDataVault<ID,T,V>
   private static class DataFieldDoc<T> extends DataFieldItem<T>
   {
     private FieldInfo _fieldInfo;
-    private FieldData<T> _fieldData;
+    private FieldVault<T> _fieldData;
     
-    DataFieldDoc(FieldInfo fieldInfo, FieldData<T> fieldData)
+    DataFieldDoc(FieldInfo fieldInfo, FieldVault<T> fieldData)
     {
       _fieldInfo = fieldInfo;
       _fieldData = fieldData;
@@ -284,300 +284,4 @@ class FindDataVault<ID,T,V>
       _fieldData.set(bean, value);
     }
   }
-  
-  /*
-  private interface FieldData<T>
-  {
-    void set(T bean, Cursor cursor, int index);
-    
-    void set(T bean, Object value);
-  }
-  */
-  
-  /**
-   * boolean fields
-   */
-  /*
-  private static class FieldDataBoolean<T> extends FieldBoolean<T>
-    implements FieldData<T>
-  {
-    FieldDataBoolean(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setBoolean(bean, cursor.getInt(index) != 0);
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      if (value instanceof Boolean) {
-        setBoolean(bean, (Boolean) value);
-      }
-    }
-  }
-  */
-  
-  /**
-   * char fields
-   */
-  /*
-  private static class FieldDataChar<T> extends FieldChar<T>
-    implements FieldData<T>
-  {
-    FieldDataChar(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setString(bean, cursor.getString(index));
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      if (value instanceof String) {
-        setString(bean, (String) value);
-      }
-      else {
-        setObject(bean, value);
-      }
-    }
-  }
-  */
-  
-  /**
-   * byte fields
-   */
-  /*
-  private static class FieldDataByte<T> extends FieldByte<T>
-    implements FieldData<T>
-  {
-    FieldDataByte(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setInt(bean, cursor.getInt(index));
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      if (value instanceof Number) {
-        setInt(bean, ((Number) value).intValue());
-      }
-    }
-  }
-  */
-  
-  /**
-   * short fields
-   */
-  /*
-  private static class FieldDataShort<T> extends FieldShort<T>
-    implements FieldData<T>
-  {
-    FieldDataShort(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setInt(bean, cursor.getInt(index));
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      if (value instanceof Number) {
-        setInt(bean, ((Number) value).intValue());
-      }
-    }
-  }
-  */
-  
-  /**
-   * int fields
-   */
-  /*
-  private static class FieldDataInt<T> extends FieldInt<T>
-    implements FieldData<T>
-  {
-    FieldDataInt(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setInt(bean, cursor.getInt(index));
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      if (value instanceof Number) {
-        setInt(bean, ((Number) value).intValue());
-      }
-    }
-  }
-  */
-  
-  /**
-   * long fields
-   */
-  /*
-  private static class FieldDataLong<T> extends FieldLong<T>
-    implements FieldData<T>
-  {
-    FieldDataLong(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setLong(bean, cursor.getLong(index));
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      if (value instanceof Number) {
-        setLong(bean, ((Number) value).longValue());
-      }
-    }
-  }
-  */
-  
-  /**
-   * float fields
-   */
-  /*
-  private static class FieldDataFloat<T> extends FieldFloat<T>
-    implements FieldData<T>
-  {
-    FieldDataFloat(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setDouble(bean, cursor.getDouble(index));
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      if (value instanceof Number) {
-        setDouble(bean, ((Number) value).floatValue());
-      }
-    }
-  }
-  */
-  
-  /**
-   * double fields
-   */
-  /*
-  private static class FieldDataDouble<T> extends FieldDouble<T>
-    implements FieldData<T>
-  {
-    FieldDataDouble(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setDouble(bean, cursor.getDouble(index));
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      if (value instanceof Number) {
-        setDouble(bean, ((Number) value).floatValue());
-      }
-    }
-  }
-  */
-  
-  /*
-  private static class FieldDataString<T> extends FieldString<T>
-    implements FieldData<T>
-  {
-    FieldDataString(Field field)
-    {
-      super(field);
-    }
-    
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setString(bean, cursor.getString(index));
-    }
-    
-    @Override
-    public void set(T bean, Object value)
-    {
-      setString(bean, String.valueOf(value));
-    }
-  }
-  */
-  
-  /*
-  private static class FieldDataObject<T> extends FieldObject<T>
-    implements FieldData<T>
-  {
-    FieldDataObject(Field field)
-    {
-      super(field);
-    }
-  
-    @Override
-    public void set(T bean, Cursor cursor, int index)
-    {
-      setObject(bean, cursor.getObject(index));
-    }
-  
-    @Override
-    public void set(T bean, Object value)
-    {
-      setObject(bean, value);
-    }
-  }
-  */
-
-  /*
-  static {
-    _fieldTypeMap.put(boolean.class, FieldDataBoolean::new);
-    _fieldTypeMap.put(char.class, FieldDataChar::new);
-    _fieldTypeMap.put(byte.class, FieldDataByte::new);
-    _fieldTypeMap.put(short.class, FieldDataShort::new);
-    _fieldTypeMap.put(int.class, FieldDataInt::new);
-    _fieldTypeMap.put(long.class, FieldDataLong::new);
-    _fieldTypeMap.put(float.class, FieldDataFloat::new);
-    _fieldTypeMap.put(double.class, FieldDataDouble::new);
-    _fieldTypeMap.put(String.class, FieldDataString::new);
-  }
-  */
 }

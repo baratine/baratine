@@ -40,7 +40,7 @@ import com.caucho.v5.json.io.JsonReader;
 public class EnumerationSerializer<T extends Enumeration<V>,V>
   extends JsonSerializerBase<T>
 {
-  private CollectionSerializer<Collection<V>,V> _ser;
+  private CollectionSerializerJson<Collection<V>,V> _ser;
   
   EnumerationSerializer(TypeRef typeRef,
                           JsonFactory factory)
@@ -48,7 +48,7 @@ public class EnumerationSerializer<T extends Enumeration<V>,V>
     TypeRef eltRef = typeRef.to(Enumeration.class).param(0);
     TypeRef listRef = TypeRef.of(ArrayList.class, eltRef);
     
-    _ser = (CollectionSerializer) factory.serializer(listRef);
+    _ser = (CollectionSerializerJson) factory.serializer(listRef);
     //super(typeRef, factory);
   }
 

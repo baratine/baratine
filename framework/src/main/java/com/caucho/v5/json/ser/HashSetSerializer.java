@@ -29,12 +29,12 @@
 
 package com.caucho.v5.json.ser;
 
-import java.util.Collection;
 import java.util.HashSet;
 
 import com.caucho.v5.inject.type.TypeRef;
 
-public class HashSetSerializer extends CollectionSerializer
+public class HashSetSerializer<T extends HashSet<V>,V>
+  extends CollectionSerializerJson<T,V>
 {
   HashSetSerializer(TypeRef typeRef,
                          JsonFactory factory)
@@ -43,8 +43,18 @@ public class HashSetSerializer extends CollectionSerializer
   }
   
   @Override
-  protected Collection<Object> newInstance()
+  public HashSetSerializer<T,V> withType(TypeRef type, JsonFactory factory)
   {
-    return new HashSet<>();
+    if (getClass() != HashSetSerializer.class) {
+      throw new UnsupportedOperationException(getClass().getName());
+    }
+    
+    return new HashSetSerializer<>(type, factory);
+  }
+  
+  @Override
+  protected T newInstance()
+  {
+    return (T) new HashSet();
   }
 }

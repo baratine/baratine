@@ -32,6 +32,7 @@ package com.caucho.v5.json.ser;
 import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -39,7 +40,6 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -52,6 +52,8 @@ import java.util.SortedSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.caucho.v5.inject.type.TypeRef;
@@ -62,6 +64,7 @@ import com.caucho.v5.reflect.ClassImpl;
 
 public class JsonFactory
 {
+  private static final Logger log = Logger.getLogger(JsonFactory.class.getName());
   private static final HashMap<Class<?>,SerializerJson<?>> _staticSerMap
     = new HashMap<>();
     
@@ -147,11 +150,13 @@ public class JsonFactory
     //_serMap.put(cl, ser);
   }
 
+  /*
   public void addDeserializer(Class<?> cl,
                               SerializerJson deser)
   {
     _deserMap.put(cl, deser);
   }
+  */
 
   protected SerializerJson<?> createSerializer(Class<?> cl)
   {
@@ -175,13 +180,27 @@ public class JsonFactory
       return new JavaSerializerWriteReplace(methodReplaceObject);
     }
     
+    CollectionFunction collFun = _factoryMap.get(cl);
+    
+    if (collFun != null) {
+      return collFun.apply(typeRef, this);
+    }
+    
+    if (Map.class.isAssignableFrom(cl)) {
+      return new MapJavaSerializer(typeRef, this, cl);
+    }
+    else if (Collection.class.isAssignableFrom(cl)) {
+      return new ListJavaSerializer(typeRef, this, cl);
+    }
+    /*
     if (Collection.class.isAssignableFrom(cl)) {
-      return new CollectionSerializer(typeRef, this);
+      return new CollectionSerializerJson(typeRef, this);
     }
 
     if (Map.class.isAssignableFrom(cl)) {
-      return MapSerializer.SER;
+      return new MapSerializerJson(typeRef, this, HashMap::new);
     }
+    */
     
     ser = findInterfaceSerializer(cl);
     
@@ -195,6 +214,17 @@ public class JsonFactory
 
     if (Enum.class.isAssignableFrom(cl)) {
       return EnumSerializer.SER;
+    }
+    
+    try {
+      Method valueOf = cl.getMethod("valueOf", String.class);
+      
+      if (Modifier.isStatic(valueOf.getModifiers())) {
+          //&& cl.equals(valueOf.getReturnType())) {
+        return new StringValueOfSerializer<>(cl, valueOf);
+      }
+    } catch (NoSuchMethodException e) {
+      log.log(Level.ALL, e.toString(), e);
     }
 
     return new JavaSerializerJson(typeRef, this);
@@ -242,7 +272,7 @@ public class JsonFactory
   // deserializers
   //
 
-  public SerializerJson deserializer(Type type)
+  private SerializerJson deserializerOld(Type type)
   {
     Objects.requireNonNull(type);
 
@@ -253,7 +283,7 @@ public class JsonFactory
     SerializerJson deser = _deserMap.get(type);
 
     if (deser == null) {
-      deser = createDeserializer(type);
+      deser = createDeserializerOld(type);
 
       _deserMap.putIfAbsent(type, deser);
     }
@@ -261,7 +291,7 @@ public class JsonFactory
     return deser;
   }
 
-  protected SerializerJson createDeserializer(Type type)
+  protected SerializerJson createDeserializerOld(Type type)
   {    
     SerializerJson deser = _staticDeserMap.get(type);
 
@@ -286,49 +316,6 @@ public class JsonFactory
       return collFun.apply(typeImpl, this);
     }
     
-    /*
-    if (cl.isInterface()
-        && (Collection.class.isAssignableFrom(cl)
-            || Iterable.class.equals(cl))) {
-      TypeRef typeArg;
-      
-      if (Collection.class.isAssignableFrom(cl)) {
-        typeArg = typeImpl.to(Collection.class).param(0);
-      }
-      else if (Iterable.class.isAssignableFrom(cl)) {
-        typeArg = typeImpl.to(Iterable.class).param(0);
-      }
-      else {
-        throw new IllegalStateException(String.valueOf(cl));
-      }
-      
-      Supplier<Collection<Object>> factory = (Supplier) _factoryMap.get(cl);
-
-      if (factory != null) {
-        return new CollectionDeserializer(getDeserializer(typeArg.type()), factory);
-      }
-    }
-    */
-
-    /*
-    if (cl.isInterface() && Iterator.class.equals(cl)) {
-      TypeRef typeArg = typeImpl.to(Iterator.class).param(0);
-      Supplier<Collection<Object>> factory = (Supplier) _factoryMap.get(cl);
-
-      if (factory != null) {
-        return new IteratorDeserializer(getDeserializer(typeArg.type()), factory);
-      }
-    }
-
-    if (cl.isInterface() && Enumeration.class.equals(cl)) {
-      TypeRef typeArg = typeImpl.to(Enumeration.class).param(0);
-      Supplier<Collection<Object>> factory = (Supplier) _factoryMap.get(cl);
-
-      if (factory != null) {
-        return new EnumerationDeserializer(getDeserializer(typeArg.type()), factory);
-      }
-    }
-    */
     
     if (Map.class.isAssignableFrom(cl)) {
       return new MapJavaSerializer(typeImpl, this, cl);
@@ -365,11 +352,22 @@ public class JsonFactory
         compType = eltType;
       }
 
-      SerializerJson compDeser = deserializer(compType);
+      SerializerJson compDeser = deserializerOld(compType);
 
       deser = new ObjectArraySerializerJson(eltType, compDeser);
 
       return deser;
+    }
+    
+    try {
+      Method valueOf = cl.getMethod("valueOf", String.class);
+      
+      if (Modifier.isStatic(valueOf.getModifiers())
+          && cl.equals(valueOf.getReturnType())) {
+        return new StringValueOfSerializer<>(cl, valueOf);
+      }
+    } catch (NoSuchMethodException e) {
+      log.log(Level.ALL, e.toString(), e);
     }
     
     JavaSerializerJson javaDeser = new JavaSerializerJson(typeImpl, this);
@@ -540,7 +538,7 @@ public class JsonFactory
     _factoryMap.put(Iterable.class, IterableSerializer::new);
     _factoryMap.put(Stream.class, StreamSerializer::new);
     _factoryMap.put(Set.class, HashSetSerializer::new);
-    _factoryMap.put(SortedSet.class, TreeSetDeserializer::new);
-    _factoryMap.put(NavigableSet.class, TreeSetDeserializer::new);
+    _factoryMap.put(SortedSet.class, TreeSetSerializer::new);
+    _factoryMap.put(NavigableSet.class, TreeSetSerializer::new);
   }
 }

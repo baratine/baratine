@@ -34,13 +34,14 @@ import java.util.Collection;
 
 import com.caucho.v5.inject.type.TypeRef;
 
-public class ListJavaSerializer extends CollectionSerializer
+public class ListJavaSerializer<T extends Collection<V>,V>
+  extends CollectionSerializerJson<T,V>
 {
-  private Class<?> _rawClass;
+  private Class<Collection<?>> _rawClass;
 
   ListJavaSerializer(TypeRef typeRef, 
                     JsonFactory factory,
-                    Class<?> rawClass)
+                    Class<Collection<?>> rawClass)
   {
     super(typeRef, factory);
     
@@ -50,12 +51,22 @@ public class ListJavaSerializer extends CollectionSerializer
       throw new IllegalArgumentException(rawClass.getName());
     }
   }
+  
+  @Override
+  public ListJavaSerializer<T,V> withType(TypeRef type, JsonFactory factory)
+  {
+    if (getClass() != ListJavaSerializer.class) {
+      throw new UnsupportedOperationException(getClass().getName());
+    }
+    
+    return new ListJavaSerializer<>(type, factory, _rawClass);
+  }
 
   @Override
-  protected Collection<Object> newInstance()
+  protected T newInstance()
   {
     try {
-      return (Collection) _rawClass.newInstance();
+      return (T) _rawClass.newInstance();
     } catch (Exception e) {
       throw new JsonException(_rawClass.getName() + ": " + e, e);
     }

@@ -49,20 +49,23 @@ import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorContainerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.convert.ConvertException;
+import com.caucho.v5.util.L10N;
 
 import io.baratine.convert.Convert;
 import io.baratine.inject.Key;
 import io.baratine.service.Id;
-import io.baratine.service.AssetId;
+import io.baratine.service.IdAsset;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
-import io.baratine.stream.ResultStream;
 
 /**
  * Actor skeleton for a resource.
  */
 public class SkeletonDataStore extends SkeletonClass
 {
+  private static final L10N L = new L10N(SkeletonDataStore.class);
+  
   private static final Map<Class<?>,Convert<String,?>> _convertMap
     = new HashMap<>();
   
@@ -147,6 +150,7 @@ public class SkeletonDataStore extends SkeletonClass
       if (convert != null) {
         return convert;
       }
+      
       /*
       if (type.isAssignableFrom(String.class)) {
         return ConverterIdentity.CONVERTER;
@@ -343,7 +347,30 @@ public class SkeletonDataStore extends SkeletonClass
         return Long.decode(source);
       }
       else {
-        return AssetId.decode(source);
+        return IdAsset.decode(source);
+      }
+    }
+    
+  }
+  
+  private static class ConvertPathToIdAsset implements Convert<String,IdAsset>
+  {
+    private static final Convert<String,IdAsset> CONVERTER
+      = new ConvertPathToIdAsset();
+  
+    @Override
+    public IdAsset convert(String source)
+    {
+      if (source == null || source.isEmpty()) {
+        return null;
+      }
+      else if (source.length() != 11) {
+        throw new ConvertException(L.l("Invalid {0} '{1}'",
+                                       IdAsset.class.getSimpleName(),
+                                       source));
+      }
+      else {
+        return new IdAsset(IdAsset.decode(source));
       }
     }
     
@@ -355,5 +382,7 @@ public class SkeletonDataStore extends SkeletonClass
     
     _convertMap.put(Long.class, ConvertPathToLong.CONVERTER);
     _convertMap.put(long.class, ConvertPathToLong.CONVERTER);
+    
+    _convertMap.put(IdAsset.class, ConvertPathToIdAsset.CONVERTER);
   }
 }

@@ -92,6 +92,9 @@ public class WebApp
     InjectBuilderRootAmp injectBuilder = builder.injectBuilder();
     injectBuilder.context(true);
     
+    // initialize context
+    injectBuilder.get();
+    
     _ampManager = builder.serviceBuilder().getRaw();
     
     builder.build(this);

@@ -30,11 +30,11 @@
 package com.caucho.v5.json.ser;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import com.caucho.v5.inject.type.TypeRef;
 
-public class ArrayListSerializer extends CollectionSerializer
+public class ArrayListSerializer<T extends ArrayList<V>,V> 
+  extends CollectionSerializerJson<T,V>
 {
   ArrayListSerializer(TypeRef typeRef,
                       JsonFactory factory)
@@ -43,8 +43,18 @@ public class ArrayListSerializer extends CollectionSerializer
   }
   
   @Override
-  protected Collection<Object> newInstance()
+  public ArrayListSerializer<T,V> withType(TypeRef type, JsonFactory factory)
   {
-    return new ArrayList<>();
+    if (getClass() != ArrayListSerializer.class) {
+      throw new UnsupportedOperationException(getClass().getName());
+    }
+    
+    return new ArrayListSerializer<>(type, factory);
+  }
+  
+  @Override
+  protected T newInstance()
+  {
+    return (T) new ArrayList();
   }
 }

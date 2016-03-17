@@ -27,28 +27,52 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.json.ser;
+package com.caucho.v5.ramp.json;
 
-import java.util.Map;
+import java.util.Date;
 
+import com.caucho.v5.json.io.InJson.Event;
+import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.ser.JsonException;
+import com.caucho.v5.json.ser.JsonSerializerBase;
+import com.caucho.v5.util.QDate;
 
-public class MapSerializer 
-  extends JsonObjectSerializerBase<Map<Object, Object>>
+import io.baratine.service.IdAsset;
+
+public class IdAssetSerializer extends JsonSerializerBase<IdAsset>
 {
-  static final SerializerJson<?> SER = new MapSerializer();
+  public static final IdAssetSerializer SER = new IdAssetSerializer();
+
+  private IdAssetSerializer() {}
 
   @Override
-  public void write(JsonWriter out, 
-                    Map<Object, Object> value)
+  public void write(JsonWriter out, IdAsset value)
   {
-    out.writeStartObject();
-    
-    for (Map.Entry<Object,Object> entry : value.entrySet()) {
-      out.writeKey(String.valueOf(entry.getKey()));
-      out.write(entry.getValue());
+    out.write(value.toString());
+  }
+  
+  @Override
+  public IdAsset read(JsonReader in)
+  {
+    try {
+      Event event = in.peek();
+      
+      switch (in.peek()) {
+      case VALUE_NULL:
+        return null;
+      
+      case VALUE_STRING:
+        return new IdAsset(in.readString());
+
+      default:
+        throw error("Unexpected JSON {0} while parsing Date", event);
+      }
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new JsonException(e);
     }
     
-    out.writeEndArray();
   }
 }

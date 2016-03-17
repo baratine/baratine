@@ -29,47 +29,55 @@
 
 package com.caucho.v5.json.ser;
 
-import java.lang.reflect.Modifier;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import com.caucho.v5.inject.type.TypeRef;
+import com.caucho.v5.json.io.InJson.Event;
+import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.util.L10N;
 
-public class MapJavaSerializer<T extends Map<K,V>,K,V>
-  extends MapSerializerJson<K,V>
+public class MapSerializerJson<K,V> 
+  extends JsonObjectSerializerBase<Map<K, V>>
 {
-  private Class<?> _rawClass;
-
-  MapJavaSerializer(TypeRef typeRef, 
+  private static final L10N L = new L10N(MapSerializerJson.class);
+  
+  private final SerializerJson<K> _keyDeser;
+  private final SerializerJson<V> _valueDeser;
+  private final Supplier<? extends Map<K,V>> _factory;
+  
+  MapSerializerJson(TypeRef typeRef,
                     JsonFactory factory,
-                    Class<?> rawClass)
+                    Supplier<? extends Map<K,V>> supplier)
   {
-    //super(typeRef, factory);
-    super(typeRef, factory, new MapSupplier<K,V>(rawClass));
+    TypeRef mapRef = typeRef.to(Map.class);
     
-    Objects.requireNonNull(typeRef);
+    TypeRef keyRef = mapRef.param(0);
+    TypeRef valueRef = mapRef.param(1);
     
-    //TypeRef valueRef = typeRef.to(Map.class).param(1);
+    _keyDeser = factory.serializer(keyRef.type());
+    _valueDeser = factory.serializer(valueRef.type());
     
-    //_keyDeser = keyDeser;
-    //_valueDeser = factory.serializer(valueRef.type());
-    
-    _rawClass = rawClass;
-    
-    if (Modifier.isAbstract(rawClass.getModifiers())) {
-      throw new IllegalArgumentException(rawClass.getName());
-    }
+    _factory = supplier;
   }
-  /*
-  HashMapSerializer(TypeRef typeRef, JsonFactory factory)
-  {
-  }
-  */
 
-  /*
   @Override
-  public T read(JsonReader in)
+  public void write(JsonWriter out, 
+                    Map<K, V> value)
+  {
+    out.writeStartObject();
+    
+    for (Map.Entry<K,V> entry : value.entrySet()) {
+      out.writeKey(String.valueOf(entry.getKey()));
+      out.write(entry.getValue());
+    }
+    
+    out.writeEndArray();
+  }
+
+  @Override
+  public Map<K,V> read(JsonReader in)
   {
     Event event = in.next();
     
@@ -81,41 +89,20 @@ public class MapJavaSerializer<T extends Map<K,V>,K,V>
       throw new JsonException(L.l("expected object at {0}", event));
     }
     
-    Map<Object,Object> map = newInstance();
+    Map<K,V> map = (Map) _factory.get();
     
     while ((event = in.peek()) == Event.KEY_NAME) {
       in.next();
       
       String key = in.getString();
 
-      Object value = _valueDeser.read(in);
+      V value = _valueDeser.read(in);
       
-      map.put(key, value);
+      map.put((K) key, value);
     }
     
     in.next();
     
-    return (T) map;
-  }
-  */
-
-  private static class MapSupplier<K,V> implements Supplier<Map<K,V>>
-  {
-    private Class<Map<K,V>> _rawClass;
-    
-    MapSupplier(Class<?> rawClass)
-    {
-      _rawClass = (Class) rawClass;
-    }
-    
-    @Override
-    public Map<K,V> get()
-    {
-      try {
-        return (Map) _rawClass.newInstance();
-      } catch (Exception e) {
-        throw new JsonException(_rawClass.getName() + ": " + e, e);
-      }
-    }
+    return map;
   }
 }
