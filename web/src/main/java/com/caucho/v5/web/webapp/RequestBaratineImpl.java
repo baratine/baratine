@@ -124,10 +124,13 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   // callback for waiting for a body
   private Class<?> _bodyType;
   private Result<Object> _bodyResult;
+  private String _bodyParamName;
   private RequestProxy _requestProxy;
   
   private RequestBaratineImpl _next;
   private RequestBaratineImpl _prev;
+
+  private FormImpl _form;
 
   public RequestBaratineImpl(ConnectionHttp connHttp)
   {
@@ -390,8 +393,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   /**
    * Service a request.
    *
-   * @param request the http request facade
-   * @param response the http response facade
+   * @param service the http request facade
    */
   private <T,S> void upgradeWebSocket(ServiceWebSocket<T,S> service)
   {
@@ -569,7 +571,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public <X> X body(Class<X> type)
+  public <X> X body(Class<X> type, String paramName)
   {
     Objects.requireNonNull(type);
     
@@ -578,7 +580,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
     
     if (true) {
-      return webApp().bodyResolver().body(this, type);
+      return webApp().bodyResolver().body(this, type, paramName);
     }
   
     if (InputStream.class.equals(type)) {
@@ -648,22 +650,36 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
+  public FormImpl getForm()
+  {
+    return _form;
+  }
+
+  public void setForm(FormImpl form)
+  {
+    _form = form;
+  }
+
+  @Override
   public <X> void body(BodyReader<X> reader, Result<X> result)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
-  public <X> void body(Class<X> type, Result<X> result)
+  public <X> void body(Class<X> type,
+                       String paramName,
+                       Result<X> result)
   {
     Objects.requireNonNull(type);
     
     if (_isBodyComplete) {
-      result.ok(body(type));
+      result.ok(body(type, paramName));
     }
     else {
       _bodyType = type;
       _bodyResult = (Result) result;
+      _bodyParamName = paramName;
     }
   }
 
@@ -1426,7 +1442,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     //connHttp().requestComplete();
     
     if (_bodyResult != null) {
-      _bodyResult.ok((Object) body(_bodyType));
+      _bodyResult.ok(body(_bodyType, _bodyParamName));
     }
   }
   

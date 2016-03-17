@@ -46,22 +46,22 @@ import io.baratine.web.RequestWeb;
 public class BodyResolverBase implements BodyResolver
 {
   private static final L10N L = new L10N(BodyResolverBase.class);
-  
+
   public static final String FORM_TYPE = "application/x-www-form-urlencoded";
-  
+
   @Override
-  public <T> T body(RequestWeb request, Class<T> type)
+  public <T> T body(RequestWeb request, Class<T> type, String name)
   {
-    
+
     if (InputStream.class.equals(type)) {
       InputStream is = request.inputStream(); // new TempInputStream(_bodyHead);
-      
+
       return (T) is;
     }
-    else if (String.class.equals(type)) {
+    else if (String.class.equals(type) && name == null) {
       InputStream is = request.inputStream();
-      
-      try { 
+
+      try {
         return (T) Utf8Util.readString(is);
       } catch (IOException e) {
         throw new BodyException(e);
@@ -69,8 +69,8 @@ public class BodyResolverBase implements BodyResolver
     }
     else if (Reader.class.equals(type)) {
       InputStream is = request.inputStream();
-      
-      try { 
+
+      try {
         return (T) new InputStreamReader(is, "utf-8");
       } catch (IOException e) {
         throw new BodyException(e);
@@ -83,7 +83,7 @@ public class BodyResolverBase implements BodyResolver
       if (contentType == null || ! contentType.startsWith(FORM_TYPE)) {
         throw new IllegalStateException(L.l("Form expects {0}", FORM_TYPE));
       }
-    
+
       return (T) parseForm(request);
     }
     /*
@@ -102,52 +102,91 @@ public class BodyResolverBase implements BodyResolver
     }
     */
 
-    return bodyDefault(request, type);
+    return bodyDefault(request, type, name);
   }
-  
-  public <T> T bodyDefault(RequestWeb request, Class<T> type)
+
+  public <T> T bodyDefault(RequestWeb request, Class<T> type, String name)
   {
     String contentType = request.header("content-type");
 
     //TODO: parse and use the encoding of the content type e.g. application/x-www-form-urlencoded; UTF-8
     if (contentType.startsWith(FORM_TYPE)) {
       Form form = parseForm(request);
-      
-      return (T) formToBody(form, type);
+
+      return (T) formToBody(form, type, name);
     }
-    
+
     throw new IllegalStateException(L.l("Unknown body type: " + type));
   }
-  
-  private <T> T formToBody(Form form, Class<T> type)
+
+  private <T> T formToBody(Form form, Class<T> type, String paramName)
   {
     try {
+      if (paramName != null) {
+        return formToParam(form, type, paramName);
+      }
+
       T bean = (T) type.newInstance();
-      
+
       for (Field field : type.getDeclaredFields()) {
         String name = field.getName();
-        
+
         String value = form.getFirst(name);
-        
+
         if (value == null && name.startsWith("_")) {
           value = form.getFirst(name.substring(1));
         }
-        
+
         if (value == null) {
           continue;
         }
-        
+
         // XXX: introspection and conversion
-        
+
         field.setAccessible(true);
 
         setFieldValue(bean, field, value);
       }
-      
+
       return bean;
     } catch (Exception e) {
       throw new BodyException(e);
     }
+  }
+
+  private <T> T formToParam(Form form, Class<T> type, String param)
+  {
+    Object result = null;
+
+    if (type == String.class) {
+      result = form.getFirst(param);
+    }
+    else if (type == boolean.class || type == Boolean.class) {
+      result = Boolean.parseBoolean(form.getFirst(param));
+    }
+    else if (type == byte.class || type == Byte.class) {
+      result = Byte.parseByte(form.getFirst(param));
+    }
+    else if (type == short.class || type == Short.class) {
+      result = Short.parseShort(form.getFirst(param));
+    }
+    else if (type == char.class || type == Character.class) {
+      result = form.getFirst(param).charAt(0);
+    }
+    else if (type == int.class || type == Integer.class) {
+      result = Integer.parseInt(form.getFirst(param));
+    }
+    else if (type == long.class || type == Long.class) {
+      result = Long.parseLong(form.getFirst(param));
+    }
+    else if (type == float.class || type == Float.class) {
+      result = Float.parseFloat(form.getFirst(param));
+    }
+    else if (type == double.class || type == Double.class) {
+      result = Double.parseDouble(form.getFirst(param));
+    }
+
+    return (T) result;
   }
 
   private void setFieldValue(Object bean, Field field, String rawValue)
@@ -190,16 +229,23 @@ public class BodyResolverBase implements BodyResolver
 
     field.set(bean, value);
   }
-  
+
   private Form parseForm(RequestWeb request)
   {
+    Form form = request.getForm();
+
+    if (form != null)
+      return form;
+
     InputStream is = request.inputStream();
-    
-    try { 
-      FormImpl form = new FormImpl();
-      
-      FormBaratine.parseQueryString(form, is, "utf-8");
-      
+
+    try {
+      form = new FormImpl();
+
+      FormBaratine.parseQueryString((FormImpl) form, is, "utf-8");
+
+      ((RequestBaratineImpl)request).setForm((FormImpl) form);
+
       return form;
     } catch (Exception e) {
       throw new BodyException(e);

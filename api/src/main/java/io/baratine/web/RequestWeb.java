@@ -77,10 +77,23 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
   ServiceRef session(String name);
   <X> X session(Class<X> type);
   
-  <X> X body(Class<X> type);
+  default <X> X body(Class<X> type) {
+    return body(type, (String)null);
+  }
+
+  <X> X body(Class<X> type, String paramName);
+
   <X> void body(BodyReader<X> reader, Result<X> result);
-  <X> void body(Class<X> type, Result<X> result);
-  
+
+  default <X> void body(Class<X> type, Result<X> result)
+  {
+    body(type, null, result);
+  }
+
+  <X> void body(Class<X> type,
+                String paramName,
+                Result<X> result);
+
   InputStream inputStream();
   
   //
@@ -139,4 +152,6 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
       ok(value);
     }
   }
+
+  Form getForm();
 }

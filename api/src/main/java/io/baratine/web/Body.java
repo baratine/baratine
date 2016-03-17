@@ -41,4 +41,5 @@ import java.lang.annotation.Target;
 @Target({PARAMETER})
 public @interface Body
 {
+  String value() default "";
 }
