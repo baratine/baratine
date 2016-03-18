@@ -29,12 +29,14 @@
 
 package com.caucho.v5.web.webapp;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -85,7 +87,9 @@ import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.ViewWeb;
 import io.baratine.web.WebBuilder;
 import io.baratine.web.WebResourceBuilder;
+import io.baratine.web.WebSocket;
 import io.baratine.web.WebSocketBuilder;
+import io.baratine.web.WebSocketClose;
 
 /**
  * Baratine's web-app instance builder
@@ -175,14 +179,6 @@ public class WebAppBuilder
         outbox.getAndSetContext(inbox);
         //System.out.println("OUTBOX-a: " + inbox + " " + serviceManager);
       }
-      /*
-      System.out.println("OUTBOX: " + outbox);
-      if (outbox != null) {
-        System.out.println("  CONTEXT: " + outbox.context());
-        System.out.println("  INBOX: " + outbox.inbox());
-      }
-      Thread.dumpStack();
-      */
 
       _wsManager = webSocketManager();
 
@@ -284,7 +280,7 @@ public class WebAppBuilder
     get("/**").to(WebStaticFile.class);
     
     _injectBuilder.get();
-    _serviceBuilder.start();
+    ServiceManagerAmp serviceManager = _serviceBuilder.start();
   }
 
   //@Override
@@ -466,7 +462,7 @@ public class WebAppBuilder
   public <T> ServiceRef.ServiceBuilder service(Class<T> type)
   {
     if (Vault.class.isAssignableFrom(type)) {
-      addResourceConverter(type);
+      addAssetConverter(type);
     }
 
     ServiceRef.ServiceBuilder builder;
@@ -490,13 +486,13 @@ public class WebAppBuilder
     ServiceRef.ServiceBuilder builder = _serviceBuilder.service(key, api);
 
     if (Vault.class.isAssignableFrom(api)) {
-      addResourceConverter(api);
+      addAssetConverter(api);
     }
 
     return builder;
   }
 
-  private void addResourceConverter(Class<?> api)
+  private void addAssetConverter(Class<?> api)
   {
     TypeRef resourceRef =  TypeRef.of(api).to(Vault.class);
     Class<?> idType = resourceRef.param(0).rawClass();
@@ -517,7 +513,7 @@ public class WebAppBuilder
     TypeRef convertRef = TypeRef.of(Convert.class, String.class, itemType);
 
     Convert<String,?> convert
-       = new ConvertResource(address, itemType);
+       = new ConvertAsset(address, itemType);
 
     bean(convert).to(Key.of(convertRef.type()));
   }
@@ -772,7 +768,7 @@ public class WebAppBuilder
   /**
    * WebSocketPath is a route to a websocket service.
    */
-  static class WebSocketPath implements WebSocketBuilder, RouteWebApp
+  class WebSocketPath implements WebSocketBuilder, RouteWebApp
   {
     private String _path;
 
@@ -791,24 +787,6 @@ public class WebAppBuilder
     }
 
     @Override
-    public List<RouteMap> toMap(InjectManagerAmp inject,
-                          ServiceRefAmp serviceRef)
-    {
-      Supplier<? extends ServiceWebSocket<?,?>> factory = _serviceFactory;
-
-      if (factory == null && _serviceType != null) {
-        factory = ()->inject.instance(_serviceType);
-      }
-
-      WebSocketApply routeApply = new WebSocketApply(factory, serviceRef);
-
-      List<RouteMap> list = new ArrayList<>();
-      list.add(new RouteMap(_path, routeApply));
-
-      return list;
-    }
-
-    @Override
     public <T,S> InstanceBuilder<ServiceWebSocket<T,S>>
     to(Class<? extends ServiceWebSocket<T,S>> type)
     {
@@ -821,6 +799,82 @@ public class WebAppBuilder
     public <T,S> void to(Supplier<? extends ServiceWebSocket<T,S>> supplier)
     {
       _serviceFactory = supplier;
+    }
+
+    @Override
+    public List<RouteMap> toMap(InjectManagerAmp inject,
+                                ServiceRefAmp serviceRef)
+    {
+      Function<RequestWeb,ServiceWebSocket<?,?>> fun = null;
+      Supplier<? extends ServiceWebSocket<?,?>> supplier = _serviceFactory;
+      
+      ServiceWebSocket<?,?> service = null;
+      
+      Class<?> type = null;
+
+      if (supplier != null) {
+        service = supplier.get();
+        Objects.requireNonNull(service);
+      }
+      else if (_serviceType == null) {
+        throw new IllegalStateException();
+      }
+      else {
+        Service serviceAnn = _serviceType.getAnnotation(Service.class);
+        
+        type = itemType(_serviceType);
+        
+        if (serviceAnn == null) {
+          service = inject.instance(_serviceType);
+        }
+        else {
+          ServiceRef ref = service(_serviceType).addressAuto().ref();
+
+          if (serviceAnn.value().startsWith("session:")) {
+            fun = req->req.session(_serviceType);
+          }
+          else {
+            fun = req->req.service(_serviceType);
+          }
+        }
+      }
+      
+      if (fun == null) {
+        Objects.requireNonNull(service);
+      
+        type = itemType(service.getClass());
+        
+        ServiceWebSocket<?,?> serviceWs;
+      
+        serviceWs = serviceRef.pin(new WebSocketWrapper<>(service))
+                             .as(ServiceWebSocket.class);
+      
+        fun = req->serviceWs;
+      }
+
+      WebSocketApply routeApply = new WebSocketApply(fun, type);
+
+      List<RouteMap> list = new ArrayList<>();
+      list.add(new RouteMap(_path, routeApply));
+
+      return list;
+    }
+    
+    private Class<?> itemType(Class<?> serviceClass)
+    {
+      TypeRef typeRef = TypeRef.of(serviceClass);
+      TypeRef typeRefService = typeRef.to(ServiceWebSocket.class);
+      TypeRef typeService = typeRefService.param(0);
+
+      Class<?> type;
+      if (typeService != null) {
+        type = typeService.rawClass();
+      }
+      else {
+        type = String.class;
+      }
+      
+      return type;
     }
   }
 
@@ -848,13 +902,13 @@ public class WebAppBuilder
     }
   }
 
-  static class ConvertResource<T> implements Convert<String,T>
+  static class ConvertAsset<T> implements Convert<String,T>
   {
     private ServiceManager _manager;
     private String _address;
     private Class<T> _itemType;
 
-    ConvertResource(String address, Class<T> itemType)
+    ConvertAsset(String address, Class<T> itemType)
     {
       if (! address.endsWith("/")) {
         address = address + "/";
@@ -877,6 +931,59 @@ public class WebAppBuilder
       }
 
       return _manager;
+    }
+  }
+  
+  static final class WebSocketWrapper<T,S>
+    implements ServiceWebSocket<T,S>
+  {
+    private final ServiceWebSocket<T,S> _service;
+    
+    WebSocketWrapper(ServiceWebSocket<T,S> service)
+    {
+      _service = service;
+    }
+
+    @Override
+    public void open(WebSocket<S> webSocket)
+    {
+      try {
+        // XXX: convert to async
+        _service.open(webSocket); 
+      } catch (Throwable e) {
+        e.printStackTrace();
+        System.out.println("FAIL: " + e + " " + webSocket);
+        webSocket.fail(e);
+      }
+    }
+    
+    @Override
+    public void next(T value, WebSocket<S> webSocket)
+      throws IOException
+    {
+      _service.next(value, webSocket);
+    }
+    
+    @Override
+    public void ping(String value, WebSocket<S> webSocket)
+      throws IOException
+    {
+      _service.ping(value, webSocket);
+    }
+    
+    @Override
+    public void pong(String value, WebSocket<S> webSocket)
+      throws IOException
+    {
+      _service.pong(value, webSocket);
+    }
+    
+    @Override
+    public void close(WebSocketClose code, String msg, 
+                      WebSocket<S> webSocket)
+      throws IOException
+    {
+      _service.close(code, msg, webSocket);
     }
   }
 

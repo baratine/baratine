@@ -69,17 +69,11 @@ public class Base64Util {
 
   public static void encode(StringBuilder sb, long data)
   {
-    sb.append(encode(data >> 60));
-    sb.append(encode(data >> 54));
-    sb.append(encode(data >> 48));
-    sb.append(encode(data >> 42));
-    sb.append(encode(data >> 36));
-    sb.append(encode(data >> 30));
-    sb.append(encode(data >> 24));
-    sb.append(encode(data >> 18));
-    sb.append(encode(data >> 12));
-    sb.append(encode(data >> 6));
-    sb.append(encode(data));
+    for (int i = 58; i > 0; i -= 6) {
+      sb.append(encode(data >> i));
+    }
+
+    sb.append(encode(data << 2));
   }
 
   public static void encode24(StringBuilder cb, int data)

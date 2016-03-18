@@ -167,10 +167,16 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     return requestState().invocation();
   }
-  
+
+  @Override
   public WebApp webApp()
   {
     return invocation().webApp();
+  }
+  
+  private ServiceManagerAmp serviceManager()
+  {
+    return webApp().serviceManager();
   }
 
   @Override
@@ -239,30 +245,26 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public ServiceRefAmp service(String address)
   {
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
-    
-    return manager.service(address);
+    return serviceManager().service(address);
   }
 
   @Override
   public <X> X service(Class<X> type)
   {
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
-    
-    return manager.service(type);
+    return serviceManager().service(type);
   }
 
   @Override
   public <X> X service(Class<X> type, String id)
   {
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
-    
-    return manager.service(type, id);
+    return serviceManager().service(type, id);
   }
   
   @Override
   public ServiceRefAmp session(String name)
   {
+    ServiceManagerAmp manager = serviceManager();
+    
     if (name.indexOf('/') >= 0) {
       throw new IllegalArgumentException(name);
     }
@@ -270,14 +272,10 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     String sessionId = cookie("JSESSIONID");
     
     if (sessionId == null) {
-      StringBuilder sb = new StringBuilder();
-      Base64Util.encode(sb, RandomUtil.getRandomLong());
-      sessionId = sb.toString();
+      sessionId = generateSessionId();
       
       cookie("JSESSIONID", sessionId);
     }
-    
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
     
     return manager.service("session:///" + name + "/" + sessionId);
   }
@@ -285,7 +283,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public <X> X session(Class<X> type)
   {
-    String address = webApp().serviceManager().address(type);
+    String address = serviceManager().address(type);
     
     return sessionImpl(address + "/").as(type);
   }
@@ -299,16 +297,22 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     String sessionId = cookie("JSESSIONID");
     
     if (sessionId == null) {
-      StringBuilder sb = new StringBuilder();
-      Base64Util.encode(sb, RandomUtil.getRandomLong());
-      sessionId = sb.toString();
+      sessionId = generateSessionId();
       
       cookie("JSESSIONID", sessionId);
     }
     
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
+    return serviceManager().service(address + sessionId);
+  }
+  
+  private String generateSessionId()
+  {
+    StringBuilder sb = new StringBuilder();
     
-    return manager.service(address + sessionId);
+    Base64Util.encode(sb, webApp().nextId());
+    Base64Util.encode(sb, RandomUtil.getRandomLong());
+    
+    return sb.toString();
   }
   
   //

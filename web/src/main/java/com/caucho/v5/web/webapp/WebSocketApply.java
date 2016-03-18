@@ -29,20 +29,16 @@
 
 package com.caucho.v5.web.webapp;
 
-import java.io.IOException;
 import java.util.Objects;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.http.websocket.WebSocketBaratineImpl;
 import com.caucho.v5.http.websocket.WebSocketManager;
-import com.caucho.v5.inject.type.TypeRef;
 
+import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.WebSocket;
-import io.baratine.web.WebSocketClose;
 
 /**
  * Route resulting in a not-found message.
@@ -52,31 +48,21 @@ public class WebSocketApply<T,S> implements RouteBaratine
   private static final Logger log
     = Logger.getLogger(WebSocketApply.class.getName());
   
-  private ServiceWebSocket<T,S> _service;
-
-  private Class<?> _type;
-  private Supplier<? extends ServiceWebSocket<T,S>> _supplier;
+  private final Function<RequestWeb,ServiceWebSocket<T,S>> _factory;
+  private final Class<T> _type;
   
-  WebSocketApply(Supplier<? extends ServiceWebSocket<T,S>> factory,
-                 ServiceRefAmp serviceRef)
-  {
-    ServiceWebSocket<T,S> service = factory.get();
-    
-    Objects.requireNonNull(service);
-    
-    TypeRef typeRef = TypeRef.of(service.getClass());
-    TypeRef typeRefService = typeRef.to(ServiceWebSocket.class);
-    TypeRef type = typeRefService.param(0);
+  //private ServiceWebSocket<T,S> _service;
 
-    if (type != null) {
-      _type = type.rawClass();
-    }
-    else {
-      _type = String.class;
-    }
+  //private Supplier<? extends ServiceWebSocket<T,S>> _supplier;
+  
+  WebSocketApply(Function<RequestWeb,ServiceWebSocket<T,S>> factory,
+                 Class<T> typeService)
+  {
+    Objects.requireNonNull(factory);
+    Objects.requireNonNull(typeService);
     
-    _service = serviceRef.pin(new WebSocketWrapper<>(service))
-                          .as(ServiceWebSocket.class);
+    _factory = factory;
+    _type = typeService;
   }
   
   /**
@@ -95,9 +81,12 @@ public class WebSocketApply<T,S> implements RouteBaratine
       log.log(Level.WARNING, e.toString(), e);
     }
     */
+
+    ServiceWebSocket<T, S> service = _factory.apply(request);
+    
     WebSocketManager wsManager = request.webApp().wsManager();
-    WebSocketBaratineImpl ws
-      = new WebSocketBaratineImpl(wsManager, _service, _type);
+    WebSocketBaratineImpl<T,S> ws
+      = new WebSocketBaratineImpl<>(wsManager, service, _type);
     
     try {
       if (ws.handshake(request)) {
@@ -116,58 +105,5 @@ public class WebSocketApply<T,S> implements RouteBaratine
       return true;
     }
     //request.flush();
-  }
-  
-  static final class WebSocketWrapper<T,S>
-    implements ServiceWebSocket<T,S>
-  {
-    private final ServiceWebSocket<T,S> _service;
-    
-    WebSocketWrapper(ServiceWebSocket<T,S> service)
-    {
-      _service = service;
-    }
-
-    @Override
-    public void open(WebSocket<S> webSocket)
-    {
-      try {
-        // XXX: convert to async
-        _service.open(webSocket); 
-      } catch (Throwable e) {
-        e.printStackTrace();
-        System.out.println("FAIL: " + e + " " + webSocket);
-        webSocket.fail(e);
-      }
-    }
-    
-    @Override
-    public void next(T value, WebSocket<S> webSocket)
-      throws IOException
-    {
-      _service.next(value, webSocket);
-    }
-    
-    @Override
-    public void ping(String value, WebSocket<S> webSocket)
-      throws IOException
-    {
-      _service.ping(value, webSocket);
-    }
-    
-    @Override
-    public void pong(String value, WebSocket<S> webSocket)
-      throws IOException
-    {
-      _service.pong(value, webSocket);
-    }
-    
-    @Override
-    public void close(WebSocketClose code, String msg, 
-                      WebSocket<S> webSocket)
-      throws IOException
-    {
-      _service.close(code, msg, webSocket);
-    }
   }
 }

@@ -662,7 +662,7 @@ class EntityInfo<ID,T>
       long node = entity().node();
       long sequence = entity().nextSequence();
       
-      int timeBits = 34;
+      int timeBits = IdAsset.TIME_BITS;
       int nodeBits = 10;
       int seqBits = 64 - timeBits - nodeBits;
       long seqMask = (1L << seqBits) - 1;
@@ -693,13 +693,13 @@ class EntityInfo<ID,T>
       long node = entity().node();
       long sequence = entity().nextSequence();
       
-      int timeBits = 34;
+      int timeBits = IdAsset.TIME_BITS;
       int nodeBits = 10;
       int seqBits = 64 - timeBits - nodeBits;
       long seqMask = (1L << seqBits) - 1;
-      
+System.out.println("TB: " + Long.toHexString(now << (64 - timeBits)));
       long idValue = ((now << (64 - timeBits))
-                     | (node << (64 - timeBits - nodeBits))
+                     | (node << seqBits)
                      | (sequence & seqMask));
       
       return new IdAsset(idValue);

@@ -30,6 +30,7 @@
 package com.caucho.v5.web.webapp;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,8 +42,11 @@ import com.caucho.v5.inject.InjectManagerAmp;
 import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderRootAmp;
 import com.caucho.v5.loader.DynamicClassLoader;
 import com.caucho.v5.loader.EnvironmentClassLoader;
+import com.caucho.v5.util.CurrentTime;
+import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.config.Config;
+import io.baratine.service.IdAsset;
 
 /**
  * Baratine's web-app handle. 
@@ -71,6 +75,8 @@ public class WebApp
   private BodyResolver _bodyResolver;
 
   private WebSocketManager _wsManager;
+  
+  private AtomicLong _idSequence = new AtomicLong();
 
   /**
    * Creates the web-app instance
@@ -111,7 +117,7 @@ public class WebApp
     
     try {
       //_ampManager = builder.serviceBuilder().getRaw();
-      _ampManager = builder.serviceBuilder().start();
+      _ampManager = builder.serviceBuilder().get();
       
       //Amp.setContextManager(_ampManager);
       
@@ -126,6 +132,10 @@ public class WebApp
     
     _router = builder.buildRouter(this);
     Objects.requireNonNull(_router);
+    
+    _idSequence = new AtomicLong(RandomUtil.getRandomLong());
+    
+    _ampManager = builder.serviceBuilder().start();
     
     _bodyResolver = builder.bodyResolver();
     
@@ -185,6 +195,26 @@ public class WebApp
   public WebSocketManager wsManager()
   {
     return _wsManager;
+  }
+  
+  /**
+   * identifier generator.
+   */
+  public long nextId()
+  {
+    long time = CurrentTime.getCurrentTime() / 1000;
+    int node = serviceManager().node().nodeIndex();
+    int nodeCount = serviceManager().node().nodeCount();
+    long sequence = _idSequence.getAndIncrement();
+    
+    int nodeBits = 32 - Integer.numberOfLeadingZeros(nodeCount);
+    int seqBits = 64 - IdAsset.TIME_BITS - nodeBits;
+    
+    long mask = (1L << seqBits) - 1;
+    
+    return ((time << (64 - IdAsset.TIME_BITS))
+           + (node << seqBits)
+           + (sequence & mask));
   }
   
   WebApp start()
