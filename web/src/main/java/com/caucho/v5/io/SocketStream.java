@@ -401,7 +401,6 @@ public class SocketStream extends StreamImpl
         log.log(Level.FINEST, e.toString(), e);
       }
     }
-    System.out.println("CLW2: " + isShutdownOutput);
 
     // SSLSocket doesn't support shutdownOutput()
     if (! isShutdownOutput && os != null) {

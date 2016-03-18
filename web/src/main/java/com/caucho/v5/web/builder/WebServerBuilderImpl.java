@@ -134,6 +134,8 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   
   private final ArrayList<IncludeInject> _bindings = new ArrayList<>();
   //private final ArrayList<IncludeWeb> _includes = new ArrayList<>();
+  
+  private WebServerValidator _validator = new WebServerValidator();
 
   private WebServerImpl _server;
 
@@ -242,6 +244,11 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   private ClassLoader parentClassLoader()
   {
     return _parentClassLoader;
+  }
+  
+  private WebServerValidator validator()
+  {
+    return _validator;
   }
 
   @Override
@@ -446,6 +453,8 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     Objects.requireNonNull(serviceClass);
     
+    validator().serviceClass(serviceClass);
+    
     Key<?> key = Key.of(serviceClass, ServiceImpl.class);
     
     ServiceBuilderWebImpl service
@@ -490,9 +499,13 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public WebServerBuilder include(Class<?> type)
+  public WebServerBuilder include(Class<?> includeClass)
   {
-    include(new IncludeWebClass(type));
+    Objects.requireNonNull(includeClass);
+    
+    validator().includeClass(includeClass);
+    
+    include(new IncludeWebClass(includeClass));
 
     return this;
   }
