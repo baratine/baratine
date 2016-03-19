@@ -29,7 +29,9 @@
 
 package com.caucho.v5.amp.vault;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -37,13 +39,19 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.actor.MethodAmpBase;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryWithResultMessage_N;
+import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.config.ConfigException;
+import com.caucho.v5.convert.bean.FieldBean;
+import com.caucho.v5.convert.bean.FieldBeanFactory;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.service.Id;
 import io.baratine.service.Result;
 
 public class VaultDriverBase<ID,T>
@@ -55,31 +63,65 @@ public class VaultDriverBase<ID,T>
 
   private ServiceManagerAmp _ampManager;
   private Class<ID> _idClass;
-  private Class<T> _entityClass;
+  private Class<T> _assetClass;
   private String _address;
   
   private Supplier<String> _idGen;
   private String _prefix;
+  
+  private FieldBean<T> _idField;
 
   public VaultDriverBase(ServiceManagerAmp ampManager,
-                            Class<T> entityClass,
-                            Class<ID> idClass,
-                            String address)
+                         Class<T> assetClass,
+                         Class<ID> idClass,
+                         String address)
   {
     Objects.requireNonNull(ampManager);
-    Objects.requireNonNull(entityClass);
+    Objects.requireNonNull(assetClass);
     Objects.requireNonNull(idClass);
 
     _ampManager = ampManager;
-    _entityClass = entityClass;
+    _assetClass = assetClass;
     _idClass = idClass;
     
     if (address == null) {
-      address = "/" + entityClass.getSimpleName();
+      address = "/" + assetClass.getSimpleName();
     }
     
     _address = address;
     _prefix = address + "/";
+    
+    _idField = introspectId(assetClass);
+    
+    if (_idField == null && ! Void.class.equals(idClass)) {
+      throw new VaultException(L.l("Missing @Id for asset '{0}'",
+                                   assetClass.getName()));
+    }
+  }
+  
+  private FieldBean<T> introspectId(Class<?> assetClass)
+  {
+    if (assetClass == null) {
+      return null;
+    }
+    
+    for (Field field : assetClass.getDeclaredFields()) {
+      if (Modifier.isStatic(field.getModifiers())) {
+        continue;
+      }
+      
+      if (field.isAnnotationPresent(Id.class)) {
+        return FieldBeanFactory.get(field);
+      }
+      else if (field.getName().equals("id")) {
+        return FieldBeanFactory.get(field);
+      }
+      else if (field.getName().equals("_id")) {
+        return FieldBeanFactory.get(field);
+      }
+    }
+    
+    return introspectId(assetClass.getSuperclass());
   }
 
   public String getAddress()
@@ -97,7 +139,7 @@ public class VaultDriverBase<ID,T>
         return newCreateMethod(target);
       }
       else {
-        return new MethodVaultNull<>(method.getName() + " " + getClass().getName());
+        return newCreateMethodDTO(method);
       }
     }
     else {
@@ -120,6 +162,30 @@ public class VaultDriverBase<ID,T>
     }
   }
   
+  private <S> MethodVault<S> newCreateMethodDTO(Method vaultMethod)
+  {
+    Supplier<String> idGen = idSupplier();
+    
+    try {
+      Class<?> []params = vaultMethod.getParameterTypes();
+      
+      if (params.length != 2) {
+        throw new ConfigException(L.l("'{0}' is an invalid vault create.",
+                                      vaultMethod));
+      }
+      
+      VaultTransfer<T,?> transfer = new VaultTransfer<>(_assetClass, params[0]);
+      
+      MethodAmp methodAmp = new MethodAmpCreateDTO<>(transfer, _idField);
+    
+      return new MethodVaultCreateDTO<S>(_ampManager, idGen, 
+          vaultMethod.getName(), methodAmp);
+    } catch (Exception e) {
+      e.printStackTrace();;
+      throw new IllegalStateException(e);
+    }
+  }
+  
   private Supplier<String> idSupplier()
   {
     synchronized (this) {
@@ -134,7 +200,7 @@ public class VaultDriverBase<ID,T>
   private Method entityMethod(Method source)
   {
     try {
-      return _entityClass.getMethod(source.getName(), source.getParameterTypes());
+      return _assetClass.getMethod(source.getName(), source.getParameterTypes());
     } catch (Exception e) {
       log.log(Level.FINER, e.toString(), e);
       
@@ -147,7 +213,7 @@ public class VaultDriverBase<ID,T>
   {
     return getClass().getSimpleName()
            + "["
-           + _entityClass
+           + _assetClass
            + "]";
   }
 
@@ -188,13 +254,6 @@ public class VaultDriverBase<ID,T>
       _ampManager = ampManager;
       _idGen = idGen;
       _methodName = methodName;
-      
-      /*
-      ServiceRefAmp child = _ampManager.service(_prefix + "0");
-      MethodRefAmp methodRef = child.getMethod(methodName);
-      
-      _method = methodRef.method();
-      */
     }
     
     private MethodAmp method(ServiceRefAmp childRef)
@@ -211,16 +270,6 @@ public class VaultDriverBase<ID,T>
     {
       String id = _idGen.get();
 
-      /*
-      int resultIndex = _resultIndex;
-      
-      Object []fullArgs = new Object[args.length + 1];
-      System.arraycopy(args, 0, fullArgs, 0, resultIndex);
-      fullArgs[resultIndex] = result;
-      System.arraycopy(args, resultIndex, fullArgs, resultIndex + 1, 
-                       args.length - _resultIndex);
-      */
-      
       ServiceRefAmp childRef = _ampManager.service(_prefix + id);
 
       long timeout = 10000L;
@@ -238,6 +287,94 @@ public class VaultDriverBase<ID,T>
                                          args);
 
         msg.offer(timeout);
+      }
+    }
+  }
+
+  private class MethodVaultCreateDTO<S> implements MethodVault<S>
+  {
+    private ServiceManagerAmp _ampManager;
+    private Supplier<String> _idGen;
+    private String _methodName;
+    private MethodAmp _method;
+    
+    MethodVaultCreateDTO(ServiceManagerAmp ampManager,
+                         Supplier<String> idGen,
+                         String methodName,
+                         MethodAmp method)
+    {
+      Objects.requireNonNull(ampManager);
+      Objects.requireNonNull(idGen);
+      Objects.requireNonNull(methodName);
+      Objects.requireNonNull(method);
+      
+      _ampManager = ampManager;
+      _idGen = idGen;
+      _methodName = methodName;
+      _method = method;
+    }
+    
+    @Override
+    public void invoke(Result<S> result, Object[] args)
+    {
+      String id = _idGen.get();
+
+      ServiceRefAmp childRef = _ampManager.service(_prefix + id);
+
+      long timeout = 10000L;
+      
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_ampManager)) {
+        HeadersAmp headers = HeadersNull.NULL;
+      
+        QueryWithResultMessage_N<S> msg
+        = new QueryWithResultMessage_N<>(outbox,
+                                         headers,
+                                         result, 
+                                         timeout, 
+                                         childRef,
+                                         _method,
+                                         args);
+
+        msg.offer(timeout);
+      }
+    }
+  }
+
+  private class MethodAmpCreateDTO<S> extends MethodAmpBase
+  {
+    private VaultTransfer<T,S> _transfer;
+    private FieldBean<T> _idField;
+    
+    MethodAmpCreateDTO(VaultTransfer<T,S> transfer,
+                       FieldBean<T> idField)
+    {
+      Objects.requireNonNull(transfer);
+      
+      _transfer = transfer;
+      _idField = idField;
+    }
+    
+    @Override
+    public void query(HeadersAmp headers,
+                      Result<?> result,
+                      ActorAmp actor,
+                      Object []args)
+    {
+      T asset = (T) actor.bean();
+      S transfer = (S) args[0];
+      
+      Objects.requireNonNull(asset);
+      Objects.requireNonNull(transfer);
+      
+      _transfer.toAsset(asset, transfer);
+      
+      actor.onModify();
+      
+      if (_idField != null) {
+        ((Result) result).ok(_idField.getObject(asset));
+      }
+      else {
+        result.ok(null);
       }
     }
   }

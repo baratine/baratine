@@ -117,6 +117,21 @@ public class FieldChar<T> extends FieldBase<T>
     }
   }
   
+  public final char getChar(T bean)
+  {
+    try {
+      return (char) _getter.invokeExact((Object) bean);
+    } catch (Throwable e) {
+      throw error(e);
+    }
+  }
+  
+  @Override
+  public final Object getObject(T bean)
+  {
+    return getChar(bean);
+  }
+  
   @Override
   public final void setObject(T bean, Object value)
   {

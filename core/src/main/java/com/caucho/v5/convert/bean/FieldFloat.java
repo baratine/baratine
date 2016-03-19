@@ -34,13 +34,17 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 
+import com.caucho.v5.util.L10N;
+
 /**
  * float field getter/setter
  */
 public class FieldFloat<T> extends FieldBase<T>
 {
-  private MethodHandle _getter;
-  private MethodHandle _setter;
+  private static final L10N L = new L10N(FieldFloat.class);
+  
+  private final MethodHandle _getter;
+  private final MethodHandle _setter;
 
   public FieldFloat(Field field)
   {
@@ -74,6 +78,28 @@ public class FieldFloat<T> extends FieldBase<T>
       _setter.invokeExact((Object) bean, (float) value);
     } catch (Throwable e) {
       throw error(e);
+    }
+  }
+  
+  @Override
+  public final Object getObject(T bean)
+  {
+    return (float) getDouble(bean);
+  }
+  
+  @Override
+  public final void setObject(T bean, Object value)
+  {
+    if (value instanceof Number) {
+      setDouble(bean, ((Number) value).doubleValue());
+    }
+    else if (value == null) {
+    }
+    else if (value instanceof String) {
+      setDouble(bean, Double.parseDouble((String) value));
+    }
+    else {
+      throw error(L.l("{0} is an invalid value", value));
     }
   }
 }

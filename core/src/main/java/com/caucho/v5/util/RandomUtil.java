@@ -92,7 +92,7 @@ public class RandomUtil {
   /**
    * Returns the random generator.
    */
-  private static Random getRandom()
+  public static Random getRandom()
   {
     if (_isTest) {
       return _testRandom;
@@ -100,8 +100,9 @@ public class RandomUtil {
 
     Random random = _freeRandomList.allocate();
 
-    if (random == null)
+    if (random == null) {
       random = new SecureRandom();
+    }
 
     return random;
   }

@@ -58,6 +58,7 @@ public class FieldObject<T,V> extends FieldBase<T>
   }
   
   @Override
+  @SuppressWarnings("unchecked")
   public final V getObject(T bean)
   {
     try {

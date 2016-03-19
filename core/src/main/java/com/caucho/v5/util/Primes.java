@@ -31,9 +31,10 @@ package com.caucho.v5.util;
 
 
 /**
- * Base64 decoding.
+ * Primes for given bit sizes
  */
-public class Primes {
+public class Primes
+{
   public static final int []PRIMES = {
     1,       /* 1<< 0 = 1 */
     2,       /* 1<< 1 = 2 */
@@ -66,11 +67,15 @@ public class Primes {
     268435399, /* 1<<28 = 268435456 */
   };
 
-  public static int getBiggestPrime(int value)
+  /**
+   * Returns the largest prime less than the given bits.
+   */
+  public static int getBiggestPrime(long value)
   {
     for (int i = PRIMES.length - 1; i >= 0; i--) {
-      if (PRIMES[i] <= value)
+      if (PRIMES[i] <= value) {
         return PRIMES[i];
+      }
     }
 
     return 2;

@@ -34,13 +34,17 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 
+import com.caucho.v5.util.L10N;
+
 /**
  * short field getter/setter
  */
 public class FieldShort<T> extends FieldBase<T>
 {
-  private MethodHandle _getter;
-  private MethodHandle _setter;
+  private static final L10N L = new L10N(FieldShort.class);
+  
+  private final MethodHandle _getter;
+  private final MethodHandle _setter;
 
   public FieldShort(Field field)
   {
@@ -94,6 +98,28 @@ public class FieldShort<T> extends FieldBase<T>
       _setter.invokeExact((Object) bean, (short) value);
     } catch (Throwable e) {
       throw error(e);
+    }
+  }
+  
+  @Override
+  public final Object getObject(T bean)
+  {
+    return (short) getLong(bean);
+  }
+  
+  @Override
+  public final void setObject(T bean, Object value)
+  {
+    if (value instanceof Number) {
+      setInt(bean, ((Number) value).intValue());
+    }
+    else if (value == null) {
+    }
+    else if (value instanceof String) {
+      setInt(bean, Integer.parseInt((String) value));
+    }
+    else {
+      throw error(L.l("{0} is an invalid value", value));
     }
   }
 }

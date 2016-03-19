@@ -34,11 +34,15 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 
+import com.caucho.v5.util.L10N;
+
 /**
  * boolean field getter/setter
  */
 public class FieldBoolean<T> extends FieldBase<T>
 {
+  private static final L10N L = new L10N(FieldBoolean.class);
+  
   private MethodHandle _getter;
   private MethodHandle _setter;
 
@@ -74,6 +78,32 @@ public class FieldBoolean<T> extends FieldBase<T>
       _setter.invokeExact((Object) bean, (boolean) value);
     } catch (Throwable e) {
       throw error(e);
+    }
+  }
+  
+  @Override
+  public final Object getObject(T bean)
+  {
+    return getBoolean(bean);
+  }
+  
+  @Override
+  public final void setObject(T bean, Object value)
+  {
+    if (value instanceof Boolean) {
+      setBoolean(bean, (Boolean) value);
+    }
+    else if (value == null) {
+      
+    }
+    else if (value instanceof String) {
+      setBoolean(bean, Boolean.valueOf((String) value));
+    }
+    else if (value instanceof Number) {
+      setBoolean(bean, ((Number) value).intValue() == 0);
+    }
+    else {
+      throw error(L.l("{0} is an invalid value", value));
     }
   }
 }

@@ -29,7 +29,6 @@
 
 package com.caucho.v5.amp.vault;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -46,7 +45,7 @@ public class VaultIdGenerator
       return new IdGeneratorLong();
     }
     else if (idType.equals(IdAsset.class)) {
-      return new IdGeneratorAsset();
+      return new IdGeneratorAssetString();
     }
     else {
       return new IdGeneratorUnsupported(idType);
@@ -69,30 +68,22 @@ public class VaultIdGenerator
     }
   }
   
-  private static class IdGeneratorAsset implements Supplier<String>
+  private static class IdGeneratorAssetString implements Supplier<String>
   {
-    private long _node;
+    private IdAssetGenerator _idGen;
     
-    private AtomicLong _sequence = new AtomicLong();
-    private int _nodeBits = 10; 
-    private long _sequenceMask;
-    
-    IdGeneratorAsset()
+    IdGeneratorAssetString()
     {
-      _sequence.set(RandomUtil.getRandomLong());
+      int nodeIndex = 0;
+      int nodeCount = 1;
       
-      _sequenceMask = (1L << (64 - IdAsset.TIME_BITS - _nodeBits)) - 1;
+      _idGen = new IdAssetGenerator(nodeIndex, nodeCount);
     }
 
     @Override
     public String get()
     {
-      long now = CurrentTime.getCurrentTime() / 1000;
-      long sequence = _sequence.incrementAndGet();
-      
-      long id = ((now << (64 - IdAsset.TIME_BITS))
-                | (_node << (64 - IdAsset.TIME_BITS - _nodeBits))
-                | (sequence & _sequenceMask));
+      long id =_idGen.get();
       
       return IdAsset.encode(id);
     }
@@ -100,30 +91,20 @@ public class VaultIdGenerator
   
   private static class IdGeneratorLong implements Supplier<String>
   {
-    private long _node;
-    
-    private AtomicLong _sequence = new AtomicLong();
-    private int _nodeBits = 10; 
-    private long _sequenceMask;
+    private IdAssetGenerator _idGen;
     
     IdGeneratorLong()
     {
-      _sequence.set(RandomUtil.getRandomLong());
+      int nodeIndex = 0;
+      int nodeCount = 1;
       
-      _sequenceMask = (1L << (64 - IdAsset.TIME_BITS - _nodeBits)) - 1;
+      _idGen = new IdAssetGenerator(nodeIndex, nodeCount);
     }
 
     @Override
     public String get()
     {
-      long now = CurrentTime.getCurrentTime() / 1000;
-      long sequence = _sequence.incrementAndGet();
-      
-      long id = ((now << (64 - IdAsset.TIME_BITS))
-                | (_node << (64 - IdAsset.TIME_BITS - _nodeBits))
-                | (sequence & _sequenceMask));
-      
-      return IdAsset.encode(id);
+      return IdAsset.encode(_idGen.get());
     }
   }
 }

@@ -60,6 +60,12 @@ public class FieldBase<T> implements FieldBean<T>
                                      e);
   }
   
+  protected RuntimeException error(String msg)
+  {
+    return new IllegalStateException(_field.getDeclaringClass().getSimpleName()
+                                     + "." + _field.getName() + ": " + msg);
+  }
+  
   @Override
   public String toString()
   {

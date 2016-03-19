@@ -41,12 +41,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.vault.IdAssetGenerator;
 import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
+
 import io.baratine.db.Cursor;
 import io.baratine.service.Asset;
 import io.baratine.service.IdAsset;
@@ -263,9 +265,14 @@ class EntityInfo<ID,T>
     return _addressPrefix;
   }
 
-  private long node()
+  private int node()
   {
     return 0;
+  }
+
+  private int nodeCount()
+  {
+    return 1;
   }
   
   private long nextSequence()
@@ -646,9 +653,13 @@ class EntityInfo<ID,T>
   
   private static class IdGeneratorLong extends IdGenerator<Long>
   {
+    private IdAssetGenerator _idGen;
+    
     private IdGeneratorLong(EntityInfo<?,?> entity)
     {
       super(entity);
+      
+      _idGen = new IdAssetGenerator(entity.node(), entity.nodeCount());
     }
     
     @Override
@@ -658,28 +669,19 @@ class EntityInfo<ID,T>
         return id;
       }
       
-      long now = CurrentTime.getCurrentTime() / 1000;
-      long node = entity().node();
-      long sequence = entity().nextSequence();
-      
-      int timeBits = IdAsset.TIME_BITS;
-      int nodeBits = 10;
-      int seqBits = 64 - timeBits - nodeBits;
-      long seqMask = (1L << seqBits) - 1;
-      
-      long idValue = ((now << (64 - timeBits))
-                     | (node << (64 - timeBits - nodeBits))
-                     | (sequence & seqMask));
-      
-      return new Long(idValue);
+      return new Long(_idGen.get());
     }
   }
   
   private static class IdGeneratorIdAsset extends IdGenerator<IdAsset>
   {
+    private IdAssetGenerator _idGen;
+    
     private IdGeneratorIdAsset(EntityInfo<?,?> entity)
     {
       super(entity);
+      
+      _idGen = new IdAssetGenerator(entity.node(), entity.nodeCount());
     }
     
     @Override
@@ -689,20 +691,7 @@ class EntityInfo<ID,T>
         return id;
       }
       
-      long now = CurrentTime.getCurrentTime() / 1000;
-      long node = entity().node();
-      long sequence = entity().nextSequence();
-      
-      int timeBits = IdAsset.TIME_BITS;
-      int nodeBits = 10;
-      int seqBits = 64 - timeBits - nodeBits;
-      long seqMask = (1L << seqBits) - 1;
-System.out.println("TB: " + Long.toHexString(now << (64 - timeBits)));
-      long idValue = ((now << (64 - timeBits))
-                     | (node << seqBits)
-                     | (sequence & seqMask));
-      
-      return new IdAsset(idValue);
+      return new IdAsset(_idGen.get());
     }
   }
 

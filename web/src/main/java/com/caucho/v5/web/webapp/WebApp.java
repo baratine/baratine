@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.vault.IdAssetGenerator;
 import com.caucho.v5.deploy2.DeployInstance2;
 import com.caucho.v5.http.dispatch.InvocationRouter;
 import com.caucho.v5.http.websocket.WebSocketManager;
@@ -76,7 +77,7 @@ public class WebApp
 
   private WebSocketManager _wsManager;
   
-  private AtomicLong _idSequence = new AtomicLong();
+  private IdAssetGenerator _idGenerator;
 
   /**
    * Creates the web-app instance
@@ -133,10 +134,11 @@ public class WebApp
     _router = builder.buildRouter(this);
     Objects.requireNonNull(_router);
     
-    _idSequence = new AtomicLong(RandomUtil.getRandomLong());
-    
     _ampManager = builder.serviceBuilder().start();
     
+    _idGenerator = new IdAssetGenerator(_ampManager.node().nodeIndex(),
+                                        _ampManager.node().nodeCount());
+                                        
     _bodyResolver = builder.bodyResolver();
     
     _wsManager = builder.webSocketManager();
@@ -202,19 +204,7 @@ public class WebApp
    */
   public long nextId()
   {
-    long time = CurrentTime.getCurrentTime() / 1000;
-    int node = serviceManager().node().nodeIndex();
-    int nodeCount = serviceManager().node().nodeCount();
-    long sequence = _idSequence.getAndIncrement();
-    
-    int nodeBits = 32 - Integer.numberOfLeadingZeros(nodeCount);
-    int seqBits = 64 - IdAsset.TIME_BITS - nodeBits;
-    
-    long mask = (1L << seqBits) - 1;
-    
-    return ((time << (64 - IdAsset.TIME_BITS))
-           + (node << seqBits)
-           + (sequence & mask));
+    return _idGenerator.get();
   }
   
   WebApp start()

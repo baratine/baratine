@@ -76,4 +76,16 @@ public class FieldString<T> extends FieldBase<T>
       throw error(e);
     }
   }
+  
+  @Override
+  public final Object getObject(T bean)
+  {
+    return getString(bean);
+  }
+  
+  @Override
+  public final void setObject(T bean, Object value)
+  {
+    setString(bean, String.valueOf(value));
+  }
 }
