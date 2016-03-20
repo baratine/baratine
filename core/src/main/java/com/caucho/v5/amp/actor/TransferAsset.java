@@ -69,16 +69,41 @@ public class TransferAsset<T,S>
   @SuppressWarnings("unchecked")
   private void introspect()
   {
+    validateConstructor();
+    
     ArrayList<FieldCopy<T,S>> toAssetList = new ArrayList<>();
     ArrayList<FieldCopy<T,S>> toTransferList = new ArrayList<>();
     
     introspect(_assetType, _transferType, toAssetList, toTransferList);
+    
+    if (toTransferList.size() == 0) {
+      throw error("'{0}' is an invalid transfer object for '{1}' because it has no matching fields",
+                  _transferType.getSimpleName(),
+                  _assetType.getSimpleName());
+    }
     
     _toAsset = new FieldCopy[toAssetList.size()];
     toAssetList.toArray(_toAsset);
     
     _toTransfer = new FieldCopy[toTransferList.size()];
     toTransferList.toArray(_toTransfer);
+  }
+  
+  private void validateConstructor()
+  {
+    if (Modifier.isAbstract(_transferType.getModifiers())
+        && ! _transferType.equals(_assetType)) {
+      throw error("'{0}' is an invalid transfer object for '{1}' because it is abstract",
+                  _transferType.getSimpleName(),
+                  _assetType.getSimpleName());
+    }
+    
+    if (_transferType.isMemberClass() 
+        && ! Modifier.isStatic(_transferType.getModifiers())) {
+      throw error("'{0}' is an invalid transfer object for '{1}' because it is a non-static inner class",
+                  _transferType.getSimpleName(),
+                  _assetType.getSimpleName());
+    }
   }
   
   private void introspect(Class<T> assetType, 
@@ -107,10 +132,10 @@ public class TransferAsset<T,S>
       Field fieldAsset = findField(assetType, fieldTransfer);
       
       if (fieldAsset == null) {
-        throw new VaultException(L.l("Field '{0}' is unknown in asset '{1}' used by transfer object '{0}'",
-                                     fieldTransfer.getName(),
-                                     _assetType.getName(),
-                                     _transferType.getName()));
+        throw error("Field '{0}' is unknown in asset '{1}' used by transfer object '{2}'",
+                    fieldTransfer.getName(),
+                    _assetType.getSimpleName(),
+                    _transferType.getSimpleName());
       }
       
       FieldBean<T> fieldBeanAsset = FieldBeanFactory.get(fieldAsset);
@@ -125,6 +150,11 @@ public class TransferAsset<T,S>
         toAssetList.add(fieldCopy);
       }
     }
+  }
+  
+  private RuntimeException error(String msg, Object ...args)
+  {
+    return new VaultException(L.l(msg, args));
   }
   
   private boolean isId(Field field)
@@ -165,6 +195,13 @@ public class TransferAsset<T,S>
       if (fieldType.getType().equals(field.getType())) {
         return field;
       }
+      
+      throw error("Field '{0}' with type '{1}' in asset '{2}' does not match field in transfer object '{3}' with type '{4}'",
+                  fieldType.getName(),
+                  fieldType.getType().getSimpleName(),
+                  _assetType.getSimpleName(),
+                  _transferType.getSimpleName(),
+                  field.getType().getSimpleName());
     }
     
     return findField(type.getSuperclass(), field);

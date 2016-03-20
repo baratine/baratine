@@ -35,4 +35,35 @@ public class Priorities
     
     return a.getName().compareTo(b.getName());
   }
+  
+  public static int compareHighFirst(Object a, Object b)
+  {
+    return compareHighFirst(a.getClass(), b.getClass());
+  }
+  
+  public static int compareHighFirst(Class<?> a, Class<?> b)
+  {
+    Priority aPriority = a.getAnnotation(Priority.class);
+    Priority bPriority = b.getAnnotation(Priority.class);
+    
+    if (aPriority != null && bPriority == null) {
+      return -1;
+    }
+    
+    if (aPriority == null && bPriority != null) {
+      return 1;
+    }
+    
+    if (aPriority == null && bPriority == null) {
+      return a.getName().compareTo(b.getName());
+    }
+    
+    int cmp = bPriority.value() - aPriority.value();
+    
+    if (cmp != 0) {
+      return cmp;
+    }
+    
+    return a.getName().compareTo(b.getName());
+  }
 }

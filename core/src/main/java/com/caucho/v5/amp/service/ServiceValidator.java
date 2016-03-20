@@ -31,12 +31,15 @@ package com.caucho.v5.amp.service;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.actor.TransferAsset;
+import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
 
+import io.baratine.service.Result;
 import io.baratine.service.Vault;
 
 /**
@@ -109,7 +112,7 @@ class ServiceValidator
   {
     for (Method method : serviceClass.getDeclaredMethods()) {
       if (Modifier.isAbstract(method.getModifiers())) {
-        if (! abstractMethod(method)) {
+        if (! abstractMethod(serviceClass, method)) {
           return false;
         }
       }
@@ -119,7 +122,7 @@ class ServiceValidator
     // interface method that's not implemented
     for (Method method : serviceClass.getMethods()) {
       if (Modifier.isAbstract(method.getModifiers())) {
-        if (! abstractMethod(method)) {
+        if (! abstractMethod(serviceClass, method)) {
           return false;
         }
       }
@@ -128,32 +131,65 @@ class ServiceValidator
     return true;
   }
   
-  private boolean abstractMethod(Method method)
+  private boolean abstractMethod(Class<?> serviceClass, Method method)
   {
-    if (! void.class.equals(method.getReturnType())) {
-      return false;
-    }
-    
     if (method.getName().startsWith("get")) {
-      return abstractGetTransfer(method);
+      return abstractGetTransfer(serviceClass, method);
+    }
+    else if (Vault.class.isAssignableFrom(serviceClass)) {
+      if (method.getName().startsWith("create")) {
+        return true;
+      }
+      else if (method.getName().startsWith("find")) {
+        return true;
+      }
     }
     
     return false;
   }
   
-  private boolean abstractGetTransfer(Method method)
+  private boolean abstractGetTransfer(Class<?> serviceClass,
+                                      Method method)
   {
     Class<?> []paramTypes = method.getParameterTypes();
+    
+    if (! void.class.equals(method.getReturnType())) {
+      throw error("'{0}.{1}' is an invalid get transfer because transfer getters must return void",
+                  method.getDeclaringClass().getSimpleName(),
+                  method.getName());
+    }
+    
   
     if (paramTypes.length != 1) {
-      return false;
+      throw error("'{0}.{1}' is an invalid get transfer because transfer getters require a single Result parameter",
+                  method.getDeclaringClass().getSimpleName(),
+                  method.getName());
     }
     
-    if (Result.class.equals(paramTypes[0])) {
-      return false;
+    if (! Result.class.equals(paramTypes[0])) {
+      throw error("'{0}.{1}' is an invalid get transfer because transfer getters require a single Result parameter at {2}",
+                  method.getDeclaringClass().getSimpleName(),
+                  method.getName(),
+                  paramTypes[0].getName());
     }
     
-    // XXX: check valid transfer 
+    Type paramType = method.getParameters()[0].getParameterizedType();
+    
+    if (Result.class.equals(paramType)) {
+      throw error("'{0}.{1}' is an invalid get transfer because the Result is not parameterized.\n" +
+                  "Transfer getters use the param type to generate the transfer object.",
+                  method.getDeclaringClass().getSimpleName(),
+                  method.getName(),
+                  paramTypes[0].getName());
+    }
+    
+    TypeRef resultRef = TypeRef.of(paramType);
+    
+    TypeRef transferRef = resultRef.to(Result.class).param(0);
+    Class<?> transferClass = transferRef.rawClass();
+    
+    // transfer asset does its own validation
+    new TransferAsset<>(serviceClass, transferClass);
     
     return true;
   }

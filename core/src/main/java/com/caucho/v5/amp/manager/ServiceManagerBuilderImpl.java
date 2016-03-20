@@ -354,7 +354,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   {
     Objects.requireNonNull(factory);
     _stubGenerators.add(factory);
-    
+        
     return this;
   }
   
@@ -362,8 +362,8 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   public StubGenerator []stubGenerators()
   {
     StubGenerator []factories = _stubGenerators.toArray();
-    Arrays.sort(factories, Priorities::compare);
-    
+    Arrays.sort(factories, Priorities::compareHighFirst);
+
     return factories;
   }
   

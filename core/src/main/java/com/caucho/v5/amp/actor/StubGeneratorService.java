@@ -36,8 +36,8 @@ import com.caucho.v5.amp.service.ActorFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.config.Priority;
+import com.caucho.v5.inject.impl.ServiceImpl;
 
-import io.baratine.inject.Bean;
 import io.baratine.inject.Key;
 
 /**
@@ -67,7 +67,8 @@ public class StubGeneratorService implements StubGenerator
                                             Class<T> serviceClass,
                                             ServiceConfig config)
   {
-    Key<T> key = Key.of(serviceClass, Bean.class);
+    // XXX: clean up
+    Key<T> key = Key.of(serviceClass, ServiceImpl.class);
     
     return new ActorFactoryImpl(()->createStub(ampManager, key, config),
                                 config);
@@ -80,5 +81,11 @@ public class StubGeneratorService implements StubGenerator
     T bean = ampManager.inject().instance(key);
     
     return ampManager.createActor(bean, config);
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[]";
   }
 }
