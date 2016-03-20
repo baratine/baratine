@@ -49,6 +49,7 @@ import com.caucho.v5.amp.journal.JournalFactoryBase;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
+import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.config.Priorities;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.ConcurrentArrayList;
@@ -112,6 +113,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     }
     
     stubGenerator(new StubGeneratorService());
+    stubGenerator(new StubGeneratorVault());
   }
   
   @Override

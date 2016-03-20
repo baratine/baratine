@@ -51,7 +51,7 @@ import io.baratine.service.Vault;
 /**
  * Creates an actor supplier based on a Resource and Store.
  */
-@Priority(-1)
+@Priority(-100)
 public class StubGeneratorVault implements StubGenerator
 {
   private ArrayList<VaultDriver<?,?>> _drivers = new ArrayList<>();

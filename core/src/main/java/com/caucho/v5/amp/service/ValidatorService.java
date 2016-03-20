@@ -45,20 +45,24 @@ import io.baratine.service.Vault;
 /**
  * Validation of the configuration
  */
-class ServiceValidator
+class ValidatorService
 {
-  private static final L10N L = new L10N(ServiceValidator.class);
+  private static final L10N L = new L10N(ValidatorService.class);
   
   private ServiceManagerAmp _manager;
+
+  private ValidatorVault _validatorVault;
   
   /*
   private static final HashSet<Class<?>> _includeMethodMetaAnnotations
     = new HashSet<>();
     */
   
-  ServiceValidator(ServiceManagerAmp manager)
+  ValidatorService(ServiceManagerAmp manager)
   {
     _manager = manager;
+    
+    _validatorVault = new ValidatorVault(this);
   }
   
   /**
@@ -66,7 +70,12 @@ class ServiceValidator
    */
   public <T> void serviceClass(Class<T> serviceClass)
   {
-    validateServiceClass(serviceClass);
+    if (Vault.class.isAssignableFrom(serviceClass)) {
+      _validatorVault.vaultClass(serviceClass);
+    }
+    else {
+      validateServiceClass(serviceClass);
+    }
     
     if (Modifier.isAbstract(serviceClass.getModifiers())
         && ! abstractMethods(serviceClass)) {
