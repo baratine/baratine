@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.marshal;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.MethodRefBase;
+import com.caucho.v5.amp.service.MethodRefBase;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodAmp;

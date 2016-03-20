@@ -38,8 +38,8 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefException;
-import com.caucho.v5.amp.actor.ServiceRefLazyProxy;
+import com.caucho.v5.amp.service.ServiceRefException;
+import com.caucho.v5.amp.service.ServiceRefLazyProxy;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;

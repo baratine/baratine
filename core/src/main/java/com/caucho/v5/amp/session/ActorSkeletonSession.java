@@ -32,7 +32,7 @@ package com.caucho.v5.amp.session;
 import java.util.Objects;
 
 import com.caucho.v5.amp.proxy.ActorAmpBean;
-import com.caucho.v5.amp.proxy.SkeletonClassSession;
+import com.caucho.v5.amp.proxy.StubClassSession;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 
@@ -47,7 +47,7 @@ public class ActorSkeletonSession extends ActorAmpBean
   private Object _key;
   private String _id;
   
-  public ActorSkeletonSession(SkeletonClassSession skel,
+  public ActorSkeletonSession(StubClassSession skel,
                                Object bean,
                                String key,
                                ContextSession context)
@@ -136,9 +136,9 @@ public class ActorSkeletonSession extends ActorAmpBean
   }
   */
   
-  protected SkeletonClassSession getSkeletonSession()
+  protected StubClassSession getSkeletonSession()
   {
-    return (SkeletonClassSession) skeleton();
+    return (StubClassSession) skeleton();
   }
 
   public Object getKey()

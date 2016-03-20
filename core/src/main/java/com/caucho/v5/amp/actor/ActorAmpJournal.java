@@ -31,7 +31,7 @@ package com.caucho.v5.amp.actor;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.proxy.SkeletonClass;
+import com.caucho.v5.amp.proxy.StubClass;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.LoadState;
 import com.caucho.v5.amp.spi.LoadStateLoadBase;
@@ -43,12 +43,12 @@ import com.caucho.v5.amp.spi.MethodAmp;
  */
 public class ActorAmpJournal extends ActorAmpBase
 {
-  private final SkeletonClass _skel;
+  private final StubClass _skel;
   private final JournalAmp _journal;
   private final ActorAmp _actorMain;
   private final String _path;
   
-  public ActorAmpJournal(SkeletonClass skel,
+  public ActorAmpJournal(StubClass skel,
                  JournalAmp journal,
                  ActorAmp actorMain,
                  String path)

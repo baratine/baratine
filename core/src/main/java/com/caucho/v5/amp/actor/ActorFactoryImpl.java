@@ -29,29 +29,37 @@
 
 package com.caucho.v5.amp.actor;
 
-import com.caucho.v5.amp.manager.ServiceConfig;
+import java.util.function.Supplier;
+
+import com.caucho.v5.amp.service.ActorFactoryAmp;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorAmp;
-import com.caucho.v5.amp.spi.ActorFactoryAmp;
 
 /**
  * Basic method for creating actors.
  */
 public class ActorFactoryImpl implements ActorFactoryAmp
 {
-  private final ActorAmp _actor;
+  private final ActorAmp _stubMain;
   private final ServiceConfig _config;
+  private Supplier<ActorAmp> _stubSupplier;
+  
+  private ActorAmp _actorFirst;
 
-  public ActorFactoryImpl(ActorAmp actor,
+  public ActorFactoryImpl(Supplier<ActorAmp> stubSupplier,
                           ServiceConfig config)
   {
-    _actor = actor;
+    _stubSupplier = stubSupplier;
     _config = config;
+    
+    _stubMain = stubSupplier.get();
+    _actorFirst = _stubMain;
   }
   
   @Override
   public String actorName()
   {
-    return _actor.toString();
+    return _stubMain.toString();
   }
   
   @Override
@@ -63,18 +71,31 @@ public class ActorFactoryImpl implements ActorFactoryAmp
   @Override
   public ActorAmp get()
   {
-    return _actor;
+    if (config().workers() <= 1) {
+      return _actorFirst;
+    }
+    else {
+      ActorAmp actor = _actorFirst;
+      
+      if (actor != null) {
+        _actorFirst = null;
+        return actor;
+      }
+      else {
+        return _stubSupplier.get();
+      }
+    }
   }
   
   @Override
   public ActorAmp mainActor()
   {
-    return _actor;
+    return _stubMain;
   }
   
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _actor + "]";
+    return getClass().getSimpleName() + "[" + _stubMain + "]";
   }
 }

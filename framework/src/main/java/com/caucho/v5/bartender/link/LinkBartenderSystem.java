@@ -37,7 +37,7 @@ import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefAlias;
+import com.caucho.v5.amp.service.ServiceRefAlias;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.BartenderSystem;

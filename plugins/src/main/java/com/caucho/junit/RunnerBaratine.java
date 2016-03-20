@@ -50,8 +50,8 @@ import org.junit.runners.model.TestClass;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefDynamic;
 import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
+import com.caucho.v5.amp.service.ServiceRefDynamic;
 import com.caucho.v5.baratine.ServicePod;
 import com.caucho.v5.baratine.client.BaratineClient;
 import com.caucho.v5.bartender.pod.PodBartender;

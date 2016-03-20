@@ -31,7 +31,7 @@ package com.caucho.v5.amp.remote;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefBase;
+import com.caucho.v5.amp.service.ServiceRefBase;
 
 /**
  * ServiceRef for an outgoing channel.

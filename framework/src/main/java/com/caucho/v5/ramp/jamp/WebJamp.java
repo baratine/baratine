@@ -37,9 +37,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.actor.ServiceRefHandle;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.remote.ChannelServer;
+import com.caucho.v5.amp.service.ServiceRefHandle;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.web.webapp.RequestBaratine;

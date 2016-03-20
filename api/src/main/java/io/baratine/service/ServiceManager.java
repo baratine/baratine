@@ -98,9 +98,9 @@ public interface ServiceManager
    * @param serviceImpl the service implementation.
    * @return builder for fluent dsl
    */
-  ServiceRef.ServiceBuilder newService(Object serviceImpl);
+  <T> ServiceRef.ServiceBuilder newService(T serviceImpl);
   
-  ServiceRef.ServiceBuilder newService(Class<?> serviceImplClass);
+  <T> ServiceRef.ServiceBuilder newService(Class<T> serviceImplClass);
   
   ServiceRef.ServiceBuilder newService(Supplier<?> serviceImplSupplier);
 

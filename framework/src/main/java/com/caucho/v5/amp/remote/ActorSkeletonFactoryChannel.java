@@ -30,8 +30,8 @@
 package com.caucho.v5.amp.remote;
 
 import com.caucho.v5.amp.proxy.ActorFactorySkeleton;
-import com.caucho.v5.amp.proxy.SkeletonClass;
-import com.caucho.v5.amp.proxy.SkeletonClassSession;
+import com.caucho.v5.amp.proxy.StubClass;
+import com.caucho.v5.amp.proxy.StubClassSession;
 import com.caucho.v5.amp.session.ActorSkeletonSession;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
@@ -49,9 +49,9 @@ public class ActorSkeletonFactoryChannel implements ActorFactorySkeleton
   }
   
   @Override
-  public ActorAmp create(SkeletonClass skel, Object bean, String key)
+  public ActorAmp create(StubClass skel, Object bean, String key)
   {
-    return new ActorSkeletonSession((SkeletonClassSession) skel, bean, key,
+    return new ActorSkeletonSession((StubClassSession) skel, bean, key,
                                      _context);
   }
 }

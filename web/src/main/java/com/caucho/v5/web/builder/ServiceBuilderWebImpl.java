@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.spi.ServiceBuilderAmp;
+import com.caucho.v5.amp.service.ServiceBuilderAmp;
 
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;

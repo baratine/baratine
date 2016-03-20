@@ -31,7 +31,7 @@ package com.caucho.v5.amp.proxy;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorContainerAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
@@ -46,7 +46,7 @@ public class ActorAmpBean extends ActorAmpBeanBase
   private Object _bean;
   private String _name;
   
-  public ActorAmpBean(SkeletonClass skel,
+  public ActorAmpBean(StubClass skel,
                          Object bean,
                          String name,
                          ActorContainerAmp container)
@@ -68,7 +68,7 @@ public class ActorAmpBean extends ActorAmpBeanBase
     _name = name;
   }
   
-  public ActorAmpBean(SkeletonClass skeleton,
+  public ActorAmpBean(StubClass skeleton,
                       Object bean,
                       ServiceConfig config)
   {

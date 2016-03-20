@@ -33,9 +33,9 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.service.ActorFactoryAmp;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorAmp;
-import com.caucho.v5.amp.spi.ActorFactoryAmp;
 
 /**
  * Builder for a factory for link serviceRefs.

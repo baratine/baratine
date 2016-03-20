@@ -31,7 +31,7 @@ package com.caucho.v5.amp.remote;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefClient;
+import com.caucho.v5.amp.service.ServiceRefClient;
 import com.caucho.v5.bartender.pod.PodRef;
 
 /**

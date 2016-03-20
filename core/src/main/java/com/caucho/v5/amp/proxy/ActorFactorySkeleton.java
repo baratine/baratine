@@ -36,7 +36,7 @@ import com.caucho.v5.amp.spi.ActorAmp;
  */
 public interface ActorFactorySkeleton
 {
-  ActorAmp create(SkeletonClass skel,
+  ActorAmp create(StubClass skel,
                   Object bean, 
                   String key);
 }

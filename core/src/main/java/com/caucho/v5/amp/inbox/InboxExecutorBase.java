@@ -34,7 +34,7 @@ import java.util.concurrent.Executor;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpNull;
-import com.caucho.v5.amp.actor.ServiceRefImpl;
+import com.caucho.v5.amp.service.ServiceRefImpl;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;

@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.deliver.Deliver;
-import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 

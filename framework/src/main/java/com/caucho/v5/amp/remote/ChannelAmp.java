@@ -31,7 +31,7 @@ package com.caucho.v5.amp.remote;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefNull;
+import com.caucho.v5.amp.service.ServiceRefNull;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LookupAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;

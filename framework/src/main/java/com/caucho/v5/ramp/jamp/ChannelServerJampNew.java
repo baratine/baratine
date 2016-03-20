@@ -38,10 +38,10 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefUnauthorized;
 import com.caucho.v5.amp.inbox.OutboxAmpBase;
 import com.caucho.v5.amp.remote.ChannelServer;
 import com.caucho.v5.amp.remote.GatewayReply;
+import com.caucho.v5.amp.service.ServiceRefUnauthorized;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LookupAmp;

@@ -52,7 +52,7 @@ import com.caucho.v5.amp.manager.InjectAutoBindService;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
-import com.caucho.v5.amp.vault.ActorGeneratorVault;
+import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.inject.BaratineProducer;
 import com.caucho.v5.http.dispatch.InvocationRouter;
@@ -217,9 +217,9 @@ public class WebAppBuilder
   protected void addActorResources(ServiceManagerBuilderAmp builder)
   {
     try {
-      ActorGeneratorVault gen = new ActorGeneratorVault();
+      StubGeneratorVault gen = new StubGeneratorVault();
 
-      builder.actorGenerator(gen);
+      builder.stubGenerator(gen);
     } catch (Exception e) {
       log.finer(e.toString());
     }

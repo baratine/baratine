@@ -29,7 +29,7 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import com.caucho.v5.amp.actor.ServiceRefHandle;
+import com.caucho.v5.amp.service.ServiceRefHandle;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.json.ser.JsonSerializerBase;
 

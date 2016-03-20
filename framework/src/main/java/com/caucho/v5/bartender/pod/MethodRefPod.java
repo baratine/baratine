@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.MethodRefBase;
+import com.caucho.v5.amp.service.MethodRefBase;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;

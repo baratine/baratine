@@ -34,7 +34,7 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefWrapper;
+import com.caucho.v5.amp.service.ServiceRefWrapper;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 
 /**

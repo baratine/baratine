@@ -34,8 +34,8 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefNull;
-import com.caucho.v5.amp.actor.ServiceRefUnauthorized;
+import com.caucho.v5.amp.service.ServiceRefNull;
+import com.caucho.v5.amp.service.ServiceRefUnauthorized;
 import com.caucho.v5.amp.spi.LookupAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 

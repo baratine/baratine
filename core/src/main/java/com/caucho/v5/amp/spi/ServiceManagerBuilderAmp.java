@@ -33,7 +33,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.actor.ActorGenerator;
+import com.caucho.v5.amp.actor.StubGenerator;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
 
@@ -66,17 +66,7 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   
   void debugId(String name);
   
-  String getDebugId();
-  
-  /**
-   * Returns the domain's broker.
-   */
-  //LookupManagerBuilderAmp getBrokerFactory();
-  
-  /**
-   * Sets the domain's broker.
-   */
-  //ServiceManagerBuilderAmp setBrokerFactory(LookupManagerBuilderAmp factory);
+  String debugId();
 
   /**
    * Returns the actor proxy factory.
@@ -106,6 +96,8 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   QueueFullHandler getQueueFullHandler();
   ServiceManagerBuilderAmp queueFullHandler(QueueFullHandler handler);
   
+  Supplier<Executor> systemExecutor();
+  
   ServiceManagerBuilderAmp contextManager(boolean isContext);
   boolean isContextManager();
 
@@ -116,22 +108,15 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   boolean isAutoServices();
 
 
-  ServiceManagerBuilderAmp actorGenerator(ActorGenerator factory);
-  ActorGenerator[] actorGenerators();
+  ServiceManagerBuilderAmp stubGenerator(StubGenerator factory);
+  StubGenerator[] stubGenerators();
   
   /**
    * Returns the pod node.
    */
-  ServiceNode getPodNode();
-  ServiceManagerBuilderAmp setPodNode(ServiceNode podNode);
+  ServiceNode podNode();
+  ServiceManagerBuilderAmp podNode(ServiceNode podNode);
 
-  Supplier<Executor> systemExecutor();
-  //
-  // module
-  //
-  
-  //ServiceManagerBuilderAmp setModule(ModuleAmp rampModule);
-  //ModuleAmp getModule();
   
   //
   // debugging

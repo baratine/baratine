@@ -226,7 +226,12 @@ public class CodeWriterAttribute extends CodeAttribute {
 
   public void pushConstantClass(Class<?> cl)
   {
-    int index = addClass(cl.getName().replace('.', '/'));
+    pushConstantClass(cl.getName());
+  }
+
+  public void pushConstantClass(String className)
+  {
+    int index = addClass(className.replace('.', '/'));
 
     ldc(index);
   }

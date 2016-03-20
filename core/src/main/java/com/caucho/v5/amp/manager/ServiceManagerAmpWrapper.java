@@ -36,13 +36,14 @@ import java.util.function.Supplier;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
+import com.caucho.v5.amp.service.ServiceBuilderAmp;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
-import com.caucho.v5.amp.spi.ServiceBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 import io.baratine.inject.InjectManager;
@@ -162,7 +163,7 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   }
 
   @Override
-  public ServiceBuilderAmp newService(Class<?> cl)
+  public <T> ServiceBuilderAmp newService(Class<T> cl)
   {
     return delegate().newService(cl);
   }

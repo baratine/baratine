@@ -31,10 +31,10 @@ package com.caucho.v5.bartender.hamp;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefNull;
 import com.caucho.v5.amp.remote.GatewayReply;
 import com.caucho.v5.amp.remote.GatewayReplyBase;
 import com.caucho.v5.amp.remote.OutAmpManager;
+import com.caucho.v5.amp.service.ServiceRefNull;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**

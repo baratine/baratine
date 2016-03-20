@@ -33,9 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.MethodRefNull;
-import com.caucho.v5.amp.actor.ServiceRefBase;
 import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.service.MethodRefNull;
+import com.caucho.v5.amp.service.ServiceRefBase;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.BartenderSystem;

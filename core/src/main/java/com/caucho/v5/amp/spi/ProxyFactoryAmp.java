@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.spi;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ContextSession;
 
 /**

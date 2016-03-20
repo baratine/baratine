@@ -43,10 +43,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.ActorAmpSystem;
-import com.caucho.v5.amp.actor.ActorGenerator;
-import com.caucho.v5.amp.actor.SchemeLocal;
-import com.caucho.v5.amp.actor.ServiceRefChild;
-import com.caucho.v5.amp.actor.ServiceRefPin;
+import com.caucho.v5.amp.actor.StubGenerator;
 import com.caucho.v5.amp.inbox.OutboxAmpDirect;
 import com.caucho.v5.amp.inbox.OutboxAmpExecutorFactory;
 import com.caucho.v5.amp.inbox.OutboxAmpImpl;
@@ -57,6 +54,12 @@ import com.caucho.v5.amp.message.SystemMessage;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmpImpl;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.remote.ServiceNodeBase;
+import com.caucho.v5.amp.service.SchemeLocal;
+import com.caucho.v5.amp.service.ServiceBuilderAmp;
+import com.caucho.v5.amp.service.ServiceBuilderImpl;
+import com.caucho.v5.amp.service.ServiceConfig;
+import com.caucho.v5.amp.service.ServiceRefChild;
+import com.caucho.v5.amp.service.ServiceRefPin;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.session.ContextSessionFactory;
 import com.caucho.v5.amp.spi.ActorAmp;
@@ -65,7 +68,6 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
-import com.caucho.v5.amp.spi.ServiceBuilderAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.inject.InjectManagerAmp;
@@ -106,7 +108,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   private final JournalFactoryAmp _journalFactory;
   private final ContextSessionFactory _channelFactory;
   
-  private final ActorGenerator []_actorFactories;
+  private final StubGenerator []_stubGenerators;
   
   private final InboxAmp _inboxSystem;
   //private final OutboxAmp _systemOutbox;
@@ -148,7 +150,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   public ServiceManagerAmpImpl(ServiceManagerBuilderAmp builder)
   {
     _name = builder.name();
-    _debugId = builder.getDebugId();
+    _debugId = builder.debugId();
     
     _classLoader = builder.classLoader();
     
@@ -170,9 +172,9 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     
     _channelFactory = new ContextSessionFactory(this);
     
-    _actorFactories = builder.actorGenerators();
+    _stubGenerators = builder.stubGenerators();
     
-    ServiceNode podNode = builder.getPodNode();
+    ServiceNode podNode = builder.podNode();
     
     if (podNode == null) {
       podNode = new ServiceNodeBase();
@@ -529,11 +531,11 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
    * newService() creates a new service from a bean
    */
   @Override
-  public ServiceBuilderAmp newService(Class<?> cl)
+  public <T> ServiceBuilderAmp newService(Class<T> cl)
   {
     Objects.requireNonNull(cl);
     
-    return newService().serviceClass((Class) cl);
+    return new ServiceBuilderImpl<>(this, cl);
   }
 
   /**
@@ -693,9 +695,9 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     return _proxyFactory;
   }
 
-  public ActorGenerator []actorFactories()
+  public StubGenerator []stubGenerators()
   {
-    return _actorFactories;
+    return _stubGenerators;
   }
 
   @Override

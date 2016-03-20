@@ -35,12 +35,12 @@ import java.util.concurrent.TimeUnit;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceConfig;
 import com.caucho.v5.amp.remote.ChannelClient;
 import com.caucho.v5.amp.remote.ChannelClientFactory;
 import com.caucho.v5.amp.remote.OutAmpManager;
 import com.caucho.v5.amp.remote.ServiceRefLinkFactory;
 import com.caucho.v5.amp.remote.ServiceRefLinkFactoryBuilder;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.hamp.ChannelClientBartender;
 import com.caucho.v5.bartender.pod.PodRef;

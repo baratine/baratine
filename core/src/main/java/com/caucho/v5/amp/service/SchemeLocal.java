@@ -1,0 +1,122 @@
+/*
+ * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ *
+ * This file is part of Baratine(TM)
+ *
+ * Each copy or derived work must preserve the copyright notice and this
+ * notice unmodified.
+ *
+ * Baratine is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Baratine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, or any warranty
+ * of NON-INFRINGEMENT.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Baratine; if not, write to the
+ *
+ *   Free Software Foundation, Inc.
+ *   59 Temple Place, Suite 330
+ *   Boston, MA 02111-1307  USA
+ *
+ * @author Scott Ferguson
+ */
+
+package com.caucho.v5.amp.service;
+
+import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.inbox.InboxNull;
+import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.spi.QueryRefAmp;
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+/**
+ * Service ref for the "local:" scheme.
+ */
+public final class SchemeLocal extends ServiceRefBase
+{
+  private final ServiceManagerAmp _manager;
+  
+  public SchemeLocal(ServiceManagerAmp manager)
+  {
+    _manager = manager;
+  }
+  
+  @Override
+  public String address()
+  {
+    return "local://";
+  }
+  
+  @Override
+  public ServiceRefAmp onLookup(String path)
+  {
+    ServiceRefAmp serviceRef = _manager.service("public://" + path);
+
+    if (serviceRef != null && ! serviceRef.isClosed()) {
+      return serviceRef;
+    }
+    else {
+      return null;
+    }
+
+    /*
+    ServiceRefAmp serviceRef = _manager.lookup("public://" + path);
+
+    if (serviceRef != null && serviceRef.isValid()) {
+      return serviceRef;
+    }
+    
+    serviceRef = _manager.lookup("module://" + path);
+    
+    if (serviceRef != null && serviceRef.isValid()) {
+      return serviceRef;
+    }
+    
+    serviceRef = _manager.lookup("cluster://" + path);
+    
+    if (serviceRef != null && serviceRef.isValid()) {
+      return serviceRef;
+    }
+    
+    return null;
+    */
+  }
+  
+  @Override
+  public boolean isUp()
+  {
+    return true;
+  }
+  
+  @Override
+  public MethodRefAmp getMethod(String methodName)
+  {
+    return new MethodRefNull(this, methodName);
+  }
+  
+  @Override
+  public InboxAmp inbox()
+  {
+    return new InboxNull(address(), this, _manager);
+  }
+  
+  @Override
+  public void offer(MessageAmp msg)
+  {
+  }
+
+  @Override
+  public void shutdown(ShutdownModeAmp mode)
+  {
+  }
+}
+

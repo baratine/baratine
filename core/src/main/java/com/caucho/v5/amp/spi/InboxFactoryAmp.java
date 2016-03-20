@@ -31,7 +31,7 @@ package com.caucho.v5.amp.spi;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.inbox.QueueServiceFactoryInbox;
-import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.service.ServiceConfig;
 
 
 /**

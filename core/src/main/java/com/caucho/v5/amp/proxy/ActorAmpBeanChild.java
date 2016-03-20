@@ -42,7 +42,7 @@ public class ActorAmpBeanChild extends ActorAmpBean
 {
   private String _childPath;
   
-  protected ActorAmpBeanChild(SkeletonClass skel,
+  protected ActorAmpBeanChild(StubClass skel,
                               Object bean,
                               String path,
                               String childPath,

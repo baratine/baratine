@@ -35,8 +35,8 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefNull;
-import com.caucho.v5.amp.actor.ServiceRefWrapper;
+import com.caucho.v5.amp.service.ServiceRefNull;
+import com.caucho.v5.amp.service.ServiceRefWrapper;
 import com.caucho.v5.http.pod.PodApp;
 import com.caucho.v5.http.pod.PodContainer;
 import com.caucho.v5.util.L10N;

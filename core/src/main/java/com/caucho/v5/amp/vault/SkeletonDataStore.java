@@ -41,10 +41,10 @@ import javax.inject.Provider;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.actor.MethodAmpBase;
-import com.caucho.v5.amp.manager.ServiceConfig;
 import com.caucho.v5.amp.proxy.ActorAmpBean;
 import com.caucho.v5.amp.proxy.ActorAmpBeanBase;
-import com.caucho.v5.amp.proxy.SkeletonClass;
+import com.caucho.v5.amp.proxy.StubClass;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorContainerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -62,7 +62,7 @@ import io.baratine.service.Result;
 /**
  * Actor skeleton for a resource.
  */
-public class SkeletonDataStore extends SkeletonClass
+public class SkeletonDataStore extends StubClass
 {
   private static final L10N L = new L10N(SkeletonDataStore.class);
   
@@ -222,14 +222,14 @@ public class SkeletonDataStore extends SkeletonClass
   private static class MethodFindOne extends MethodAmpBase
   {
     private ServiceManagerAmp _ampManager;
-    private SkeletonClass _skelEntity;
+    private StubClass _skelEntity;
 
     private VaultDriver _driver;
     private String _address;
     private String[] _fields;
 
     MethodFindOne(ServiceManagerAmp ampManager,
-                  SkeletonClass skel,
+                  StubClass skel,
                   VaultDriver driver,
                   String address,
                   String[] fields)
@@ -268,12 +268,12 @@ public class SkeletonDataStore extends SkeletonClass
 
   private static class MethodOnLookup extends MethodAmpBase
   {
-    private SkeletonClass _skelEntity;
+    private StubClass _skelEntity;
     private Provider<Object> _provider;
     private MethodHandle _fieldSetter;
     private Convert<String,?> _converter;
 
-    MethodOnLookup(SkeletonClass skel,
+    MethodOnLookup(StubClass skel,
                    Provider<Object> provider,
                    Convert<String,?> converter,
                    MethodHandle fieldSetter)

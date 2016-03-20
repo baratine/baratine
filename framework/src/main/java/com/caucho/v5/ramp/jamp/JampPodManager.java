@@ -36,12 +36,12 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.actor.ServiceRefHandle;
 import com.caucho.v5.amp.remote.ChannelManagerService;
 import com.caucho.v5.amp.remote.ChannelManagerServiceImpl;
 import com.caucho.v5.amp.remote.ChannelServerFactory;
 import com.caucho.v5.amp.remote.ChannelServerFactoryImpl;
 import com.caucho.v5.amp.remote.RegistryAmpServerShared;
+import com.caucho.v5.amp.service.ServiceRefHandle;
 import com.caucho.v5.amp.spi.LookupAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.json.ser.JsonFactory;

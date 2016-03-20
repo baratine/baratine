@@ -34,8 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefLazyInvalid;
 import com.caucho.v5.amp.remote.ChannelAmp;
+import com.caucho.v5.amp.service.ServiceRefLazyInvalid;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.deploy2.DeployHandle2;
 import com.caucho.v5.http.pod.PodContainer;

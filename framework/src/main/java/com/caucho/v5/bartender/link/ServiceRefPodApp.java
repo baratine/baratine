@@ -41,10 +41,10 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.MethodRefWrapperClassLoader;
-import com.caucho.v5.amp.actor.ServiceRefException;
-import com.caucho.v5.amp.actor.ServiceRefWrapper;
 import com.caucho.v5.amp.message.MessageWrapperClassLoader;
+import com.caucho.v5.amp.service.MethodRefWrapperClassLoader;
+import com.caucho.v5.amp.service.ServiceRefException;
+import com.caucho.v5.amp.service.ServiceRefWrapper;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;

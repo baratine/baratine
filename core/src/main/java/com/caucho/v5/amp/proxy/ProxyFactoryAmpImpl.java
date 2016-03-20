@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
-import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ActorSkeletonSession;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
@@ -63,10 +63,10 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   
   private AmpProxyCache _proxyCache;
   
-  private ConcurrentHashMap<Class<?>,SkeletonClass> _skeletonMap
+  private ConcurrentHashMap<Class<?>,StubClass> _skeletonMap
     = new ConcurrentHashMap<>();
   
-  private ConcurrentHashMap<Class<?>,SkeletonClassSession> _skeletonChannelMap
+  private ConcurrentHashMap<Class<?>,StubClassSession> _skeletonChannelMap
     = new ConcurrentHashMap<>();
   
   private MessageFactoryAmp _messageFactory;
@@ -94,7 +94,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
                                  ActorContainerAmp container,
                                  ServiceConfig config)
   {
-    SkeletonClass skel;
+    StubClass skel;
     
     if (path != null && (path.startsWith("pod://") || path.startsWith("public://"))) {
       skel = createPodSkeleton(bean.getClass(), path, config);
@@ -115,7 +115,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     }
   }
   
-  protected SkeletonClass createPodSkeleton(Class<?> beanClass, 
+  protected StubClass createPodSkeleton(Class<?> beanClass, 
                                             String path,
                                             ServiceConfig config)
   {
@@ -164,14 +164,14 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     }
   }
   
-  protected SkeletonClass createSkeleton(Class<?> beanClass, 
+  protected StubClass createSkeleton(Class<?> beanClass, 
                                          String path,
                                          ServiceConfig config)
   {
-    SkeletonClass skel = _skeletonMap.get(beanClass);
+    StubClass skel = _skeletonMap.get(beanClass);
     
     if (skel == null) {
-      skel = new SkeletonClass(_ampManager, beanClass, config);
+      skel = new StubClass(_ampManager, beanClass, config);
       skel.introspect();
       _skeletonMap.putIfAbsent(beanClass, skel);
       skel = _skeletonMap.get(beanClass);
@@ -189,10 +189,10 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   {
     Class<?> beanClass = bean.getClass();
     
-    SkeletonClassSession skel = _skeletonChannelMap.get(beanClass);
+    StubClassSession skel = _skeletonChannelMap.get(beanClass);
     
     if (skel == null) {
-      skel = new SkeletonClassSession(_ampManager, beanClass, config);
+      skel = new StubClassSession(_ampManager, beanClass, config);
       skel.introspect();
       _skeletonChannelMap.putIfAbsent(beanClass, skel);
       skel = _skeletonChannelMap.get(beanClass);
@@ -206,7 +206,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
                                      String path,
                                      ServiceConfig config)
   {
-    SkeletonClass skel = new SkeletonClass(_ampManager, api, config);
+    StubClass skel = new StubClass(_ampManager, api, config);
     skel.introspect();
     
     // XXX: need different actor

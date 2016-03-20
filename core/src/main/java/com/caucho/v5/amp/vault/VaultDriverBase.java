@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.actor.MethodAmpBase;
+import com.caucho.v5.amp.actor.TransferAsset;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryWithResultMessage_N;
 import com.caucho.v5.amp.spi.ActorAmp;
@@ -174,7 +175,7 @@ public class VaultDriverBase<ID,T>
                                       vaultMethod));
       }
       
-      VaultTransfer<T,?> transfer = new VaultTransfer<>(_assetClass, params[0]);
+      TransferAsset<T,?> transfer = new TransferAsset<>(_assetClass, params[0]);
       
       MethodAmp methodAmp = new MethodAmpCreateDTO<>(transfer, _idField);
     
@@ -342,10 +343,10 @@ public class VaultDriverBase<ID,T>
 
   private class MethodAmpCreateDTO<S> extends MethodAmpBase
   {
-    private VaultTransfer<T,S> _transfer;
+    private TransferAsset<T,S> _transfer;
     private FieldBean<T> _idField;
     
-    MethodAmpCreateDTO(VaultTransfer<T,S> transfer,
+    MethodAmpCreateDTO(TransferAsset<T,S> transfer,
                        FieldBean<T> idField)
     {
       Objects.requireNonNull(transfer);

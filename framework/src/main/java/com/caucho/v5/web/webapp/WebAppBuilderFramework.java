@@ -34,10 +34,10 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
-import com.caucho.v5.amp.vault.ActorGeneratorVault;
+import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.http.websocket.WebSocketManager;
-import com.caucho.v5.vault.VaultDriverDataImpl;
+import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
 
 import io.baratine.service.Asset;
 
@@ -76,11 +76,11 @@ public class WebAppBuilderFramework extends WebAppBuilder
   protected void addActorResources(ServiceManagerBuilderAmp builder)
   {
     try {
-      ActorGeneratorVault gen = new ActorGeneratorVault();
+      StubGeneratorVault gen = new StubGeneratorVault();
       
       gen.driver(new ResourceDriverWebApp());
       
-      builder.actorGenerator(gen);
+      builder.stubGenerator(gen);
     } catch (Exception e) {
       log.finer(e.toString());
     }

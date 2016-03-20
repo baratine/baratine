@@ -39,8 +39,8 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.actor.MethodAmpBase;
-import com.caucho.v5.amp.manager.ServiceConfig;
-import com.caucho.v5.amp.proxy.SkeletonClass;
+import com.caucho.v5.amp.proxy.StubClass;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 
@@ -52,7 +52,7 @@ import io.baratine.service.Result;
 /**
  * Actor skeleton for a resource entity.
  */
-public class SkeletonDataItem extends SkeletonClass
+public class SkeletonDataItem extends StubClass
 {
   private static final Logger log
     = Logger.getLogger(SkeletonDataItem.class.getName());

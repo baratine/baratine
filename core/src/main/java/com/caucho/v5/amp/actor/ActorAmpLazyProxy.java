@@ -33,6 +33,7 @@ import io.baratine.service.Result;
 
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.service.ServiceRefLazyProxy;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.HeadersAmp;

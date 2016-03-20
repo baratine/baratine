@@ -42,11 +42,12 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorGenerator;
+import com.caucho.v5.amp.actor.StubGenerator;
+import com.caucho.v5.amp.actor.StubGeneratorService;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.journal.JournalFactoryBase;
+import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.amp.spi.ProxyFactoryAmp;
-import com.caucho.v5.amp.spi.ServiceBuilderAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.config.Priorities;
 import com.caucho.v5.inject.impl.ServiceImpl;
@@ -98,8 +99,8 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
 
   private ServiceManagerAmp _manager;
   
-  private ConcurrentArrayList<ActorGenerator> _actorFactories
-    = new ConcurrentArrayList<>(ActorGenerator.class);
+  private ConcurrentArrayList<StubGenerator> _stubGenerators
+    = new ConcurrentArrayList<>(StubGenerator.class);
   
   public ServiceManagerBuilderImpl()
   {
@@ -109,6 +110,8 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     if (log.isLoggable(Level.FINER)) {
       debug(true);
     }
+    
+    stubGenerator(new StubGeneratorService());
   }
   
   @Override
@@ -145,7 +148,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public String getDebugId()
+  public String debugId()
   {
     if (_debugId != null) {
       return _debugId;
@@ -186,13 +189,13 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceNode getPodNode()
+  public ServiceNode podNode()
   {
     return _podNode;
   }
   
   @Override
-  public ServiceManagerBuilderImpl setPodNode(ServiceNode podNode)
+  public ServiceManagerBuilderImpl podNode(ServiceNode podNode)
   {
     _podNode = podNode;
     
@@ -347,18 +350,18 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceManagerBuilderImpl actorGenerator(ActorGenerator factory)
+  public ServiceManagerBuilderImpl stubGenerator(StubGenerator factory)
   {
     Objects.requireNonNull(factory);
-    _actorFactories.add(factory);
+    _stubGenerators.add(factory);
     
     return this;
   }
   
   @Override
-  public ActorGenerator []actorGenerators()
+  public StubGenerator []stubGenerators()
   {
-    ActorGenerator []factories = _actorFactories.toArray();
+    StubGenerator []factories = _stubGenerators.toArray();
     Arrays.sort(factories, Priorities::compare);
     
     return factories;

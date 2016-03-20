@@ -37,9 +37,9 @@ import java.util.function.Consumer;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ServiceRefSession;
-import com.caucho.v5.amp.manager.ServiceConfig;
-import com.caucho.v5.amp.proxy.SkeletonClassSession;
+import com.caucho.v5.amp.proxy.StubClassSession;
+import com.caucho.v5.amp.service.ServiceConfig;
+import com.caucho.v5.amp.service.ServiceRefSession;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.ProxyFactoryAmp;
@@ -65,7 +65,7 @@ public class ContextSession
 
   private ServiceRefAmp _serviceRefSelf;
 
-  private SkeletonClassSession _skeleton;
+  private StubClassSession _skeleton;
 
   private ServiceManagerAmp _ampManager;
 
@@ -152,7 +152,7 @@ public class ContextSession
     return serviceRef;
   }
 
-  public void setSkeleton(SkeletonClassSession skeleton)
+  public void setSkeleton(StubClassSession skeleton)
   {
     _skeleton = skeleton;
   }

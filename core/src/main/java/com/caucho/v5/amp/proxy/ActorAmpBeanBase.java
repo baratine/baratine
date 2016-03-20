@@ -43,7 +43,7 @@ import com.caucho.v5.amp.actor.ActorAmpStateBase;
 import com.caucho.v5.amp.actor.LoadStateActorAmp;
 import com.caucho.v5.amp.actor.SaveResult;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.manager.ServiceConfig;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.ActorContainerAmp;
 import com.caucho.v5.amp.spi.MethodAmp;
@@ -56,14 +56,14 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 public class ActorAmpBeanBase extends ActorAmpStateBase
   implements ActorAmp
 {
-  private final SkeletonClass _skel;
+  private final StubClass _skel;
   private final String _name;
   
   private final ActorContainerAmp _container;
   
   private JournalAmp _journal;
   
-  ActorAmpBeanBase(SkeletonClass skel,
+  ActorAmpBeanBase(StubClass skel,
                    String name,
                    ActorContainerAmp container)
   {
@@ -97,7 +97,7 @@ public class ActorAmpBeanBase extends ActorAmpStateBase
     return _container;
   }
   
-  protected final SkeletonClass skeleton()
+  protected final StubClass skeleton()
   {
     return _skel;
   }

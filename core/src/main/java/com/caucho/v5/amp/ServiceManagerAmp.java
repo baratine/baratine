@@ -34,8 +34,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.manager.ServiceConfig;
 import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
+import com.caucho.v5.amp.service.ServiceBuilderAmp;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -45,7 +46,6 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
-import com.caucho.v5.amp.spi.ServiceBuilderAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
@@ -101,7 +101,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   ServiceBuilderAmp newService(Supplier<?> supplier);
 
   @Override
-  ServiceBuilderAmp newService(Class<?> type);
+  <T> ServiceBuilderAmp newService(Class<T> type);
 
   ServiceBuilderAmp service(Key<?> key, Class<?> apiClass);
   
