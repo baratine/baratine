@@ -130,6 +130,10 @@ class ValidatorVault
       if (unbox(idClass).equals(unbox(typeClass))) {
         continue;
       }
+      
+      if (void.class.equals(unbox(typeClass))) {
+        continue;
+      }
 
       new TransferAsset<>(assetClass, typeClass);
     }
@@ -144,6 +148,10 @@ class ValidatorVault
   {
     for (Method method : vaultClass.getMethods()) {
       if (! method.getName().startsWith("find")) {
+        continue;
+      }
+      
+      if (! Modifier.isAbstract(method.getModifiers())) {
         continue;
       }
 

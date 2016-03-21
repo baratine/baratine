@@ -50,6 +50,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.convert.bean.FieldBean;
 import com.caucho.v5.convert.bean.FieldBeanFactory;
+import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Id;
@@ -177,7 +178,17 @@ public class VaultDriverBase<ID,T>
       
       TransferAsset<T,?> transfer = new TransferAsset<>(_assetClass, params[0]);
       
-      MethodAmp methodAmp = new MethodAmpCreateDTO<>(transfer, _idField);
+      TypeRef resultRef = TypeRef.of(vaultMethod.getGenericParameterTypes()[1]);
+      TypeRef valueRef = resultRef.to(Result.class).param(0);
+      
+      MethodAmp methodAmp;
+      
+      if (valueRef.rawClass().equals(_idField)) {
+        methodAmp = new MethodAmpCreateDTO<>(transfer, _idField);
+      }
+      else {
+        methodAmp = new MethodAmpCreateDTO<>(transfer, null);
+      }
     
       return new MethodVaultCreateDTO<S>(_ampManager, idGen, 
           vaultMethod.getName(), methodAmp);
