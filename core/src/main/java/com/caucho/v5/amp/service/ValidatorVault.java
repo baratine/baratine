@@ -167,6 +167,10 @@ class ValidatorVault
       else if (Stream.class.isAssignableFrom(typeClass)) {
         continue;
       }
+      else if (Modifier.isAbstract(typeClass.getModifiers())) {
+        // assumed to be proxy
+        continue;
+      }
 
       new TransferAsset<>(assetClass, typeClass);
     }

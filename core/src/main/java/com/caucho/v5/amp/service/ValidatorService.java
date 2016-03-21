@@ -45,11 +45,11 @@ import io.baratine.service.Vault;
 /**
  * Validation of the configuration
  */
-class ValidatorService
+public class ValidatorService
 {
   private static final L10N L = new L10N(ValidatorService.class);
   
-  private ServiceManagerAmp _manager;
+  //private ServiceManagerAmp _manager;
 
   private ValidatorVault _validatorVault;
   
@@ -58,9 +58,9 @@ class ValidatorService
     = new HashSet<>();
     */
   
-  ValidatorService(ServiceManagerAmp manager)
+  public ValidatorService()
   {
-    _manager = manager;
+    //_manager = manager;
     
     _validatorVault = new ValidatorVault(this);
   }

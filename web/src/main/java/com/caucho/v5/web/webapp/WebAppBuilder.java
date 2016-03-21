@@ -165,7 +165,7 @@ public class WebAppBuilder
       _serviceBuilder.autoServices(true);
       //_serviceBuilder.setJournalFactory(new JournalFactoryImpl());
       addJournalFactory(_serviceBuilder);
-      addActorResources(_serviceBuilder);
+      addStubVault(_serviceBuilder);
       _serviceBuilder.contextManager(true);
 
       ServiceManagerAmp serviceManager = _serviceBuilder.get();
@@ -214,7 +214,7 @@ public class WebAppBuilder
     }
   }
 
-  protected void addActorResources(ServiceManagerBuilderAmp builder)
+  protected void addStubVault(ServiceManagerBuilderAmp builder)
   {
     try {
       StubGeneratorVault gen = new StubGeneratorVault();

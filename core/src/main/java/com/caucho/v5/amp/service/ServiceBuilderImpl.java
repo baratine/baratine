@@ -152,7 +152,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   
   private void validateServiceClass(Class<T> serviceClass)
   {
-    ValidatorService validator = new ValidatorService(_manager);
+    ValidatorService validator = new ValidatorService();
     
     validator.serviceClass(serviceClass);
   }

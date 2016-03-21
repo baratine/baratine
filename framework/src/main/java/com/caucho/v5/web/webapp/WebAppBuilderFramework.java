@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
+import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
 import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
@@ -70,13 +71,13 @@ public class WebAppBuilderFramework extends WebAppBuilder
   }
 
   /**
-   * Custom service handling for {@code Resource} services.
+   * Custom stub generator for {@code Vault} services.
    */
   @Override
-  protected void addActorResources(ServiceManagerBuilderAmp builder)
+  protected void addStubVault(ServiceManagerBuilderAmp builder)
   {
     try {
-      StubGeneratorVault gen = new StubGeneratorVault();
+      StubGeneratorVault gen = new StubGeneratorVaultDriver();
       
       gen.driver(new ResourceDriverWebApp());
       

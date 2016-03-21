@@ -40,6 +40,7 @@ import java.util.Set;
 
 import javax.inject.Qualifier;
 
+import com.caucho.v5.amp.service.ValidatorService;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.InjectManager.IncludeInject;
@@ -71,6 +72,8 @@ class WebServerValidator
   private static final HashSet<Class<?>> _includeMethodAnnotations
     = new HashSet<>();
   
+  private final ValidatorService _validatorService = new ValidatorService();
+  
   /*
   private static final HashSet<Class<?>> _includeMethodMetaAnnotations
     = new HashSet<>();
@@ -82,6 +85,8 @@ class WebServerValidator
   public <T> void serviceClass(Class<T> serviceClass)
   {
     Objects.requireNonNull(serviceClass);
+    
+    _validatorService.serviceClass(serviceClass);
     
     if (Vault.class.isAssignableFrom(serviceClass)) {
     }
