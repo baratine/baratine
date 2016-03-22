@@ -29,9 +29,9 @@
 
 package com.caucho.v5.amp.service;
 
-import com.caucho.v5.amp.actor.MethodAmpWrapper;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmpWrapper;
 
 /**
  * Sender for an actor ref.

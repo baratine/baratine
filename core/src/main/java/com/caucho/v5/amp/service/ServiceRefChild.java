@@ -30,8 +30,8 @@
 package com.caucho.v5.amp.service;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.CacheListener;
 
 /**
@@ -40,11 +40,11 @@ import com.caucho.v5.util.CacheListener;
  */
 public class ServiceRefChild extends ServiceRefPin implements CacheListener
 {
-  private ActorAmp _actor;
-  private ActorAmp _prevActor;
+  private StubAmp _actor;
+  private StubAmp _prevActor;
 
   public ServiceRefChild(String address,
-                         ActorAmp actor,
+                         StubAmp actor,
                          InboxAmp inbox)
   {
     super(address, actor, inbox);
@@ -53,9 +53,9 @@ public class ServiceRefChild extends ServiceRefPin implements CacheListener
   }
   
   @Override
-  public ActorAmp getActor()
+  public StubAmp getActor()
   {
-    ActorAmp actor = _actor;
+    StubAmp actor = _actor;
     
     if (actor != null) {
       return actor;
@@ -82,7 +82,7 @@ public class ServiceRefChild extends ServiceRefPin implements CacheListener
   @Override
   public void removeEvent()
   {
-    ActorAmp actor = _actor;
+    StubAmp actor = _actor;
     
     if (actor != null) {
       _prevActor = actor;

@@ -34,11 +34,11 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message for a reply.
@@ -52,14 +52,14 @@ public final class QueryErrorMessage implements MessageAmp
   private final HeadersAmp _headers;
   private final long _qid;
   private final Throwable _exn;
-  private final ActorAmp _from;
+  private final StubAmp _from;
 
   private OutboxAmp _outbox;
   
   public QueryErrorMessage(OutboxAmp outbox,
                            ServiceRefAmp serviceRef,
                             HeadersAmp headers,
-                            ActorAmp from,
+                            StubAmp from,
                             long qid,
                             Throwable exn)
   {
@@ -133,14 +133,14 @@ public final class QueryErrorMessage implements MessageAmp
   */
   
   @Override
-  public void invoke(InboxAmp mailbox, ActorAmp actorDeliver)
+  public void invoke(InboxAmp mailbox, StubAmp actorDeliver)
   {
     // actorDeliver.queryError(_headers, _from, _qid, _exn);
     
-    ActorAmp actorMessage = _serviceRef.getActor();
+    StubAmp actorMessage = _serviceRef.getActor();
     
     // kraken/210a vs baratine/2245
-    ActorAmp actorInvoke = actorDeliver.getActor(actorMessage);
+    StubAmp actorInvoke = actorDeliver.worker(actorMessage);
     
     // actorInvoke.queryError(_headers, actorMessage, _qid, _exn);
     actorInvoke.queryError(_headers, _from, _qid, _exn);

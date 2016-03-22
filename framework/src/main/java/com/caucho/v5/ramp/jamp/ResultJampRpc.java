@@ -40,11 +40,11 @@ import java.util.concurrent.locks.LockSupport;
 import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.message.HeadersNull;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 
@@ -168,7 +168,7 @@ public class ResultJampRpc<T> implements MessageAmp
   */
 
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actor)
+  public void invoke(InboxAmp inbox, StubAmp actor)
   {
     unparkImpl();
   }

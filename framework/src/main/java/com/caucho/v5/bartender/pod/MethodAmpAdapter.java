@@ -33,10 +33,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.io.ResultPipeIn;
@@ -155,65 +155,65 @@ public class MethodAmpAdapter implements MethodAmp
   }
 
   @Override
-  public void send(HeadersAmp headers, ActorAmp actor)
+  public void send(HeadersAmp headers, StubAmp actor)
   {
     _methodRef.send(headers);
   }
 
   @Override
-  public void send(HeadersAmp headers, ActorAmp actor, Object arg1)
+  public void send(HeadersAmp headers, StubAmp actor, Object arg1)
   {
     _methodRef.send(headers, arg1);
   }
 
   @Override
-  public void send(HeadersAmp headers, ActorAmp actor, Object arg1, Object arg2)
+  public void send(HeadersAmp headers, StubAmp actor, Object arg1, Object arg2)
   {
     _methodRef.send(headers, arg1, arg2);
   }
 
   @Override
-  public void send(HeadersAmp headers, ActorAmp actor, Object arg1,
+  public void send(HeadersAmp headers, StubAmp actor, Object arg1,
                    Object arg2, Object arg3)
   {
     _methodRef.send(headers, arg1, arg2, arg3);
   }
 
   @Override
-  public void send(HeadersAmp headers, ActorAmp actor, Object[] args)
+  public void send(HeadersAmp headers, StubAmp actor, Object[] args)
   {
     _methodRef.send(headers, args);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, ActorAmp actor)
+  public void query(HeadersAmp headers, Result<?> result, StubAmp actor)
   {
     _methodRef.query(headers, result);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, ActorAmp actor,
+  public void query(HeadersAmp headers, Result<?> result, StubAmp actor,
                     Object arg1)
   {
     _methodRef.query(headers, result, arg1);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, ActorAmp actor,
+  public void query(HeadersAmp headers, Result<?> result, StubAmp actor,
                     Object arg1, Object arg2)
   {
     _methodRef.query(headers, result, arg1, arg2);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, ActorAmp actor,
+  public void query(HeadersAmp headers, Result<?> result, StubAmp actor,
                     Object arg1, Object arg2, Object arg3)
   {
     _methodRef.query(headers, result, arg1, arg2, arg3);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, ActorAmp actor,
+  public void query(HeadersAmp headers, Result<?> result, StubAmp actor,
                     Object[] args)
   {
     _methodRef.query(headers, result, args);
@@ -236,7 +236,7 @@ public class MethodAmpAdapter implements MethodAmp
   @Override
   public <T> void stream(HeadersAmp headers,
                          ResultStream<T> result, 
-                         ActorAmp actor,
+                         StubAmp actor,
                          Object[] args)
   {
     MethodRefAmp methodRef = (MethodRefAmp) _methodRef;
@@ -247,7 +247,7 @@ public class MethodAmpAdapter implements MethodAmp
   @Override
   public <T> void outPipe(HeadersAmp headers,
                           ResultPipeOut<T> result, 
-                          ActorAmp actor,
+                          StubAmp actor,
                           Object[] args)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
@@ -256,7 +256,7 @@ public class MethodAmpAdapter implements MethodAmp
   @Override
   public <T> void inPipe(HeadersAmp headers,
                           ResultPipeIn<T> result, 
-                          ActorAmp actor,
+                          StubAmp actor,
                           Object[] args)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));

@@ -30,8 +30,8 @@
 package com.caucho.v5.amp.service;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -42,7 +42,7 @@ public class ServiceRefClient extends ServiceRefActorBase
   private String _address;
 
   public ServiceRefClient(String address,
-                         ActorAmp actor,
+                         StubAmp actor,
                          InboxAmp inbox)
   {
     super(actor, inbox);
@@ -71,7 +71,7 @@ public class ServiceRefClient extends ServiceRefActorBase
       
       ServiceConfig config = null;
       
-      ActorAmp childActor = manager().createActor(child, config);
+      StubAmp childActor = manager().createActor(child, config);
 
       return new ServiceRefClient(subpath, childActor, inbox());
     }

@@ -47,9 +47,9 @@ import io.baratine.inject.Key;
  * A method producer that returns a new injection bean for the given type and
  * qualifiers.
  */
-public class ProviderMethodAtPoint<T,X> implements BindingAmp<T>
+class ProviderMethodAtPoint<T,X> implements BindingAmp<T>
 {
-  private InjectManagerAmp _manager;
+  //private InjectManagerAmp _manager;
   private Method _method;
   private Key<T> _key;
   private int _priority;
@@ -57,11 +57,11 @@ public class ProviderMethodAtPoint<T,X> implements BindingAmp<T>
   private BindingAmp<X> _ownerBinding;
   private Provider<X> _ownerProvider;
 
-  public ProviderMethodAtPoint(InjectManagerAmp manager,
-                              BindingAmp<X> ownerBinding,
+  ProviderMethodAtPoint(InjectManagerBuilderImpl manager,
+                        BindingAmp<X> ownerBinding,
                               Method method)
   {
-    _manager = manager;
+    //_manager = manager;
     _ownerBinding = ownerBinding;
     _method = method;
     
@@ -116,20 +116,6 @@ public class ProviderMethodAtPoint<T,X> implements BindingAmp<T>
   {
     return _priority;
   }
-  
-  /*
-  @Override
-  public boolean isMatch(Key<? super T> key)
-  {
-    return _key.isAssignableFrom(key);
-  }
-  
-  @Override
-  public T create(Type type, Annotation ...qualifiers)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  */
   
   @Override
   public void bind()

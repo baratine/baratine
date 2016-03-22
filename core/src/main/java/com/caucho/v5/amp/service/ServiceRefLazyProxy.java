@@ -33,9 +33,9 @@ import java.lang.reflect.Type;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpLazyProxy;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpLazyProxy;
 
 /**
  * Lazy init proxy
@@ -81,7 +81,7 @@ public class ServiceRefLazyProxy extends ServiceRefLazy
   }
   
   @Override
-  public ActorAmp getActor()
+  public StubAmp getActor()
   {
     ServiceRefAmp delegate = delegate();
     
@@ -89,7 +89,7 @@ public class ServiceRefLazyProxy extends ServiceRefLazy
       return delegate.getActor();
     }
     else {
-      return new ActorAmpLazyProxy(this);
+      return new StubAmpLazyProxy(this);
     }
   }
 

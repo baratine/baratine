@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * handle to an actor method.
@@ -62,7 +64,7 @@ public interface MethodRefAmp extends MethodRef
 
   Class<?> []getParameterClasses();
 
-  ActorAmp getActor(ActorAmp actorDeliver);
+  StubAmp getActor(StubAmp actorDeliver);
   
   void send(Headers headers, Object ...args);
   

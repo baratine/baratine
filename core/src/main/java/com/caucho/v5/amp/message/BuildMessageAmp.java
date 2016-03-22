@@ -29,8 +29,8 @@
 
 package com.caucho.v5.amp.message;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Build message for construction context.
@@ -45,7 +45,7 @@ public class BuildMessageAmp extends MessageAmpBase
   }
   
   @Override
-  public void invoke(InboxAmp mailbox, ActorAmp actor)
+  public void invoke(InboxAmp mailbox, StubAmp actor)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

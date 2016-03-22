@@ -34,9 +34,9 @@ import io.baratine.service.ServiceExceptionClosed;
 
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to shut down an instance.
@@ -64,7 +64,7 @@ public class OnShutdownMessage extends MessageAmpBase
   }
   
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
     try {
       //actorDeliver.afterBatch();

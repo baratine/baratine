@@ -422,10 +422,10 @@ public interface Result<T>
     @Override
     public void fail(Throwable exn)
     {
-      getNext().fail(exn);
+      delegate().fail(exn);
     }
     
-    protected Result<U> getNext()
+    protected Result<U> delegate()
     {
       return _next;
     }
@@ -433,7 +433,7 @@ public interface Result<T>
     @Override
     public String toString()
     {
-      return getClass().getSimpleName() + "[" + getNext() + "]";
+      return getClass().getSimpleName() + "[" + delegate() + "]";
     }
   }
 }

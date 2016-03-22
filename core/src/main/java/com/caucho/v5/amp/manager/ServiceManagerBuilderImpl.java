@@ -42,13 +42,13 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.StubGenerator;
-import com.caucho.v5.amp.actor.StubGeneratorService;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.journal.JournalFactoryBase;
+import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
-import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
+import com.caucho.v5.amp.stub.StubGenerator;
+import com.caucho.v5.amp.stub.StubGeneratorService;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.config.Priorities;
 import com.caucho.v5.inject.impl.ServiceImpl;

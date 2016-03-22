@@ -40,7 +40,7 @@ import com.caucho.v5.deploy2.DeployInstance2;
 import com.caucho.v5.http.dispatch.InvocationRouter;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderRootAmp;
+import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
 import com.caucho.v5.loader.DynamicClassLoader;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.CurrentTime;
@@ -96,7 +96,7 @@ public class WebApp
     
     _config = builder.config();
     
-    InjectBuilderRootAmp injectBuilder = builder.injectBuilder();
+    InjectBuilderAmp injectBuilder = builder.injectBuilder();
     injectBuilder.context(true);
     
     // initialize context

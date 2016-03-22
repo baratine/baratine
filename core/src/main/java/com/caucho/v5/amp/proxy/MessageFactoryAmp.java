@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.proxy;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 import io.baratine.io.ResultPipeIn;
 import io.baratine.io.ResultPipeOut;

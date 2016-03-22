@@ -41,12 +41,9 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.session.ActorSkeletonSession;
-import com.caucho.v5.amp.session.ContextSession;
-import com.caucho.v5.amp.spi.ActorAmp;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.ProxyFactoryAmp;
+import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.ClassStubSession;
 
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
@@ -63,10 +60,10 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   
   private AmpProxyCache _proxyCache;
   
-  private ConcurrentHashMap<Class<?>,StubClass> _skeletonMap
+  private ConcurrentHashMap<Class<?>,ClassStub> _skeletonMap
     = new ConcurrentHashMap<>();
   
-  private ConcurrentHashMap<Class<?>,StubClassSession> _skeletonChannelMap
+  private ConcurrentHashMap<Class<?>,ClassStubSession> _skeletonChannelMap
     = new ConcurrentHashMap<>();
   
   private MessageFactoryAmp _messageFactory;
@@ -87,6 +84,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     }
   }
 
+  /*
   @Override
   public ActorAmp createSkeleton(Object bean,
                                  String path,
@@ -94,7 +92,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
                                  ActorContainerAmp container,
                                  ServiceConfig config)
   {
-    StubClass skel;
+    ClassStub skel;
     
     if (path != null && (path.startsWith("pod://") || path.startsWith("public://"))) {
       skel = createPodSkeleton(bean.getClass(), path, config);
@@ -104,18 +102,19 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     }
     
     if (container != null) {
-      return new ActorAmpBeanChild(skel, bean, path, childPath, container);
+      return new StubAmpBeanChild(skel, bean, path, childPath, container);
     }
     else {
       if (path == null && config != null) {
         path = config.name(); 
       }
       
-      return new ActorAmpBean(skel, bean, path, container);
+      return new StubAmpBean(skel, bean, path, container);
     }
   }
+  */
   
-  protected StubClass createPodSkeleton(Class<?> beanClass, 
+  protected ClassStub createPodSkeleton(Class<?> beanClass, 
                                             String path,
                                             ServiceConfig config)
   {
@@ -164,14 +163,14 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     }
   }
   
-  protected StubClass createSkeleton(Class<?> beanClass, 
+  protected ClassStub createSkeleton(Class<?> beanClass, 
                                          String path,
                                          ServiceConfig config)
   {
-    StubClass skel = _skeletonMap.get(beanClass);
+    ClassStub skel = _skeletonMap.get(beanClass);
     
     if (skel == null) {
-      skel = new StubClass(_ampManager, beanClass, config);
+      skel = new ClassStub(_ampManager, beanClass, config);
       skel.introspect();
       _skeletonMap.putIfAbsent(beanClass, skel);
       skel = _skeletonMap.get(beanClass);
@@ -181,6 +180,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     
   }
 
+  /*
   @Override
   public ActorAmp createSkeletonSession(Object bean,
                                         String key,
@@ -189,10 +189,10 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   {
     Class<?> beanClass = bean.getClass();
     
-    StubClassSession skel = _skeletonChannelMap.get(beanClass);
+    ClassStubSession skel = _skeletonChannelMap.get(beanClass);
     
     if (skel == null) {
-      skel = new StubClassSession(_ampManager, beanClass, config);
+      skel = new ClassStubSession(_ampManager, beanClass, config);
       skel.introspect();
       _skeletonChannelMap.putIfAbsent(beanClass, skel);
       skel = _skeletonChannelMap.get(beanClass);
@@ -206,12 +206,13 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
                                      String path,
                                      ServiceConfig config)
   {
-    StubClass skel = new StubClass(_ampManager, api, config);
+    ClassStub skel = new ClassStub(_ampManager, api, config);
     skel.introspect();
     
     // XXX: need different actor
-    return new ActorAmpBeanBase(skel, path, null);
+    return new StubAmpBeanBase(skel, path, null);
   }
+  */
   
   @Override
   public <T> T createProxy(ServiceRefAmp serviceRef,

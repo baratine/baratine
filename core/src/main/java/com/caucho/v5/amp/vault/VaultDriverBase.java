@@ -39,14 +39,14 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.MethodAmpBase;
-import com.caucho.v5.amp.actor.TransferAsset;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryWithResultMessage_N;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmpBase;
+import com.caucho.v5.amp.stub.TransferAsset;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.convert.bean.FieldBean;
 import com.caucho.v5.convert.bean.FieldBeanFactory;
@@ -182,8 +182,8 @@ public class VaultDriverBase<ID,T>
       TypeRef valueRef = resultRef.to(Result.class).param(0);
       
       MethodAmp methodAmp;
-      
-      if (valueRef.rawClass().equals(_idField)) {
+   
+      if (valueRef.rawClass().equals(_idField.field().getType())) {
         methodAmp = new MethodAmpCreateDTO<>(transfer, _idField);
       }
       else {
@@ -369,7 +369,7 @@ public class VaultDriverBase<ID,T>
     @Override
     public void query(HeadersAmp headers,
                       Result<?> result,
-                      ActorAmp actor,
+                      StubAmp actor,
                       Object []args)
     {
       T asset = (T) actor.bean();

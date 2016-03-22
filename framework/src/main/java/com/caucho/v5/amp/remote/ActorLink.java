@@ -36,20 +36,20 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpBase;
-import com.caucho.v5.amp.actor.MethodAmpBase;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpBase;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.bartender.pod.PodRef;
 
 /**
  * Actor for a link to a remote Bartender server.
  */
-public class ActorLink extends ActorAmpBase
+public class ActorLink extends StubAmpBase
 {
   // private final String _addressRemote;
   //private final ActorAmpOut _actorOut;
@@ -148,7 +148,7 @@ public class ActorLink extends ActorAmpBase
 
   @Override
   public void queryReply(HeadersAmp headers, 
-                         ActorAmp rampActor,
+                         StubAmp rampActor,
                          long id,
                          Object result)
   {
@@ -161,7 +161,7 @@ public class ActorLink extends ActorAmpBase
 
   @Override
   public void queryError(HeadersAmp headers,
-                         ActorAmp rampActor,
+                         StubAmp rampActor,
                          long id,
                          Throwable exn)
   {
@@ -258,7 +258,7 @@ public class ActorLink extends ActorAmpBase
 
     @Override
     public void send(HeadersAmp headers,
-                     ActorAmp actor,
+                     StubAmp actor,
                      Object []args)
     {
       // RampConnectionProxy connActor = (RampConnectionProxy) actor;
@@ -274,7 +274,7 @@ public class ActorLink extends ActorAmpBase
     @Override
     public void query(HeadersAmp headers,
                       Result<?> result,
-                      ActorAmp actor,
+                      StubAmp actor,
                       Object []args)
     {
       //OutboxDeliver<MessageAmp> outboxDeliver = ContextOutbox.getCurrent();
@@ -311,7 +311,7 @@ public class ActorLink extends ActorAmpBase
     @Override
     public <T> void stream(HeadersAmp headers,
                            ResultStream<T> result,
-                           ActorAmp actor,
+                           StubAmp actor,
                            Object []args)
     {
       //System.out.println("  S-REM: " + getRemoteAddress() + " " + this + " " + ActorAmpOutClientProxy.this);

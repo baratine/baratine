@@ -31,15 +31,15 @@ package com.caucho.v5.amp.session;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.proxy.ActorAmpBean;
-import com.caucho.v5.amp.proxy.StubClassSession;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.ClassStubSession;
+import com.caucho.v5.amp.stub.StubAmpBean;
 
 
 /**
  * Baratine actor skeleton
  */
-public class ActorSkeletonSession extends ActorAmpBean
+public class ActorSkeletonSession extends StubAmpBean
 {
   private ContextSession _context;
   private boolean _isModified;
@@ -47,7 +47,7 @@ public class ActorSkeletonSession extends ActorAmpBean
   private Object _key;
   private String _id;
   
-  public ActorSkeletonSession(StubClassSession skel,
+  public ActorSkeletonSession(ClassStubSession skel,
                                Object bean,
                                String key,
                                ContextSession context)
@@ -136,9 +136,9 @@ public class ActorSkeletonSession extends ActorAmpBean
   }
   */
   
-  protected StubClassSession getSkeletonSession()
+  protected ClassStubSession getSkeletonSession()
   {
-    return (StubClassSession) skeleton();
+    return (ClassStubSession) stubClass();
   }
 
   public Object getKey()

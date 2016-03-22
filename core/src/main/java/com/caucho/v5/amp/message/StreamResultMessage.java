@@ -32,9 +32,9 @@ package com.caucho.v5.amp.message;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.stream.ResultStream;
 
@@ -140,7 +140,7 @@ public class StreamResultMessage<T>
   }
 
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actor)
+  public void invoke(InboxAmp inbox, StubAmp actor)
   {
     if (! actor.isPrimary()) {
       return;

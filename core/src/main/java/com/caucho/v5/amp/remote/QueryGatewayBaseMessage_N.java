@@ -31,11 +31,11 @@ package com.caucho.v5.amp.remote;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.QueryMessageBase;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handle to an amp instance.
@@ -59,9 +59,9 @@ public class QueryGatewayBaseMessage_N
   }
 
   @Override
-  public final void invokeQuery(InboxAmp inbox, ActorAmp actorDeliver)
+  public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
-    ActorAmp actorMessage = serviceRef().getActor();
+    StubAmp actorMessage = serviceRef().getActor();
 
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,

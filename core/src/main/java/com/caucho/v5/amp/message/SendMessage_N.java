@@ -35,12 +35,12 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.proxy.ActorAmpBean;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpBean;
 
 /**
  * Handle to an amp instance.
@@ -97,9 +97,9 @@ public final class SendMessage_N extends MethodMessageBase
   }
 
   @Override
-  public final void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public final void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
-    ActorAmp actorMessage = serviceRef().getActor();
+    StubAmp actorMessage = serviceRef().getActor();
     
     actorDeliver.load(actorMessage, this)
                 .send(actorDeliver,

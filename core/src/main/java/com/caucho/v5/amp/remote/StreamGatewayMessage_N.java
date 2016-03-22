@@ -35,11 +35,11 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryMessageBase;
 import com.caucho.v5.amp.remote.GatewayReply;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handle to an amp instance.
@@ -91,9 +91,9 @@ public class StreamGatewayMessage_N
   }
 
   @Override
-  public final void invokeQuery(InboxAmp inbox, ActorAmp actorDeliver)
+  public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
-    ActorAmp actorMessage = serviceRef().getActor();
+    StubAmp actorMessage = serviceRef().getActor();
 
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,
@@ -104,7 +104,7 @@ public class StreamGatewayMessage_N
   }
 
   @Override
-  protected boolean invokeOk(ActorAmp actor)
+  protected boolean invokeOk(StubAmp actor)
   {
     HeadersAmp headers = null;
     
@@ -118,7 +118,7 @@ public class StreamGatewayMessage_N
   }
 
   @Override
-  protected boolean invokeFail(ActorAmp actor)
+  protected boolean invokeFail(StubAmp actor)
   {
     HeadersAmp headers = null;
     

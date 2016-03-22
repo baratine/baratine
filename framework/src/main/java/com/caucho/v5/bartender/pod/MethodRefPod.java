@@ -41,8 +41,8 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.MethodRefBase;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.util.L10N;
 
 /**

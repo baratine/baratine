@@ -41,18 +41,18 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpBase;
-import com.caucho.v5.amp.actor.MethodAmpBase;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpBase;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.util.L10N;
 
 /**
  * actor to handle inbound calls.
  */
-class EventNodeActor extends ActorAmpBase
+class EventNodeActor extends StubAmpBase
 {
   private static final L10N L = new L10N(EventNodeActor.class);
   private static final Logger log = Logger.getLogger(EventNodeActor.class.getName());
@@ -78,7 +78,7 @@ class EventNodeActor extends ActorAmpBase
   }
   
   @Override
-  public String getName()
+  public String name()
   {
     return _address;
   }
@@ -162,7 +162,7 @@ class EventNodeActor extends ActorAmpBase
   }
   
   @Override
-  public ActorAmp onLookup(String path, ServiceRefAmp parentRef)
+  public StubAmp onLookup(String path, ServiceRefAmp parentRef)
   {
     return _root.lookupPubSubNode(_address + path);
   }
@@ -236,7 +236,7 @@ class EventNodeActor extends ActorAmpBase
 
     @Override
     public void send(HeadersAmp headers,
-                     ActorAmp actor,
+                     StubAmp actor,
                      Object []args)
     {
       publish(_name, args);
@@ -245,7 +245,7 @@ class EventNodeActor extends ActorAmpBase
     @Override
     public void query(HeadersAmp headers,
                       Result<?> result,
-                      ActorAmp actor,
+                      StubAmp actor,
                       Object []args)
     {
       send(headers, actor, args);

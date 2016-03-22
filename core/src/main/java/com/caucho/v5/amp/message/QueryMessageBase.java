@@ -38,11 +38,11 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -268,12 +268,12 @@ public class QueryMessageBase<T> extends MethodMessageBase
   }
 
   @Override
-  public final void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public final void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
     _state.invoke(this, inbox, actorDeliver);
   }
   
-  public void invokeQuery(InboxAmp inbox, ActorAmp actorDeliver)
+  public void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
     RuntimeException e = new UnsupportedOperationException(getClass().getName());
     e.fillInStackTrace();
@@ -281,12 +281,12 @@ public class QueryMessageBase<T> extends MethodMessageBase
     fail(e);
   }
   
-  protected boolean invokeOk(ActorAmp actorDeliver)
+  protected boolean invokeOk(StubAmp actorDeliver)
   {
     return true;
   }
   
-  protected boolean invokeFail(ActorAmp actorDeliver)
+  protected boolean invokeFail(StubAmp actorDeliver)
   {
     return true;
   }
@@ -354,7 +354,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       }
 
       @Override
-      void invoke(QueryMessageBase<?> query, InboxAmp inbox, ActorAmp actorDeliver)
+      void invoke(QueryMessageBase<?> query, InboxAmp inbox, StubAmp actorDeliver)
       {
         query._state = SENT;
         
@@ -394,7 +394,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       }
 
       @Override
-      void invoke(QueryMessageBase<?> query, InboxAmp inbox, ActorAmp actorDeliver)
+      void invoke(QueryMessageBase<?> query, InboxAmp inbox, StubAmp actorDeliver)
       {
         // XXX: for journal
         try {
@@ -422,7 +422,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       }
 
       @Override
-      void invoke(QueryMessageBase<?> query, InboxAmp inbox, ActorAmp actorDeliver)
+      void invoke(QueryMessageBase<?> query, InboxAmp inbox, StubAmp actorDeliver)
       {
         if (query.invokeOk(actorDeliver)) {
           query._state = CLOSED;
@@ -447,7 +447,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       }
 
       @Override
-      void invoke(QueryMessageBase<?> query, InboxAmp inbox, ActorAmp actorDeliver)
+      void invoke(QueryMessageBase<?> query, InboxAmp inbox, StubAmp actorDeliver)
       {
         if (query.invokeFail(actorDeliver)) {
           query._state = CLOSED;
@@ -505,7 +505,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       throw new IllegalStateException(this + " " + query + " " + value);
     }
     
-    void invoke(QueryMessageBase<?> query, InboxAmp inbox, ActorAmp actorDeliver)
+    void invoke(QueryMessageBase<?> query, InboxAmp inbox, StubAmp actorDeliver)
     {
       throw new IllegalStateException(this + " " + query + " " + inbox + " " + actorDeliver + " " + System.identityHashCode(query));
     }

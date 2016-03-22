@@ -29,7 +29,8 @@
 
 package com.caucho.v5.amp.spi;
 
-import com.caucho.v5.amp.actor.SaveResult;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.SaveResult;
 
 import io.baratine.service.Result;
 
@@ -44,7 +45,7 @@ import io.baratine.service.Result;
  * the actor.  addresses are typically URLs.
  *
  */
-public interface ActorAmpState extends ActorAmp
+public interface ActorAmpState extends StubAmp
 {
   boolean isJournalReplay();
   void queuePendingReplayMessage(MessageAmp msg);

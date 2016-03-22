@@ -29,8 +29,8 @@
 
 package com.caucho.v5.amp.service;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -38,7 +38,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
  */
 public class ServiceRefPublic extends ServiceRefCore
 {
-  public ServiceRefPublic(ActorAmp actor,
+  public ServiceRefPublic(StubAmp actor,
                           InboxAmp inbox)
   {
     super(actor, inbox);

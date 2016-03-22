@@ -32,10 +32,10 @@ package com.caucho.v5.amp.service;
 import io.baratine.service.ServiceRef;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Service ref with an alias.
@@ -69,7 +69,7 @@ public class ServiceRefAlias extends ServiceRefWrapper
   }
   
   @Override
-  public ActorAmp getActor()
+  public StubAmp getActor()
   {
     return _serviceRef.getActor();
   }

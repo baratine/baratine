@@ -36,8 +36,8 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.inbox.InboxQueue;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.ServiceException;
 
@@ -50,9 +50,9 @@ public class DeliverJournal implements Deliver<MessageAmp>
     = Logger.getLogger(DeliverJournal.class.getName());
   
   private final InboxQueue _inbox;
-  private final ActorAmp _actorDeliver;
+  private final StubAmp _actorDeliver;
 
-  public DeliverJournal(ActorAmp actor,
+  public DeliverJournal(StubAmp actor,
                         InboxQueue inbox)
   {
     Objects.requireNonNull(actor);

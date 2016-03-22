@@ -40,9 +40,9 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.proxy.StubClassSession;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.ClassStubSession;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.config.ConfigExceptionLocation;
 import com.caucho.v5.util.L10N;
@@ -76,7 +76,7 @@ public class SessionServiceManagerImpl
   
   private ServiceRef _serviceRefSelf;
 
-  private StubClassSession _skeleton;
+  private ClassStubSession _skeleton;
   
   public SessionServiceManagerImpl(String path,
                                    ServiceManagerAmp ampManager,
@@ -87,7 +87,7 @@ public class SessionServiceManagerImpl
     _classResource = classResource;
     _supplierBean = supplierBean;
     
-    _skeleton = new StubClassSession(ampManager, classResource, config);
+    _skeleton = new ClassStubSession(ampManager, classResource, config);
     
     ContextSessionFactory factory = new ContextSessionFactory(ampManager);
     

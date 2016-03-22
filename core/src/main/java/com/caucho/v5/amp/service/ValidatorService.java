@@ -31,15 +31,18 @@ package com.caucho.v5.amp.service;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.actor.TransferAsset;
+import com.caucho.v5.amp.stub.TransferAsset;
+import com.caucho.v5.amp.vault.VaultException;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
+import io.baratine.service.ServiceException;
+import io.baratine.service.Shim;
 import io.baratine.service.Vault;
 
 /**
@@ -82,6 +85,8 @@ public class ValidatorService
       throw error(L.l("abstract service class '{0}' is invalid because the abstract methods can't be generated.",
                       serviceClass.getName()));
     }
+    
+    serviceMethods(serviceClass);
   }
   
   private <T> void validateServiceClass(Class<T> serviceClass)
@@ -142,10 +147,7 @@ public class ValidatorService
   
   private boolean abstractMethod(Class<?> serviceClass, Method method)
   {
-    if (method.getName().startsWith("get")) {
-      return abstractGetTransfer(serviceClass, method);
-    }
-    else if (Vault.class.isAssignableFrom(serviceClass)) {
+    if (Vault.class.isAssignableFrom(serviceClass)) {
       if (method.getName().startsWith("create")) {
         return true;
       }
@@ -155,6 +157,49 @@ public class ValidatorService
     }
     
     return false;
+  }
+  
+  private <T> void serviceMethods(Class<T> serviceClass)
+  {
+    for (Method method : serviceClass.getMethods()) {
+      serviceMethod(serviceClass, method);
+    }
+  }
+  
+  private void serviceMethod(Class<?> serviceClass, Method method)
+  {
+    for (Parameter param : method.getParameters()) {
+      if (param.getType().equals(Result.class)) {
+        if (param.isAnnotationPresent(Shim.class)) {
+          shimResult(serviceClass, method, param);
+        }
+      }
+    }
+  }
+  
+  private void shimResult(Class<?> serviceClass, Method method, Parameter param)
+  {
+    TypeRef valueRef = TypeRef.of(param.getParameterizedType())
+                              .to(Result.class)
+                              .param(0);
+    
+    Class<?> valueClass = valueRef.rawClass();
+    
+    try {
+      new TransferAsset<>(serviceClass, valueClass);
+    } catch (VaultException e) {
+      throw error(e,
+                  "{0}.{1}: {2}",
+                  serviceClass.getSimpleName(),
+                  method.getName(),
+                  e.getMessage());
+    } catch (Exception e) {
+      throw error(e,
+                  "{0}.{1}: {2}",
+                  serviceClass.getSimpleName(),
+                  method.getName(),
+                  e.toString());
+    }
   }
   
   private boolean abstractGetTransfer(Class<?> serviceClass,
@@ -206,5 +251,10 @@ public class ValidatorService
   private RuntimeException error(String msg, Object ...args)
   {
     throw new IllegalArgumentException(L.l(msg, args));
+  }
+  
+  private RuntimeException error(Throwable cause, String msg, Object ...args)
+  {
+    throw new IllegalArgumentException(L.l(msg, args), cause);
   }
 }

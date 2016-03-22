@@ -36,13 +36,13 @@ import io.baratine.stream.ResultStream;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Mailbox for an actor
@@ -220,7 +220,7 @@ abstract public class InboxWrapper implements InboxAmp
   }
 
   @Override
-  public ActorAmp getDirectActor()
+  public StubAmp getDirectActor()
   {
     return delegate().getDirectActor();
   }

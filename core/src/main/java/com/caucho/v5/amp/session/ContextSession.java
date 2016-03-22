@@ -37,13 +37,13 @@ import java.util.function.Consumer;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.proxy.StubClassSession;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.ServiceRefSession;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.ClassStubSession;
+import com.caucho.v5.amp.stub.StubFactoryAmp;
 import com.caucho.v5.util.Murmur32;
 
 import io.baratine.service.Result;
@@ -65,7 +65,7 @@ public class ContextSession
 
   private ServiceRefAmp _serviceRefSelf;
 
-  private StubClassSession _skeleton;
+  private ClassStubSession _skeleton;
 
   private ServiceManagerAmp _ampManager;
 
@@ -135,9 +135,9 @@ public class ContextSession
 
       //ActorAmp actor = _context.createActorResource(bean, key);
       
-      ProxyFactoryAmp proxyFactory = _ampManager.getProxyFactory();
+      StubFactoryAmp stubFactory = _ampManager.stubFactory();
       
-      ActorAmp actor = proxyFactory.createSkeletonSession(bean, key, this, _config);
+      StubAmp actor = stubFactory.createSkeletonSession(bean, key, this, _config);
     
       //actor.onInit(Result.ignore());
       //actor.onActive(Result.ignore());
@@ -152,7 +152,7 @@ public class ContextSession
     return serviceRef;
   }
 
-  public void setSkeleton(StubClassSession skeleton)
+  public void setSkeleton(ClassStubSession skeleton)
   {
     _skeleton = skeleton;
   }

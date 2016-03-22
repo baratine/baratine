@@ -34,9 +34,9 @@ import io.baratine.service.Result;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.deliver.QueueDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to shut down an instance.
@@ -66,7 +66,7 @@ public class ReplayMessage extends MessageAmpBase
   }
   
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actor)
+  public void invoke(InboxAmp inbox, StubAmp actor)
   {
     try {
       actor.replay(inbox, _queue, _result);

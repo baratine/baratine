@@ -33,13 +33,11 @@ import java.lang.ref.SoftReference;
 import java.util.ServiceLoader;
 import java.util.WeakHashMap;
 
-import io.baratine.inject.InjectManager.InjectBuilderRoot;
-import io.baratine.service.ServiceClient.Builder;
+import io.baratine.inject.InjectManager.InjectBuilder;
 import io.baratine.service.ServiceManager;
 import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
-import io.baratine.web.WebServerBuilder;
 
 /**
  * Provider for AMP services.
@@ -177,7 +175,7 @@ abstract public class ServiceManagerProvider implements AutoCloseable
     }
   }
 
-  public InjectBuilderRoot injectManager(ClassLoader classLoader)
+  public InjectBuilder injectManager(ClassLoader classLoader)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

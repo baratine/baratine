@@ -29,6 +29,7 @@
 
 package com.caucho.v5.inject.impl;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,39 +38,47 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import javax.inject.Provider;
+import javax.inject.Qualifier;
+import javax.inject.Scope;
 import javax.inject.Singleton;
 
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.convert.ConvertAutoBind;
 import com.caucho.v5.inject.BindingAmp;
 import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderRootAmp;
+import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.InjectManagerImpl.BindingSet;
+import com.caucho.v5.util.L10N;
 
 import io.baratine.config.Config;
+import io.baratine.inject.Factory;
 import io.baratine.inject.InjectManager;
 import io.baratine.inject.InjectManager.BindingBuilder;
 import io.baratine.inject.InjectManager.InjectAutoBind;
 import io.baratine.inject.InjectManager.InjectBuilder;
-import io.baratine.inject.InjectManager.InjectBuilderRoot;
+import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.service.Lookup;
 
 /**
  * The injection manager for a given environment.
  */
-public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
+public class InjectManagerBuilderImpl implements InjectBuilderAmp
 {
+  private static final L10N L = new L10N(InjectManagerBuilderImpl.class);
   private static final Logger log = Logger.getLogger(InjectManagerBuilderImpl.class.getName());
   
   private final ClassLoader _loader;
   
-  private HashMap<Class<?>,InjectScope> _scopeMap = new HashMap<>();
+  private HashMap<Class<?>,Supplier<InjectScope<?>>> _scopeMap = new HashMap<>();
   
-  private InjectScope _scopeDefault = new InjectScopeDefault();
+  //private InjectScope _scopeDefault = new InjectScopeFactory();
+  
+  private ValidatorInject _validator = new ValidatorInject();
   
   private HashSet<Class<?>> _qualifierSet = new HashSet<>();
   
@@ -80,7 +89,7 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
   
   private ArrayList<BindingBuilderImpl> _bindings = new ArrayList<>();
   private ArrayList<InjectAutoBind> _autoBindList = new ArrayList<>();
-  private ArrayList<Class<?>> _beanList = new ArrayList<>();
+  private ArrayList<Class<?>> _includeList = new ArrayList<>();
   
   private InjectManagerImpl _injectManager;
   private boolean _isContext;
@@ -89,7 +98,8 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
   {
     _loader = loader;
       
-    _scopeMap.put(Singleton.class, new InjectScopeSingleton());
+    _scopeMap.put(Singleton.class, InjectScopeSingleton::new);
+    _scopeMap.put(Factory.class, InjectScopeFactory::new);
       
     _qualifierSet.add(Lookup.class);
     
@@ -107,7 +117,7 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
   }
   
   @Override
-  public InjectBuilderRootAmp context(boolean isContext)
+  public InjectBuilderAmp context(boolean isContext)
   {
     _isContext = isContext;
     
@@ -125,6 +135,8 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
     clearManager();
     
     Objects.requireNonNull(type);
+    
+    _validator.beanClass(type);
     
     BindingBuilderImpl<T> binding = new BindingBuilderImpl<>(this, type);
     
@@ -168,18 +180,18 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
   }
   
   @Override
-  public InjectBuilderRoot include(Class<?> beanType)
+  public InjectBuilder include(Class<?> beanType)
   {
     clearManager();
     
-    _beanList.add(beanType);
+    _includeList.add(beanType);
     
     return this;
   }
   
-  ArrayList<Class<?>> beans()
+  private ArrayList<Class<?>> includes()
   {
-    return _beanList;
+    return _includeList;
   }
   
   Config config()
@@ -218,16 +230,118 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
   {
     return _autoBindList;
   }
+
+  HashMap<Class<?>, Supplier<InjectScope<?>>> scopeMap()
+  {
+    return new HashMap<>(_scopeMap);
+  }
   
   void bind(InjectManagerImpl manager)
   {
     addBean(manager, Key.of(InjectManager.class), ()->manager);
+    
+    for (Class<?> beanType : includes()) {
+      addInclude(manager, beanType);
+    }
     
     for (BindingBuilderImpl<?> binding : _bindings) {
       binding.build(manager);
     }
   }
   
+  boolean isQualifier(Annotation ann)
+  {
+    Class<?> annType = ann.annotationType();
+    
+    if (annType.isAnnotationPresent(Qualifier.class)) {
+      return true;
+    }
+    
+    return _qualifierSet.contains(annType);
+  }
+
+  private <X> void addInclude(InjectManagerImpl manager,
+                           Class<X> beanClass)
+  {
+    BindingAmp<X> bindingOwner = newBinding(manager, beanClass);
+    
+    introspectProduces(manager, beanClass, bindingOwner);
+  }
+
+  public <T> BindingAmp<T> newBinding(InjectManagerImpl manager,
+                                      Class<T> type)
+  {
+    BindingBuilderImpl<T> builder = new BindingBuilderImpl<>(this, type);
+
+    return builder.producer(manager);
+  }
+  
+  private <X> void introspectProduces(InjectManagerImpl manager,
+                                      Class<X> beanClass, 
+                                      BindingAmp<X> bindingOwner)
+  {
+    for (Method method : beanClass.getMethods()) {
+      if (! isProduces(method.getAnnotations())) {
+        continue;
+      }
+      
+      introspectMethod(manager, method, bindingOwner);
+    }
+  }
+  
+  private <T,X> void introspectMethod(InjectManagerImpl manager,
+                                      Method method,
+                                      BindingAmp<X> ownerBinding)
+  {
+    if (void.class.equals(method.getReturnType())) {
+      throw new IllegalArgumentException(method.toString());
+    }
+      
+    Class<?> []pTypes = method.getParameterTypes();
+    
+    int ipIndex = findInjectionPoint(pTypes);
+      
+    if (ipIndex >= 0) {
+      BindingAmp<T> binding
+        = new ProviderMethodAtPoint(this, ownerBinding, method);
+      
+      //addProvider(binding);
+      manager.addProvider(binding);
+    }
+    else {
+      ProviderMethod producer
+        = new ProviderMethod(manager, ownerBinding, method);
+        
+      manager.addProvider(producer);
+    }
+  }
+  
+  private int findInjectionPoint(Class<?> []pTypes)
+  {
+    for (int i = 0; i < pTypes.length; i++) {
+      if (InjectionPoint.class.equals(pTypes[i])) {
+        return i;
+      }
+    }
+    
+    return -1;
+  }
+
+  private boolean isProduces(Annotation []anns)
+  {
+    if (anns == null) {
+      return false;
+    }
+    
+    for (Annotation ann : anns) {
+      if (ann.annotationType().isAnnotationPresent(Qualifier.class)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
   private <T> void addBean(InjectManagerImpl manager,
                            Key<T> key, 
                            Provider<? extends T> supplier)
@@ -272,17 +386,24 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
   }
   */
   
-  private static class BindingBuilderImpl<T>
+  private static RuntimeException error(String msg, Object ...args)
+  {
+    return new InjectException(L.l(msg, args));
+  }
+  
+  private class BindingBuilderImpl<T>
     implements BindingBuilder<T>
   {
-    private InjectBuilderRoot _builder;
+    private InjectBuilder _builder;
     private Key<? super T> _key;
     
     private Class<? extends T> _impl;
     private Provider<T> _supplier;
     private int _priority;
     
-    BindingBuilderImpl(InjectBuilderRoot builder, 
+    private Class<? extends Annotation> _scopeType = Singleton.class;
+    
+    BindingBuilderImpl(InjectBuilder builder, 
                        Class<T> type)
     {
       Objects.requireNonNull(builder);
@@ -295,7 +416,7 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
       _impl = type;
     }
     
-    BindingBuilderImpl(InjectBuilderRoot builder, 
+    BindingBuilderImpl(InjectBuilder builder, 
                        T bean)
     {
       Objects.requireNonNull(builder);
@@ -308,7 +429,7 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
       _supplier = ()->bean;
     }
     
-    BindingBuilderImpl(InjectBuilderRoot builder, 
+    BindingBuilderImpl(InjectBuilder builder, 
                        Provider<T> provider)
     {
       Objects.requireNonNull(builder);
@@ -348,19 +469,45 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
       return this;
     }
     
+    @Override
+    public BindingBuilderImpl<T> scope(Class<? extends Annotation> scopeType)
+    {
+      Objects.requireNonNull(scopeType);
+      
+      if (! scopeType.isAnnotationPresent(Scope.class)) {
+        throw error("'@{0}' is an invalid scope type because it is not annotated with @Scope",
+                    scopeType.getSimpleName());
+      }
+      
+      if (_scopeMap.get(scopeType) == null) {
+        throw error("'@{0}' is an unsupported scope. Only @Singleton and @Factory are supported.",
+                    scopeType.getSimpleName());
+        
+      }
+      
+      _scopeType = scopeType;
+      
+      return this;
+    }
+    
     void build(InjectManagerImpl manager)
+    {
+      manager.addProvider(producer(manager));
+    }
+    
+    BindingAmp<T> producer(InjectManagerImpl manager)
     {
       BindingAmp<T> producer;
       
       Provider<T> supplier;
       
       if (_impl != null) {
+        InjectScope<T> scope = manager.scope(_scopeType);
+        
         ProviderConstructor<T> provider
-          = new ProviderConstructor(manager, _key, _priority, _impl);
+          = new ProviderConstructor(manager, _key, _priority, scope, _impl);
         
-        manager.addProvider(provider);
-        
-        return;
+        return provider;
       }
       else if (_supplier != null) {
         supplier = _supplier;
@@ -372,17 +519,8 @@ public class InjectManagerBuilderImpl implements InjectBuilderRootAmp
       
       producer = new ProviderDelegate<T>(manager, (Key) _key, _priority, (Provider) supplier); 
       
-      manager.addProvider(producer);
+      return producer;
     }
-
-    /*
-    @Override
-    public void toSupplier(Key<?> baseKey, Method m)
-    {
-      // TODO Auto-generated method stub
-      
-    }
-    */
   }
 }
 

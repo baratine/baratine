@@ -30,8 +30,8 @@
 package com.caucho.v5.amp.message;
 
 import com.caucho.v5.amp.deliver.WorkerDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * context message for non-actor clients.
@@ -73,7 +73,7 @@ public final class SystemMessage extends MessageAmpBase
   */
 
   @Override
-  public void invoke(InboxAmp mailbox, ActorAmp actor)
+  public void invoke(InboxAmp mailbox, StubAmp actor)
   {
     throw new IllegalStateException(getClass().getName());
   }

@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.spi;
 
-
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * State/dispatch for a loadable actor.
@@ -39,7 +39,7 @@ public class LoadStateLoadBase implements LoadState
   public static final LoadStateLoadBase LOAD = new LoadStateLoadBase();
   
   @Override
-  public LoadState load(ActorAmp actor,
+  public LoadState load(StubAmp actor,
                         InboxAmp inbox,
                         MessageAmp msg)
   {
@@ -47,7 +47,7 @@ public class LoadStateLoadBase implements LoadState
   }
 
   @Override
-  public void onModify(ActorAmp  actorAmpBase)
+  public void onModify(StubAmp  actorAmpBase)
   {
   }
 }

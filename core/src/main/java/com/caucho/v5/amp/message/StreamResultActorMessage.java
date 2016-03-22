@@ -33,9 +33,9 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.stream.ResultStream;
 
@@ -127,11 +127,11 @@ public class StreamResultActorMessage
   }
 
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
     _isSent = true;
     
-    ActorAmp actorMessage = getServiceRef().getActor();
+    StubAmp actorMessage = getServiceRef().getActor();
     
     actorDeliver.load(actorMessage, this)
                 .streamResult(actorDeliver, actorMessage, 

@@ -728,7 +728,7 @@ class ResultImpl
     @Override
     public <V> void completeFuture(Result<V> result, V value)
     {
-      getNext().completeFuture(result, value);
+      delegate().completeFuture(result, value);
     }
     
     @Override
@@ -737,7 +737,7 @@ class ResultImpl
       //Object oldContext = beginAsyncContext();
       
       try {
-        _consumer.accept(value, getNext());
+        _consumer.accept(value, delegate());
       } catch (Throwable e) {
         fail(e);
       } finally {
@@ -775,7 +775,7 @@ class ResultImpl
       try {
         U nextValue = _fun.apply(value);
 
-        getNext().ok(nextValue);
+        delegate().ok(nextValue);
       } catch (Throwable e) {
         fail(e);
       }
@@ -804,9 +804,9 @@ class ResultImpl
     public void fail(Throwable exn)
     {
       try {
-        _exnHandler.accept(exn, getNext());
+        _exnHandler.accept(exn, delegate());
       } catch (Throwable e) {
-        getNext().fail(e);
+        delegate().fail(e);
       }
     }
   }
@@ -859,7 +859,7 @@ class ResultImpl
       try {
         U nextValue = _fun.apply(value);
         
-        getNext().completeFuture(nextValue);
+        delegate().completeFuture(nextValue);
       } catch (Throwable e) {
         fail(e);
       } finally {
@@ -890,9 +890,9 @@ class ResultImpl
     public void fail(Throwable exn)
     {
       try {
-        _exnHandler.accept(exn, getNext());
+        _exnHandler.accept(exn, delegate());
       } catch (Throwable e) {
-        getNext().fail(e);
+        delegate().fail(e);
       }
     }
   }

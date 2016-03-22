@@ -31,7 +31,7 @@ package io.baratine.web;
 
 import io.baratine.inject.InjectManager.InjectBuilder;
 
-public interface WebServerBuilder extends WebBuilder, InjectBuilder
+public interface WebServerBuilder extends WebBuilder
 {
   WebServerBuilder args(String []args);
   

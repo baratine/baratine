@@ -35,7 +35,7 @@ import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 /**
  * Handle to an amp instance.

@@ -31,8 +31,8 @@ package com.caucho.v5.amp.service;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -40,7 +40,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
  */
 public class ServiceRefCore extends ServiceRefActorBase
 {
-  public ServiceRefCore(ActorAmp actor,
+  public ServiceRefCore(StubAmp actor,
                         InboxAmp inbox)
   {
     super(actor, inbox);

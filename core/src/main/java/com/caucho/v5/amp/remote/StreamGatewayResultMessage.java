@@ -33,10 +33,10 @@ import java.util.ArrayList;
 
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.MessageOutboxBase;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -45,7 +45,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 public class StreamGatewayResultMessage
   extends MessageOutboxBase
   {
-  private ActorAmp _actor;
+  private StubAmp _actor;
 
   private long _qid;
   private HeadersAmp  _headers;
@@ -61,7 +61,7 @@ public class StreamGatewayResultMessage
 
   public StreamGatewayResultMessage(OutboxAmp outbox,
                                     InboxAmp inbox,
-                                    ActorAmp actor,
+                                    StubAmp actor,
                                     long qid)
   {
     super(outbox, inbox);
@@ -116,7 +116,7 @@ public class StreamGatewayResultMessage
   }
 
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actor)
+  public void invoke(InboxAmp inbox, StubAmp actor)
   {
     _isSent = true;
 

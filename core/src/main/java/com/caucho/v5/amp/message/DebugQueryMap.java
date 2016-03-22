@@ -35,7 +35,7 @@ import io.baratine.service.ServiceRef;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.Alarm;
 import com.caucho.v5.util.CurrentTime;

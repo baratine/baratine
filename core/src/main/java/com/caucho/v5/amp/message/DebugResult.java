@@ -33,7 +33,7 @@ import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionTimeout;
 import io.baratine.service.ServiceRef;
 
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 

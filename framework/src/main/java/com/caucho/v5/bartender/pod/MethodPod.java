@@ -42,11 +42,11 @@ import com.caucho.v5.amp.marshal.ResultStreamImport;
 import com.caucho.v5.amp.message.ResultStreamAmp;
 import com.caucho.v5.amp.message.StreamForkMessage;
 import com.caucho.v5.amp.remote.ActorLink;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.io.ResultPipeIn;
@@ -193,7 +193,7 @@ public class MethodPod implements MethodAmp
   }
 
   @Override
-  public void send(HeadersAmp headers, ActorAmp actor, Object[] args)
+  public void send(HeadersAmp headers, StubAmp actor, Object[] args)
   {
     MethodShim methodShim = findActiveMethodShim();
 
@@ -203,7 +203,7 @@ public class MethodPod implements MethodAmp
   @Override
   public void query(HeadersAmp headers, 
                     Result<?> result,
-                    ActorAmp actor,
+                    StubAmp actor,
                     Object[] args)
   {
     try {
@@ -221,7 +221,7 @@ public class MethodPod implements MethodAmp
   @Override
   public <T> void stream(HeadersAmp headers, 
                          ResultStream<T> result,
-                         ActorAmp actor,
+                         StubAmp actor,
                          Object[] args)
   {
     int nodeCount = _serviceRef.getPod().nodeCount();
@@ -276,7 +276,7 @@ public class MethodPod implements MethodAmp
   @Override
   public <T> void outPipe(HeadersAmp headers, 
                           ResultPipeOut<T> result,
-                          ActorAmp actor,
+                          StubAmp actor,
                           Object[] args)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
@@ -288,7 +288,7 @@ public class MethodPod implements MethodAmp
   @Override
   public <T> void inPipe(HeadersAmp headers, 
                           ResultPipeIn<T> result,
-                          ActorAmp actor,
+                          StubAmp actor,
                           Object[] args)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
@@ -474,13 +474,13 @@ public class MethodPod implements MethodAmp
   
   private interface MethodShim
   {
-    void send(HeadersAmp headers, ActorAmp actor, Object []args);
+    void send(HeadersAmp headers, StubAmp actor, Object []args);
     
-    void query(HeadersAmp headers, Result<?> result, ActorAmp actor, Object []args);
+    void query(HeadersAmp headers, Result<?> result, StubAmp actor, Object []args);
     
     <T> void stream(HeadersAmp headers, 
                     ResultStream<T> queryRef,
-                    ActorAmp actor, 
+                    StubAmp actor, 
                     Object[] args);
   }
   
@@ -497,7 +497,7 @@ public class MethodPod implements MethodAmp
     }
 
     @Override
-    public void send(HeadersAmp headers, ActorAmp actor, Object []args)
+    public void send(HeadersAmp headers, StubAmp actor, Object []args)
     {
       //_methodRef.send(headers, actor, args);
       _methodRef.method().send(headers, actor, args);
@@ -506,7 +506,7 @@ public class MethodPod implements MethodAmp
     @Override
     public void query(HeadersAmp headers, 
                       Result<?> result,
-                      ActorAmp actor,
+                      StubAmp actor,
                       Object []args)
     {
       //_methodRef.query(headers, result, actor, args);
@@ -516,7 +516,7 @@ public class MethodPod implements MethodAmp
     @Override
     public <T> void stream(HeadersAmp headers, 
                            ResultStream<T> result,
-                           ActorAmp actor, 
+                           StubAmp actor, 
                            Object[] args)
     {
       //_methodRef.stream(headers, result, actor, args);
@@ -587,7 +587,7 @@ public class MethodPod implements MethodAmp
 
     @Override
     public void send(HeadersAmp headers,
-                     ActorAmp actor,
+                     StubAmp actor,
                      Object []args)
     {
       //_methodTarget.send(headers, actor, marshalArgs(args));
@@ -597,7 +597,7 @@ public class MethodPod implements MethodAmp
     @Override
     public void query(HeadersAmp headers,
                       Result<?> result, 
-                      ActorAmp actor,
+                      StubAmp actor,
                       Object []args)
     {
       ClassLoader loader = _importContext.getImportLoader();
@@ -612,7 +612,7 @@ public class MethodPod implements MethodAmp
     @Override
     public <T> void stream(HeadersAmp headers, 
                            ResultStream<T> result,
-                           ActorAmp actor, 
+                           StubAmp actor, 
                            Object[] args)
     {
       ClassLoader loader = _importContext.getImportLoader();

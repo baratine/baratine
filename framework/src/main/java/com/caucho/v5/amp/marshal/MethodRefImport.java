@@ -31,10 +31,10 @@ package com.caucho.v5.amp.marshal;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.MethodRefBase;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -103,7 +103,7 @@ public class MethodRefImport extends MethodRefBase
   }
 
   @Override
-  public ActorAmp getActor(ActorAmp actorDeliver)
+  public StubAmp getActor(StubAmp actorDeliver)
   {
     return getDelegate().getActor(actorDeliver);
   }

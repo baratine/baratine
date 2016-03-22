@@ -31,7 +31,7 @@ package com.caucho.v5.cloud.security;
 
 import java.security.MessageDigest;
 
-import com.caucho.v5.config.AdminLiteral;
+import com.caucho.v5.config.Admin;
 import com.caucho.v5.http.security.AuthenticatorRole;
 import com.caucho.v5.http.security.BasicPrincipal;
 import com.caucho.v5.http.security.DigestBuilder;
@@ -41,6 +41,8 @@ import com.caucho.v5.ramp.hamp.SignedCredentials;
 import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.Base64Util;
+
+import io.baratine.inject.Key;
 
 public class SecuritySystem extends SubSystemBase
 {
@@ -289,10 +291,10 @@ public class SecuritySystem extends SubSystemBase
 
     AuthenticatorRole auth;
     
-    auth = injectManager.lookup(AuthenticatorRole.class, new AdminLiteral());
+    auth = injectManager.instance(Key.of(AuthenticatorRole.class, Admin.class));
     
     if (auth == null) {
-      auth = injectManager.lookup(AuthenticatorRole.class);
+      auth = injectManager.instance(AuthenticatorRole.class);
     }
     
     /*

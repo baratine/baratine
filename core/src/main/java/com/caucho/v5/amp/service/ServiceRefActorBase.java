@@ -40,14 +40,14 @@ import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.message.SubscribeMessage;
 import com.caucho.v5.amp.message.UnsubscribeMessage;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
@@ -64,9 +64,9 @@ abstract class ServiceRefActorBase extends ServiceRefBase
     = Logger.getLogger(ServiceRefActorBase.class.getName());
   
   private final InboxAmp _inbox;
-  private final ActorAmp _actor;
+  private final StubAmp _actor;
 
-  public ServiceRefActorBase(ActorAmp actor,
+  public ServiceRefActorBase(StubAmp actor,
                              InboxAmp inbox)
   {
     _actor = actor;
@@ -98,7 +98,7 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   }
   
   @Override
-  public ActorAmp getActor()
+  public StubAmp getActor()
   {
     return _actor;
   }
@@ -202,14 +202,14 @@ abstract class ServiceRefActorBase extends ServiceRefBase
       
       ServiceConfig config = null;
       
-      ActorAmp actorChild = manager().createActor(child, config);
+      StubAmp actorChild = manager().createActor(child, config);
 
       return createChild(subpath, actorChild);
     }
   }
   
   protected ServiceRefAmp createChild(String address, 
-                                      ActorAmp child)
+                                      StubAmp child)
   {
     return new ServiceRefChild(address, child, _inbox);
   }                                      
@@ -219,11 +219,11 @@ abstract class ServiceRefActorBase extends ServiceRefBase
     return getLookupActor().onLookup(path, this);
   }
   
-  protected ActorAmp getLookupActor()
+  protected StubAmp getLookupActor()
   {
     // baratine/1618
     // ActorAmp actor = getInbox().getDirectActor();
-    ActorAmp actor = _actor;
+    StubAmp actor = _actor;
     
     return actor;
   }

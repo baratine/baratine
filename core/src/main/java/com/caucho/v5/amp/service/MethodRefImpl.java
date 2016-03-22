@@ -32,7 +32,7 @@ package com.caucho.v5.amp.service;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 /**
  * Handles the context for an actor, primarily including its

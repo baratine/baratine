@@ -35,8 +35,8 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * worker factory for the queue inbox.
@@ -47,12 +47,12 @@ public class DeliverInboxFactory implements Supplier<Deliver<MessageAmp>>
     = Logger.getLogger(DeliverInboxFactory.class.getName());
   
   private final InboxQueue _inbox;
-  private final Supplier<ActorAmp> _supplier;
+  private final Supplier<StubAmp> _supplier;
   private final ServiceConfig _config;
   private DeliverInboxState _stateMultiWorker;
 
   DeliverInboxFactory(InboxQueue inbox,
-                      Supplier<ActorAmp> supplierActor,
+                      Supplier<StubAmp> supplierActor,
                       ServiceConfig config)
   {
     _inbox = inbox;
@@ -67,7 +67,7 @@ public class DeliverInboxFactory implements Supplier<Deliver<MessageAmp>>
   @Override
   public Deliver<MessageAmp> get()
   {
-    ActorAmp actor = _supplier.get();
+    StubAmp actor = _supplier.get();
     
     boolean isDebug = _inbox.manager().isDebug() || log.isLoggable(Level.FINE);
 

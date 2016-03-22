@@ -44,12 +44,12 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Abstract implementation for a service ref.
@@ -107,7 +107,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public ActorAmp getActor()
+  public StubAmp getActor()
   {
     return null;
   }
@@ -115,7 +115,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   @Override
   public Class<?> apiClass()
   {
-    ActorAmp actor = getActor();
+    StubAmp actor = getActor();
     
     if (actor != null) {
       return actor.getApiClass();

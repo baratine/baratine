@@ -29,8 +29,10 @@
 
 package io.baratine.inject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.inject.Provider;
 
@@ -72,9 +74,9 @@ public interface InjectManager
   <T> T instance(InjectionPoint<T> ip);
   
   /**
-   * Injects dependencies.
+   * Consumer for injecting dependencies.
    */
-  void inject(Object bean);
+  <T> Consumer<T> injector(Class<T> type);
 
   /**
    * Returns the bindings associated with a key.
@@ -89,12 +91,12 @@ public interface InjectManager
   /**
    * Creates a new manager.
    */
-  public static InjectBuilderRoot newManager(ClassLoader classLoader)
+  public static InjectBuilder newManager(ClassLoader classLoader)
   {
     return ServiceManagerProvider.current().injectManager(classLoader);
   }
 
-  public static InjectBuilderRoot newManager()
+  public static InjectBuilder newManager()
   {
     return newManager(Thread.currentThread().getContextClassLoader());
   }
@@ -106,11 +108,6 @@ public interface InjectManager
       throw new UnsupportedOperationException(getClass().getName());
     }
     
-    /*
-    <T> BindingBuilder<T> bind(Class<T> api);
-    <T> BindingBuilder<T> bind(Key<T> key);
-    */
-    
     <T> BindingBuilder<T> bean(Class<T> impl);
     <T> BindingBuilder<T> bean(T instance);
     
@@ -118,10 +115,7 @@ public interface InjectManager
     <T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
     
     InjectBuilder autoBind(InjectAutoBind autoBind);
-  }
-  
-  public interface InjectBuilderRoot extends InjectBuilder
-  {
+    
     InjectManager get();
   }
   
@@ -130,16 +124,9 @@ public interface InjectManager
     BindingBuilder<T> to(Class<? super T> api);
     BindingBuilder<T> to(Key<? super T> key);
 
-    //void toSupplier(Key<?> baseKey, Method m);
-
     BindingBuilder<T> priority(int priority);
+    BindingBuilder<T> scope(Class<? extends Annotation> scopeType);
   }
-  
-  /*
-  public interface ScopeBuilder
-  {
-  }
-  */
   
   public interface IncludeInject extends IncludeGenerator<InjectBuilder>
   {

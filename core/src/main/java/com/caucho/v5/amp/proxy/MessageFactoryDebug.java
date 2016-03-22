@@ -43,8 +43,8 @@ import com.caucho.v5.amp.message.SendMessage_1;
 import com.caucho.v5.amp.message.SendMessage_N;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.util.DebugUtil;
 
 import io.baratine.io.ResultPipeIn;

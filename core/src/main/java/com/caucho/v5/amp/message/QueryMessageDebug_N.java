@@ -31,8 +31,8 @@ package com.caucho.v5.amp.message;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 import io.baratine.service.Result;
 

@@ -36,9 +36,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to shut down an instance.
@@ -49,12 +49,12 @@ public class CloseMessageCallback extends MessageAmpBase
     = Logger.getLogger(CloseMessageCallback.class.getName());
   
   private InboxAmp _targetMailbox;
-  private ActorAmp _actor;
+  private StubAmp _actor;
   
   private ResultFuture<Boolean> _future = new ResultFuture<>();
 
   public CloseMessageCallback(InboxAmp mailbox, 
-                              ActorAmp actor)
+                              StubAmp actor)
   {
     _targetMailbox = mailbox;
     _actor = actor;
@@ -68,7 +68,7 @@ public class CloseMessageCallback extends MessageAmpBase
   
   @Override
   public void invoke(InboxAmp mailbox, 
-                     ActorAmp actor)
+                     StubAmp actor)
   {
     try {
       _actor.onShutdown(ShutdownModeAmp.GRACEFUL);

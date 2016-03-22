@@ -39,7 +39,7 @@ import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderRootAmp;
+import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.InjectManagerImpl;
 import com.caucho.v5.loader.EnvLoader;
 
@@ -155,7 +155,7 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
   }
 
   @Override
-  public InjectBuilderRootAmp injectManager(ClassLoader classLoader)
+  public InjectBuilderAmp injectManager(ClassLoader classLoader)
   {
     return InjectManagerImpl.manager(classLoader);
   }

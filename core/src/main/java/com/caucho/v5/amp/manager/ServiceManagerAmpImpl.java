@@ -42,8 +42,6 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpSystem;
-import com.caucho.v5.amp.actor.StubGenerator;
 import com.caucho.v5.amp.inbox.OutboxAmpDirect;
 import com.caucho.v5.amp.inbox.OutboxAmpExecutorFactory;
 import com.caucho.v5.amp.inbox.OutboxAmpImpl;
@@ -51,6 +49,7 @@ import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.SystemMessage;
+import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmpImpl;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.remote.ServiceNodeBase;
@@ -62,14 +61,17 @@ import com.caucho.v5.amp.service.ServiceRefChild;
 import com.caucho.v5.amp.service.ServiceRefPin;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.session.ContextSessionFactory;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpSystem;
+import com.caucho.v5.amp.stub.StubFactoryAmp;
+import com.caucho.v5.amp.stub.StubFactoryAmpImpl;
+import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.inject.InjectManagerAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.lifecycle.Lifecycle;
@@ -105,6 +107,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   
   //private final InboxFactoryAmp _inboxFactory;
   private final ProxyFactoryAmp _proxyFactory;
+  private final StubFactoryAmp _stubFactory;
   private final JournalFactoryAmp _journalFactory;
   private final ContextSessionFactory _channelFactory;
   
@@ -167,6 +170,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     //_inboxFactory = new InboxFactoryQueue(this);
     
     _proxyFactory = new ProxyFactoryAmpImpl(this);
+    _stubFactory = new StubFactoryAmpImpl(this);
     _journalFactory = builder.journalFactory();
     _journalDelay = builder.getJournalDelay();
     
@@ -485,7 +489,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
                            Class<T> api,
                            Class<?> ... apis)
   {
-    return getProxyFactory().createProxy(service, api);
+    return proxyFactory().createProxy(service, api);
   }
 
   /**
@@ -627,7 +631,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     
     ServiceConfig config = null;
     
-    ActorAmp actor = createActor(worker, config);
+    StubAmp actor = createActor(worker, config);
     
     InboxAmp inbox = serviceRef.inbox();
     
@@ -644,21 +648,21 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   }
 
   @Override
-  public ActorAmp createActor(Object bean, ServiceConfig config)
+  public StubAmp createActor(Object bean, ServiceConfig config)
   {
     return createActor(null, bean, config);
   }
 
   //@Override
-  private ActorAmp createActor(String path, 
+  private StubAmp createActor(String path, 
                                Object bean,
                                ServiceConfig config)
   {
-    if (bean instanceof ActorAmp) {
-      return (ActorAmp) bean;
+    if (bean instanceof StubAmp) {
+      return (StubAmp) bean;
     }
     else {
-      return getProxyFactory().createSkeleton(bean, path, path, null, config);
+      return stubFactory().createSkeleton(bean, path, path, null, config);
     }
   }
   
@@ -666,7 +670,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   {
     String path = getSystemAddress();
 
-    ActorAmpSystem actorSystem = new ActorAmpSystem(path, this);
+    StubAmpSystem actorSystem = new StubAmpSystem(path, this);
                                       
     //ServiceConfig config = ServiceConfig.Builder.create().build();
     //ServiceRefAmp serviceRef = service(actorSystem, path, config);
@@ -690,9 +694,16 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     return _outboxFactory;
   }
   
-  public ProxyFactoryAmp getProxyFactory()
+  @Override
+  public ProxyFactoryAmp proxyFactory()
   {
     return _proxyFactory;
+  }
+  
+  @Override
+  public StubFactoryAmp stubFactory()
+  {
+    return _stubFactory;
   }
 
   public StubGenerator []stubGenerators()

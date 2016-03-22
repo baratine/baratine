@@ -32,6 +32,8 @@ package com.caucho.v5.amp.spi;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
@@ -78,7 +80,7 @@ public interface InboxAmp // extends OutboxContext<MessageAmp>
   // support operations
   //
   
-  ActorAmp getDirectActor();
+  StubAmp getDirectActor();
   
   WorkerDeliver<MessageAmp> worker();
 

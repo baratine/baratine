@@ -51,12 +51,12 @@ import com.caucho.v5.amp.message.ReplayMessage;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.ServiceRefCore;
 import com.caucho.v5.amp.service.ServiceRefPublic;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.L10N;
 
@@ -79,7 +79,7 @@ public class InboxQueue extends InboxBase
   private String _bindAddress;
 
   private final QueueDeliver<MessageAmp> _queue;
-  private final ActorAmp _actor;
+  private final StubAmp _actor;
   private final WorkerDeliver<MessageAmp> _worker;
   
   private final boolean _isLifecycleAware;
@@ -106,10 +106,10 @@ public class InboxQueue extends InboxBase
 
     _inboxMessage = new InboxMessage(this);
     
-    ActorAmp actor = serviceQueueFactory.getMainActor();
+    StubAmp actor = serviceQueueFactory.getMainActor();
 
     // String address = "anon:" + actor.getApiClass().getName();
-    String name = actor.getName();
+    String name = actor.name();
     // String address = serviceQueueFactory.getName();
 
     if (name != null) {
@@ -228,7 +228,7 @@ public class InboxQueue extends InboxBase
   /**
    * Init calls the @OnInit methods.
    */
-  private void init(ActorAmp actor)
+  private void init(StubAmp actor)
   {
     //BuildMessageAmp buildMessage = new BuildMessageAmp(this);
 
@@ -238,7 +238,7 @@ public class InboxQueue extends InboxBase
     _queue.wake();
   }
 
-  private void start(ActorAmp actor)
+  private void start(StubAmp actor)
   {
     if (! _lifecycle.toStarting()) {
       return;
@@ -298,7 +298,7 @@ public class InboxQueue extends InboxBase
   }
 
   public Supplier<Deliver<MessageAmp>>
-  createDeliverFactory(Supplier<ActorAmp> supplierActor,
+  createDeliverFactory(Supplier<StubAmp> supplierActor,
                        ServiceConfig config)
   {
     return new DeliverInboxFactory(this,
@@ -306,7 +306,7 @@ public class InboxQueue extends InboxBase
                                        config);
   }
   
-  public Deliver<MessageAmp> createDeliver(ActorAmp actor)
+  public Deliver<MessageAmp> createDeliver(StubAmp actor)
   {
     boolean isDebug = manager().isDebug() || log.isLoggable(Level.FINE);
 
@@ -389,7 +389,7 @@ public class InboxQueue extends InboxBase
   }
 
   @Override
-  public ActorAmp getDirectActor()
+  public StubAmp getDirectActor()
   {
     return _actor;
   }

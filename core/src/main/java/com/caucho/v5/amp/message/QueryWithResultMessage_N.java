@@ -32,11 +32,11 @@ package com.caucho.v5.amp.message;
 import io.baratine.service.Result;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handle to an amp instance.
@@ -71,9 +71,9 @@ public class QueryWithResultMessage_N<V> extends QueryWithResultMessage<V>
   }
 
   @Override
-  public final void invokeQuery(InboxAmp inbox, ActorAmp actorDeliver)
+  public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
-    ActorAmp actorMessage = serviceRef().getActor();
+    StubAmp actorMessage = serviceRef().getActor();
 
     // actorDeliver.load(actorService, message)
     //             .query(actorDeliver, actorService, ...)

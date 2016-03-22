@@ -204,7 +204,7 @@ public class ClassGeneratorVault<T>
       
       String thisClassName;
       
-      thisClassName = typeClassName + "__Store";
+      thisClassName = typeClassName + "__Vault";
       
       if (thisClassName.startsWith("java")) {
         thisClassName = "amp/" + thisClassName;

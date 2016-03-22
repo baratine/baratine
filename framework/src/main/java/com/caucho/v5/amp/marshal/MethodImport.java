@@ -33,10 +33,10 @@ import io.baratine.service.Result;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.actor.MethodAmpBase;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmpBase;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -93,7 +93,7 @@ public class MethodImport extends MethodAmpBase
 
   @Override
   public void send(HeadersAmp headers,
-                   ActorAmp actor,
+                   StubAmp actor,
                    Object []args)
   {
     Object []newArgs = new Object[args.length];
@@ -115,7 +115,7 @@ public class MethodImport extends MethodAmpBase
   @Override
   public void query(HeadersAmp headers,
                     Result<?> result,
-                    ActorAmp actor,
+                    StubAmp actor,
                     Object []args)
   {
     Object []newArgs = new Object[args.length];

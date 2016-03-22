@@ -33,8 +33,8 @@ import io.baratine.service.Result;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to shut down an instance.
@@ -75,7 +75,7 @@ public class OnSaveRequestMessage extends MessageAmpBase
   
   @Override
   public void invoke(InboxAmp inbox, 
-                     ActorAmp actorDeliver)
+                     StubAmp actorDeliver)
   {
     if (! isDisable() && actorDeliver != null) {
       if (! actorDeliver.onSave(this)) {

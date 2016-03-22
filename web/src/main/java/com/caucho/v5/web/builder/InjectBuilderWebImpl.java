@@ -29,6 +29,7 @@
 
 package com.caucho.v5.web.builder;
 
+import java.lang.annotation.Annotation;
 import java.util.Objects;
 
 import io.baratine.inject.InjectManager.BindingBuilder;
@@ -46,6 +47,7 @@ public class InjectBuilderWebImpl<T>
   private Class<? super T> _api;
   private Key<? super T> _key;
   private int _priority;
+  private Class<? extends Annotation> _scopeType;
   
   private BindingBuilder<T> _builder;
   
@@ -107,6 +109,16 @@ public class InjectBuilderWebImpl<T>
     return this;
   }
   
+  public BindingBuilder<T> scope(Class<? extends Annotation> scopeType)
+  {
+    Objects.requireNonNull(scopeType);
+    
+    _scopeType = scopeType;
+    
+    _builder.scope(scopeType);
+    
+    return this;
+  }
 
   @Override
   public void build(WebBuilder builderWeb)

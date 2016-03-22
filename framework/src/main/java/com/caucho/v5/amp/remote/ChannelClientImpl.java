@@ -40,13 +40,13 @@ import com.caucho.v5.amp.message.QueryErrorMessage;
 import com.caucho.v5.amp.message.QueryReplyMessage;
 import com.caucho.v5.amp.service.ServiceRefNull;
 import com.caucho.v5.amp.service.ServiceRefUnauthorized;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Broker specific to the server link. The broker will serve link-specific
@@ -63,7 +63,7 @@ public class ChannelClientImpl implements ChannelClient
   private final ConcurrentHashMap<String,ServiceRefAmp> _linkServiceMap
     = new ConcurrentHashMap<>();
     
-  private final ArrayList<ActorAmp> _closeList = new ArrayList<>();
+  private final ArrayList<StubAmp> _closeList = new ArrayList<>();
   
   private final ServiceManagerAmp _manager;
 
@@ -257,7 +257,7 @@ public class ChannelClientImpl implements ChannelClient
     return _callerRef.onLookup(remoteName);
   }
 
-  public void addClose(ActorAmp actor)
+  public void addClose(StubAmp actor)
   {
     _closeList.add(actor);
   }
@@ -280,7 +280,7 @@ public class ChannelClientImpl implements ChannelClient
       service.shutdown(mode);
     }
     
-    for (ActorAmp actor : _closeList) {
+    for (StubAmp actor : _closeList) {
       actor.onShutdown(mode);
     }
   }

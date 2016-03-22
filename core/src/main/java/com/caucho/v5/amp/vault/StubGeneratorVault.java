@@ -32,14 +32,15 @@ package com.caucho.v5.amp.vault;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.actor.ActorFactoryImpl;
-import com.caucho.v5.amp.actor.StubGenerator;
-import com.caucho.v5.amp.proxy.ActorAmpBean;
-import com.caucho.v5.amp.proxy.StubClass;
 import com.caucho.v5.amp.service.ActorFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
+import com.caucho.v5.amp.stub.StubFactoryImpl;
+import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.StubAmpBean;
+import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.inject.type.TypeRef;
@@ -110,7 +111,10 @@ public class StubGeneratorVault implements StubGenerator
                                              classLoader,
                                              driver);
       
-      ampManager.inject().inject(bean);
+      Consumer<Object> injector = 
+        (Consumer) ampManager.inject().injector(bean.getClass());
+      
+      injector.accept(bean);
     }
     else {
       bean = ampManager.inject().instance(Key.of(serviceClass, ServiceImpl.class));
@@ -122,19 +126,19 @@ public class StubGeneratorVault implements StubGenerator
       beanData.store((VaultStore) driver);
     }
         
-    StubClass skeleton;
+    ClassStub skeleton;
 
-    skeleton = new SkeletonDataStore(ampManager,
+    skeleton = new StubAssetStore(ampManager,
                                     serviceClass,
                                     configService,
                                     configResource);
     skeleton.introspect();
 
-    ActorAmpBean actor = new ActorAmpBean(skeleton, 
+    StubAmpBean actor = new StubAmpBean(skeleton, 
                                           bean,
                                           configService);
 
-    return new ActorFactoryImpl(()->actor, configService);
+    return new StubFactoryImpl(()->actor, configService);
   }
 
   private ActorFactoryAmp factoryStore(Class<?> serviceClass,
@@ -161,9 +165,9 @@ public class StubGeneratorVault implements StubGenerator
     configResource.driver(driver);
     //}
         
-    StubClass skeleton;
+    ClassStub skeleton;
 
-    skeleton = new SkeletonDataSolo(ampManager,
+    skeleton = new StubAssetSolo(ampManager,
                                       serviceClass,
                                       configService,
                                       driver);
@@ -171,11 +175,11 @@ public class StubGeneratorVault implements StubGenerator
     skeleton.introspect();
       
     Key<?> key = Key.of(serviceClass, ServiceImpl.class);
-    ActorAmpBean actor = new ActorAmpBean(skeleton, 
+    StubAmpBean actor = new StubAmpBean(skeleton, 
                                           ampManager.inject().instance(key),
                                           configService);
 
-    return new ActorFactoryImpl(()->actor, configService);
+    return new StubFactoryImpl(()->actor, configService);
   }
   
   private VaultDriver<?,?> driver(ServiceManagerAmp ampManager,

@@ -45,13 +45,13 @@ import com.caucho.v5.amp.message.QueryWithResultMessage_N;
 import com.caucho.v5.amp.message.ResultStreamAmp;
 import com.caucho.v5.amp.message.SendMessage_N;
 import com.caucho.v5.amp.message.StreamCallMessage;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Sender for an actor ref.
@@ -101,7 +101,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
   }
   
   @Override
-  public ActorAmp getActor(ActorAmp actorDeliver)
+  public StubAmp getActor(StubAmp actorDeliver)
   {
     return actorDeliver;
   }

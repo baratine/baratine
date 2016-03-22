@@ -38,7 +38,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
-import com.caucho.v5.amp.actor.TransferAsset;
+import com.caucho.v5.amp.stub.TransferAsset;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
@@ -116,6 +116,10 @@ class ValidatorVault
       if (! method.getName().startsWith("create")) {
         continue;
       }
+      
+      if (! Modifier.isAbstract(method.getModifiers())) {
+        continue;
+      }
 
       TypeRef resultRef = findResult(method.getParameters());
       
@@ -135,7 +139,15 @@ class ValidatorVault
         continue;
       }
 
-      new TransferAsset<>(assetClass, typeClass);
+      try {
+        new TransferAsset<>(assetClass, typeClass);
+      } catch (Exception e) {
+        throw error(e,
+                    "{0}.{1}: {2}",
+                    vaultClass.getSimpleName(),
+                    method.getName(),
+                    e.getMessage());
+      }
     }
   }
   
@@ -315,6 +327,12 @@ class ValidatorVault
   private RuntimeException error(String msg, Object ...args)
   {
     throw new IllegalArgumentException(L.l(msg, args));
+  }
+  
+  private RuntimeException error(Throwable cause,
+                                 String msg, Object ...args)
+  {
+    throw new IllegalArgumentException(L.l(msg, args), cause);
   }
   
   static {

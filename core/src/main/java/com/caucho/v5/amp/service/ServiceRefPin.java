@@ -41,11 +41,11 @@ import com.caucho.v5.amp.message.CloseMessageCallback;
 import com.caucho.v5.amp.message.ConsumeMessageCallback;
 import com.caucho.v5.amp.message.SubscribeMessageCallback;
 import com.caucho.v5.amp.message.UnsubscribeMessage;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Service ref for an object pinned to a parent inbox.
@@ -56,14 +56,14 @@ public class ServiceRefPin extends ServiceRefActorBase
   
   private String _bindAddress;
   
-  public ServiceRefPin(ActorAmp actor,
+  public ServiceRefPin(StubAmp actor,
                             InboxAmp inbox)
   {
     super(actor, inbox);
   }
   
   protected ServiceRefPin(String path,
-                               ActorAmp actor,
+                               StubAmp actor,
                                InboxAmp inbox)
   {
     super(actor, inbox);
@@ -78,7 +78,7 @@ public class ServiceRefPin extends ServiceRefActorBase
       return _bindAddress;
     }
     else {
-      return "callback:" + getActor().getName() + "@" + inbox().getAddress();
+      return "callback:" + getActor().name() + "@" + inbox().getAddress();
     }
   }
   

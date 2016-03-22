@@ -35,16 +35,16 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpBase;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.bartender.pod.PodRef;
 
 /**
  * The proxy for a client registered in the ramp server.
  */
-abstract public class ActorAmpOut extends ActorAmpBase
+abstract public class ActorAmpOut extends StubAmpBase
 {
   private static final Logger log
     = Logger.getLogger(ActorAmpOut.class.getName());
@@ -88,7 +88,7 @@ abstract public class ActorAmpOut extends ActorAmpBase
   }
 
   @Override
-  public String getName()
+  public String name()
   {
     return _remoteAddress;
   }
@@ -136,14 +136,14 @@ abstract public class ActorAmpOut extends ActorAmpBase
   }
 
   @Override
-  public ActorAmp getActor(ActorAmp actorMessage)
+  public StubAmp worker(StubAmp actorMessage)
   {
     //System.out.println("GA: " +  this + " " + actorMessage);
     if (actorMessage instanceof ActorLink) {
       return this;
     }
     else {
-      return super.getActor(actorMessage);
+      return super.worker(actorMessage);
     }
     //return this;
   }
@@ -161,7 +161,7 @@ abstract public class ActorAmpOut extends ActorAmpBase
 
   @Override
   public void queryReply(HeadersAmp headers, 
-                         ActorAmp rampActor,
+                         StubAmp rampActor,
                          long id,
                          Object result)
   {
@@ -172,7 +172,7 @@ abstract public class ActorAmpOut extends ActorAmpBase
 
   @Override
   public void queryError(HeadersAmp headers,
-                         ActorAmp actorDeliver,
+                         StubAmp actorDeliver,
                          long id,
                          Throwable exn)
   {
@@ -189,7 +189,7 @@ abstract public class ActorAmpOut extends ActorAmpBase
 
   @Override
   public void streamReply(HeadersAmp headers, 
-                          ActorAmp rampActor,
+                          StubAmp rampActor,
                           long id,
                           int sequence,
                           List<Object> values,
@@ -204,7 +204,7 @@ abstract public class ActorAmpOut extends ActorAmpBase
 
   @Override
   public void streamCancel(HeadersAmp headers,
-                           ActorAmp queryActor,
+                           StubAmp queryActor,
                            String addressFrom, 
                            long qid)
   {

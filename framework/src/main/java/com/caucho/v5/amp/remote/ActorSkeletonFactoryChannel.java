@@ -29,17 +29,17 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.proxy.ActorFactorySkeleton;
-import com.caucho.v5.amp.proxy.StubClass;
-import com.caucho.v5.amp.proxy.StubClassSession;
 import com.caucho.v5.amp.session.ActorSkeletonSession;
 import com.caucho.v5.amp.session.ContextSession;
-import com.caucho.v5.amp.spi.ActorAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubFactorySkeleton;
+import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.ClassStubSession;
 
 /**
  * Factory for actors.
  */
-public class ActorSkeletonFactoryChannel implements ActorFactorySkeleton
+public class ActorSkeletonFactoryChannel implements StubFactorySkeleton
 {
   private ContextSession _context;
 
@@ -49,9 +49,9 @@ public class ActorSkeletonFactoryChannel implements ActorFactorySkeleton
   }
   
   @Override
-  public ActorAmp create(StubClass skel, Object bean, String key)
+  public StubAmp create(ClassStub skel, Object bean, String key)
   {
-    return new ActorSkeletonSession((StubClassSession) skel, bean, key,
+    return new ActorSkeletonSession((ClassStubSession) skel, bean, key,
                                      _context);
   }
 }

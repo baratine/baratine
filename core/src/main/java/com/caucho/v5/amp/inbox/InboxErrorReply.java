@@ -32,7 +32,7 @@ package com.caucho.v5.amp.inbox;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 /**
  * Inbox for returning error messages, e.g. when Jamp reads a message

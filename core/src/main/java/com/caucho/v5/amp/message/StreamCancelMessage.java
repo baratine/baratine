@@ -30,10 +30,10 @@
 package com.caucho.v5.amp.message;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -59,9 +59,9 @@ public class StreamCancelMessage<T>
   }
 
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
-    ActorAmp actorMessage = _serviceRef.getActor();
+    StubAmp actorMessage = _serviceRef.getActor();
 
     actorDeliver.load(actorMessage, this)
                 .streamCancel(actorDeliver, actorMessage,

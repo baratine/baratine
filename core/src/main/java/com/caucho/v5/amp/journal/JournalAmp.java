@@ -32,9 +32,9 @@ package com.caucho.v5.amp.journal;
 import io.baratine.service.Result;
 
 import com.caucho.v5.amp.deliver.QueueDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 
 /**
@@ -43,12 +43,12 @@ import com.caucho.v5.amp.spi.MessageAmp;
  */
 public interface JournalAmp
 {
-  void writeSend(ActorAmp actor,
+  void writeSend(StubAmp actor,
                  String methodName,
                  Object[] args, 
                  InboxAmp inbox);
   
-  void writeQuery(ActorAmp actor,
+  void writeQuery(StubAmp actor,
                   String methodName,
                   Object[] args,
                   InboxAmp inbox);

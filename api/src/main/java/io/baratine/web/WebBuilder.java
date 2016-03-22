@@ -29,19 +29,39 @@
 
 package io.baratine.web;
 
+import java.lang.reflect.Method;
 import java.util.function.Supplier;
+
+import javax.inject.Provider;
 
 import io.baratine.convert.Convert;
 import io.baratine.inject.InjectManager;
+import io.baratine.inject.InjectManager.BindingBuilder;
+import io.baratine.inject.InjectManager.InjectAutoBind;
 import io.baratine.inject.InjectManager.InjectBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 
 
-public interface WebBuilder extends InjectBuilder
+public interface WebBuilder
 {
-  @Override
   WebBuilder include(Class<?> type);
+  
+  //
+  // inject methods
+  //
+  
+  <T> BindingBuilder<T> bean(Class<T> impl);
+  <T> BindingBuilder<T> bean(T instance);
+  
+  <T> BindingBuilder<T> provider(Provider<T> provider);
+  <T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
+  
+  InjectBuilder autoBind(InjectAutoBind autoBind);
+
+  //
+  // route methods
+  //
   
   WebResourceBuilder route(HttpMethod method, String path);
 

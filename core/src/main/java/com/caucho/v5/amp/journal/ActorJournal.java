@@ -33,30 +33,30 @@ import io.baratine.service.Result;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.actor.ActorAmpBase;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.amp.thread.ThreadPool;
 
 /**
  * Journaling actor
  */
-public final class ActorJournal extends ActorAmpBase
+public final class ActorJournal extends StubAmpBase
   // implements ActorAmp
 {
-  private final ActorAmp _actor;
+  private final StubAmp _actor;
   private final JournalAmp _journal;
   private InboxAmp _inbox;
   private JournalAmp _toPeerJournal;
   private JournalAmp _fromPeerJournal;
   private LoadStateJournal _loadState;
   
-  public ActorJournal(ActorAmp actor, 
+  public ActorJournal(StubAmp actor, 
                       JournalAmp journal,
                       JournalAmp toPeerJournal,
                       JournalAmp fromPeerJournal)
@@ -80,7 +80,7 @@ public final class ActorJournal extends ActorAmpBase
   }
   
   @Override
-  public ActorAmp getActor(ActorAmp actor)
+  public StubAmp worker(StubAmp actor)
   {
     return this;
   }
@@ -94,7 +94,7 @@ public final class ActorJournal extends ActorAmpBase
   */
   
   @Override
-  public LoadState load(ActorAmp actorMessage, MessageAmp msg)
+  public LoadState load(StubAmp actorMessage, MessageAmp msg)
   {
     return loadState();
   }

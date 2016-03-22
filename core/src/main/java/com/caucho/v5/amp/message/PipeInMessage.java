@@ -34,12 +34,12 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.pipe.PipeImpl;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.io.PipeIn;
@@ -92,12 +92,12 @@ public class PipeInMessage<T>
   }
 
   @Override
-  public final void invokeQuery(InboxAmp inbox, ActorAmp actorDeliver)
+  public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
     try {
       MethodAmp method = getMethod();
     
-      ActorAmp actorMessage = serviceRef().getActor();
+      StubAmp actorMessage = serviceRef().getActor();
 
       LoadState load = actorDeliver.load(actorMessage, this);
       
@@ -119,7 +119,7 @@ public class PipeInMessage<T>
   }
 
   @Override
-  protected boolean invokeOk(ActorAmp actorDeliver)
+  protected boolean invokeOk(StubAmp actorDeliver)
   {
     //_result.ok((Void) null);
     
@@ -127,7 +127,7 @@ public class PipeInMessage<T>
   }
   
   @Override
-  protected boolean invokeFail(ActorAmp actorDeliver)
+  protected boolean invokeFail(StubAmp actorDeliver)
   {
     //System.out.println("Missing Fail:" + this);
     _result.fail(getException());

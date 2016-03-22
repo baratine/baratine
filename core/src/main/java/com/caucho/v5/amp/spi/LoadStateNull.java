@@ -29,6 +29,9 @@
 
 package com.caucho.v5.amp.spi;
 
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+
 import io.baratine.service.Result;
 import io.baratine.stream.ResultStream;
 
@@ -43,7 +46,7 @@ public class LoadStateNull implements LoadState
   }
   
   @Override
-  public LoadState load(ActorAmp actor,
+  public LoadState load(StubAmp actor,
                         InboxAmp inbox,
                         MessageAmp msg)
   {
@@ -51,21 +54,21 @@ public class LoadStateNull implements LoadState
   }
 
   @Override
-  public void onModify(ActorAmp  actorAmpBase)
+  public void onModify(StubAmp  actorAmpBase)
   {
   }
 
   @Override
-  public void send(ActorAmp actorDeliver,
-                   ActorAmp actorMessage,
+  public void send(StubAmp actorDeliver,
+                   StubAmp actorMessage,
                    MethodAmp method, 
                    HeadersAmp headers)
   {
   }
 
   @Override
-  public void send(ActorAmp actorDeliver,
-                   ActorAmp actorMessage,
+  public void send(StubAmp actorDeliver,
+                   StubAmp actorMessage,
                    MethodAmp method, 
                    HeadersAmp headers, 
                    Object arg0)
@@ -73,8 +76,8 @@ public class LoadStateNull implements LoadState
   }
 
   @Override
-  public void send(ActorAmp actorDeliver,
-                   ActorAmp actorMessage,
+  public void send(StubAmp actorDeliver,
+                   StubAmp actorMessage,
                    MethodAmp method, 
                    HeadersAmp headers, 
                    Object arg0,
@@ -83,8 +86,8 @@ public class LoadStateNull implements LoadState
   }
 
   @Override
-  public void send(ActorAmp actorDeliver,
-                   ActorAmp actorMessage,
+  public void send(StubAmp actorDeliver,
+                   StubAmp actorMessage,
                    MethodAmp method, 
                    HeadersAmp headers, 
                    Object arg0,
@@ -94,8 +97,8 @@ public class LoadStateNull implements LoadState
   }
 
   @Override
-  public void send(ActorAmp actorDeliver,
-                   ActorAmp actorMessage,
+  public void send(StubAmp actorDeliver,
+                   StubAmp actorMessage,
                    MethodAmp method, 
                    HeadersAmp headers, 
                    Object []args)
@@ -103,8 +106,8 @@ public class LoadStateNull implements LoadState
   }
   
   @Override
-  public void query(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  public void query(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method,
                     HeadersAmp headers,
                     Result<?> result)
@@ -112,8 +115,8 @@ public class LoadStateNull implements LoadState
   }
   
   @Override
-  public void query(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  public void query(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method,
                     HeadersAmp headers,
                     Result<?> result,
@@ -122,8 +125,8 @@ public class LoadStateNull implements LoadState
   }
   
   @Override
-  public void query(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  public void query(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method,
                     HeadersAmp headers,
                     Result<?> result,
@@ -133,8 +136,8 @@ public class LoadStateNull implements LoadState
   }
   
   @Override
-  public void query(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  public void query(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method,
                     HeadersAmp headers,
                     Result<?> result,
@@ -145,8 +148,8 @@ public class LoadStateNull implements LoadState
   }
 
   @Override
-  public void query(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  public void query(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method,
                     HeadersAmp headers,
                     Result<?> result,
@@ -155,8 +158,8 @@ public class LoadStateNull implements LoadState
   }
   
   @Override
-  public void stream(ActorAmp actorDeliver,
-                      ActorAmp actorMessage,
+  public void stream(StubAmp actorDeliver,
+                      StubAmp actorMessage,
                       MethodAmp method,
                       HeadersAmp headers,
                       ResultStream<?> result, 

@@ -33,12 +33,12 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.stream.ResultStream;
 
@@ -113,12 +113,12 @@ public class StreamForkMessage<T>
   }
 
   @Override
-  public final void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public final void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
     try {
       MethodAmp method = getMethod();
     
-      ActorAmp actorMessage = serviceRef().getActor();
+      StubAmp actorMessage = serviceRef().getActor();
 
       LoadState load = actorDeliver.load(actorMessage, this);
     

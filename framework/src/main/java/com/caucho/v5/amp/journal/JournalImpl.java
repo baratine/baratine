@@ -42,9 +42,9 @@ import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.message.ReplayQueryMessage;
 import com.caucho.v5.amp.message.ReplaySendMessage;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.db.journal.JournalStream;
 import com.caucho.v5.db.journal.JournalStream.ReplayCallback;
 import com.caucho.v5.h3.H3;
@@ -199,7 +199,7 @@ public class JournalImpl implements JournalAmp
    * saved, because restoring them does not make sense.
    */
   @Override
-  public void writeSend(ActorAmp actor,
+  public void writeSend(StubAmp actor,
                         String methodName,
                         Object[] args,
                         InboxAmp inbox)
@@ -230,7 +230,7 @@ public class JournalImpl implements JournalAmp
    * saved, because restoring them does not make sense.
    */
   @Override
-  public void writeQuery(ActorAmp actor,
+  public void writeQuery(StubAmp actor,
                          String methodName,
                          Object[] args,
                          InboxAmp inbox)

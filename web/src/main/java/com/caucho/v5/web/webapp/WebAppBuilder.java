@@ -58,7 +58,7 @@ import com.caucho.v5.config.inject.BaratineProducer;
 import com.caucho.v5.http.dispatch.InvocationRouter;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderRootAmp;
+import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
@@ -115,7 +115,7 @@ public class WebAppBuilder
 
   //private ServiceManagerBuilder _serviceBuilder;
 
-  private InjectBuilderRootAmp _injectBuilder;
+  private InjectBuilderAmp _injectBuilder;
 
   private WebAppFactory _factory;
 
@@ -315,7 +315,7 @@ public class WebAppBuilder
     return _configBuilder.get();
   }
 
-  InjectBuilderRootAmp injectBuilder()
+  InjectBuilderAmp injectBuilder()
   {
     return _injectBuilder;
   }

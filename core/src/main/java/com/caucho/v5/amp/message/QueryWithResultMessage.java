@@ -34,11 +34,11 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.OutboxAmpFactory;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Result;
 
@@ -213,13 +213,13 @@ public class QueryWithResultMessage<T>
   }
 
   @Override
-  protected boolean invokeOk(ActorAmp actorDeliver)
+  protected boolean invokeOk(StubAmp actorDeliver)
   {
     return actorDeliver.complete(_result, (T) getReply());
   }
   
   @Override
-  protected boolean invokeFail(ActorAmp actorDeliver)
+  protected boolean invokeFail(StubAmp actorDeliver)
   {
     return actorDeliver.fail(_result, getException());
   }

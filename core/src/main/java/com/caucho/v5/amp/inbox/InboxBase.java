@@ -39,9 +39,9 @@ import com.caucho.v5.amp.message.QueryMap;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;

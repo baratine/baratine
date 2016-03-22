@@ -29,26 +29,23 @@
 
 package com.caucho.v5.inject.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Injection scope where each bean is new.
  */
-public class InjectScopeSingleton implements InjectScope
+public class InjectScopeSingleton<T> implements InjectScope<T>
 {
-  private ConcurrentHashMap<Class<?>,Object> _objectMap
-    = new ConcurrentHashMap<>();
+  private T _value;
   
   @Override
-  public <T> T get(Class<T> type)
+  public T get()
   {
-    return (T) _objectMap.get(type);
+    return _value;
   }
   
   @Override
-  public <T> void set(Class<T> type, T value)
+  public void set(T value)
   {
-    _objectMap.put(type, value);
+    _value = value;
   }
 }
 

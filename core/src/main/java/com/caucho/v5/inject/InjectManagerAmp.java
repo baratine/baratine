@@ -29,10 +29,8 @@
 
 package com.caucho.v5.inject;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.inject.Provider;
 
@@ -60,23 +58,23 @@ public interface InjectManagerAmp extends InjectManager
     return InjectManagerImpl.current(classLoader);
   }
 
-  public static InjectBuilderRootAmp manager(ClassLoader classLoader)
+  public static InjectBuilderAmp manager(ClassLoader classLoader)
   {
-    return (InjectBuilderRootAmp) ServiceManagerProvider.current().injectManager(classLoader);
+    return (InjectBuilderAmp) ServiceManagerProvider.current().injectManager(classLoader);
   }
 
-  public static InjectBuilderRootAmp manager()
+  public static InjectBuilderAmp manager()
   {
     return manager(Thread.currentThread().getContextClassLoader());
   }
 
-  <T> T instance(Class<T> type, Annotation ...qualifiers);
+  //<T> T instance(Class<T> type, Annotation ...qualifiers);
 
-  <T> T lookup(Class<T> type, Annotation ...qualifiers);
+  //<T> T lookup(Class<T> type, Annotation ...qualifiers);
   
-  <T> T instanceNonService(Class<T> cl, Annotation ...qualifiers);
+  //<T> T instanceNonService(Class<T> cl, Annotation ...qualifiers);
   
-  Object createByName(String name);
+  //Object createByName(String name);
 
   <T> Iterable<Binding<T>> bindings(Class<T> type);
   
@@ -86,25 +84,27 @@ public interface InjectManagerAmp extends InjectManager
   
   String property(String key);
   
-  <T> Supplier<T> supplierNew(Class<T> type, Annotation ...qualifiers);
+  //<T> Supplier<T> supplierNew(Class<T> type, Annotation ...qualifiers);
   
-  <T> Provider <T> newProvider(Class<T> type, Annotation ...qualifiers);
+  //<T> Provider <T> newProvider(Class<T> type, Annotation ...qualifiers);
   
-  <T> BindingAmp<T> newBinding(Class<T> type);
+  //<T> BindingAmp<T> newBinding(Class<T> type);
   
   //void introspectInject(List<InjectProgram> program, Class<?> type);
   
   //void introspectInit(List<InjectProgram> program, Class<?> type);
 
-  boolean isQualifier(Annotation ann);
+  //boolean isQualifier(Annotation ann);
   
+  /*
   default void scanRoot(ClassLoader classLoader)
   {
   }
+  */
   
-  public interface InjectBuilderRootAmp extends InjectBuilderRoot
+  public interface InjectBuilderAmp extends InjectBuilder
   {
-    InjectBuilderRootAmp context(boolean isContext);
+    InjectBuilderAmp context(boolean isContext);
     
     InjectManagerAmp get();
   }
@@ -125,7 +125,7 @@ public interface InjectManagerAmp extends InjectManager
 
   Provider<?> []program(Parameter[] parameters);
 
-  <T> Consumer<T> program(Class<T> type);
+  <T> Consumer<T> injector(Class<T> type);
 
 }
 

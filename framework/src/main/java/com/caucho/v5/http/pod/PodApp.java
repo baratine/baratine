@@ -267,7 +267,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
 
       _injectManager = InjectManagerAmp.create(_classLoader);
       //_cdiManager.addExtension(new CdiExtensionBaratine(_cdiManager));
-      _injectManager.scanRoot(_classLoader);
+      //_injectManager.scanRoot(_classLoader);
     } catch (Throwable e) {
       setConfigException(e);
     }

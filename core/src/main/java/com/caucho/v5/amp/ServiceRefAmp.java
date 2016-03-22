@@ -35,12 +35,12 @@ import io.baratine.service.ServiceRef;
 import java.lang.reflect.Type;
 
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Sender for an actor ref.
@@ -62,7 +62,7 @@ public interface ServiceRefAmp extends ServiceRef
 
   InboxAmp inbox();
   
-  ActorAmp getActor();
+  StubAmp getActor();
 
   default ClassLoader getDelegateClassLoader()
   {

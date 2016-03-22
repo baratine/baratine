@@ -38,26 +38,21 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.caucho.v5.inject.BindingAmp;
 import com.caucho.v5.inject.InjectManagerAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 
 /**
  * Bean provider for a concrete class.
  */
-public class ProviderConstructor<T> implements BindingAmp<T>, Provider<T>
+public class ProviderConstructor<T> extends ProviderBase<T>
 {
   private static final L10N L = new L10N(ProviderConstructor.class);
   
-  private Key<T> _key;
-  private int _priority;
-  
   private Class<T> _type;
 
-  private InjectManagerAmp _injector;
+  private InjectManagerAmp _manager;
   private Constructor<?> _ctor;
   private MethodHandle _ctorHandle;
   private Provider<?>[] _ctorParam;
@@ -67,11 +62,12 @@ public class ProviderConstructor<T> implements BindingAmp<T>, Provider<T>
   public ProviderConstructor(InjectManagerAmp injector,
                              Key<T> key,
                              int priority,
+                             InjectScope<T> scope,
                              Class<T> type)
   {
-    _injector = injector;
-    _key = key;
-    _priority = priority;
+    super(key, priority, scope);
+    
+    _manager = injector;
     
     _type = type;
     
@@ -80,26 +76,8 @@ public class ProviderConstructor<T> implements BindingAmp<T>, Provider<T>
     }
   }
   
-  @Override  
-  public Key<T> key()
-  {
-    return _key;
-  }
-  
   @Override
-  public int priority()
-  {
-    return _priority;
-  }
-
-  @Override
-  public Provider<T> provider()
-  {
-    return this;
-  }
-  
-  @Override
-  public T get()
+  protected T create()
   {
     try {
       int len = _ctorParam.length;
@@ -154,23 +132,9 @@ public class ProviderConstructor<T> implements BindingAmp<T>, Provider<T>
       throw new IllegalStateException(e);
     }
 
-    /*
-    if (_ctor.getParameters().length == 1) {
-      InjectionPoint<?> ip = InjectionPoint.of(Key.of(_ctor),
-                                               _type,
-                                               _type.getSimpleName(),
-                                               _ctor.getAnnotations(),
-                                               _type);
-                                            
-      Provider<?> param = _injector.provider(ip);
-      
-      _ctorParam = new Provider<?>[] { param };
-    }
-    else {
-    */
-    _ctorParam = _injector.program(_ctor.getParameters());
+    _ctorParam = _manager.program(_ctor.getParameters());
     
-    _inject = _injector.program(_type);
+    _inject = _manager.injector(_type);
   }
   
   private Constructor<?> findConstructor()
@@ -188,12 +152,6 @@ public class ProviderConstructor<T> implements BindingAmp<T>, Provider<T>
     }
 
     return ctorZero;
-  }
-  
-  @Override
-  public String toString()
-  {
-    return getClass().getSimpleName() + "[" + _key + "]";
   }
 }
 

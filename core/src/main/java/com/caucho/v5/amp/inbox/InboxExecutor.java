@@ -34,13 +34,13 @@ import java.util.concurrent.Executor;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpNull;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.service.ServiceRefImpl;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpNull;
 
 import io.baratine.service.ResultFuture;
 
@@ -51,7 +51,7 @@ public class InboxExecutor extends InboxBase
   implements WorkerDeliver<MessageAmp>
 {
   private final ServiceRefAmp _actorRef;
-  private final ActorAmp _actor;
+  private final StubAmp _actor;
   
   private final Executor _executor;
   
@@ -63,7 +63,7 @@ public class InboxExecutor extends InboxBase
     
     Objects.requireNonNull(executor);
     
-    _actor = new ActorAmpNull(path);
+    _actor = new StubAmpNull(path);
     _actorRef = new ServiceRefImpl(path, _actor, this);
     
     _executor = executor;
@@ -76,7 +76,7 @@ public class InboxExecutor extends InboxBase
   }
 
   @Override
-  public ActorAmp getDirectActor()
+  public StubAmp getDirectActor()
   {
     return _actor;
   }
@@ -174,7 +174,7 @@ public class InboxExecutor extends InboxBase
         outbox.message(_msg);
         
         //RampActor systemActor = null;
-        ActorAmp systemActor = _actor;
+        StubAmp systemActor = _actor;
         
         _msg.invoke(InboxExecutor.this, systemActor);
         

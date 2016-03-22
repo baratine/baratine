@@ -70,7 +70,7 @@ public class ResultImport extends Result.Wrapper<Object,Object>
   {
     Object resultCvt = _marshal.convert(result);
     
-    getNext().ok(resultCvt);
+    delegate().ok(resultCvt);
   }
 
   @Override
@@ -78,11 +78,11 @@ public class ResultImport extends Result.Wrapper<Object,Object>
   {
     Throwable resultExn = (Throwable) _marshal.convert(exn);
     
-    getNext().fail(resultExn);
+    delegate().fail(resultExn);
   }
 
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + getNext() + "]";
+    return getClass().getSimpleName() + "[" + delegate() + "]";
   }
 }

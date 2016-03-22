@@ -34,9 +34,9 @@ import io.baratine.service.ServiceExceptionNotFound;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.actor.MethodAmpBase;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.http.pod.PodApp;
 import com.caucho.v5.util.L10N;
@@ -68,7 +68,7 @@ public final class MethodAmpInvalidPod extends MethodAmpBase
 
   @Override
   public void send(HeadersAmp headers,
-                   ActorAmp actor,
+                   StubAmp actor,
                    Object[] args)
   {
     log.warning(errorMsg());
@@ -77,7 +77,7 @@ public final class MethodAmpInvalidPod extends MethodAmpBase
   @Override
   public void query(HeadersAmp headers, 
                     Result<?> result,
-                    ActorAmp actor,
+                    StubAmp actor,
                     Object[] args)
   {
     

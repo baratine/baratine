@@ -31,7 +31,9 @@ package com.caucho.v5.amp.spi;
 
 import java.util.ArrayList;
 
-import com.caucho.v5.amp.actor.SaveResult;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.SaveResult;
 
 import io.baratine.io.ResultPipeIn;
 import io.baratine.io.ResultPipeOut;
@@ -45,103 +47,103 @@ import io.baratine.stream.ResultStream;
  */
 public interface LoadState
 {
-  LoadState load(ActorAmp actor,
+  LoadState load(StubAmp actor,
                  InboxAmp inbox,
                  MessageAmp msg);
   
-  default LoadState loadReplay(ActorAmp actor,
+  default LoadState loadReplay(StubAmp actor,
                                InboxAmp inbox,
                                MessageAmp msg)
   {
     throw new IllegalStateException(this + " " + actor + " " + msg);
   }
 
-  void onModify(ActorAmp actorAmpBase);
+  void onModify(StubAmp actorAmpBase);
 
-  default void onSave(ActorAmp actor, SaveResult saveResult)
+  default void onSave(StubAmp actor, SaveResult saveResult)
   {
   }
   
-  default ActorAmp getActor(ActorAmp actor)
+  default StubAmp getActor(StubAmp actor)
   {
     return actor;
   }
 
-  default void onActive(ActorAmp actor, InboxAmp inbox)
+  default void onActive(StubAmp actor, InboxAmp inbox)
   {
   }
 
-  default void send(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  default void send(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method, 
                     HeadersAmp headers)
   {
-    method.send(headers, actorDeliver.getActor(actorMessage));
+    method.send(headers, actorDeliver.worker(actorMessage));
   }
 
-  default void send(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  default void send(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method, 
                     HeadersAmp headers, 
                     Object arg0)
   {
-    method.send(headers, actorDeliver.getActor(actorMessage), arg0);
+    method.send(headers, actorDeliver.worker(actorMessage), arg0);
   }
 
-  default void send(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  default void send(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method, 
                     HeadersAmp headers, 
                     Object arg0,
                     Object arg1)
   {
-    method.send(headers, actorDeliver.getActor(actorMessage), arg0, arg1);
+    method.send(headers, actorDeliver.worker(actorMessage), arg0, arg1);
   }
 
-  default void send(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  default void send(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method, 
                     HeadersAmp headers, 
                     Object arg0,
                     Object arg1,
                     Object arg2)
   {
-    method.send(headers, actorDeliver.getActor(actorMessage), arg0, arg1, arg2);
+    method.send(headers, actorDeliver.worker(actorMessage), arg0, arg1, arg2);
   }
 
-  default void send(ActorAmp actorDeliver,
-                    ActorAmp actorMessage,
+  default void send(StubAmp actorDeliver,
+                    StubAmp actorMessage,
                     MethodAmp method, 
                     HeadersAmp headers, 
                     Object []args)
   {
-    method.send(headers, actorDeliver.getActor(actorMessage), args);
+    method.send(headers, actorDeliver.worker(actorMessage), args);
   }
   
-  default void query(ActorAmp actorDeliver,
-                     ActorAmp actorMessage,
+  default void query(StubAmp actorDeliver,
+                     StubAmp actorMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result)
   {
     method.query(headers, result, 
-                 actorDeliver.getActor(actorMessage));
+                 actorDeliver.worker(actorMessage));
   }
   
-  default void query(ActorAmp actorDeliver,
-                     ActorAmp actorMessage,
+  default void query(StubAmp actorDeliver,
+                     StubAmp actorMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result,
                      Object arg0)
   {
     method.query(headers, result, 
-                 actorDeliver.getActor(actorMessage),
+                 actorDeliver.worker(actorMessage),
                  arg0);
   }
   
-  default void query(ActorAmp actorDeliver,
-                     ActorAmp actorMessage,
+  default void query(StubAmp actorDeliver,
+                     StubAmp actorMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result,
@@ -149,12 +151,12 @@ public interface LoadState
                      Object arg1)
   {
     method.query(headers, result, 
-                 actorDeliver.getActor(actorMessage),
+                 actorDeliver.worker(actorMessage),
                  arg0, arg1);
   }
   
-  default void query(ActorAmp actorDeliver,
-                     ActorAmp actorMessage,
+  default void query(StubAmp actorDeliver,
+                     StubAmp actorMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result,
@@ -163,81 +165,81 @@ public interface LoadState
                      Object arg2)
   {
     method.query(headers, result, 
-                 actorDeliver.getActor(actorMessage),
+                 actorDeliver.worker(actorMessage),
                  arg0, arg1, arg2);
   }
   
-  default void query(ActorAmp actorDeliver,
-                     ActorAmp actorMessage,
+  default void query(StubAmp actorDeliver,
+                     StubAmp actorMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result, 
                      Object[] args)
   {
     method.query(headers, result, 
-                 actorDeliver.getActor(actorMessage), 
+                 actorDeliver.worker(actorMessage), 
                  args);
   }
   
-  default void stream(ActorAmp actorDeliver,
-                      ActorAmp actorMessage,
+  default void stream(StubAmp actorDeliver,
+                      StubAmp actorMessage,
                       MethodAmp method,
                       HeadersAmp headers,
                       ResultStream<?> result, 
                       Object[] args)
   {
     method.stream(headers, result, 
-                  actorDeliver.getActor(actorMessage), 
+                  actorDeliver.worker(actorMessage), 
                   args);
   }
   
-  default void outPipe(ActorAmp actorDeliver,
-                       ActorAmp actorMessage,
+  default void outPipe(StubAmp actorDeliver,
+                       StubAmp actorMessage,
                        MethodAmp method,
                        HeadersAmp headers,
                        ResultPipeOut<?> result, 
                        Object[] args)
   {
     method.outPipe(headers, result, 
-                   actorDeliver.getActor(actorMessage), 
+                   actorDeliver.worker(actorMessage), 
                    args);
   }
   
-  default void inPipe(ActorAmp actorDeliver,
-                       ActorAmp actorMessage,
+  default void inPipe(StubAmp actorDeliver,
+                       StubAmp actorMessage,
                        MethodAmp method,
                        HeadersAmp headers,
                        ResultPipeIn<?> result, 
                        Object[] args)
   {
     method.inPipe(headers, result, 
-                   actorDeliver.getActor(actorMessage), 
+                   actorDeliver.worker(actorMessage), 
                    args);
   }
   
-  default void queryError(ActorAmp actor,
+  default void queryError(StubAmp actor,
                           HeadersAmp headers,
                           long qid,
                           Throwable exn)
   {
-    ActorAmp queryActor = getActor(actor);
+    StubAmp queryActor = getActor(actor);
     
     queryActor.queryError(headers, queryActor, qid, exn);
   }
 
-  default void streamCancel(ActorAmp actorDeliver,
-                            ActorAmp actorMessage,
+  default void streamCancel(StubAmp actorDeliver,
+                            StubAmp actorMessage,
                             HeadersAmp headers, 
                             String addressFrom, 
                             long qid)
   {
-    ActorAmp queryActor = actorDeliver.getActor(actorMessage);
+    StubAmp queryActor = actorDeliver.worker(actorMessage);
     
     queryActor.streamCancel(headers, actorMessage, addressFrom, qid);
   }
 
-  default void streamResult(ActorAmp actorDeliver, 
-                            ActorAmp actorMessage,
+  default void streamResult(StubAmp actorDeliver, 
+                            StubAmp actorMessage,
                             HeadersAmp headers,
                             long qid,
                             int sequence,
@@ -245,22 +247,22 @@ public interface LoadState
                             Throwable exn,
                             boolean isComplete)
   {
-    ActorAmp queryActor = actorDeliver.getActor(actorMessage);
+    StubAmp queryActor = actorDeliver.worker(actorMessage);
     
     queryActor.streamReply(headers, actorMessage, qid, sequence,
                            values, exn, isComplete);
   }
 
-  default void consume(ActorAmp actor, ServiceRef subscriber)
+  default void consume(StubAmp actor, ServiceRef subscriber)
   {
     actor.consume(subscriber);
   }
 
-  default void flushPending(ActorAmp actorBean, InboxAmp serviceRef)
+  default void flushPending(StubAmp actorBean, InboxAmp serviceRef)
   {
   }
 
-  default boolean onSave(ActorAmp actor)
+  default boolean onSave(StubAmp actor)
   {
     return false;
   }
@@ -276,7 +278,7 @@ public interface LoadState
     actor.afterBatchImpl();
   }
 
-  default void shutdown(ActorAmp actor, ShutdownModeAmp mode)
+  default void shutdown(StubAmp actor, ShutdownModeAmp mode)
   {
     actor.onShutdown(mode);
   }

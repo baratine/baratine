@@ -31,8 +31,8 @@ package com.caucho.v5.amp.inbox;
 
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Creates service queue for the inbox.
@@ -41,7 +41,7 @@ public interface QueueServiceFactoryInbox
 {
   String getName();
   
-  ActorAmp getMainActor();
+  StubAmp getMainActor();
   
   QueueDeliver<MessageAmp> 
   build(QueueDeliverBuilder<MessageAmp> queueBuilder,

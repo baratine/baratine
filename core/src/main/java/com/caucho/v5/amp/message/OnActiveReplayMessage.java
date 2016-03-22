@@ -31,8 +31,8 @@ package com.caucho.v5.amp.message;
 
 import io.baratine.service.Result;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message after a replay to transition to normal operation.
@@ -53,9 +53,9 @@ public class OnActiveReplayMessage extends MessageAmpBase
   }
   
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actor)
+  public void invoke(InboxAmp inbox, StubAmp actor)
   {
-    actor = actor.getActor(actor);
+    actor = actor.worker(actor);
       //actor.load(this).onActive(this);
     try {
       actor.loadState().onActive(actor, inbox);

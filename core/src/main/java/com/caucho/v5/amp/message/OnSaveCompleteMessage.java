@@ -32,8 +32,8 @@ package com.caucho.v5.amp.message;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to complete a checkpoint
@@ -58,7 +58,7 @@ public class OnSaveCompleteMessage extends MessageAmpBase
   
   @Override
   public void invoke(InboxAmp inbox, 
-                     ActorAmp actor)
+                     StubAmp actor)
   {
     try {
       actor.checkpointEnd(_isValid);

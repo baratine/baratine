@@ -543,10 +543,10 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
         CursorKraken cursor = (CursorKraken) value;
         RowCursor rowCursor = cursor.getRowCursor();
         
-        getNext().ok(rowCursor.getKey());
+        delegate().ok(rowCursor.getKey());
       }
       else {
-        getNext().ok(null);
+        delegate().ok(null);
       }
     }
   }

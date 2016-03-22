@@ -33,14 +33,14 @@ import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionNotFound;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpNull;
-import com.caucho.v5.amp.actor.MethodAmpBase;
 import com.caucho.v5.amp.inbox.InboxNull;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpNull;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -80,7 +80,7 @@ public class MethodRefNull extends MethodRefBase
   @Override
   public void offer(MessageAmp message)
   {
-    message.invoke(null, new ActorAmpNull(_serviceRef.address()));
+    message.invoke(null, new StubAmpNull(_serviceRef.address()));
   }
   
   @Override
@@ -107,7 +107,7 @@ public class MethodRefNull extends MethodRefBase
     @Override
     public void query(HeadersAmp headers,
                       Result<?> result,
-                      ActorAmp actor,
+                      StubAmp actor,
                       Object []args)
     {
       result.fail(new ServiceExceptionNotFound(

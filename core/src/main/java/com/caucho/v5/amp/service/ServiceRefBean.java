@@ -34,10 +34,10 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
-import com.caucho.v5.amp.spi.ActorAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Lazy service ref using during scanning.
@@ -49,7 +49,7 @@ public class ServiceRefBean extends ServiceRefLazy
   private ServiceConfig _config;
   private boolean _isClosed;
   private Class<?> _serviceClass;
-  private ActorAmp _skel;
+  private StubAmp _skel;
 
   public ServiceRefBean(ServiceManagerAmpImpl manager, 
                         String path,
@@ -64,7 +64,7 @@ public class ServiceRefBean extends ServiceRefLazy
     _serviceSupplier = serviceSupplier;
     _config = config;
     
-    _skel = manager.getProxyFactory().createSkeletonMain(_serviceClass, path, config);
+    _skel = manager.stubFactory().createSkeletonMain(_serviceClass, path, config);
     
     Thread.dumpStack();
   }

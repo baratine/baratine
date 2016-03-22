@@ -34,11 +34,11 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message for a reply.
@@ -52,14 +52,14 @@ public final class QueryReplyMessage implements MessageAmp
   private final HeadersAmp _headers;
   private final long _qid;
   private final Object _value;
-  private final ActorAmp _from;
+  private final StubAmp _from;
 
   private OutboxAmp _outboxCaller;
   
   public QueryReplyMessage(OutboxAmp outbox,
                            ServiceRefAmp serviceRef,
                             HeadersAmp headers,
-                            ActorAmp from,
+                            StubAmp from,
                             long qid,
                             Object value)
   {
@@ -140,12 +140,12 @@ public final class QueryReplyMessage implements MessageAmp
   */
 
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
-    ActorAmp actor = _serviceRef.getActor();
+    StubAmp actor = _serviceRef.getActor();
     
     // kraken/210a vs baratine/2245
-    ActorAmp actorInvoke = actorDeliver.getActor(actor);
+    StubAmp actorInvoke = actorDeliver.worker(actor);
 
     actorInvoke.queryReply(_headers, actor, _qid, _value);
     

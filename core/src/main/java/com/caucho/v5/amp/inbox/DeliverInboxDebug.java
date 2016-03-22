@@ -30,9 +30,9 @@
 package com.caucho.v5.amp.inbox;
 
 import com.caucho.v5.amp.deliver.Outbox;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Worker for an inbox
@@ -40,7 +40,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 class DeliverInboxDebug extends DeliverInbox
 {
   DeliverInboxDebug(InboxQueue inbox, 
-                    ActorAmp actor)
+                    StubAmp actor)
   {
     super(inbox, actor);
   }

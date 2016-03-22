@@ -33,9 +33,10 @@ import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.actor.StubGenerator;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
+import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
+import com.caucho.v5.amp.stub.StubGenerator;
 
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceManager;

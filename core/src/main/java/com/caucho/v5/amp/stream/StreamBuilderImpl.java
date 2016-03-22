@@ -59,8 +59,8 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.StreamCallMessage;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 @SuppressWarnings("serial")
 public class StreamBuilderImpl<T,U> implements ResultStreamBuilderSync<T>, Serializable

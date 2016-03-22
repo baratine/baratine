@@ -33,11 +33,11 @@ import io.baratine.service.Result;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.actor.MethodAmpWrapper;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmpWrapper;
 
 /**
  * Sender for an actor ref.
@@ -74,7 +74,7 @@ public final class MethodJournal extends MethodAmpWrapper
 
   @Override
   public void send(HeadersAmp headers,
-                   ActorAmp actor,
+                   StubAmp actor,
                    Object[] args)
   {
     System.out.println("SND: " + actor + " " + _toPeerJournal);
@@ -95,7 +95,7 @@ public final class MethodJournal extends MethodAmpWrapper
   @Override
   public void query(HeadersAmp headers, 
                     Result<?> result,
-                    ActorAmp actor,
+                    StubAmp actor,
                     Object[] args)
   {
     System.out.println("Q: " + actor + " " + _toPeerJournal);

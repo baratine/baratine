@@ -33,9 +33,9 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.pipe.PipeImpl;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -60,7 +60,7 @@ public class PipeWakeInMessage<T>
   }
 
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actorDeliver)
+  public void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
     _pipe.read();
   }

@@ -36,15 +36,16 @@ import java.util.function.Supplier;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
+import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ContextSession;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubFactoryAmp;
 
 import io.baratine.inject.InjectManager;
 import io.baratine.inject.Key;
@@ -261,15 +262,21 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   */
 
   @Override
-  public ActorAmp createActor(Object bean, ServiceConfig config)
+  public StubAmp createActor(Object bean, ServiceConfig config)
   {
     return delegate().createActor(bean, config);
   }
 
   @Override
-  public ProxyFactoryAmp getProxyFactory()
+  public ProxyFactoryAmp proxyFactory()
   {
-    return delegate().getProxyFactory();
+    return delegate().proxyFactory();
+  }
+
+  @Override
+  public StubFactoryAmp stubFactory()
+  {
+    return delegate().stubFactory();
   }
 
   @Override

@@ -34,10 +34,10 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.ServiceExceptionConnect;
 
@@ -50,14 +50,14 @@ class DeliverInbox implements Deliver<MessageAmp>
     = Logger.getLogger(DeliverInbox.class.getName());
   
   private final InboxAmp _inbox;
-  private final ActorAmp _actor;
+  private final StubAmp _actor;
 
   // private OutboxAmp _outbox;
 
   //private MessageInboxDeliver _messageContext;
 
   DeliverInbox(InboxAmp inbox, 
-               ActorAmp actor)
+               StubAmp actor)
   {
     _inbox = inbox;
     _actor = actor;

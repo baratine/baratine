@@ -67,11 +67,13 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.loader.DynamicClassLoader;
 import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.loader.EnvironmentLocal;
+import com.caucho.v5.util.L10N;
 
 import io.baratine.config.Config;
 import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertManager;
 import io.baratine.inject.Binding;
+import io.baratine.inject.Factory;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 
@@ -80,6 +82,7 @@ import io.baratine.inject.Key;
  */
 public class InjectManagerImpl implements InjectManagerAmp
 {
+  private static final L10N L = new L10N(InjectManagerImpl.class);
   private static final Logger log = Logger.getLogger(InjectManagerImpl.class.getName());
   
   private static final EnvironmentLocal<InjectManagerImpl> _localManager
@@ -88,10 +91,9 @@ public class InjectManagerImpl implements InjectManagerAmp
   private static final WeakHashMap<ClassLoader,SoftReference<InjectManagerImpl>> _loaderManagerMap
     = new WeakHashMap<>();
   
-  private HashMap<Class<?>,InjectScope> _scopeMap = new HashMap<>();
-  private InjectScope _scopeDefault = new InjectScopeDefault();
+  private final HashMap<Class<?>,Supplier<InjectScope<?>>> _scopeMap;
 
-  private final Config _env;
+  private final Config _config;
     
   private HashSet<Class<?>> _qualifierSet = new HashSet<>();
   
@@ -119,9 +121,9 @@ public class InjectManagerImpl implements InjectManagerAmp
     try {
       thread.setContextClassLoader(_loader);
       
-      _env = builder.config();
+      _config = builder.config();
       
-      _scopeMap.put(Singleton.class, new InjectScopeSingleton());
+      _scopeMap = builder.scopeMap();
       
       //_qualifierSet.add(Lookup.class);
       
@@ -136,9 +138,11 @@ public class InjectManagerImpl implements InjectManagerAmp
       
       _autoBind = autoBind;
       
+      /*
       for (Class<?> beanType : builder.beans()) {
         addBean(beanType);
       }
+      */
       
       builder.bind(this);
       
@@ -250,7 +254,7 @@ public class InjectManagerImpl implements InjectManagerAmp
   @Override
   public String property(String key)
   {
-    return _env.get(key);
+    return _config.get(key);
   }
   
   /**
@@ -260,25 +264,7 @@ public class InjectManagerImpl implements InjectManagerAmp
   @Override
   public Config config()
   {
-    return _env;
-  }
-
-  @Override
-  public <T> T lookup(Class<T> type, Annotation ...qualifiers)
-  {
-    /*
-    for (InjectProvider provider : _providerList) {
-      T value = provider.lookup(type, qualifiers);
-      
-      if (value != null) {
-        return value;
-      }
-    }
-    
-    return createInstance(type);
-    */
-    
-    return (T) instance(new Key(type, qualifiers));
+    return _config;
   }
 
   @Override
@@ -287,15 +273,6 @@ public class InjectManagerImpl implements InjectManagerAmp
     Key<T> key = Key.of(type);
 
     return instance(key);
-    /*
-    T instance = lookupImpl(key);
-    
-    if (instance != null) {
-      return instance;
-    }
-    
-    return autoInstance(key);
-    */
   }
 
   @Override
@@ -320,17 +297,6 @@ public class InjectManagerImpl implements InjectManagerAmp
     else {
       return null;
     }
-    /*
-    //Class<T> type = (Class) key.rawClass();
-    
-    T instance = lookupImpl(key);
-    
-    if (instance != null) {
-      return instance;
-    }
-    
-    return autoInstance(key);
-    */
   }
 
   @Override
@@ -346,17 +312,6 @@ public class InjectManagerImpl implements InjectManagerAmp
     else {
       return null;
     }
-    /*
-    //Class<T> type = (Class) key.rawClass();
-    
-    T instance = lookupImpl(ip);
-    
-    if (instance != null) {
-      return instance;
-    }
-    
-    return (T) autoInstance(ip.key());
-    */
   }
 
   @Override
@@ -388,51 +343,12 @@ public class InjectManagerImpl implements InjectManagerAmp
       }
       
       _providerMap.putIfAbsent(key, provider);
+      
+      provider = (Provider) _providerMap.get(key);
     }
     
     return provider;
   }
-
-  @Override
-  public <T> T instanceNonService(Class<T> type, Annotation...qualifiers)
-  {
-    throw new UnsupportedOperationException();
-    /*
-    T instance = lookupImpl(type);
-    
-    if (instance != null) {
-      return instance;
-    }
-    
-    return createInstance(type);
-    */
-  }
-
-  /*
-  private <T> T lookupImpl(Key<T> key)
-  {
-    BindingInject<T> bean = findBean(key);
-    
-    if (bean != null) {
-      return bean.create();
-    }
-    
-    BindingAmp<T> producer = findBinding(key);
-    
-    if (producer != null) {
-      return producer.create(key.rawClass());
-    }
-    
-    producer = findObjectBinding(key);
-    
-    if (producer != null) {
-      return producer.create(key.rawClass());
-    }
-    
-    
-    return null;
-  }
-  */
 
   private <T> Provider<T> lookupProvider(Key<T> key)
   {
@@ -458,34 +374,6 @@ public class InjectManagerImpl implements InjectManagerAmp
     return null;
   }
 
-  /*
-  private <T> T lookupImpl(InjectionPoint<T> ip)
-  {
-    Key<T> key = (Key) ip.key();
-    
-    BindingInject<T> bean = findBean(key);
-    
-    if (bean != null) {
-      return bean.create();
-    }
-    
-    ProviderInject<T> producer = findBinding(key);
-    
-    if (producer != null) {
-      return producer.create(key.rawClass());
-    }
-    
-    producer = findObjectBinding(key);
-    
-    if (producer != null) {
-      return producer.create(ip);
-    }
-    
-    
-    return null;
-  }
-  */
-
   private <T> Provider<T> lookupProvider(InjectionPoint<T> ip)
   {
     Key<T> key = ip.key();
@@ -499,44 +387,18 @@ public class InjectManagerImpl implements InjectManagerAmp
     BindingAmp<T> provider = findBinding(key);
     
     if (provider != null) {
-      return provider.provider(ip); //.create(key.rawClass());
+      return provider.provider(ip);
     }
     
     provider = findObjectBinding(key);
     
     if (provider != null) {
-      return provider.provider(ip); // .create(ip);
+      return provider.provider(ip);
     }
     
     
     return null;
   }
-
-  /*
-  private <T> T autoInstance(Key<T> key)
-  {
-    Class<?> rawType = key.rawClass();
-    
-    if (Provider.class.equals(rawType)) {
-      Type type = key.type();
-      TypeRef typeRef = TypeRef.of(type);
-      TypeRef providerRef = typeRef.to(Provider.class);
-      TypeRef instanceRef = providerRef.param(0);
-      
-      Key<?> subKey = Key.of(instanceRef.type());
-      return (T) provider(subKey);
-    }
-    for (InjectAutoBind autoBind : _autoBind) {
-      Provider<T> provider = autoBind.provider(key);
-      
-      if (provider != null) {
-        return provider.get();
-      }
-    }
-    
-    return createInstance(key);
-  }
-  */
   
   private <T> Provider<T> autoProvider(Key<T> key)
   {
@@ -576,72 +438,6 @@ public class InjectManagerImpl implements InjectManagerAmp
       return Collections.EMPTY_LIST;
     }
   }
-
-  /*
-  @Override
-  public <T> T instanceCreate(Class<T> type)
-  {
-    return createInstance(type);
-  }
-  */
-
-  @Override
-  public Object createByName(String name)
-  {
-    return null;
-  }
-  
-  private <T> T createInstance(Key<T> key)
-  {
-    try {
-      Class<T> type = (Class) key.rawClass();
-      InjectScope scope = findScope(type);
-      
-      T value = null;
-      
-      if (scope != null) {
-        value = scope.get(type);
-      
-        if (value != null) {
-          return value;
-        }
-      }
-      
-      value = newInstance(type);
-      
-      if (value == null) {
-        return null;
-      }
-      
-      if (scope != null) {
-        scope.set(type, value);
-      }
-
-      InjectContext env = InjectContextImpl.CONTEXT;
-      
-      inject(env, value);
-      
-      init(env, value);
-        
-      return value;
-    } catch (RuntimeException e) {
-      throw e;
-    } catch (Exception e) {
-      throw ConfigException.wrap(e);
-    }
-  }
-
-  @Override
-  public void inject(Object bean)
-  {
-    Objects.requireNonNull(bean);
-    
-    InjectContext env = InjectContextImpl.CONTEXT;
-    
-    inject(env, bean);
-    
-    init(env, bean);
-  }
   
   private <T> Provider<T> createProvider(Key<T> key)
   {
@@ -653,54 +449,29 @@ public class InjectManagerImpl implements InjectManagerAmp
     
     int priority = 0;
     
-    BindingAmp<T> binding = new ProviderConstructor<>(this, key, priority, type);
+    InjectScope<T> scope = new InjectScopeDefault<>();
+    
+    BindingAmp<T> binding = new ProviderConstructor<>(this, key, priority, scope, type);
     
     binding.bind();
     
     return binding.provider();
+  }
 
-    /*
-    return new Provider<T>() { 
-      public T get() { return createInstance(key); }
-      };
-      */
-  }
-  
-  private InjectScope findScope(Class<?> type)
+  <T> InjectScope<T> scope(Class<? extends Annotation> scopeType)
   {
-    for (Annotation ann : type.getAnnotations()) {
-      Class<?> annType = ann.annotationType();
-      
-      if (annType.isAnnotationPresent(Scope.class)) {
-        InjectScope scope = _scopeMap.get(annType);
-        
-        if (scope != null) {
-          return scope;
-        }
-      }
+    Supplier<InjectScope<T>> scopeGen = (Supplier) _scopeMap.get(scopeType);
+    
+    if (scopeGen == null) {
+      throw error("{0} is an unknown scope",
+                  scopeType.getSimpleName());
     }
-    
-    return _scopeDefault;
-  }
-  
-  //@Override
-  public void inject(InjectContext env, Object value)
-  {
-    if (value == null) {
-      return;
-    }
-    
-    ArrayList<InjectProgram> injectList = new ArrayList<>();
-    
-    introspectInject(injectList, value.getClass());
-    
-    for (InjectProgram init : injectList) {
-      init.inject(value, env);
-    }
+
+    return scopeGen.get();
   }
   
   @Override
-  public <T> Consumer<T> program(Class<T> type)
+  public <T> Consumer<T> injector(Class<T> type)
   {
     ArrayList<InjectProgram> injectList = new ArrayList<>();
     
@@ -709,44 +480,6 @@ public class InjectManagerImpl implements InjectManagerAmp
     introspectInit(injectList, type);
     
     return new InjectProgramImpl<T>(injectList);
-  }
-  
-  //@Override
-  public void init(InjectContext env, Object value)
-  {
-    if (value == null) {
-      return;
-    }
-    ArrayList<InjectProgram> initList = new ArrayList<>();
-    
-    introspectInit(initList, value.getClass());
-    
-    for (InjectProgram init : initList) {
-      init.inject(value, env);
-    }
-  }
-  
-  private <T> T newInstance(Class<T> type)
-  {
-    try {
-      if (type.isInterface()) {
-        return null;
-      }
-
-      for (Constructor <?>ctor : type.getDeclaredConstructors()) {
-        if (ctor.getParameterTypes().length == 0) {
-          ctor.setAccessible(true);
-          
-          return (T) ctor.newInstance();
-        }
-      }
-      
-      return type.newInstance();
-    } catch (RuntimeException e) {
-      throw e;
-    } catch (Exception e) {
-      throw ConfigException.wrap(e);
-    }
   }
   
   @Override
@@ -761,104 +494,6 @@ public class InjectManagerImpl implements InjectManagerAmp
     }
     
     return program;
-  }
-  
-  public <X> void addBean(Class<X> beanClass)
-  {
-    BindingAmp<X> bindingOwner = newBinding(beanClass);
-    
-    introspectProduces(beanClass, bindingOwner);
-  }
-  
-  private <X> void introspectProduces(Class<X> beanClass, 
-                                      BindingAmp<X> bindingOwner)
-  {
-    for (Method method : beanClass.getMethods()) {
-      if (! isProduces(method.getAnnotations())) {
-        continue;
-      }
-      
-      introspectMethod(method, bindingOwner);
-    }
-  }
-  
-  private <T,X> void introspectMethod(Method method,
-                                    BindingAmp<X> ownerBinding)
-  {
-    if (void.class.equals(method.getReturnType())) {
-      throw new IllegalArgumentException(method.toString());
-    }
-      
-    Class<?> []pTypes = method.getParameterTypes();
-    
-    int ipIndex = findInjectionPoint(pTypes);
-      
-    if (ipIndex >= 0) {
-      BindingAmp<T> binding
-        = new ProviderMethodAtPoint(this, ownerBinding, method);
-      
-      addProvider(binding);
-    }
-    else {
-      ProviderMethod producer
-        = new ProviderMethod(this, ownerBinding, method);
-        
-      addProvider(producer);
-    }
-  }
-  
-  private int findInjectionPoint(Class<?> []pTypes)
-  {
-    for (int i = 0; i < pTypes.length; i++) {
-      if (InjectionPoint.class.equals(pTypes[i])) {
-        return i;
-      }
-    }
-    
-    return -1;
-  }
-  
-  private boolean isProduces(Annotation []anns)
-  {
-    if (anns == null) {
-      return false;
-    }
-    
-    for (Annotation ann : anns) {
-      if (ann.annotationType().isAnnotationPresent(Qualifier.class)) {
-        return true;
-      }
-    }
-    
-    return false;
-  }
-
-  @Override
-  public <T> Supplier<T> supplierNew(Class<T> type, Annotation ...qualifiers)
-  {
-    return ()->newInstance(type);
-  }
-  
-  @Override
-  public <T> Provider<T> newProvider(Class<T> type, Annotation ...qualifiers)
-  {
-    //return ()->instance(Key.of(type));
-    Key<T> key = Key.of(type);
-    
-    int priority = 0;
-    
-    return new ProviderConstructor<>(this, key, priority, type);
-  }
-  
-  @Override
-  public <T> BindingAmp<T> newBinding(Class<T> type)
-  {
-    //return ()->instance(Key.of(type));
-    Key<T> key = Key.of(type);
-    
-    int priority = 0;
-    
-    return new ProviderConstructor<>(this, key, priority, type);
   }
   
   private <T> BindingInject<T> findBean(Key<T> key)
@@ -878,7 +513,7 @@ public class InjectManagerImpl implements InjectManagerAmp
    * Introspect for @Inject fields.
    */
   //@Override
-  public void introspectInject(List<InjectProgram> program, Class<?> type)
+  private void introspectInject(List<InjectProgram> program, Class<?> type)
   {
     if (type == null) {
       return;
@@ -888,7 +523,7 @@ public class InjectManagerImpl implements InjectManagerAmp
     introspectInjectMethod(program, type);
   }
   
-  public void introspectInjectField(List<InjectProgram> program, Class<?> type)
+  private void introspectInjectField(List<InjectProgram> program, Class<?> type)
   {
     if (type == null) {
       return;
@@ -930,54 +565,15 @@ public class InjectManagerImpl implements InjectManagerAmp
         continue;
       }
       
-      
-      /*
-      ArrayList<Annotation> annList = new ArrayList<>();
-      for (Annotation ann : field.getAnnotations()) {
-        if (isQualifier(ann)) {
-          annList.add(ann);
-        }
-      }
-      
-      Annotation []qualifiers = qualifiers(method.getAnnotations());
-      */
-      
       program.add(new InjectMethod(this, method));
     }
-  }
-  
-  private Annotation []qualifiers(Annotation []anns)
-  {
-    ArrayList<Annotation> annList = new ArrayList<>();
-    for (Annotation ann : anns) {
-      if (isQualifier(ann)) {
-        annList.add(ann);
-      }
-    }
-    
-    Annotation []qualifiers = new Annotation[annList.size()];
-    annList.toArray(qualifiers);
-    
-    return qualifiers;
-  }
-  
-  @Override
-  public boolean isQualifier(Annotation ann)
-  {
-    Class<?> annType = ann.annotationType();
-    
-    if (annType.isAnnotationPresent(Qualifier.class)) {
-      return true;
-    }
-    
-    return _qualifierSet.contains(annType);
   }
   
   /**
    * Introspect for @PostConstruct methods.
    */
   //@Override
-  public void introspectInit(List<InjectProgram> program, Class<?> type)
+  private void introspectInit(List<InjectProgram> program, Class<?> type)
   {
     if (type == null) {
       return;
@@ -995,11 +591,6 @@ public class InjectManagerImpl implements InjectManagerAmp
       log.log(Level.FINEST, e.toString(), e);
     }
   }
-
-  @Override
-  public void scanRoot(ClassLoader classLoader)
-  {
-  }
   
   /**
    * Adds a new injection producer to the discovered producer list.
@@ -1012,28 +603,6 @@ public class InjectManagerImpl implements InjectManagerAmp
     
     addBinding(type, binding);
   }
-  
-  /**
-   * Adds a new injection producer with all its children.
-   */
-  /*
-  private void addProducerRec(Class<?> type, InjectProducer<?> producer)
-  {
-    if (type == null
-        || Object.class.equals(type)
-        || Serializable.class.equals(type)) {
-      return;
-    }
-
-    addProducer(type, producer);
-    
-    addProducerRec(type.getSuperclass(), producer);
-    
-    for (Class<?> api : type.getInterfaces()) {
-      addProducerRec(api, producer);
-    }
-  }
-  */
   
   /**
    * Adds a new injection producer to the discovered producer list.
@@ -1084,12 +653,6 @@ public class InjectManagerImpl implements InjectManagerAmp
     
     return null;
   }
-
-  @Override
-  public <T> T instance(Class<T> type, Annotation... qualifiers)
-  {
-    throw new UnsupportedOperationException();
-  }
   
   private void bind()
   {
@@ -1106,6 +669,11 @@ public class InjectManagerImpl implements InjectManagerAmp
     }
     
     return _convertManager.get().converter(source, target);
+  }
+  
+  private RuntimeException error(String msg, Object ...args)
+  {
+    return new InjectException(L.l(msg, args));
   }
   
   @Override

@@ -31,13 +31,13 @@ package com.caucho.v5.bartender.link;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpBase;
+import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.http.pod.PodContainer;
 
 /**
  * Client for connecting to the champ service.
  */
-public class ActorLinkPodDispatch extends ActorAmpBase
+public class ActorLinkPodDispatch extends StubAmpBase
 {
   private ServiceRefPodAppRoot _podAppRoot;
   ActorLinkPodDispatch(ServiceManagerAmp manager,

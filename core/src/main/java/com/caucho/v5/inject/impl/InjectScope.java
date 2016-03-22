@@ -30,12 +30,12 @@
 package com.caucho.v5.inject.impl;
 
 /**
- * The injection manager for a given environment.
+ * scope manager for a type
  */
-public interface InjectScope
+public interface InjectScope<T>
 {
-  <T> T get(Class<T> type);
+  T get();
   
-  <T> void set(Class<T> type, T value);
+  void set(T value);
 }
 

@@ -35,19 +35,20 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
+import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ContextSession;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.InboxFactoryAmp;
 import com.caucho.v5.amp.spi.LookupAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.amp.spi.ProxyFactoryAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubFactoryAmp;
 
 import io.baratine.inject.InjectManager;
 import io.baratine.inject.Key;
@@ -149,9 +150,11 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
                     Class<T> api);
                     */
   
-  ProxyFactoryAmp getProxyFactory();
-
-  ActorAmp createActor(Object bean, ServiceConfig config);
+  ProxyFactoryAmp proxyFactory();
+  
+  StubFactoryAmp stubFactory();
+  
+  StubAmp createActor(Object bean, ServiceConfig config);
   
   //ActorAmp createActor(String actorName, Object bean, ServiceConfig config);
   /*
@@ -263,7 +266,8 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
     @Override
     void close();
   }
-  
+
+
   /*
   interface DisruptorBuilder<T>
   {

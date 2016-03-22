@@ -30,8 +30,8 @@
 package com.caucho.v5.amp.service;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 /**
  * Sender for an actor ref.

@@ -31,19 +31,9 @@ package com.caucho.v5.inject.impl;
 
 
 /**
- * Injection scope where each bean is new.
+ * Injection scope where each bean is a singleton
  */
-public class InjectScopeDefault implements InjectScope
+public class InjectScopeDefault<T> extends InjectScopeSingleton<T>
 {
-  @Override
-  public <T> T get(Class<T> type)
-  {
-    return null;
-  }
-  
-  @Override
-  public <T> void set(Class<T> type, T value)
-  {
-  }
 }
 

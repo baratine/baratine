@@ -958,7 +958,7 @@ public final class TablePodImpl implements TablePod
         }
         _isComplete = true;
         
-        getNext().ok(_list);
+        delegate().ok(_list);
         return;
       }
       

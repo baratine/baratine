@@ -29,9 +29,6 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.ServiceExceptionNotAuthorized;
-import io.baratine.service.ServiceExceptionSecurity;
-
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -40,7 +37,7 @@ import java.util.logging.Logger;
 import javax.crypto.Cipher;
 
 import com.caucho.v5.cloud.security.SecuritySystem;
-import com.caucho.v5.config.AdminLiteral;
+import com.caucho.v5.config.Admin;
 import com.caucho.v5.http.security.AuthenticatorRole;
 import com.caucho.v5.http.security.BasicPrincipal;
 import com.caucho.v5.http.security.DigestCredentials;
@@ -51,6 +48,9 @@ import com.caucho.v5.ramp.hamp.SignedCredentials;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.LruCache;
+
+import io.baratine.service.ServiceExceptionNotAuthorized;
+import io.baratine.service.ServiceExceptionSecurity;
 
 /**
  * Manages links on the server
@@ -76,11 +76,11 @@ public class ServerAuthManager {
     
     InjectManagerAmp injectManager = InjectManagerAmp.current();
     
-    _auth = injectManager.lookup(AuthenticatorRole.class,
-                                    new AdminLiteral());
+    _auth = injectManager.instance(io.baratine.inject.Key.of(AuthenticatorRole.class,
+                                          Admin.class));
     
     if (_auth == null) {
-      _auth = injectManager.lookup(AuthenticatorRole.class);
+      _auth = injectManager.instance(AuthenticatorRole.class);
     }
   }
   

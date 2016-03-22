@@ -337,10 +337,10 @@ public class FilesDeployServiceImpl
       }
 
       if (is != null) {
-        getNext().ok(new StreamSource(new StreamSourceInputStream(is)));
+        delegate().ok(new StreamSource(new StreamSourceInputStream(is)));
       }
       else {
-        getNext().ok(null);
+        delegate().ok(null);
       }
     }
   }

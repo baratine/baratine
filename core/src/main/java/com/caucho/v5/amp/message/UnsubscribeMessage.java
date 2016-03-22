@@ -32,8 +32,8 @@ package com.caucho.v5.amp.message;
 import io.baratine.service.ServiceRef;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to shut down an instance.
@@ -57,9 +57,9 @@ public class UnsubscribeMessage extends MessageAmpBase
   }
   
   @Override
-  public void invoke(InboxAmp mailbox, ActorAmp actor)
+  public void invoke(InboxAmp mailbox, StubAmp actor)
   {
-    ActorAmp actorMessage = _service.getActor();
+    StubAmp actorMessage = _service.getActor();
 
     actorMessage.unsubscribe(_subscriber);
   }

@@ -36,8 +36,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to shut down an instance.
@@ -72,7 +72,7 @@ public class OnSaveMessage extends MessageAmpBase
   
   @Override
   public void invoke(InboxAmp inbox, 
-                     ActorAmp actor)
+                     StubAmp actor)
   {
     if (! _isDisable) {
       _isDisable = ! actor.load(this).onSave(actor);

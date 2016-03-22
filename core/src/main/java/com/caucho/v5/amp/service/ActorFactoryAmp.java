@@ -31,16 +31,16 @@ package com.caucho.v5.amp.service;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.spi.ActorAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Creates actors inside the context of the inbox.
  */
-public interface ActorFactoryAmp extends Supplier<ActorAmp>
+public interface ActorFactoryAmp extends Supplier<StubAmp>
 {
-  ActorAmp mainActor();
+  StubAmp mainActor();
   
-  ActorAmp get();
+  StubAmp get();
   
   ServiceConfig config();
   

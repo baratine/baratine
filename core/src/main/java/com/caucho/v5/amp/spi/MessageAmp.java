@@ -31,6 +31,7 @@ package com.caucho.v5.amp.spi;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.deliver.MessageDeliver;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.spi.Message;
 
@@ -39,7 +40,7 @@ import io.baratine.spi.Message;
  */
 public interface MessageAmp extends MessageDeliver<MessageAmp>, Message
 {
-  void invoke(InboxAmp inbox, ActorAmp actor);
+  void invoke(InboxAmp inbox, StubAmp actor);
   
   void fail(Throwable exn);
 

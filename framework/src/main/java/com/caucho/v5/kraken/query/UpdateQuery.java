@@ -184,7 +184,7 @@ public class UpdateQuery extends QueryKraken
       }
       
       if (--_count == 0) {
-        getNext().ok(_countResult);
+        delegate().ok(_countResult);
       }
     }
     
@@ -193,7 +193,7 @@ public class UpdateQuery extends QueryKraken
     {
       _count = -1;
       
-      getNext().fail(exn);
+      delegate().fail(exn);
     }
     
     /*

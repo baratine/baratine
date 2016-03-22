@@ -32,10 +32,10 @@ package com.caucho.v5.amp.inbox;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.ServiceExceptionNotFound;
@@ -90,7 +90,7 @@ public class InboxNull extends InboxBase
   }
 
   @Override
-  public ActorAmp getDirectActor()
+  public StubAmp getDirectActor()
   {
     throw serviceNotFound();
   }

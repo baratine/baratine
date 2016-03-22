@@ -29,11 +29,15 @@
 
 package com.caucho.v5.convert.bean;
 
+import java.lang.reflect.Field;
+
 /**
  * getter/setter for bean fields.
  */
 public interface FieldBean<T>
 {
+  Field field();
+  
   default boolean getBoolean(T bean)
   {
     throw new UnsupportedOperationException(getClass().getName());

@@ -32,14 +32,14 @@ package com.caucho.v5.amp.inbox;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.actor.ActorAmpMultiWorker;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpMultiWorker;
 
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
@@ -54,8 +54,8 @@ class DeliverInboxMultiWorker implements Deliver<MessageAmp>
     = Logger.getLogger(DeliverInboxMultiWorker.class.getName());
   
   private final InboxQueue _inbox;
-  private final ActorAmp _actorDelegate;
-  private final ActorAmp _actor;
+  private final StubAmp _actorDelegate;
+  private final StubAmp _actor;
 
   // private OutboxAmp _outbox;
 
@@ -64,12 +64,12 @@ class DeliverInboxMultiWorker implements Deliver<MessageAmp>
   //private MessageInboxDeliver _messageContext;
 
   DeliverInboxMultiWorker(InboxQueue inbox, 
-                          ActorAmp actor,
+                          StubAmp actor,
                           DeliverInboxState state)
   {
     _inbox = inbox;
     _actorDelegate = actor;
-    _actor = new ActorAmpMultiWorker(_actorDelegate);
+    _actor = new StubAmpMultiWorker(_actorDelegate);
     _stateShared = state;
     
     _stateSelf = new DeliverInboxState();

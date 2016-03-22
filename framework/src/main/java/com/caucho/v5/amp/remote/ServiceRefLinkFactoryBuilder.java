@@ -35,7 +35,7 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ActorFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.spi.ActorAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Builder for a factory for link serviceRefs.
@@ -126,7 +126,7 @@ public class ServiceRefLinkFactoryBuilder
     
     ServiceRefAmp service = _manager.newService(actorFactory).ref();
   
-    ActorAmpOut actor = (ActorAmpOut) service.getActor().getDelegateMain();
+    ActorAmpOut actor = (ActorAmpOut) service.getActor().delegateMain();
     actor.init(_manager);
 
     ServiceRefLinkFactory channelService
@@ -178,7 +178,7 @@ public class ServiceRefLinkFactoryBuilder
     }
 
     @Override
-    public ActorAmp get()
+    public StubAmp get()
     {
       OutAmpManager outManager;
       outManager = new OutAmpManagerClient(_outFactory);
@@ -193,7 +193,7 @@ public class ServiceRefLinkFactoryBuilder
     }
     
     @Override
-    public ActorAmp mainActor()
+    public StubAmp mainActor()
     {
       return get();
     }

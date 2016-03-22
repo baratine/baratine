@@ -32,9 +32,9 @@ package com.caucho.v5.amp.journal;
 import io.baratine.service.Result;
 
 import com.caucho.v5.amp.deliver.QueueDeliver;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Null implementation of the journal.
@@ -42,7 +42,7 @@ import com.caucho.v5.amp.spi.MessageAmp;
 public class JournalNull implements JournalAmp
 {
   @Override
-  public void writeSend(ActorAmp actor,
+  public void writeSend(StubAmp actor,
                         String methodName, 
                         Object[] args,
                         InboxAmp mailbox)
@@ -50,7 +50,7 @@ public class JournalNull implements JournalAmp
   }
   
   @Override
-  public void writeQuery(ActorAmp actor,
+  public void writeQuery(StubAmp actor,
                          String methodName, 
                          Object[] args,
                          InboxAmp mailbox)

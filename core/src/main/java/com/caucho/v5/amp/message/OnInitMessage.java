@@ -29,8 +29,8 @@
 
 package com.caucho.v5.amp.message;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to start a service.
@@ -51,9 +51,9 @@ public class OnInitMessage extends MessageAmpBase
   }
   
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actor)
+  public void invoke(InboxAmp inbox, StubAmp actor)
   {
-    actor = actor.getActor(actor);
+    actor = actor.worker(actor);
 
     actor.load(this);
   }

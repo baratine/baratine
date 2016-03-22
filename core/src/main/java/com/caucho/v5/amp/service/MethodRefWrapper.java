@@ -38,11 +38,11 @@ import java.lang.reflect.Type;
 import java.util.concurrent.TimeUnit;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Sender for an actor ref.
@@ -162,7 +162,7 @@ abstract public class MethodRefWrapper implements MethodRefAmp
   }
 
   @Override
-  public ActorAmp getActor(ActorAmp actorDeliver)
+  public StubAmp getActor(StubAmp actorDeliver)
   {
     return getDelegate().getActor(actorDeliver);
   }

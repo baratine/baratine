@@ -29,15 +29,15 @@
 
 package com.caucho.v5.amp.service;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * ServiceRef for the system service.
  */
 public class ServiceRefSystem extends ServiceRefActorBase
 {
-  public ServiceRefSystem(ActorAmp actor,
+  public ServiceRefSystem(StubAmp actor,
                           InboxAmp inbox)
   {
     super(actor, inbox);

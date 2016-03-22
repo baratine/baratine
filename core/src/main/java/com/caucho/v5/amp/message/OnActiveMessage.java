@@ -35,8 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
  * Message to shut down an instance.
@@ -64,10 +64,10 @@ public class OnActiveMessage extends MessageAmpBase
   }
   
   @Override
-  public void invoke(InboxAmp inbox, ActorAmp actor)
+  public void invoke(InboxAmp inbox, StubAmp actor)
   {
     try {
-      actor = actor.getActor(actor);
+      actor = actor.worker(actor);
       
       //actor.load(this).onActive(this);
       actor.load(this);

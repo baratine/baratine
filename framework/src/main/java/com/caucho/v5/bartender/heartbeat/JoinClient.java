@@ -349,7 +349,7 @@ class JoinClient
       
       // System.out.println("COMPLETE: " + result);
       try {
-        getNext().ok(result);
+        delegate().ok(result);
       } finally {
         _client.close();
       }

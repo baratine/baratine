@@ -37,9 +37,6 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.ActorAmpJournal;
-import com.caucho.v5.amp.actor.ActorFactoryImpl;
-import com.caucho.v5.amp.actor.StubGenerator;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
@@ -50,12 +47,15 @@ import com.caucho.v5.amp.journal.ActorJournal;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
-import com.caucho.v5.amp.proxy.StubClass;
 import com.caucho.v5.amp.session.SessionServiceManagerImpl;
-import com.caucho.v5.amp.spi.ActorAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpJournal;
+import com.caucho.v5.amp.stub.StubFactoryImpl;
+import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.inject.InjectManagerAmp;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.L10N;
@@ -614,7 +614,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     //ActorAmp actor = _manager.createActor(_worker, config);
     
-    ActorFactoryAmp factory = new ActorFactoryImpl(()->createStub(_worker), config);
+    ActorFactoryAmp factory = new StubFactoryImpl(()->createStub(_worker), config);
     
     //ServiceRefAmp serviceRef = _manager.service(()->_worker, _address, config);
     ServiceRefAmp serviceRef = service(factory);
@@ -628,7 +628,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return serviceRef;
   }
   
-  private ActorAmp createStub(Object worker)
+  private StubAmp createStub(Object worker)
   {
     return _manager.createActor(worker, config());
   }
@@ -637,7 +637,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   {
     ServiceConfig config = config();
     
-    ActorFactoryAmp actorFactory = new ActorFactoryImpl(()->createStub(_serviceSupplier.get()),
+    ActorFactoryAmp actorFactory = new StubFactoryImpl(()->createStub(_serviceSupplier.get()),
                                                            config);
       
     ServiceRefAmp serviceRef = service(actorFactory);
@@ -722,7 +722,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     //ActorAmp actor = _manager.createActor(worker, config);
     
-    factory = new ActorFactoryImpl(()->createStub(worker), config);
+    factory = new StubFactoryImpl(()->createStub(worker), config);
     
     //ServiceRefAmp serviceRef = _manager.service(()->_worker, _address, config);
     ServiceRefAmp serviceRef = service(factory);
@@ -947,10 +947,10 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   {
     ServiceConfig config = actorFactory.config();
     
-    ActorAmp actorMain = actorFactory.mainActor();
+    StubAmp actorMain = actorFactory.mainActor();
      
     // XXX: check on multiple names
-    String journalName = actorMain.getName();
+    String journalName = actorMain.name();
 
     long journalDelay = config.journalDelay();
     
@@ -966,11 +966,11 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
 
     actorMain.setJournal(journal);
 
-    StubClass skel = new StubClass(_manager, actorMain.getApiClass(), config);
+    ClassStub skel = new ClassStub(_manager, actorMain.getApiClass(), config);
     skel.introspect();
     
     // XXX: 
-    ActorAmp actorTop = new ActorAmpJournal(skel, journal, actorMain, _name);
+    StubAmp actorTop = new StubAmpJournal(skel, journal, actorMain, _name);
     
     QueueServiceFactoryInbox serviceFactory
       = new JournalServiceFactory(actorTop, actorJournal, actorMain, config);
@@ -982,7 +982,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return serviceRef;
   }
 
-  protected ActorJournal createJournalActor(ActorAmp actor,
+  protected ActorJournal createJournalActor(StubAmp actor,
                                             JournalAmp journal)
   {
     JournalAmp toPeerJournal = null;
@@ -1122,7 +1122,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     }
 
     @Override
-    public ActorAmp getMainActor()
+    public StubAmp getMainActor()
     {
       return _actorFactory.mainActor();
     }
@@ -1153,14 +1153,14 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
 
   class JournalServiceFactory implements QueueServiceFactoryInbox
   {
-    private ActorAmp _actorTop;
-    private ActorAmp _actorJournal;
-    private ActorAmp _actorMain;
+    private StubAmp _actorTop;
+    private StubAmp _actorJournal;
+    private StubAmp _actorMain;
     //private ServiceConfig _config;
     
-    JournalServiceFactory(ActorAmp actorTop,
-                          ActorAmp actorJournal,
-                          ActorAmp actorMain,
+    JournalServiceFactory(StubAmp actorTop,
+                          StubAmp actorJournal,
+                          StubAmp actorMain,
                           ServiceConfig config)
     {
       _actorTop = actorTop;
@@ -1171,10 +1171,10 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     public String getName()
     {
-      return _actorTop.getName();
+      return _actorTop.name();
     }
     
-    public ActorAmp getMainActor()
+    public StubAmp getMainActor()
     {
       return _actorTop;
     }

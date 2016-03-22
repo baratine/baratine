@@ -32,7 +32,8 @@ package com.caucho.v5.amp.spi;
 import io.baratine.service.ServiceRef;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.actor.SaveResult;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.SaveResult;
 
 /**
  * Lifecycle container for actors.
@@ -43,9 +44,9 @@ public interface ActorContainerAmp
 
   ServiceRef getService(String path);
 
-  void addModifiedChild(ActorAmp actor);
+  void addModifiedChild(StubAmp actor);
 
-  void afterBatch(ActorAmp actor);
+  void afterBatch(StubAmp actor);
   
   void onSave(SaveResult saveResultø);
 
@@ -53,7 +54,7 @@ public interface ActorContainerAmp
 
   void onActive();
 
-  boolean isModifiedChild(ActorAmp actor);
+  boolean isModifiedChild(StubAmp actor);
 
   String getChildPath(String path);
 

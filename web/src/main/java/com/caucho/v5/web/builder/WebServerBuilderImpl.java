@@ -70,7 +70,7 @@ import com.caucho.v5.health.warning.WarningSystem;
 import com.caucho.v5.http.container.HttpContainerBuilder;
 import com.caucho.v5.http.container.HttpSystem;
 import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderRootAmp;
+import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.ServerSocketBar;
@@ -130,7 +130,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   
   //private ArrayList<InjectBuilderWebImpl<?>> _bindings = new ArrayList<>();
   
-  private InjectBuilderRootAmp _injectServer = InjectManagerAmp.manager();
+  private InjectBuilderAmp _injectServer = InjectManagerAmp.manager();
   
   private final ArrayList<IncludeInject> _bindings = new ArrayList<>();
   //private final ArrayList<IncludeWeb> _includes = new ArrayList<>();
