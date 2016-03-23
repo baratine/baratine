@@ -29,10 +29,6 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionIllegalArgument;
-import io.baratine.stream.ResultStream;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -40,8 +36,12 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.QueryRefAmp;
+
+import io.baratine.service.Result;
+import io.baratine.service.ServiceExceptionIllegalArgument;
+import io.baratine.stream.ResultStream;
 
 /**
  * Creates MPC skeletons and stubs.
@@ -51,13 +51,16 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
   private static final Logger log
     = Logger.getLogger(MethodStubResult_VarArgs.class.getName());
   
-  MethodStubResult_VarArgs(Method method) throws IllegalAccessException
+  MethodStubResult_VarArgs(ServiceManagerAmp ampManager,
+                           Method method)
+    throws IllegalAccessException
   {
-    super(method);
+    super(ampManager, method);
   }
   
   @Override
-  protected MethodHandle initMethodHandle(Method method)
+  protected MethodHandle initMethodHandle(ServiceManagerAmp ampManager,
+                                          Method method)
     throws IllegalAccessException
   {
     Class<?> []paramTypes = method.getParameterTypes();

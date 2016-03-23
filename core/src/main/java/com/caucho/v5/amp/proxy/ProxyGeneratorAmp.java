@@ -75,8 +75,8 @@ import io.baratine.service.OnLookup;
 import io.baratine.service.OnSave;
 import io.baratine.service.OnSubscribe;
 import io.baratine.service.OnUnsubscribe;
+import io.baratine.service.Pin;
 import io.baratine.service.Result;
-import io.baratine.service.Service;
 import io.baratine.service.Timeout;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
@@ -1689,7 +1689,7 @@ public class ProxyGeneratorAmp<T> {
                           Class<?> type,
                           Annotation []anns)
   {
-    Service ampService = getAnnotation(Service.class, anns);
+    Pin pin = getAnnotation(Pin.class, anns);
     
     if (type.equals(boolean.class)) {
       code.pushIntVar(index);
@@ -1741,7 +1741,7 @@ public class ProxyGeneratorAmp<T> {
       
       return index + 2;
     }
-    else if (ampService != null) {
+    else if (pin != null) {
       code.pushObjectVar(index);
       
       // XXX: should be Class

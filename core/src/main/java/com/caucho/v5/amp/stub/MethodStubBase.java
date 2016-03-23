@@ -44,6 +44,7 @@ import com.caucho.v5.util.Hex;
 import io.baratine.service.Direct;
 import io.baratine.service.Modify;
 import io.baratine.service.Pin;
+import io.baratine.service.Result;
 
 /**
  * Creates AMP skeleton method.
@@ -124,7 +125,7 @@ abstract class MethodStubBase extends MethodAmpBase
                                       Method method)
   {
     Parameter []params = method.getParameters();
-    Annotation []methodAnns = method.getAnnotations();
+    //Annotation []methodAnns = method.getAnnotations();
 
     for (int i = 0; i < params.length; i++) {
       Class<?> paramType = params[i].getType();
@@ -134,12 +135,16 @@ abstract class MethodStubBase extends MethodAmpBase
         continue;
       }
       
+      if (Result.class.equals(paramType)) {
+        continue;
+      }
+      
       Pin pin = getAnnotation(Pin.class, paramAnn);
       
       if (pin == null) {
         continue;
       }
-      
+
       FilterPinArg filter = new FilterPinArg(rampManager, paramType); 
       
       MethodHandle proxyFilter = _proxyFilterHandle.bindTo(filter);
@@ -147,6 +152,7 @@ abstract class MethodStubBase extends MethodAmpBase
       mh = MethodHandles.filterArguments(mh, i + 1, proxyFilter);
     }
     
+    /*
     Pin pin = getAnnotation(Pin.class, methodAnns);
     
     if (pin != null) {
@@ -157,6 +163,7 @@ abstract class MethodStubBase extends MethodAmpBase
 
       mh = MethodHandles.filterReturnValue(mh, retFilterHandle);
     }
+    */
     
     return mh;
   }

@@ -29,14 +29,13 @@
 
 package io.baratine.timer;
 
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
 import io.baratine.service.Cancel;
 import io.baratine.service.Direct;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * Timer service local to the JVM. The timer can be obtained by

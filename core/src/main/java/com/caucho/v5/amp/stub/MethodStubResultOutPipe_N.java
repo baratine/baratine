@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
 
@@ -41,7 +42,6 @@ import io.baratine.io.ResultPipeOut;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;
-import io.baratine.stream.ResultStream;
 
 /**
  * Creates MPC skeletons and stubs.
@@ -52,9 +52,10 @@ class MethodStubResultOutPipe_N extends MethodStubResult_N
   private static final Logger log
   = Logger.getLogger(MethodStubResultOutPipe_N.class.getName());
 
-  MethodStubResultOutPipe_N(Method method) throws IllegalAccessException
+  MethodStubResultOutPipe_N(ServiceManagerAmp ampManager, Method method)
+    throws IllegalAccessException
   {
-    super(method);
+    super(ampManager, method);
   }
   
   @Override

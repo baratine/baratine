@@ -55,7 +55,6 @@ import io.baratine.io.ResultPipeIn;
 import io.baratine.io.ResultPipeOut;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
-import io.baratine.service.Shim;
 import io.baratine.service.Journal;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Modify;
@@ -68,11 +67,13 @@ import io.baratine.service.OnLookup;
 import io.baratine.service.OnSave;
 import io.baratine.service.OnSubscribe;
 import io.baratine.service.OnUnsubscribe;
+import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
+import io.baratine.service.Shim;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
@@ -453,14 +454,17 @@ public class ClassStub
         MethodAmp methodStub;
         
         if (method.isVarArgs()) {
-          methodStub = new MethodStubResult_VarArgs(method);
+          methodStub = new MethodStubResult_VarArgs(ampManager(), method);
         }
         else {
-          methodStub = new MethodStubResult_N(method);
+          methodStub = new MethodStubResult_N(ampManager(), method);
         }
         
         if (result.isAnnotationPresent(Shim.class)) {
           return createCopyShim(methodStub, result);
+        }
+        else if (result.isAnnotationPresent(Pin.class)) {
+          return createPin(methodStub, result);
         }
         else {
           return methodStub;
@@ -469,19 +473,19 @@ public class ClassStub
       
       if (isResult(params, ResultStream.class)) {
         if (false && method.isVarArgs()) {
-          return new MethodStubResult_VarArgs(method);
+          return new MethodStubResult_VarArgs(ampManager(), method);
         }
         else {
-          return new MethodStubResultStream_N(method);
+          return new MethodStubResultStream_N(ampManager(), method);
         }
       }
       
       if (isResult(params, ResultPipeOut.class)) {
-        return new MethodStubResultOutPipe_N(method);
+        return new MethodStubResultOutPipe_N(ampManager(), method);
       }
       
       if (isResult(params, ResultPipeIn.class)) {
-        return new MethodStubResultInPipe_N(method);
+        return new MethodStubResultInPipe_N(ampManager(), method);
       }
       
       /*
@@ -520,6 +524,17 @@ public class ClassStub
     TransferAsset<?,?> shim = new TransferAsset(_api, transferRef.rawClass());
     
     return new MethodStubResultCopy(delegate, shim);
+  }
+  
+  private MethodAmp createPin(MethodAmp delegate,
+                              Parameter result)
+  {
+    Class<?> api = TypeRef.of(result.getParameterizedType())
+                          .to(Result.class)
+                          .param(0)
+                          .rawClass();
+    
+    return new MethodStubResultPin(delegate, api);
   }
   
   private MethodAmp getActorMethod(StubAmp actor,

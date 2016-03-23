@@ -109,6 +109,10 @@ class DeliverInbox implements Deliver<MessageAmp>
       else {
         log.fine(e.toString());
       }
+    } catch (IllegalStateException e) {
+      if (log.isLoggable(Level.FINE)) {
+        log.log(Level.FINE, e.toString(), e);
+      }
     } catch (Throwable e) {
       if (log.isLoggable(Level.FINER)) {
         log.log(Level.FINER, e.toString(), e);
