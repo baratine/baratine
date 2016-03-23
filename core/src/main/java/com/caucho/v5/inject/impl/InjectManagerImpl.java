@@ -449,7 +449,8 @@ public class InjectManagerImpl implements InjectManagerAmp
     
     int priority = 0;
     
-    InjectScope<T> scope = new InjectScopeDefault<>();
+    // auto-provider is factory
+    InjectScope<T> scope = new InjectScopeFactory<>();
     
     BindingAmp<T> binding = new ProviderConstructor<>(this, key, priority, scope, type);
     
