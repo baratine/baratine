@@ -41,6 +41,8 @@ import io.baratine.service.Service;
 public interface EventService
 {
   <T> void consume(String path, @Pin T consumer, Result<? super Cancel> result);
+  <T> void consume(Class<T> api, @Pin T consumer, Result<? super Cancel> result);
   
   <T> void subscribe(String path, @Pin T consumer, Result<? super Cancel> result);  
+  <T> void subscribe(Class<T> api, @Pin T consumer, Result<? super Cancel> result);  
 }
