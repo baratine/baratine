@@ -211,9 +211,17 @@ public class SerializerH3List<T extends List<?>> extends SerializerH3Base<T>
   @Override
   public void skip(InRawH3 is, InH3Amp in)
   {
-    long l = is.readLong();
-    while (l-- > 0)
-      is.skip(in);
+    while (true) {
+      long chunk = is.readUnsigned();
+      long size = InRawH3.chunkSize(chunk);
+
+      while (size-- > 0)
+        is.skip(in);
+
+      if (InRawH3.chunkIsFinal(chunk)) {
+        return;
+      }
+    }
   }
 
   @SuppressWarnings("unchecked")
