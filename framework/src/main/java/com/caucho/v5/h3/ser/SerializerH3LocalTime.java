@@ -50,6 +50,12 @@ public class SerializerH3LocalTime extends SerializerH3Base<LocalTime>
   }
 
   @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    is.skip(in);
+  }
+
+  @Override
   public void writeObject(OutRawH3 os, int defId, LocalTime time, OutH3 out)
   {
     os.writeObject(typeSequence());

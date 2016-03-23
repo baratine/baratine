@@ -234,7 +234,20 @@ public class SerializerH3Java<T> extends SerializerH3Base<T>
       }
     }
   }
-  
+
+  @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    FieldSerBase[] fields = _fields;
+    int size = fields.length;
+
+    for (int i = 0; i < size; i++) {
+      FieldSerBase field = fields[i];
+
+      field.skip(is, in);
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private T newInstance()
   {

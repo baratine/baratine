@@ -69,6 +69,14 @@ public class SerializerH3ZonedDateTime extends SerializerH3Base<ZonedDateTime>
   }
 
   @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    is.skip(in);
+    is.skip(in);
+    is.skip(in);
+  }
+
+  @Override
   public void writeObject(OutRawH3 os,
                           int defId,
                           ZonedDateTime time,

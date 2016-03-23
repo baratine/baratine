@@ -48,6 +48,12 @@ public class SerializerH3LocalDate extends SerializerH3Base<LocalDate>
   }
 
   @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    is.skip(in);
+  }
+
+  @Override
   public void writeObject(OutRawH3 os, int defId, LocalDate date, OutH3 out)
   {
     os.writeObject(typeSequence());
