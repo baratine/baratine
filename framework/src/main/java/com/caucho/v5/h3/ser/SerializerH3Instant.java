@@ -20,8 +20,6 @@ package com.caucho.v5.h3.ser;
 
 import java.lang.reflect.Type;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import com.caucho.v5.h3.OutH3;
 import com.caucho.v5.h3.io.ConstH3;
@@ -50,6 +48,13 @@ public class SerializerH3Instant extends SerializerH3Base<Instant>
 
     os.writeLong(instant.getEpochSecond());
     os.writeLong(instant.getNano());
+  }
+
+  @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    is.skip(in);
+    is.skip(in);
   }
 
   @Override

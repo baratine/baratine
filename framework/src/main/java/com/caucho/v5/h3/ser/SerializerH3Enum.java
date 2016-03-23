@@ -90,7 +90,13 @@ public class SerializerH3Enum<T extends Enum<T>> extends SerializerH3Base<T>
     os.writeObject(defIndex);
     os.writeString(value.name());
   }
-  
+
+  @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    is.skip(in);
+  }
+
   /**
    * Introspect the class.
    */

@@ -207,7 +207,15 @@ public class SerializerH3List<T extends List<?>> extends SerializerH3Base<T>
       }
     }
   }
-  
+
+  @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    long l = is.readLong();
+    while (l-- > 0)
+      is.skip(in);
+  }
+
   @SuppressWarnings("unchecked")
   private T newInstance()
   {
