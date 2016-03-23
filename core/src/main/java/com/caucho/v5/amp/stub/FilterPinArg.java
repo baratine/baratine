@@ -30,6 +30,7 @@
 package com.caucho.v5.amp.stub;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.util.L10N;
 
@@ -66,6 +67,20 @@ public class FilterPinArg
       }
 
       return arg;
+    }
+    else if (ServiceRef.class.isAssignableFrom(_api)) {
+      if (arg instanceof ServiceRef) {
+        return arg;
+      }
+      else if (arg instanceof ProxyHandleAmp) {
+        ProxyHandleAmp proxy = (ProxyHandleAmp) arg;
+        
+        return proxy.__caucho_getServiceRef();
+      }
+      else {
+        throw new IllegalArgumentException(L.l("{0} is an invalid @{1} argument because it is not an AMP service.",
+                                               arg, Pin.class));
+      }
     }
 
     if (arg instanceof String) {

@@ -391,6 +391,12 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   @Override
   public ServiceRefAmp service(String address)
   {
+    Objects.requireNonNull(address);
+    
+    if (address.isEmpty()) {
+      throw new IllegalArgumentException(); 
+    }
+    
     Thread thread = Thread.currentThread();
     ClassLoader loader = thread.getContextClassLoader();
     

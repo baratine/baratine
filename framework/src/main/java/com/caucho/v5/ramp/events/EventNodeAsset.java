@@ -52,10 +52,10 @@ import com.caucho.v5.util.L10N;
 /**
  * actor to handle inbound calls.
  */
-class EventNodeActor extends StubAmpBase
+class EventNodeAsset extends StubAmpBase
 {
-  private static final L10N L = new L10N(EventNodeActor.class);
-  private static final Logger log = Logger.getLogger(EventNodeActor.class.getName());
+  private static final L10N L = new L10N(EventNodeAsset.class);
+  private static final Logger log = Logger.getLogger(EventNodeAsset.class.getName());
   private static final ServiceRefComparator CMP = new ServiceRefComparator();
   
   private String _address;
@@ -70,7 +70,7 @@ class EventNodeActor extends StubAmpBase
     
   private long _sequence;
   
-  public EventNodeActor(EventSchemeImpl root,
+  public EventNodeAsset(EventSchemeImpl root,
                          String address)
   {
     _root = root;
@@ -262,7 +262,7 @@ class EventNodeActor extends StubAmpBase
     public String toString()
     {
       return (getClass().getSimpleName() + "[" + _name
-              + "," + EventNodeActor.this + "]");
+              + "," + EventNodeAsset.this + "]");
     }
   }
   

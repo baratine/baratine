@@ -29,18 +29,23 @@
 
 package com.caucho.v5.ramp.events;
 
-import io.baratine.service.OnDestroy;
-import io.baratine.service.OnInit;
-import io.baratine.service.OnLookup;
-import io.baratine.service.Service;
-import io.baratine.service.ServiceRef;
-
 import java.util.HashMap;
 import java.util.Objects;
 
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
+import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.OnDestroy;
+import io.baratine.service.OnInit;
+import io.baratine.service.OnLookup;
+import io.baratine.service.Pin;
+import io.baratine.service.Result;
+import io.baratine.service.Service;
+import io.baratine.service.ServiceException;
+import io.baratine.service.ServiceRef;
 
 /**
  * Implementation of the event bus.
@@ -48,12 +53,13 @@ import com.caucho.v5.bartender.pod.PodBartender;
 @Service
 public class EventSchemeImpl
 {
+  private static final L10N L = new L10N(EventSchemeImpl.class);
 //  private ServiceManagerAmp _rampManager;
   
-  private HashMap<String,EventNodeActor> _pubSubNodeMap
+  private HashMap<String,EventNodeAsset> _pubSubNodeMap
     = new HashMap<>();
     
-  private String _address = "event:";
+  private String _address = "event://";
   
   private EventServerImpl _podServer;
   
@@ -103,6 +109,10 @@ public class EventSchemeImpl
   @OnLookup
   public Object onLookup(String path)
   {
+    if (path.equals("//")) {
+      return this;
+    }
+    
     Object value = lookupPath(_address + path);
 
     return value;
@@ -112,14 +122,108 @@ public class EventSchemeImpl
   {
     return lookupPubSubNode(path);
   }
+  
+  /**
+   * Subscribe a callback to a location.
+   */
+  public void subscribe(Object location, 
+                        @Pin ServiceRef serviceRef,
+                        Result<? super Cancel> result)
+  {
+    if (location instanceof String) {
+      String path = (String) location;
+      
+      if (path.isEmpty()) {
+        result.fail(new ServiceException(L.l("Invalid event location '{0}'", location)));
+        return;
+      }
+      
+      String address = address(path);
+      
+      EventNodeAsset node = lookupPubSubNode(address);
+      
+      Cancel cancel = node.subscribeImpl(serviceRef);
+      
+      result.ok(cancel);
+    }
+    else if (location instanceof Class<?>) {
+      String path = ((Class<?>) location).getName();
+      
+      String address = address(path);
+      
+      EventNodeAsset node = lookupPubSubNode(address);
+      
+      Cancel cancel = node.subscribeImpl(serviceRef);
+      
+      result.ok(cancel);
+    }
+    else { 
+      result.fail(new ServiceException(L.l("Invalid event location {0}", location)));
+    }   
+  }
+  
+  /**
+   * Consume a callback to a location.
+   */
+  public void consume(Object location, 
+                        @Pin ServiceRef serviceRef,
+                        Result<? super Cancel> result)
+  {
+    if (location instanceof String) {
+      String path = (String) location;
+      
+      if (path.isEmpty()) {
+        result.fail(new ServiceException(L.l("Invalid event location '{0}'", location)));
+        return;
+      }
+      
+      String address = address(path);
+      
+      EventNodeAsset node = lookupPubSubNode(address);
+      
+      Cancel cancel = node.consumeImpl(serviceRef);
+      
+      result.ok(cancel);
+    }
+    else if (location instanceof Class<?>) {
+      String path = ((Class<?>) location).getName();
+      
+      String address = address(path);
+      
+      EventNodeAsset node = lookupPubSubNode(address);
+      
+      Cancel cancel = node.consumeImpl(serviceRef);
+      
+      result.ok(cancel);
+    }
+    else { 
+      result.fail(new ServiceException(L.l("Invalid event location {0}", location)));
+    }   
+  }
+  
+  private String address(String path)
+  {
+    if (! path.startsWith("/")) {
+      path = "/" + path;
+    }
+    
+    String address = _address;
+    
+    if (address.indexOf("//") < 0) {
+      return address + "//" + path;
+    }
+    else {
+      return address + path;
+    }
+  }
 
   public void subscribeImpl(String address, ServiceRef serviceRef)
   {
-    EventNodeActor node = lookupPubSubNode(address);
+    EventNodeAsset node = lookupPubSubNode(address);
     node.subscribe(serviceRef);
   }
 
-  EventNodeActor lookupPubSubNode(String address)
+  EventNodeAsset lookupPubSubNode(String address)
   {
     String podName = getPodName(address);
     String path = getSubPath(address);
@@ -130,11 +234,11 @@ public class EventSchemeImpl
     }
     */
     
-    EventNodeActor actor = _pubSubNodeMap.get(address);
+    EventNodeAsset actor = _pubSubNodeMap.get(address);
 
     if (actor == null) {
       if (podName.isEmpty()) {
-        actor = new EventNodeActor(this, address);
+        actor = new EventNodeAsset(this, address);
       }
       else if (isLocalPod(podName)) {
         actor = new EventNodeActorServer(this, podName, address);
@@ -170,7 +274,7 @@ public class EventSchemeImpl
 
   void onServerUpdate(ServerBartender server)
   {
-    for (EventNodeActor node : _pubSubNodeMap.values()) {
+    for (EventNodeAsset node : _pubSubNodeMap.values()) {
       node.onServerUpdate(server);
     }
   }

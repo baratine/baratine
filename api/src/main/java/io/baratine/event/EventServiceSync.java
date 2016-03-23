@@ -41,5 +41,9 @@ public interface EventServiceSync extends EventService
 {
   <T> Cancel consume(String path, @Pin T consumer);
   
+  <T> Cancel consume(Class<T> api, @Pin T consumer);
+  
   <T> Cancel subscribe(String path, @Pin T subscriber);
+  
+  <T> Cancel subscribe(Class<T> api, @Pin T subscriber);
 }

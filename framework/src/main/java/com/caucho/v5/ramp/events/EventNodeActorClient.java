@@ -47,7 +47,7 @@ import com.caucho.v5.bartender.pod.PodBartender;
 /**
  * actor to handle inbound calls.
  */
-class EventNodeActorClient extends EventNodeActor
+class EventNodeActorClient extends EventNodeAsset
 {
   private static final Logger log = Logger.getLogger(EventNodeActorClient.class.getName());
   

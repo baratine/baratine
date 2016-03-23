@@ -91,7 +91,7 @@ public class EventServerImpl
       
       _clientMap.put(address, eventNode);
       
-      EventNodeActor localNode = _events.lookupPubSubNode(address);
+      EventNodeAsset localNode = _events.lookupPubSubNode(address);
       
       localNode.subscribe(eventNode);
     }
@@ -106,7 +106,7 @@ public class EventServerImpl
                       String methodName, 
                       Object []args)
   {
-    EventNodeActor localNode = _events.lookupPubSubNode(address);
+    EventNodeAsset localNode = _events.lookupPubSubNode(address);
 
     if (localNode != null) {
       localNode.publishFromRemote(methodName, args);

@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 /**
  * actor to handle inbound calls.
  */
-class EventNodeActorServer extends EventNodeActor
+class EventNodeActorServer extends EventNodeAsset
 {
   private static final Logger log = Logger.getLogger(EventNodeActorServer.class.getName());
   
