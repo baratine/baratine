@@ -50,7 +50,7 @@ public class EventServerImpl
 {
   public static final String PATH = "/baratine/events";
   
-  private final EventSchemeImpl _events;
+  private final SchemeEventImpl _events;
 
   private PodBartender _pod;
   
@@ -60,7 +60,7 @@ public class EventServerImpl
 
   private Cancel _updateHandle;
   
-  public EventServerImpl(EventSchemeImpl eventsScheme)
+  public EventServerImpl(SchemeEventImpl eventsScheme)
   {
     Objects.requireNonNull(eventsScheme);
     

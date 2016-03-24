@@ -45,7 +45,7 @@ class EventNodeActorServer extends EventNodeAsset
   
   private final ArrayList<EventNodeServer> _remoteList = new ArrayList<>();
 
-  public EventNodeActorServer(EventSchemeImpl root,
+  public EventNodeActorServer(SchemeEventImpl root,
                                String podName,
                                String address)
   {

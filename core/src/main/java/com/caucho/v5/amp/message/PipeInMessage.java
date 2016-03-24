@@ -42,9 +42,9 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.PipeIn;
-import io.baratine.io.PipeOut;
-import io.baratine.io.ResultPipeIn;
+import io.baratine.pipe.PipeIn;
+import io.baratine.pipe.PipeOut;
+import io.baratine.pipe.ResultPipeIn;
 
 /**
  * Register a publisher to a pipe.

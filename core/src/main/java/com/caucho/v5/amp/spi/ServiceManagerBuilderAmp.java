@@ -37,6 +37,7 @@ import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.stub.StubGenerator;
+import com.caucho.v5.inject.InjectManagerAmp;
 
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceManager;
@@ -112,6 +113,9 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   ServiceManagerBuilderAmp stubGenerator(StubGenerator factory);
   StubGenerator[] stubGenerators();
   
+  Supplier<InjectManagerAmp> injectManager(ServiceManagerAmp ampManager);
+  ServiceManagerBuilderAmp injectManager(Supplier<InjectManagerAmp> inject);
+  
   /**
    * Returns the pod node.
    */
@@ -142,6 +146,7 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   ServiceManagerAmp get();
 
   ServiceManagerAmp getRaw();
+
 
   /**
    * returns the build manager

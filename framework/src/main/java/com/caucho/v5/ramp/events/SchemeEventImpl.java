@@ -51,9 +51,9 @@ import io.baratine.service.ServiceRef;
  * Implementation of the event bus.
  */
 @Service
-public class EventSchemeImpl
+public class SchemeEventImpl
 {
-  private static final L10N L = new L10N(EventSchemeImpl.class);
+  private static final L10N L = new L10N(SchemeEventImpl.class);
 //  private ServiceManagerAmp _rampManager;
   
   private HashMap<String,EventNodeAsset> _pubSubNodeMap
@@ -63,12 +63,12 @@ public class EventSchemeImpl
   
   private EventServerImpl _podServer;
   
-  public EventSchemeImpl()
+  public SchemeEventImpl()
   {
     this("event:");
   }
   
-  public EventSchemeImpl(String address)
+  public SchemeEventImpl(String address)
   {
     Objects.requireNonNull(address);
     

@@ -60,7 +60,7 @@ class EventNodeActorClient extends EventNodeAsset
 
   private PodBartender _pod;
 
-  public EventNodeActorClient(EventSchemeImpl root,
+  public EventNodeActorClient(SchemeEventImpl root,
                                String podName,
                                String address)
   {

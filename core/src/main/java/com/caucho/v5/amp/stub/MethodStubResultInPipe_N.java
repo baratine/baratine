@@ -38,7 +38,7 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.ResultPipeIn;
+import io.baratine.pipe.ResultPipeIn;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;

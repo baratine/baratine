@@ -61,8 +61,8 @@ import com.caucho.v5.loader.ProxyClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.ModulePrivate;
 
-import io.baratine.io.ResultPipeIn;
-import io.baratine.io.ResultPipeOut;
+import io.baratine.pipe.ResultPipeIn;
+import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
 import io.baratine.service.MethodRef;

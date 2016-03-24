@@ -45,7 +45,7 @@ public class ServiceInitEvents implements ServiceInitializer
   {
     ServiceManagerAmp managerAmp = (ServiceManagerAmp) manager;
     
-    EventSchemeImpl eventsScheme = new EventSchemeImpl("event:");
+    SchemeEventImpl eventsScheme = new SchemeEventImpl("event:");
     
     ServiceRefAmp eventsRef = managerAmp.newService(eventsScheme)
                                         .address("event:")

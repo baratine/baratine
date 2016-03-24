@@ -51,6 +51,7 @@ import io.baratine.inject.InjectManager;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
+import io.baratine.service.Service;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
 import io.baratine.spi.Message;
@@ -95,6 +96,12 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   public String address(Class<?> api)
   {
     return delegate().address(api);
+  }
+
+  @Override
+  public String address(Class<?> api, String address)
+  {
+    return delegate().address(api, address);
   }
   
   @Override

@@ -42,7 +42,7 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
-import io.baratine.io.ResultPipeOut;
+import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionClosed;
 import io.baratine.stream.ResultStream;

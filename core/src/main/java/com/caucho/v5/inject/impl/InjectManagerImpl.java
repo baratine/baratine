@@ -325,7 +325,7 @@ public class InjectManagerImpl implements InjectManagerAmp
       return provider;
     }
     
-    return (Provider<T>) autoProvider(ip.key());
+    return autoProvider(ip);
   }
 
   @Override
@@ -411,6 +411,19 @@ public class InjectManagerImpl implements InjectManagerAmp
     }
     
     return createProvider(key);
+  }
+  
+  private <T> Provider<T> autoProvider(InjectionPoint<T> ip)
+  {
+    for (InjectAutoBind autoBind : _autoBind) {
+      Provider<T> provider = autoBind.provider(this, ip);
+      
+      if (provider != null) {
+        return provider;
+      }
+    }
+    
+    return createProvider(ip.key());
   }
 
   @Override

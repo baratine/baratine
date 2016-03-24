@@ -74,7 +74,7 @@ import com.caucho.v5.web.CookieWeb;
 import io.baratine.config.Config;
 import io.baratine.inject.InjectManager;
 import io.baratine.io.Buffer;
-import io.baratine.io.Pipe;
+import io.baratine.pipe.Pipe;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;

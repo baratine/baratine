@@ -36,6 +36,7 @@ import com.caucho.v5.inject.impl.ServiceImpl;
 
 import io.baratine.inject.InjectManager;
 import io.baratine.inject.InjectManager.InjectAutoBind;
+import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.service.Service;
 
@@ -67,6 +68,30 @@ public class InjectAutoBindService implements InjectAutoBind
     }
     
     String address = _serviceManager.address(rawClass);
+
+    if (address != null && ! address.isEmpty()) {
+      T proxy = _serviceManager.service(address).as(rawClass);
+      
+      return ()->proxy;
+    }
+    else {
+      return null;
+    }
+  }
+
+  @Override
+  public <T> Provider<T> provider(InjectManager manager, 
+                                  InjectionPoint<T> ip)
+  {
+    Service service = ip.annotation(Service.class);
+    
+    if (service == null) {
+      return null;
+    }
+    
+    Class<T> rawClass = ip.key().rawClass();
+    
+    String address = _serviceManager.address(rawClass, service.value());
 
     if (address != null && ! address.isEmpty()) {
       T proxy = _serviceManager.service(address).as(rawClass);

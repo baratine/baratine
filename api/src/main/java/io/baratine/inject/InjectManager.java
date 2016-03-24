@@ -135,6 +135,12 @@ public interface InjectManager
   public interface InjectAutoBind
   {
     <T> Provider<T> provider(InjectManager manager, Key<T> key);
+    
+    default <T> Provider<T> provider(InjectManager manager, 
+                                     InjectionPoint<T> ip)
+    {
+      return provider(manager, ip.key());
+    }
   }
 }
 

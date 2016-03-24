@@ -56,7 +56,7 @@ import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
 import io.baratine.io.Buffer;
-import io.baratine.io.Pipe;
+import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocketClose;

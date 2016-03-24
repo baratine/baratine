@@ -27,7 +27,9 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.io;
+package io.baratine.pipe;
+
+import io.baratine.service.Cancel;
 
 /**
  * Consumer's callback for a {@code Pipe}.
@@ -83,7 +85,7 @@ public interface PipeIn<T> extends Pipe<T>
   /**
    * {@code Flow} controls the pipe prefetch
    */
-  public interface Flow
+  public interface Flow extends Cancel
   {
     /**
      * Returns the current credit sequence.

@@ -39,8 +39,8 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.ResultPipeIn;
-import io.baratine.io.ResultPipeOut;
+import io.baratine.pipe.ResultPipeIn;
+import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.Result;
 import io.baratine.stream.ResultStream;
 

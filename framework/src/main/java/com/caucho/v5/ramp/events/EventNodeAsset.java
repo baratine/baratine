@@ -60,7 +60,7 @@ class EventNodeAsset extends StubAmpBase
   
   private String _address;
   
-  private EventSchemeImpl _root;
+  private SchemeEventImpl _root;
   
   private final ArrayList<ServiceRef> _subscriberList
     = new ArrayList<>();
@@ -70,7 +70,7 @@ class EventNodeAsset extends StubAmpBase
     
   private long _sequence;
   
-  public EventNodeAsset(EventSchemeImpl root,
+  public EventNodeAsset(SchemeEventImpl root,
                          String address)
   {
     _root = root;
@@ -88,7 +88,7 @@ class EventNodeAsset extends StubAmpBase
     return _address;
   }
   
-  EventSchemeImpl getEvents()
+  SchemeEventImpl getEvents()
   {
     return _root;
   }

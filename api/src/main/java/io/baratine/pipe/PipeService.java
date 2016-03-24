@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,50 +27,16 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.io;
+package io.baratine.pipe;
 
 /**
- * {@code OutPipe} sends a sequence of values from a source to a sink.
+ * Message-based pipe service.
  */
-public interface PipeOut<T> extends Pipe<T>
+public interface PipeService<T>
 {
-  /**
-   * Returns the available credits in the queue.
-   */
-  int available();
+  void consume(ResultPipeIn<T> result);
   
-  /**
-   * Returns the credit sequence for the queue.
-   */
-  long credits();
+  void subscribe(ResultPipeIn<T> result);
   
-  /**
-   * True if the stream has been cancelled by the reader.
-   *
-   * @return true if cancelled
-   */
-  default boolean isClosed()
-  {
-    return false;
-  }
-  
-  /**
-   * {@code Flow} is a callback to wake the publisher when credits are
-   * available for the pipe.
-   * 
-   * Called after the publisher would block, calculated as when the number
-   * of {@code OutPipe.next()} calls match a previous {@code OutPipe.credits()}.
-   */
-  public interface Flow<T>
-  {
-    void ready(PipeOut<T> pipe);
-    
-    default void fail(Throwable exn)
-    {
-    }
-    
-    default void cancel()
-    {
-    }
-  }
+  void publish(ResultPipeOut<T> result);
 }

@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.io;
+package io.baratine.pipe;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -43,10 +43,12 @@ public class Pipes
     return new PipeOutResultImpl<>(flow);
   }
   
+  /*
   public static <T> PipeOutBuilder<T> out(Consumer<PipeOut<T>> ready)
   {
     throw new UnsupportedOperationException();
   }
+  */
   
   public static <T> ResultPipeIn<T> in(PipeIn<T> pipe)
   {

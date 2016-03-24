@@ -40,7 +40,7 @@ import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteBuffer;
 
 import io.baratine.io.Buffer;
-import io.baratine.io.Pipe;
+import io.baratine.pipe.Pipe;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;
 

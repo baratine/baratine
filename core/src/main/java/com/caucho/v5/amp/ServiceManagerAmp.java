@@ -40,9 +40,7 @@ import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.InboxFactoryAmp;
 import com.caucho.v5.amp.spi.LookupAmp;
-import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
@@ -54,6 +52,7 @@ import io.baratine.inject.InjectManager;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
+import io.baratine.service.Service;
 import io.baratine.service.ServiceManager;
 import io.baratine.service.ServiceRef;
 import io.baratine.spi.Message;
@@ -90,6 +89,8 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
                     */
 
   String address(Class<?> type);
+  
+  String address(Class<?> type, String address);
 
   //ServiceBuilderAmp newService();
   

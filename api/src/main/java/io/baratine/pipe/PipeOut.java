@@ -27,29 +27,50 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.io;
+package io.baratine.pipe;
 
 /**
- * {@code Pipe} sends a sequence of values from a source to a sink.
+ * {@code OutPipe} sends a sequence of values from a source to a sink.
  */
-public interface Pipe<T>
+public interface PipeOut<T> extends Pipe<T>
 {
   /**
-   * Supplies the next value.
+   * Returns the available credits in the queue.
+   */
+  int available();
+  
+  /**
+   * Returns the credit sequence for the queue.
+   */
+  long credits();
+  
+  /**
+   * True if the stream has been cancelled by the reader.
+   *
+   * @return true if cancelled
+   */
+  default boolean isClosed()
+  {
+    return false;
+  }
+  
+  /**
+   * {@code Flow} is a callback to wake the publisher when credits are
+   * available for the pipe.
    * 
-   * @param value
+   * Called after the publisher would block, calculated as when the number
+   * of {@code OutPipe.next()} calls match a previous {@code OutPipe.credits()}.
    */
-  void next(T value);
-
-  /**
-   * Completes sending the values to the client and signals to the client
-   * that no more values are expected.
-   */
-  void ok();
-
-  /**
-   * Signals a failure to the client passing exception.
-   * @param exn
-   */
-  void fail(Throwable exn);
+  public interface Flow<T>
+  {
+    void ready(PipeOut<T> pipe);
+    
+    default void fail(Throwable exn)
+    {
+    }
+    
+    default void cancel()
+    {
+    }
+  }
 }

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,35 +27,29 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package io.baratine.pipe;
 
-import io.baratine.io.Buffer;
-import io.baratine.pipe.Pipe;
-
-import java.io.OutputStream;
-import java.io.Writer;
-
-public interface OutWeb<T>
+/**
+ * {@code Pipe} sends a sequence of values from a source to a sink.
+ */
+public interface Pipe<T>
 {
-  OutWeb<T> push(Pipe<Buffer> out);
-  
-  OutWeb<T> write(Buffer buffer);
-  OutWeb<T> write(byte []buffer, int offset, int length);
-  
-  OutWeb<T> write(String value);
-  OutWeb<T> write(String value, String enc);
-  OutWeb<T> write(char []buffer, int offset, int length);
-  OutWeb<T> write(char []buffer, int offset, int length, String enc);
-  
-  OutWeb<T> flush();
-  
-  Writer writer();
-  Writer writer(String enc);
-  
-  OutputStream output();
-  
-  void halt();
-  void halt(HttpStatus status);
-  
-  //void fallthru();
+  /**
+   * Supplies the next value.
+   * 
+   * @param value
+   */
+  void next(T value);
+
+  /**
+   * Completes sending the values to the client and signals to the client
+   * that no more values are expected.
+   */
+  void ok();
+
+  /**
+   * Signals a failure to the client passing exception.
+   * @param exn
+   */
+  void fail(Throwable exn);
 }

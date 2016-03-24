@@ -113,6 +113,8 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   
   private final StubGenerator []_stubGenerators;
   
+  private final Supplier<InjectManagerAmp> _injectManager;
+  
   private final InboxAmp _inboxSystem;
   //private final OutboxAmp _systemOutbox;
 
@@ -216,7 +218,9 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     // _broker.bind("/", root);
     _registry.bind("local://", new SchemeLocal(this));
     
-    InjectManagerAmp.create(builder.classLoader());
+    _injectManager = builder.injectManager(this);
+    
+
   }
 
   /*
@@ -327,7 +331,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   @Override
   public InjectManagerAmp inject()
   {
-    return InjectManagerAmp.current(classLoader());
+    return _injectManager.get();
   }
   
   @Override
@@ -455,36 +459,46 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
         address = "";
       }
       
-      int slash = address.indexOf("/");
-      //int colon = address.indexOf(":");
-      
-      if (address.endsWith(":") && slash < 0) {
-        address += "//";
-      }
-      
-      int p = address.indexOf("://");
-      int q = -1;
-      
-      if (p > 0) {
-        q = address.indexOf('/', p + 3);
-      }
-      
-      boolean isPrefix
-        = address.startsWith("session:") || address.startsWith("pod"); 
-      
-      if (address.isEmpty()
-          || p > 0 && q < 0 && isPrefix) {
-        if (Vault.class.isAssignableFrom(api)) {
-          TypeRef itemRef = TypeRef.of(api).to(Vault.class).param("T");
-      
-          address = address + "/" + itemRef.rawClass().getSimpleName();
-        }
-        else {
-          address = address + "/" + api.getSimpleName();
-        }
-      }
+      address = address(api, address);
 
       _addressMap.putIfAbsent(api, address);
+    }
+    
+    return address;
+  }
+  
+  @Override
+  public String address(Class<?> api, String address)
+  {
+    Objects.requireNonNull(address);
+    
+    int slash = address.indexOf("/");
+    //int colon = address.indexOf(":");
+
+    if (address.endsWith(":") && slash < 0) {
+      address += "//";
+    }
+
+    int p = address.indexOf("://");
+    int q = -1;
+
+    if (p > 0) {
+      q = address.indexOf('/', p + 3);
+    }
+
+    boolean isPrefix
+    = address.startsWith("session:") || address.startsWith("pod"); 
+
+    if (address.isEmpty()
+        || p > 0 && q < 0 && isPrefix) {
+      if (Vault.class.isAssignableFrom(api)) {
+        TypeRef itemRef = TypeRef.of(api).to(Vault.class).param("T");
+
+        address = address + "/" + itemRef.rawClass().getSimpleName();
+      }
+      else {
+        address = address + "/" + api.getSimpleName();
+      }
     }
     
     return address;

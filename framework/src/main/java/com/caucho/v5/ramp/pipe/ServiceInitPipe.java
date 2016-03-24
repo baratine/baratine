@@ -27,35 +27,39 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package com.caucho.v5.ramp.pipe;
 
-import io.baratine.io.Buffer;
-import io.baratine.pipe.Pipe;
+import io.baratine.service.ServiceInitializer;
+import io.baratine.service.ServiceManager;
 
-import java.io.OutputStream;
-import java.io.Writer;
+import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServiceRefAmp;
 
-public interface OutWeb<T>
+/**
+ * Provider for the event bus.
+ */
+public class ServiceInitPipe implements ServiceInitializer
 {
-  OutWeb<T> push(Pipe<Buffer> out);
-  
-  OutWeb<T> write(Buffer buffer);
-  OutWeb<T> write(byte []buffer, int offset, int length);
-  
-  OutWeb<T> write(String value);
-  OutWeb<T> write(String value, String enc);
-  OutWeb<T> write(char []buffer, int offset, int length);
-  OutWeb<T> write(char []buffer, int offset, int length, String enc);
-  
-  OutWeb<T> flush();
-  
-  Writer writer();
-  Writer writer(String enc);
-  
-  OutputStream output();
-  
-  void halt();
-  void halt(HttpStatus status);
-  
-  //void fallthru();
+  @Override
+  public void init(ServiceManager manager)
+  {
+    ServiceManagerAmp managerAmp = (ServiceManagerAmp) manager;
+    
+    SchemePipeImpl pipeScheme = new SchemePipeImpl("pipe:");
+    
+    ServiceRefAmp pipeRef = managerAmp.newService(pipeScheme)
+                                        .address("pipe:")
+                                        .ref();
+    
+    /*
+    EventServerImpl eventsPod = eventsScheme.getEventServer();
+    
+    ServiceRefAmp eventsPodRef = eventsRef.pin(eventsPod);
+    
+    //eventsPodRef.bind("pod://" + EventsPodServerRamp.PATH);
+    eventsPodRef.bind("local://" + EventServerImpl.PATH);
+    */
+    
+    pipeRef.start();
+  }
 }

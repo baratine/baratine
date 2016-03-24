@@ -44,8 +44,8 @@ import com.caucho.v5.amp.queue.QueueRingSingleWriter;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.PipeIn;
-import io.baratine.io.PipeOut;
+import io.baratine.pipe.PipeIn;
+import io.baratine.pipe.PipeOut;
 
 /**
  * pipe implementation
@@ -234,6 +234,14 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
         stateNew = stateOld.toIdle();
       } while (! _stateInRef.compareAndSet(stateOld, stateNew));
     }
+    
+    if (_stateInRef.get().isClosed()) {
+      StateOutPipe outStateOld = _stateOutRef.getAndSet(StateOutPipe.CLOSE);
+      
+      if (! outStateOld.isClosed()) {
+        _outFlow.cancel();
+      }
+    }
   }
     
   public void readPipe()
@@ -308,6 +316,11 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     }
   }
   
+  private void close()
+  {
+    _stateInRef.set(_stateInRef.get().toClose());
+  }
+
   /**
    * Notify the reader of available space in the pipe. If the writer is asleep,
    * wake it.
@@ -366,6 +379,12 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
       
       PipeImpl.this.credits(credits);
     }
+
+    @Override
+    public void cancel()
+    {
+      PipeImpl.this.close();
+    }
   }
   
   enum StateInPipe {
@@ -394,6 +413,8 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     },
     
     CLOSE {
+      @Override
+      boolean isClosed() { return false; }
     };
     
     StateInPipe toWake()
@@ -406,12 +427,22 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
       return this;
     }
     
+    StateInPipe toClose()
+    {
+      return CLOSE;
+    }
+    
     StateInPipe toIdle()
     {
       return this;
     }
     
     boolean isActive()
+    {
+      return false;
+    }
+    
+    boolean isClosed()
     {
       return false;
     }
@@ -432,9 +463,16 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     },
     
     CLOSE {
+      @Override
+      public boolean isClosed() { return true; }
     };
 
     public boolean isFull()
+    {
+      return false;
+    }
+
+    public boolean isClosed()
     {
       return false;
     }

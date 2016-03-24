@@ -49,6 +49,17 @@ public interface InjectionPoint<T>
   
   Annotation []annotations();
   
+  default <A extends Annotation> A annotation(Class<A> annType)
+  {
+    for (Annotation ann : annotations()) {
+      if (ann.annotationType().equals(annType)) {
+        return (A) ann;
+      }
+    }
+    
+    return null;
+  }
+  
   Class<?> declaringClass();
   
   static <T> InjectionPoint<T> of(Class<T> type)

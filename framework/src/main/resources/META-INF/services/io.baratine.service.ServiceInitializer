@@ -4,6 +4,7 @@ com.caucho.v5.ramp.db.ServiceInitDatabase
 com.caucho.v5.ramp.compute.ServiceInitCompute
 com.caucho.v5.ramp.events.ServiceInitEvents
 com.caucho.v5.ramp.files.ServiceInitBfs
+com.caucho.v5.ramp.pipe.ServiceInitPipe
 com.caucho.v5.ramp.pubsub.ServiceInitPubSub
 com.caucho.v5.ramp.store.ServiceInitStore
 com.caucho.v5.ramp.timer.ServiceInitTimer

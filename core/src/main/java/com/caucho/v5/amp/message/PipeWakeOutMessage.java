@@ -37,7 +37,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
-import io.baratine.io.PipeOut;
+import io.baratine.pipe.PipeOut;
 
 /**
  * Handles the context for an actor, primarily including its

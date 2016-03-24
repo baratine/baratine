@@ -27,9 +27,9 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.io;
+package io.baratine.pipe;
 
-import io.baratine.io.Pipes.PipeOutFlowImpl;
+import io.baratine.pipe.Pipes.PipeOutFlowImpl;
 
 /**
  * {@code OutStream} is a source of a pipe to write.

@@ -51,10 +51,12 @@ import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.amp.stub.StubGeneratorService;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.config.Priorities;
+import com.caucho.v5.inject.InjectManagerAmp;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.ConcurrentArrayList;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.inject.InjectManager;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceInitializer;
@@ -85,6 +87,8 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   private boolean _isContextManager = true;
   private ServiceNode _podNode;
   private ClassLoader _loader = Thread.currentThread().getContextClassLoader();
+  
+  private Supplier<InjectManagerAmp> _injectManager;
   
   private boolean _isAutoStart = true;
   
@@ -367,6 +371,32 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     Arrays.sort(factories, Priorities::compareHighFirst);
 
     return factories;
+  }
+
+  @Override
+  public Supplier<InjectManagerAmp> injectManager(ServiceManagerAmp ampManager)
+  {
+    if (_injectManager == null) {
+      InjectManager manager;
+      
+      manager = InjectManagerAmp.manager()
+                                .autoBind(new InjectAutoBindService(ampManager))
+                                .get();
+      
+      InjectManagerAmp managerAmp = (InjectManagerAmp) manager;
+      
+      _injectManager = ()->managerAmp;
+    }
+
+    return _injectManager;
+  }
+
+  @Override
+  public ServiceManagerBuilderAmp injectManager(Supplier<InjectManagerAmp> inject)
+  {
+    _injectManager = inject;
+
+    return this;
   }
   
   @Override

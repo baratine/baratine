@@ -27,9 +27,9 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.io;
+package io.baratine.pipe;
 
-import io.baratine.io.Pipes.PipeInResultImpl;
+import io.baratine.pipe.Pipes.PipeInResultImpl;
 
 /**
  * {@code ResultInPipe} returns a pipe subscription.
