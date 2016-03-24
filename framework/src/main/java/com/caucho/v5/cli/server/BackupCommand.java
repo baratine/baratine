@@ -68,7 +68,7 @@ public class BackupCommand extends RemoteCommandBase
     String tag = args.getArg("tag");
     
     if (tag == null) {
-      tag = QDate.formatLocal(CurrentTime.getCurrentTime(),
+      tag = QDate.formatLocal(CurrentTime.currentTime(),
                               "%Y%m%dT%H%M%S");
     }
     

@@ -175,7 +175,7 @@ public class TcpPath extends PathImpl {
 
   public SocketAddress getSocketAddress()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     if (_address == null || _socketAddressExpireTime < now) {
       _socketAddressExpireTime = now + SOCKET_ADDRESS_TIMEOUT;

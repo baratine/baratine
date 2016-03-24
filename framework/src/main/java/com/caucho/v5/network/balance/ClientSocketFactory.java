@@ -493,7 +493,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
    */
   public double getLatencyFactor()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     long decayPeriod = 60000;
 
@@ -528,7 +528,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
    */
   public void setCpuLoadAvg(double load)
   {
-    _cpuSetTime = CurrentTime.getCurrentTime();
+    _cpuSetTime = CurrentTime.currentTime();
     _cpuLoadAvg = load;
   }
 
@@ -540,7 +540,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
     double avg = _cpuLoadAvg;
     long time = _cpuSetTime;
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     if (now - time < 10000L)
       return avg;
@@ -656,7 +656,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
     else if (! state.isEnabled())
       return false;
     else {
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
 
       if (isFailed(now)) {
         return false;
@@ -672,7 +672,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
   @Override
   public boolean canOpenWarmOrRecycle()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     if (isFailed(now)) {
       return false;
@@ -693,7 +693,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
       return true;
     }
     else if (state.isEnabled()) {
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
 
       if (isFailed(now)) {
         return false;
@@ -740,7 +740,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
   @Override
   public void toBusy()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     _lastBusyTime = now;
     _lastFailTime = now;
     _firstSuccessTime = 0;
@@ -757,7 +757,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
   @Override
   public void toFail()
   {
-    _failTime = CurrentTime.getCurrentTime();
+    _failTime = CurrentTime.currentTime();
     _lastFailTime = _failTime;
     _firstSuccessTime = 0;
 
@@ -871,7 +871,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
   {
     _currentFailCount = 0;
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     if (_firstSuccessTime <= 0) {
       _firstSuccessTime = now;
@@ -973,7 +973,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
     if (stream != null)
       return stream;
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     if (isFailed(now))
       return null;
@@ -1025,7 +1025,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
     if (stream != null)
       return stream;
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     if (isFailed(now)) {
       return null;
@@ -1069,7 +1069,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
    */
   private ClientSocket openRecycle()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     ClientSocket stream = null;
 
     synchronized (this) {
@@ -1141,7 +1141,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
       return null;
     }
     
-    long connectionStartTime = CurrentTime.getCurrentTime();
+    long connectionStartTime = CurrentTime.currentTime();
 
     try {
       ReadWritePair pair = openTCPPair();
@@ -1167,7 +1167,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
           else
             _state = State.ACTIVE;
 
-          _firstSuccessTime = CurrentTime.getCurrentTime();
+          _firstSuccessTime = CurrentTime.currentTime();
         }
 
         if (_warmupState < 0)
@@ -1227,7 +1227,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
         stream = null;
       }
 
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
 
       long prevSuccessTime = _prevSuccessTime;
 
@@ -1251,7 +1251,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
 
     updateWarmup();
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     long maxIdleTime = _loadBalanceIdleTime;
     ClientSocket oldStream = null;
 
@@ -1289,7 +1289,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
       if (! isEnabled())
         return;
 
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
       int warmupState = _warmupState;
 
       if (warmupState >= 0 && _firstSuccessTime > 0) {

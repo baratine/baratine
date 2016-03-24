@@ -336,7 +336,7 @@ public class HttpContainerBase<I extends Invocation> implements HttpContainer
         return false;
       }
 
-      _startTime = CurrentTime.getCurrentTime();
+      _startTime = CurrentTime.currentTime();
 
       _lifecycle.toStarting();
       

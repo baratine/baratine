@@ -40,15 +40,15 @@ import io.baratine.service.Service;
 public interface EventServiceSync extends EventService
 {
   @Pin
-  <T> T publishPath(String path, Class<T> api);
+  <T> T publisherPath(String path, Class<T> api);
   @Pin
-  <T> T publish(Class<T> api);
+  <T> T publisher(Class<T> api);
   
-  <T> Cancel consume(String path, @Pin T consumer);
+  <T> Cancel consumer(String path, @Pin T consumer);
   
-  <T> Cancel consume(Class<T> api, @Pin T consumer);
+  <T> Cancel consumer(Class<T> api, @Pin T consumer);
   
-  <T> Cancel subscribe(String path, @Pin T subscriber);
+  <T> Cancel subscriber(String path, @Pin T subscriber);
   
-  <T> Cancel subscribe(Class<T> api, @Pin T subscriber);
+  <T> Cancel subscriber(Class<T> api, @Pin T subscriber);
 }

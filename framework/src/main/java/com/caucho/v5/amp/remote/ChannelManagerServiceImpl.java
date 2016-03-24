@@ -49,7 +49,7 @@ public class ChannelManagerServiceImpl implements ChannelManagerService
   
   public ChannelManagerServiceImpl()
   {
-    _sequence = new AtomicLong(CurrentTime.getCurrentTime());
+    _sequence = new AtomicLong(CurrentTime.currentTime());
   }
   
   @Direct

@@ -66,7 +66,7 @@ public class CurrentTime
    * Returns the approximate current time in milliseconds.
    * Convenient for minimizing system calls.
    */
-  public static long getCurrentTime()
+  public static long currentTime()
   {
     if (_testTime > 0)
       return _testTime;
@@ -112,7 +112,7 @@ public class CurrentTime
     if (_testTime > 0)
       return System.currentTimeMillis();
     else
-      return getCurrentTime();
+      return currentTime();
   }
 
   /**

@@ -106,7 +106,7 @@ public class ProfileReport
     
     StringBuilder sb = new StringBuilder();
     
-    long timestamp = CurrentTime.getCurrentTime();
+    long timestamp = CurrentTime.currentTime();
     
     sb.append("{\n");
     sb.append("  \"create_time\": \"" + new Date(timestamp) + "\"");

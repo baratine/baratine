@@ -804,12 +804,12 @@ public final class ServerNetwork
   {
     long timeout = 120 * 1000L;
     
-    long expireTime = CurrentTime.getCurrentTime() + timeout;
+    long expireTime = CurrentTime.currentTime() + timeout;
     
     String address;
     
     while ((address = allocateLocalAddress()) == null
-           && CurrentTime.getCurrentTime() < expireTime) {
+           && CurrentTime.currentTime() < expireTime) {
       try {
         Thread.sleep(1000);
       } catch (Exception e) {

@@ -60,7 +60,7 @@ public class UpdatePodSystem implements Serializable
   {
     ArrayList<UpdatePod> updatePods = new ArrayList<>();
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     long sequence = now;
     

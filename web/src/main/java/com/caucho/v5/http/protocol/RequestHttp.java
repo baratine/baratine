@@ -2433,7 +2433,7 @@ public class RequestHttp extends RequestHttpBase
       }
     }
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     byte []dateBuffer = fillDateBuffer(now);
     int dateBufferLength = getDateBufferLength();
 

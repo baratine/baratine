@@ -721,7 +721,7 @@ public class JniFilePathImpl extends FilePath {
   {
    long now;
 
-   now = CurrentTime.getCurrentTime();
+   now = CurrentTime.currentTime();
 
    // Wait at least 500ms between stats, limited by OS timestamp
    // XXX: This optimization might need to be removed at some point

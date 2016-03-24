@@ -29,19 +29,8 @@
 
 package com.caucho.v5.ramp.timer;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
-import io.baratine.service.OnDestroy;
-import io.baratine.service.OnInit;
-import io.baratine.service.OnLookup;
-import io.baratine.service.Result;
-import io.baratine.service.Service;
-import io.baratine.service.ServiceRef;
-import io.baratine.timer.TaskInfo;
-import io.baratine.timer.TimerScheduler;
-import io.baratine.timer.TimerService;
-
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +44,19 @@ import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.Alarm;
 import com.caucho.v5.util.AlarmListener;
 import com.caucho.v5.util.CurrentTime;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Direct;
+import io.baratine.service.OnDestroy;
+import io.baratine.service.OnInit;
+import io.baratine.service.OnLookup;
+import io.baratine.service.Pin;
+import io.baratine.service.Result;
+import io.baratine.service.Service;
+import io.baratine.service.ServiceRef;
+import io.baratine.timer.TaskInfo;
+import io.baratine.timer.TimerScheduler;
+import io.baratine.timer.TimerService;
 
 /**
  * Timer service.
@@ -92,25 +94,28 @@ public class TimerServiceRamp implements TimerServiceAmp
   @Direct
   public long getCurrentTime()
   {
-    return CurrentTime.getCurrentTime();
+    return CurrentTime.currentTime();
   }
 
   /**
    * Implements {@link TimerService#runAfter(Runnable, long, TimeUnit)}
    */
   @Override
-  public void runAfter(@Service Consumer<? super Cancel> task, 
+  public void runAfter(@Pin Consumer<? super Cancel> task, 
                        long delay, 
                        TimeUnit unit,
                        Result<? super Cancel> result)
   {
-    // cancel(task);
+    Objects.requireNonNull(task);
+    Objects.requireNonNull(unit);
 
     TimerListener listener = new TimerListener(task, null);
 
     // _timerMap.put(task, listener);
     
-    listener.getAlarm().runAfter(unit.toMillis(delay));
+    System.out.println("RUNA: " + unit.toMillis(delay));
+    listener.alarm().runAfter(unit.toMillis(delay));
+    System.out.println("RUNA2: " + unit.toMillis(delay));
     
     result.ok(listener);
   }
@@ -148,7 +153,7 @@ public class TimerServiceRamp implements TimerServiceAmp
 
     // cancel(task);
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     long nextTime = scheduler.nextRunTime(now);
 
     TimerListener listener = new TimerListener(task, scheduler);
@@ -178,7 +183,7 @@ public class TimerServiceRamp implements TimerServiceAmp
 
     RunAtScheduler scheduler = new RunAtScheduler(time);
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     long nextTime = scheduler.nextRunTime(now);
 
     TimerListener listener = new TimerListener(task, scheduler);
@@ -190,7 +195,7 @@ public class TimerServiceRamp implements TimerServiceAmp
     }
     // _timerMap.put(task, listener);
     
-    listener.getAlarm().queueAt(nextTime);
+    listener.alarm().queueAt(nextTime);
   }
 
   /**
@@ -307,7 +312,8 @@ public class TimerServiceRamp implements TimerServiceAmp
     return getClass().getSimpleName() + "[]";
   }
 
-  private class TimerListener implements AlarmListener, Cancel {
+  private class TimerListener implements AlarmListener, Cancel
+  {
     private final Consumer<? super Cancel> _task;
     private final TimerScheduler _scheduler;
 
@@ -330,21 +336,14 @@ public class TimerServiceRamp implements TimerServiceAmp
     public void cancel()
     {
       _timerSelf.cancel(this);
+      
+      Alarm alarm = _alarm;
+      _alarm = null;
+      
+      if (alarm != null) {
+        alarm.close();
+      }
     }
-
-    /*
-    Consumer<TimerHandle> getTask()
-    {
-      return _task;
-    }
-    */
-
-    /*
-    TaskInfo getTaskInfo()
-    {
-      return _info;
-    }
-    */
     
     void queueAt(long time)
     {
@@ -352,6 +351,7 @@ public class TimerServiceRamp implements TimerServiceAmp
       
       if (alarm != null) {
         alarm.queueAt(time);
+        System.out.println("QA: " + new Date(time) + " " + time); 
       }
     }
 
@@ -360,7 +360,7 @@ public class TimerServiceRamp implements TimerServiceAmp
       return _alarm == null || TimerServiceRamp.this.isClosed();
     }
 
-    Alarm getAlarm()
+    Alarm alarm()
     {
       return _alarm;
     }
@@ -380,18 +380,14 @@ public class TimerServiceRamp implements TimerServiceAmp
     @Override
     public void handleAlarm(Alarm alarm)
     {
+      System.out.println("HA: " + alarm);
       if (isClosed()) {
         return;
       }
 
       try {
-        // _info.lastRunTime(CurrentTime.getCurrentTime());
-
-        // keep (don't reset) last completed and last exception values
-
+        System.out.println("TA: " + _task);
         _task.accept(this);
-        
-        //ServiceRef.flushOutbox();
       } catch (Throwable e) {
         log.log(Level.FINER, e.toString(), e);
         
@@ -406,7 +402,7 @@ public class TimerServiceRamp implements TimerServiceAmp
         boolean isScheduled = false;
 
         if (scheduler != null && _alarm != null) {
-          long now = CurrentTime.getCurrentTime();
+          long now = CurrentTime.currentTime();
           long nextTime = scheduler.nextRunTime(now);
 
           if (now < nextTime) {

@@ -462,7 +462,7 @@ public class PodHeartbeatImpl
       builder.server(server.getAddress(), server.port());
     }
     
-    long sequence = CurrentTime.getCurrentTime();
+    long sequence = CurrentTime.currentTime();
     
     sequence = Math.max(sequence, _clusterRoot.getSequence() + 1);
     

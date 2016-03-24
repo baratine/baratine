@@ -72,7 +72,7 @@ public class ProHeapDump extends HeapDump {
     System.arraycopy(dump, 0, sortedDump, 0, dump.length);
     Arrays.sort(sortedDump, new HeapEntryComparator());
 
-    out.println("Heap Dump generated " + new Date(CurrentTime.getCurrentTime()));
+    out.println("Heap Dump generated " + new Date(CurrentTime.currentTime()));
     out.println("self size  | child size | class name");
 
     int limit = 256;
@@ -104,7 +104,7 @@ public class ProHeapDump extends HeapDump {
     System.arraycopy(dump, 0, sortedDump, 0, dump.length);
     Arrays.sort(sortedDump, new HeapEntryComparator());
 
-    out.println("Heap Dump generated " + new Date(CurrentTime.getCurrentTime()));
+    out.println("Heap Dump generated " + new Date(CurrentTime.currentTime()));
     out.println("   count   |  self size | child size | class name");
 
     int limit = 256;
@@ -138,7 +138,7 @@ public class ProHeapDump extends HeapDump {
     
     StringBuilder sb = new StringBuilder();
     
-    long timestamp = CurrentTime.getCurrentTime();
+    long timestamp = CurrentTime.currentTime();
     
     sb.append("{\n");
     sb.append("  \"create_time\": \"" + new Date(timestamp) + "\",\n");
@@ -179,7 +179,7 @@ public class ProHeapDump extends HeapDump {
     System.arraycopy(dump, 0, sortedDump, 0, dump.length);
     Arrays.sort(sortedDump, new HeapEntryComparator());
 
-    log.log(level, "Heap Dump generated " + new Date(CurrentTime.getCurrentTime()));
+    log.log(level, "Heap Dump generated " + new Date(CurrentTime.currentTime()));
     log.log(level, " self size | child size |   count  | class name");
     log.log(level, "-----------+------------+----------+------------");
 

@@ -110,7 +110,7 @@ public class ThreadDump
     ThreadInfo []info = threadBean.getThreadInfo(ids, depth);
 
     StringBuilder sb = new StringBuilder();
-    sb.append("Thread Dump generated " + new Date(CurrentTime.getCurrentTime()));
+    sb.append("Thread Dump generated " + new Date(CurrentTime.currentTime()));
 
     Arrays.sort(info, new ThreadCompare());
     
@@ -223,7 +223,7 @@ public class ThreadDump
   {
     StringBuilder sb = new StringBuilder();
     
-    long timestamp = CurrentTime.getCurrentTime();
+    long timestamp = CurrentTime.currentTime();
     
     sb.append("{\n");
     sb.append("  \"create_time\": \"" + new Date(timestamp) + "\",\n");

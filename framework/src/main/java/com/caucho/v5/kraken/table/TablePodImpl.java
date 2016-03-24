@@ -121,7 +121,7 @@ public final class TablePodImpl implements TablePod
     
     /// should be server id + timestamp
     // RandomUtil.getRandomLong());
-    _putSequence.set(CurrentTime.getCurrentTime() << 16);
+    _putSequence.set(CurrentTime.currentTime() << 16);
     
     _lastPodCrc = _pod.getCrc();
     
@@ -320,7 +320,7 @@ public final class TablePodImpl implements TablePod
                        + " self:" + BartenderSystem.getCurrentSelfServer());
 */                       
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     long startupLastUpdateTime = _table.getStartupLastUpdateTime();
     long delta = startupLastUpdateTime - now - 30 * 60000L;

@@ -245,7 +245,7 @@ public class HeartbeatImpl
   
   private boolean isJoinRequired()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     if (now - _lastJoinTime <= _joinFullTime) {
       return true;
@@ -405,7 +405,7 @@ public class HeartbeatImpl
     
     if (extAddress != null) { // && ! extAddress.startsWith("127")) {
       _serverSelf.setSeedIndex(seedIndex);
-      _serverSelf.setLastSeedTime(CurrentTime.getCurrentTime());
+      _serverSelf.setLastSeedTime(CurrentTime.currentTime());
       _serverSelf.update();
     }
     
@@ -1007,7 +1007,7 @@ public class HeartbeatImpl
     UpdateRackHeartbeat updateRack = rack.getUpdate();
     UpdatePodSystem updatePod = getUpdatePodSystem();
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     if (! isJoinComplete()) {
       updatePod = null;
@@ -1102,7 +1102,7 @@ public class HeartbeatImpl
     UpdatePodSystem updatePod = getUpdatePodSystem();
     UpdateServerHeartbeat updateSelf = getServerSelf().getUpdate();
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     /*
     ClusterHeartbeat cluster = target.getCluster();
@@ -1354,7 +1354,7 @@ public class HeartbeatImpl
       
       try {
         if (isJoinRequired()) {
-          _lastJoinTime = CurrentTime.getCurrentTime();
+          _lastJoinTime = CurrentTime.currentTime();
           
           _joinClient.start(x->updateRack(x), 
                             Result.onOk(count->onJoinComplete(count, Result.ignore())));

@@ -577,37 +577,21 @@ public class Alarm implements EnvLoaderListener, Runnable
     ClassLoader oldLoader = thread.getContextClassLoader();
 
     try {
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
       
       _clock.extractAlarm(now, true);
-      /*
-      while ((alarm = _heap.extractAlarm(now)) != null) {
-
-        try {
-          alarm.run();
-        } catch (Throwable e) {
-          e.printStackTrace();
-        }
-      }
-      */
     } finally {
       thread.setContextClassLoader(oldLoader);
     }
   }
-
-  /*
-  static void setTestNanoDelta(long delta)
-  {
-    _testNanoDelta = delta;
-  }
-  */
 
   public String toString()
   {
     return "Alarm[" + _name + "]";
   }
 
-  static class CoordinatorThread extends WorkerThreadPoolBase {
+  static class CoordinatorThread extends WorkerThreadPoolBase
+  {
     private long _lastTime;
     
     @Override

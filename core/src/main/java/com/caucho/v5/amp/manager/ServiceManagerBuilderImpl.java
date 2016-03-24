@@ -52,14 +52,16 @@ import com.caucho.v5.amp.stub.StubGeneratorService;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.config.Priorities;
 import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.ConcurrentArrayList;
+import com.caucho.v5.util.Holder;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.inject.InjectManager;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceInitializer;
+import io.baratine.service.ServiceManager;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
@@ -90,6 +92,8 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   
   private Supplier<InjectManagerAmp> _injectManager;
   
+  private Holder<ServiceManagerAmp> _holder;
+  
   private boolean _isAutoStart = true;
   
   private boolean _isAutoServices;
@@ -118,6 +122,8 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     
     stubGenerator(new StubGeneratorService());
     stubGenerator(new StubGeneratorVault());
+    
+    _holder = new Holder<>(()->getRaw());
   }
   
   @Override
@@ -377,13 +383,15 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   public Supplier<InjectManagerAmp> injectManager(ServiceManagerAmp ampManager)
   {
     if (_injectManager == null) {
-      InjectManager manager;
+      InjectBuilderAmp builder;
       
-      manager = InjectManagerAmp.manager()
-                                .autoBind(new InjectAutoBindService(ampManager))
-                                .get();
+      builder = InjectManagerAmp.manager();
+      builder.autoBind(new InjectAutoBindService(ampManager));
       
-      InjectManagerAmp managerAmp = (InjectManagerAmp) manager;
+      builder.provider(()->_holder.get()).to(ServiceManager.class);
+      builder.provider(()->_holder.get()).to(ServiceManagerAmp.class);
+      
+      InjectManagerAmp managerAmp = builder.get();
       
       _injectManager = ()->managerAmp;
     }
@@ -394,6 +402,8 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   @Override
   public ServiceManagerBuilderAmp injectManager(Supplier<InjectManagerAmp> inject)
   {
+    Objects.requireNonNull(this);
+    
     _injectManager = inject;
 
     return this;
@@ -417,15 +427,11 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     if (manager == null) {
       manager = _manager = newManager();
     
-      /*
-      if (_buildManager != null) {
-        _buildManager.delegate(manager);
-      }
-      */
-    
       if (isContextManager()) {
         initAutoServices(manager);
       }
+      
+      _holder.close();
     }
     
     return manager;

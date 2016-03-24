@@ -29,14 +29,11 @@
 
 package io.baratine.timer;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
-import io.baratine.service.Result;
-import io.baratine.service.Service;
-
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Pin;
 
 /**
  * Timer service local to the JVM. The timer can be obtained by
@@ -69,8 +66,8 @@ public interface TimerServiceSync extends TimerService
    * @param task
    * @param time
    */
-  Cancel runAt(@Service Consumer<? super Cancel> task, 
-                     long time);
+  Cancel runAt(@Pin Consumer<? super Cancel> task, 
+               long time);
 
   /**
    * Run the <code>Runnable</code> <b>once</b> after the given delay.
@@ -86,9 +83,9 @@ public interface TimerServiceSync extends TimerService
    * @param delay
    * @param unit
    */
-  Cancel runAfter(@Service Consumer<? super Cancel> task, 
-                        long delay, 
-                        TimeUnit unit);
+  Cancel runAfter(@Pin Consumer<? super Cancel> task, 
+                  long delay, 
+                  TimeUnit unit);
 
   /**
    * Run the <code>Runnable</code> periodically after the given delay.
@@ -104,9 +101,9 @@ public interface TimerServiceSync extends TimerService
    * @param delay
    * @param unit
    */
-  Cancel runEvery(@Service Consumer<? super Cancel> task, 
-                        long delay, 
-                        TimeUnit unit);
+  Cancel runEvery(@Pin Consumer<? super Cancel> task, 
+                  long delay, 
+                  TimeUnit unit);
 
   /**
    * Schedule a <code>Runnable</code> where scheduling is controlled by a
@@ -141,7 +138,7 @@ public interface TimerServiceSync extends TimerService
    * @param task
    * @param scheduler
    */
-  Cancel schedule(@Service Consumer<? super Cancel> task, 
+  Cancel schedule(@Pin Consumer<? super Cancel> task, 
                         TimerScheduler scheduler);
 
   /**
@@ -160,6 +157,6 @@ public interface TimerServiceSync extends TimerService
    * @param task
    * @param cron basic cron syntax
    */
-  Cancel cron(@Service Consumer<? super Cancel> task, 
+  Cancel cron(@Pin Consumer<? super Cancel> task, 
                     String cron);
 }

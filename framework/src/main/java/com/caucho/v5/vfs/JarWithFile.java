@@ -661,7 +661,7 @@ public class JarWithFile extends Jar implements CacheListener
    */
   private boolean isCacheValid()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     if ((now - _lastTime < 100) && ! CurrentTime.isTest())
       return true;

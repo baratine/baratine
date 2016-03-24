@@ -181,7 +181,7 @@ public class RootDirectorySystem extends SubSystemBase
     }
     
     // baratine/8121
-    if (CurrentTime.getCurrentTime() - lastModified.toMillis() < 5000
+    if (CurrentTime.currentTime() - lastModified.toMillis() < 5000
         && ! CurrentTime.isTest()) {
       return false;
     }

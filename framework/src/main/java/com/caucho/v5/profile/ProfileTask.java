@@ -122,7 +122,7 @@ class ProfileTask
       }
       
       _endTime = 0;
-      _startTime = CurrentTime.getCurrentTime();
+      _startTime = CurrentTime.currentTime();
 
       try {
         nativeClear(_jniProfile);
@@ -141,7 +141,7 @@ class ProfileTask
     if (profileThread != null)
       LockSupport.unpark(profileThread);
     
-    _endTime = CurrentTime.getCurrentTime();
+    _endTime = CurrentTime.currentTime();
   }
 
   public long getTicks()
@@ -157,7 +157,7 @@ class ProfileTask
   public long getEndTime()
   {
     if (isActive())
-      return CurrentTime.getCurrentTime();
+      return CurrentTime.currentTime();
     else
       return _endTime;
   }

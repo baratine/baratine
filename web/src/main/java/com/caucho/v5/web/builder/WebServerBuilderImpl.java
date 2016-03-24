@@ -173,7 +173,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
 
   public WebServerBuilderImpl()
   {
-    _startTime = CurrentTime.getCurrentTime();
+    _startTime = CurrentTime.currentTime();
     
     _parentClassLoader = Thread.currentThread().getContextClassLoader();
     

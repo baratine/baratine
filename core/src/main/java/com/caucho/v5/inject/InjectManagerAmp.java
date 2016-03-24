@@ -31,6 +31,7 @@ package com.caucho.v5.inject;
 
 import java.lang.reflect.Parameter;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.inject.Provider;
 
@@ -68,14 +69,6 @@ public interface InjectManagerAmp extends InjectManager
     return manager(Thread.currentThread().getContextClassLoader());
   }
 
-  //<T> T instance(Class<T> type, Annotation ...qualifiers);
-
-  //<T> T lookup(Class<T> type, Annotation ...qualifiers);
-  
-  //<T> T instanceNonService(Class<T> cl, Annotation ...qualifiers);
-  
-  //Object createByName(String name);
-
   <T> Iterable<Binding<T>> bindings(Class<T> type);
   
   Config config();
@@ -84,28 +77,11 @@ public interface InjectManagerAmp extends InjectManager
   
   String property(String key);
   
-  //<T> Supplier<T> supplierNew(Class<T> type, Annotation ...qualifiers);
-  
-  //<T> Provider <T> newProvider(Class<T> type, Annotation ...qualifiers);
-  
-  //<T> BindingAmp<T> newBinding(Class<T> type);
-  
-  //void introspectInject(List<InjectProgram> program, Class<?> type);
-  
-  //void introspectInit(List<InjectProgram> program, Class<?> type);
-
-  //boolean isQualifier(Annotation ann);
-  
-  /*
-  default void scanRoot(ClassLoader classLoader)
-  {
-  }
-  */
-  
   public interface InjectBuilderAmp extends InjectBuilder
   {
     InjectBuilderAmp context(boolean isContext);
-    
+
+    @Override
     InjectManagerAmp get();
   }
  

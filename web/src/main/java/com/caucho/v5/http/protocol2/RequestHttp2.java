@@ -869,7 +869,7 @@ public class RequestHttp2
     RequestFacade responseFacade = null;//request();
     if (true) throw new UnsupportedOperationException();
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     responseFacade.fillCookies(out);
 

@@ -69,7 +69,7 @@ public final class DebugResult<V> implements Result<V>
     _method = method;
     
     long timeout = 2 * 60 * 1000;
-    _expireTime = timeout + CurrentTime.getCurrentTime();
+    _expireTime = timeout + CurrentTime.currentTime();
   }
   
   @Override

@@ -65,7 +65,7 @@ public final class IdAssetGenerator
 
   public long get()
   {
-    long now = CurrentTime.getCurrentTime() / 1000;
+    long now = CurrentTime.currentTime() / 1000;
     
     long oldSequence;
     long newSequence;

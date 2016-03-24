@@ -381,7 +381,7 @@ public class CompilingLoader extends Loader implements Make {
   public void make()
   {
     synchronized (this) {
-      if (CurrentTime.getCurrentTime() < _lastMakeTime + 2000)
+      if (CurrentTime.currentTime() < _lastMakeTime + 2000)
         return;
 
       try {
@@ -390,7 +390,7 @@ public class CompilingLoader extends Loader implements Make {
         log.log(Level.FINER, e.toString(), e);
       }
 
-      _lastMakeTime = CurrentTime.getCurrentTime();
+      _lastMakeTime = CurrentTime.currentTime();
     }
   }
 

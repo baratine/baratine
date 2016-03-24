@@ -453,7 +453,7 @@ public class HttpPath extends FilesystemPath {
     
     long now;
     
-    now = CurrentTime.getCurrentTime();
+    now = CurrentTime.currentTime();
     
     synchronized (_cacheEntry) {
       try {

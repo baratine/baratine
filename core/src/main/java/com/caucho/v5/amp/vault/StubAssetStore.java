@@ -113,7 +113,7 @@ public class StubAssetStore extends ClassStub
     Provider<Object> provider = ampManager().inject().provider(key);
     MethodHandle setter = findIdSetter();
     Convert<String,?> converter = findConverter();
-
+    
     MethodAmp onLookup = new MethodOnLookup(_skelEntity, provider, converter, setter);
 
     onLookup(onLookup);

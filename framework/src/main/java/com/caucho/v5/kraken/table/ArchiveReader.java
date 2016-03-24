@@ -187,7 +187,7 @@ public class ArchiveReader
     }
     
     if (accessTime < 0) {
-      accessTime = CurrentTime.getCurrentTime();
+      accessTime = CurrentTime.currentTime();
     }
     
     if (modifiedTimeout < 0) {
@@ -195,7 +195,7 @@ public class ArchiveReader
     }
     
     if (modifiedTime < 0) {
-      modifiedTime = CurrentTime.getCurrentTime();
+      modifiedTime = CurrentTime.currentTime();
     }
     
     row.setLong(KelpManager.ACCESSED_TIME, accessTime);

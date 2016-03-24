@@ -383,7 +383,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
 
   public boolean rollover()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     if (_nextPeriodEnd <= now || _nextRolloverCheckTime.get() <= now) {
       _nextRolloverCheckTime.set(now + _rolloverCheckPeriod);
@@ -495,7 +495,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
       
       Path savedPath = null;
 
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
 
       long lastPeriodEnd = _nextPeriodEnd;
 
@@ -560,7 +560,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
     Path path = getPath();
 
     if (path == null) {
-      path = getPath(CurrentTime.getCurrentTime());
+      path = getPath(CurrentTime.currentTime());
     }
 
     Path parent = path.getParent();
@@ -827,7 +827,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
   protected String getFormatName(String format, long time)
   {
     if (time <= 0) {
-      time = CurrentTime.getCurrentTime();
+      time = CurrentTime.currentTime();
     }
     
     if (true) throw new UnsupportedOperationException();
@@ -993,7 +993,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
       if (isClosed() || alarm == null)
         return;
       
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
       
       long nextCheckTime;
       

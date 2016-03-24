@@ -199,7 +199,7 @@ public class DependencyContainer implements Dependency
     if (_isModified)
       _checkExpiresTime = Long.MAX_VALUE / 2;
     else
-      _checkExpiresTime = CurrentTime.getCurrentTime() + _checkInterval;
+      _checkExpiresTime = CurrentTime.currentTime() + _checkInterval;
     
     if (! isModified)
       _isModifiedLog = false;
@@ -235,7 +235,7 @@ public class DependencyContainer implements Dependency
    */
   public boolean isModified(boolean isAsync)
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     if (now < _checkExpiresTime)
       return _isModified;

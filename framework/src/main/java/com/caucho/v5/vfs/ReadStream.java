@@ -493,7 +493,7 @@ public final class ReadStream extends InputStream
           _position += len;
 
           if (_isEnableReadTime)
-            _readTime = CurrentTime.getCurrentTime();
+            _readTime = CurrentTime.currentTime();
         }
 
         return len;
@@ -1136,7 +1136,7 @@ public final class ReadStream extends InputStream
       _position += readLength;
 
       if (_isEnableReadTime)
-        _readTime = CurrentTime.getCurrentTime();
+        _readTime = CurrentTime.currentTime();
 
       return true;
     }
@@ -1182,7 +1182,7 @@ public final class ReadStream extends InputStream
       _position += readLength;
 
       if (_isEnableReadTime) {
-        _readTime = CurrentTime.getCurrentTime();
+        _readTime = CurrentTime.currentTime();
       }
 
       return readLength;
@@ -1238,7 +1238,7 @@ public final class ReadStream extends InputStream
       _position += readLength;
 
       if (_isEnableReadTime)
-        _readTime = CurrentTime.getCurrentTime();
+        _readTime = CurrentTime.currentTime();
       return true;
     }
     else if (readLength == READ_TIMEOUT) {
@@ -1276,7 +1276,7 @@ public final class ReadStream extends InputStream
       _position += readLength;
 
       if (_isEnableReadTime)
-        _readTime = CurrentTime.getCurrentTime();
+        _readTime = CurrentTime.currentTime();
       return true;
     }
     else {

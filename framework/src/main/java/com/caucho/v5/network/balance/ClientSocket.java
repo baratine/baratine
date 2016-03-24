@@ -178,7 +178,7 @@ public class ClientSocket implements ClientSocketApi {
   @Override
   public boolean isIdleExpired()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     return (_pool.getLoadBalanceIdleTime() < now - _idleStartTime);
   }
@@ -189,7 +189,7 @@ public class ClientSocket implements ClientSocketApi {
   @Override
   public boolean isIdleAlmostExpired(long delta)
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     return (_pool.getLoadBalanceIdleTime() < now - _idleStartTime + delta);
   }
@@ -288,7 +288,7 @@ public class ClientSocket implements ClientSocketApi {
 
       if (idleStartTime <= 0) {
         // for write-only, the read time is zero
-        idleStartTime = CurrentTime.getCurrentTime();
+        idleStartTime = CurrentTime.currentTime();
       }
     }
     

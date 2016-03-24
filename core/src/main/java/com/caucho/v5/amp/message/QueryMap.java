@@ -75,7 +75,7 @@ public final class QueryMap
       _buckets[i] = new QueryBucket();
     }
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     long seed = (now / 1000) % (365 * 7 * 24 * 3600);
     
     // _head.set((CurrentTime.getCurrentTime() << 16) & 0x0fff_ffff_ffff_ffffL);

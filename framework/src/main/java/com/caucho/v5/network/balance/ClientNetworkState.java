@@ -150,7 +150,7 @@ public class ClientNetworkState
   public void onSuccess()
   {
     if (_firstSuccessTime <= 0) {
-      _firstSuccessTime = CurrentTime.getCurrentTime();
+      _firstSuccessTime = CurrentTime.currentTime();
     }
     
     // reset the connection fail recover time
@@ -163,7 +163,7 @@ public class ClientNetworkState
    */
   public void onFail()
   {
-    _lastFailTime = CurrentTime.getCurrentTime();
+    _lastFailTime = CurrentTime.currentTime();
     
     if (_firstFailTime == 0) {
       _firstFailTime = _lastFailTime;
@@ -195,7 +195,7 @@ public class ClientNetworkState
       return true;
     }
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     long lastFailTime = _lastFailTime;
     long recoverTimeout = _dynamicRecoverTimeout.get();
     

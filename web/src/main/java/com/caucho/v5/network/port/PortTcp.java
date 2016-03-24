@@ -1181,7 +1181,7 @@ public class PortTcp implements PortSocket
     if (! _lifecycle.isActive()) {
       return false;
     }
-    else if (connectionStartTime + _keepaliveTimeMax < CurrentTime.getCurrentTime()) {
+    else if (connectionStartTime + _keepaliveTimeMax < CurrentTime.currentTime()) {
       return false;
     }
     else if (_keepaliveMax <= _keepaliveAllocateCount.get()) {
@@ -1779,7 +1779,7 @@ public class PortTcp implements PortSocket
         _timeoutSet.clear();
         _completeSet.clear();
 
-        long now = CurrentTime.getCurrentTime();
+        long now = CurrentTime.currentTime();
 
         // wake the launcher in case of freeze
         //_connThreadPool.wake();

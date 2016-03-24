@@ -55,7 +55,7 @@ public class PageBlobFree extends PageBlob
     _oldBlob = oldBlob;
     
     if (oldBlob != null) {
-      _oldBlobExpire = CurrentTime.getCurrentTime() + 60000L;
+      _oldBlobExpire = CurrentTime.currentTime() + 60000L;
     }
   }
   
@@ -84,7 +84,7 @@ public class PageBlobFree extends PageBlob
     if (oldBlob == null) {
       return 0;
     } 
-    else if (CurrentTime.getCurrentTime() <= _oldBlobExpire) {
+    else if (CurrentTime.currentTime() <= _oldBlobExpire) {
       return oldBlob.getLength();
     }
     else {

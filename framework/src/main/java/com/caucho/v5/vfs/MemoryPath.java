@@ -491,7 +491,7 @@ public class MemoryPath extends FilesystemPath {
       this.name = name;
       this.data = data;
       this.type = type;
-      this.lastModified = CurrentTime.getCurrentTime();
+      this.lastModified = CurrentTime.currentTime();
     }
 
     Node lookup(String name)
@@ -515,7 +515,7 @@ public class MemoryPath extends FilesystemPath {
       Node newNode = new Node(name, data, type);
       newNode.next = firstChild;
       firstChild = newNode;
-      lastModified = CurrentTime.getCurrentTime();
+      lastModified = CurrentTime.currentTime();
 
       return newNode;
     }
@@ -600,7 +600,7 @@ public class MemoryPath extends FilesystemPath {
 
       _node = node;
       if (write)
-        node.lastModified = CurrentTime.getCurrentTime();
+        node.lastModified = CurrentTime.currentTime();
       _write = write;
 
       _bb = bb;
@@ -667,7 +667,7 @@ public class MemoryPath extends FilesystemPath {
         _bb.add(buf, offset, length);
       }
 
-      _node.lastModified = CurrentTime.getCurrentTime();
+      _node.lastModified = CurrentTime.currentTime();
     }
 
     @Override

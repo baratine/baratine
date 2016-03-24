@@ -149,7 +149,7 @@ public final class DebugQueryMap
   
   private void timeout()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     for (int i = 0; i < _capacity; i++) {
       synchronized (_queryLocks[i]) {

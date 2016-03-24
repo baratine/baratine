@@ -50,7 +50,7 @@ public class CurrentTimeTest
 
   public static void addTime(long delta)
   {
-    CurrentTime.setTestTime(CurrentTime.getCurrentTime() + delta);
+    CurrentTime.setTestTime(CurrentTime.currentTime() + delta);
   }
 
   public static void setNanoDelta(long delta)

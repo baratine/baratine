@@ -76,7 +76,7 @@ public class QueueFullHandlerAmp implements QueueFullHandler
     long firstSequenceTime = _firstSequenceTime.get();
     int repeatCount = _repeatCount.get();
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     _lastExceptionTime.set(now);
     

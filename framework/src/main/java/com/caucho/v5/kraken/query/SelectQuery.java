@@ -294,7 +294,7 @@ public class SelectQuery extends SelectQueryBase
       long time = cursorLocal.getUpdateTime();
       long timeout = cursorLocal.getTimeout();
       
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
       
       if (now <= time + timeout) {
         result.ok(cursorLocal);

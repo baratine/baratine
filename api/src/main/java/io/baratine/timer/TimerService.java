@@ -34,6 +34,7 @@ import java.util.function.Consumer;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Direct;
+import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 
@@ -80,7 +81,7 @@ public interface TimerService
    * @param time millisecond time since epoch to run
    * @param result holder for the cancel result
    */
-  void runAt(@Service Consumer<? super Cancel> task, 
+  void runAt(@Pin Consumer<? super Cancel> task, 
              long time,
              Result<? super Cancel> result);
 
@@ -99,7 +100,7 @@ public interface TimerService
    * @param unit timeunit to delay
    * @param result holder for the timer 
    */
-  void runAfter(@Service Consumer<? super Cancel> task, 
+  void runAfter(@Pin Consumer<? super Cancel> task, 
                 long delay, 
                 TimeUnit unit,
                 Result<? super Cancel> result);
@@ -156,7 +157,7 @@ public interface TimerService
    * @param task
    * @param scheduler
    */
-  void schedule(@Service Consumer<? super Cancel> task, 
+  void schedule(@Pin Consumer<? super Cancel> task, 
                 TimerScheduler scheduler,
                 Result<? super Cancel> result);
 
@@ -176,29 +177,7 @@ public interface TimerService
    * @param task
    * @param cron basic cron syntax
    */
-  void cron(@Service Consumer<? super Cancel> task, 
+  void cron(@Pin Consumer<? super Cancel> task, 
             String cron,
             Result<? super Cancel> result);
-
-  /**
-   * Unregisters the <code>Runnable</code> from this timer.
-   * <pre>
-   *     timerService.unregister(task);
-   * </pre>
-   *
-   * @param task
-   */
-  // void cancel(CancelHandle timerHandle);
-
-  /**
-   * Returns the task info associated with this Runnable.
-   */
-  //TaskInfo getTask(@Service Runnable task);
-  //void getTask(@Service Runnable task, Result<TaskInfo> result);
-
-  /**
-   * Returns the list of scheduled tasks.
-   */
-  //List<TaskInfo> getTasks();
-  //void getTasks(Result<List<TaskInfo>> task);
 }

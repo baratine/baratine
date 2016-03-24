@@ -1791,7 +1791,7 @@ public class PageServiceImpl implements PageService
   
   private long nextVersion()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     long version = _lastVersion;
 
@@ -1975,7 +1975,7 @@ public class PageServiceImpl implements PageService
       Objects.requireNonNull(blob);
       
       _blob = blob;
-      _timeAvailable = CurrentTime.getCurrentTime() + timeout;
+      _timeAvailable = CurrentTime.currentTime() + timeout;
     }
     
     BlobFree(PageBlobFree blob)
@@ -1988,7 +1988,7 @@ public class PageServiceImpl implements PageService
      */
     public boolean isAvailable()
     {
-      return _timeAvailable < CurrentTime.getCurrentTime();
+      return _timeAvailable < CurrentTime.currentTime();
     }
 
     /**

@@ -131,7 +131,7 @@ public class ArchiveTableKelp
     out.writeString("table-name");
     out.writeString(_table.getName());
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     out.writeString("current-time");
     out.writeLong(now);

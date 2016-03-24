@@ -424,7 +424,7 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
     //ClusterServiceKraken peerService = rampManager.lookup(address).as(ClusterServiceKraken.class);
 
     // ArrayList<CacheData> entryList = null;
-    long accessTime = CurrentTime.getCurrentTime() + deltaTime;
+    long accessTime = CurrentTime.currentTime() + deltaTime;
 
     // int count = 0;
     

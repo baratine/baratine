@@ -69,7 +69,7 @@ public class ServerTarget
 
   void sendServerHeartbeat(UpdateServerHeartbeat updateServer)
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     if (_lastServerTime + getTimeout() < now) {
       _lastServerTime = now;
@@ -118,7 +118,7 @@ public class ServerTarget
   private boolean startUpdate(UpdateRackHeartbeat updateRack,
                               UpdatePodSystem updatePod)
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     if (_lastHubTime + getTimeout() < now) {
     }

@@ -116,7 +116,7 @@ public class ColumnState extends Column
     
     // XXX: theoretical rollover issues
     
-    return (version >> 16) | (CurrentTime.getCurrentTime() & (0xffffL << 48)); 
+    return (version >> 16) | (CurrentTime.currentTime() & (0xffffL << 48)); 
   }
 
   /*

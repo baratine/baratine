@@ -489,7 +489,7 @@ public class TableManagerServiceImpl implements TableManagerService
   
   private void saveMetaTableUpdate()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     for (TableKraken table : getTables()) {
       if (table.isStartupComplete()) {

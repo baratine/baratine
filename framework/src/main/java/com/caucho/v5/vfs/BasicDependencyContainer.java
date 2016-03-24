@@ -135,7 +135,7 @@ public class BasicDependencyContainer
   {
     _isModified = false;
 
-    _lastCheckTime = CurrentTime.getCurrentTime();
+    _lastCheckTime = CurrentTime.currentTime();
   }
 
   /**
@@ -154,7 +154,7 @@ public class BasicDependencyContainer
     try {
       long now;
 
-      now = CurrentTime.getCurrentTime();
+      now = CurrentTime.currentTime();
 
       if (now < _lastCheckTime + _checkInterval)
         return _isModified;

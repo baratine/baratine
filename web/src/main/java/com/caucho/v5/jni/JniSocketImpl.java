@@ -501,7 +501,7 @@ public final class JniSocketImpl extends SocketBar {
 
     long requestExpireTime = _requestExpireTime;
 
-    if (requestExpireTime > 0 && requestExpireTime < CurrentTime.getCurrentTime()) {
+    if (requestExpireTime > 0 && requestExpireTime < CurrentTime.currentTime()) {
       close();
       throw new ClientDisconnectException(L.l("{0}: request-timeout read",
                                               addressRemote()));
@@ -544,11 +544,11 @@ public final class JniSocketImpl extends SocketBar {
 
     long requestExpireTime = _requestExpireTime;
 
-    if (requestExpireTime > 0 && requestExpireTime < CurrentTime.getCurrentTime()) {
+    if (requestExpireTime > 0 && requestExpireTime < CurrentTime.currentTime()) {
       close();
       throw new ClientDisconnectException(L.l("{0}: request-timeout write exp={0}s",
                                               addressRemote(),
-                                              CurrentTime.getCurrentTime() - requestExpireTime));
+                                              CurrentTime.currentTime() - requestExpireTime));
     }
 
     synchronized (_writeLock) {
@@ -624,7 +624,7 @@ public final class JniSocketImpl extends SocketBar {
 
     long requestExpireTime = _requestExpireTime;
 
-    if (requestExpireTime > 0 && requestExpireTime < CurrentTime.getCurrentTime()) {
+    if (requestExpireTime > 0 && requestExpireTime < CurrentTime.currentTime()) {
       close();
       throw new ClientDisconnectException(L.l("{0}: request-timeout write",
                                               addressRemote()));
@@ -660,7 +660,7 @@ public final class JniSocketImpl extends SocketBar {
 
     long requestExpireTime = _requestExpireTime;
 
-    if (requestExpireTime > 0 && requestExpireTime < CurrentTime.getCurrentTime()) {
+    if (requestExpireTime > 0 && requestExpireTime < CurrentTime.currentTime()) {
       close();
       throw new ClientDisconnectException(L.l("{0}: request-timeout sendfile",
                                               addressRemote()));

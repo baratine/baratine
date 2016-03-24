@@ -72,7 +72,7 @@ abstract public class CachedDependency implements Dependency {
   @Override
   public boolean isModified()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     long lastCheckTime = _lastCheckTime.get();
     
     if (now <= lastCheckTime + _checkInterval) {

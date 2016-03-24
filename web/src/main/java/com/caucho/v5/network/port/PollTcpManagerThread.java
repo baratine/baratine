@@ -232,7 +232,7 @@ public class PollTcpManagerThread
         long expireTime = _conn.getIdleExpireTime();
         int result;
         
-        long timeout = expireTime - CurrentTime.getCurrentTime();
+        long timeout = expireTime - CurrentTime.currentTime();
         
         timeout = Math.max(timeout, 0);
         
@@ -241,7 +241,7 @@ public class PollTcpManagerThread
         if (result > 0) {
           isValid = true;
         }
-        else if (expireTime <= CurrentTime.getCurrentTime()) {
+        else if (expireTime <= CurrentTime.currentTime()) {
           log.finer("timeout " + _conn);
         }
         else {

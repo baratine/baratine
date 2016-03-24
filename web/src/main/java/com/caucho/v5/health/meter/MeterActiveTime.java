@@ -69,7 +69,7 @@ public final class MeterActiveTime extends MeterBase implements ActiveTimeSensor
   @Override
   public final long start()
   {
-    long startTime = CurrentTime.getCurrentTime();
+    long startTime = CurrentTime.currentTime();
 
     long activeCount = _activeCount.incrementAndGet();
 
@@ -88,7 +88,7 @@ public final class MeterActiveTime extends MeterBase implements ActiveTimeSensor
     _totalCount.incrementAndGet();
     _activeCount.decrementAndGet();
 
-    long endTime = CurrentTime.getCurrentTime();
+    long endTime = CurrentTime.currentTime();
 
     long value = endTime - startTime;
 

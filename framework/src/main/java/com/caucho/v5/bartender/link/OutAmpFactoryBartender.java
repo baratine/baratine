@@ -131,7 +131,7 @@ class OutAmpFactoryBartender implements OutAmpFactory
       // long timeout = 100L;
       
       if (! server.isUp()
-          && CurrentTime.getCurrentTime() < connectionFailTime + timeout) {
+          && CurrentTime.currentTime() < connectionFailTime + timeout) {
         throw new ServiceExceptionConnect(L.l("Reconnect attempted before fail-timeout {0}ms to champ server {1}.\n",
                                               timeout,
                                               uri));
@@ -159,7 +159,7 @@ class OutAmpFactoryBartender implements OutAmpFactory
       return endpoint;
     } catch (ConnectException e) {
       server.compareAndSetConnectionFailTime(connectionFailTime,
-                                             CurrentTime.getCurrentTime());
+                                             CurrentTime.currentTime());
       
       throw new ServiceExceptionConnect(L.l("Can't connect to champ server {0}\n  uri:  {1}.\n  {2}",
                                             server,

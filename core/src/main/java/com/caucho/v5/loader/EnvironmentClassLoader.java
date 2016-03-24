@@ -1217,14 +1217,14 @@ public class EnvironmentClassLoader extends DynamicClassLoader
       _url = url;
       
       if (isDirectoryLoader())
-        _expireTime = CurrentTime.getCurrentTime() + getDependencyCheckInterval();
+        _expireTime = CurrentTime.currentTime() + getDependencyCheckInterval();
       else
         _expireTime = Long.MAX_VALUE / 2;
     }
     
     public boolean isModified()
     {
-      return _expireTime < CurrentTime.getCurrentTime();
+      return _expireTime < CurrentTime.currentTime();
     }
     
     public URL getResource()

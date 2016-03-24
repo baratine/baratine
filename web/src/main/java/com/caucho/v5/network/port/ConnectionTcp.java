@@ -979,7 +979,7 @@ System.out.println("REQ_COMT:");
 
       long requestTimeout = port().getRequestTimeout();
       
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
 
       if (requestTimeout > 0) {
         long expireTime = now + requestTimeout;
@@ -1048,7 +1048,7 @@ System.out.println("REQ_COMT:");
 
     long timeout = _idleTimeout;
 
-    _idleStartTime = CurrentTime.getCurrentTime();
+    _idleStartTime = CurrentTime.currentTime();
     _idleExpireTime = _idleStartTime + timeout;
 
     // _state = _state.toKeepalive(this);
@@ -1068,7 +1068,7 @@ System.out.println("REQ_COMT:");
       if (_port.keepaliveThreadRead(readStream(), _idleTimeout) > 0) {
         return StateConnection.ACTIVE;
       }
-      else if (_idleExpireTime <= CurrentTime.getCurrentTime()) {
+      else if (_idleExpireTime <= CurrentTime.currentTime()) {
         return StateConnection.TIMEOUT;
       }
     }

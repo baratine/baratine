@@ -345,7 +345,7 @@ public class EnvironmentStream extends StreamImpl {
   public static void logStderr(String msg, Throwable e)
   {
     try {
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
     
       //msg = QDate.formatLocal(now, "[%Y-%m-%d %H:%M:%S] ") + msg;
 
@@ -365,7 +365,7 @@ public class EnvironmentStream extends StreamImpl {
   public static void logStderr(String msg)
   {
     try {
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
     
       //msg = QDate.formatLocal(now, "[%Y-%m-%d %H:%M:%S] ") + msg;
 

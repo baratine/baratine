@@ -466,7 +466,7 @@ public final class Lifecycle {
        if (_state == STOPPED) {
          _state = INIT;
 
-         _lastChangeTime = CurrentTime.getCurrentTime();
+         _lastChangeTime = CurrentTime.currentTime();
 
          notifyListeners(STOPPED, INIT);
 
@@ -496,7 +496,7 @@ public final class Lifecycle {
       
       _state = STARTING;
 
-      _lastChangeTime = CurrentTime.getCurrentTime();
+      _lastChangeTime = CurrentTime.currentTime();
 
       if (_log != null && _log.isLoggable(_level) && _log.isLoggable(Level.FINER)) {
         _log.finer("starting " + _name);
@@ -526,7 +526,7 @@ public final class Lifecycle {
       
       _state = ACTIVE;
 
-      _lastChangeTime = CurrentTime.getCurrentTime();
+      _lastChangeTime = CurrentTime.currentTime();
     }
 
     if (_log != null && _log.isLoggable(_level))
@@ -572,7 +572,7 @@ public final class Lifecycle {
       
       _state = FAILED;
 
-      _lastChangeTime = CurrentTime.getCurrentTime();
+      _lastChangeTime = CurrentTime.currentTime();
     }
 
     if (_log != null && _log.isLoggable(_level))
@@ -603,7 +603,7 @@ public final class Lifecycle {
       
       _state = STOPPING;
 
-      _lastChangeTime = CurrentTime.getCurrentTime();
+      _lastChangeTime = CurrentTime.currentTime();
     }
 
     if (_log != null && _log.isLoggable(_level)) {
@@ -673,7 +673,7 @@ public final class Lifecycle {
       
       _state = newState;
 
-      _lastChangeTime = CurrentTime.getCurrentTime();
+      _lastChangeTime = CurrentTime.currentTime();
     }
 
     if (_log != null && _log.isLoggable(_lowLevel)) {
@@ -698,7 +698,7 @@ public final class Lifecycle {
       state = _state;
       _state = newState;
 
-      _lastChangeTime = CurrentTime.getCurrentTime();
+      _lastChangeTime = CurrentTime.currentTime();
     }
 
     if (_log != null && _log.isLoggable(_lowLevel)) {

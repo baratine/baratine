@@ -260,7 +260,7 @@ public class PollTcpManagerNio
 
       if (log.isLoggable(Level.FINER)) {
         log.finer(conn + " add keepalive (select fd=" + key + 
-                  ",timeout=" + (conn.getIdleExpireTime() - CurrentTime.getCurrentTime()) + "ms)");
+                  ",timeout=" + (conn.getIdleExpireTime() - CurrentTime.currentTime()) + "ms)");
       }
 
       _keepaliveAsyncMeter.start();
@@ -393,7 +393,7 @@ public class PollTcpManagerNio
       _connectionCount.decrementAndGet();
       _keepaliveAsyncMeter.end();
       
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
 
       if (conn.getIdleExpireTime() < now) {
         if (log.isLoggable(Level.FINER))

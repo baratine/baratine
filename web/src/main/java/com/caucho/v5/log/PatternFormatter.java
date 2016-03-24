@@ -930,7 +930,7 @@ public class PatternFormatter extends Formatter
       long now = log.getMillis();
       
       if (CurrentTime.isTest()) {
-        now = CurrentTime.getCurrentTime();
+        now = CurrentTime.currentTime();
       }
       
       /*
@@ -1111,7 +1111,7 @@ public class PatternFormatter extends Formatter
 
   private static class RelativeTimeItem extends FormatItem
   {
-    private long _start = CurrentTime.getCurrentTime();
+    private long _start = CurrentTime.currentTime();
     
     RelativeTimeItem(PadItem padItem)
     {
@@ -1121,7 +1121,7 @@ public class PatternFormatter extends Formatter
     @Override
     public void formatImpl(StringBuilder sb, LogRecord log)
     {
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
       
       sb.append(now - _start);
     }

@@ -69,7 +69,7 @@ public class TraceAmp implements Trace
       
       StringBuilder sb = new StringBuilder();
       
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
       
       Base64Util.encode(sb, now);
       
@@ -103,7 +103,7 @@ public class TraceAmp implements Trace
 
     StringBuilder sb = new StringBuilder();
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     Base64Util.encode(sb, now);
 

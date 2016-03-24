@@ -921,7 +921,7 @@ public final class PageLeafImpl extends PageLeaf
    */
   private PageLeafImpl compact(TableKelp table)
   {
-    long now = CurrentTime.getCurrentTime() / 1000;
+    long now = CurrentTime.currentTime() / 1000;
     
     Set<PageLeafEntry> entries = fillEntries(table);
     

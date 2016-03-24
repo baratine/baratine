@@ -217,7 +217,7 @@ public class AuthHampManager
     
     String algorithm = _security.getAlgorithm(uid);
     
-    String nonce = String.valueOf(CurrentTime.getCurrentTime());
+    String nonce = String.valueOf(CurrentTime.currentTime());
     
     return new NonceQuery(algorithm, uid, nonce, clientSignature);
   }

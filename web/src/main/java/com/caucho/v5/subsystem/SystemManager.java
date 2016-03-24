@@ -480,7 +480,7 @@ public class SystemManager implements AutoCloseable
       if (! _lifecycle.toStarting())
         return;
 
-      _startTime = CurrentTime.getCurrentTime();
+      _startTime = CurrentTime.currentTime();
 
       if (! CurrentTime.isTest()) {
         log.info("");

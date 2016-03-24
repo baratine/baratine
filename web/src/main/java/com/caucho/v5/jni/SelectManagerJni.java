@@ -480,7 +480,7 @@ public class SelectManagerJni extends PollTcpManagerBase
     long maxSelectTime = _maxSelectTime;
     long checkInterval = getCheckInterval();
 
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
 
     // network/0284
     if (now < lastCheckTime) {

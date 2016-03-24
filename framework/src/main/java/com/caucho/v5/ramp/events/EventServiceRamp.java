@@ -128,7 +128,7 @@ public class EventServiceRamp
   /**
    * Publish to a location.
    */
-  public <T> void publish(Class<T> api,
+  public <T> void publisher(Class<T> api,
                           Result<T> result)
   {
     String path = api.getName();
@@ -144,7 +144,7 @@ public class EventServiceRamp
   /**
    * Publish to a location.
    */
-  public <T> void publishPath(String path,
+  public <T> void publisherPath(String path,
                               Class<T> api,
                               Result<T> result)
   {
@@ -159,7 +159,7 @@ public class EventServiceRamp
   /**
    * Subscribe a callback to a location.
    */
-  public void subscribe(Object location, 
+  public void subscriber(Object location, 
                         @Pin ServiceRef serviceRef,
                         Result<? super Cancel> result)
   {
@@ -198,7 +198,7 @@ public class EventServiceRamp
   /**
    * Consume a callback to a location.
    */
-  public void consume(Object location, 
+  public void consumer(Object location, 
                         @Pin ServiceRef serviceRef,
                         Result<? super Cancel> result)
   {

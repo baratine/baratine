@@ -54,7 +54,7 @@ public class ClockCurrent extends Clock
   @Override
   public long millis()
   {
-    return CurrentTime.getCurrentTime();
+    return CurrentTime.currentTime();
   }
   
   @Override
@@ -72,6 +72,6 @@ public class ClockCurrent extends Clock
   @Override
   public Instant instant()
   {
-    return Instant.ofEpochMilli(CurrentTime.getCurrentTime());
+    return Instant.ofEpochMilli(CurrentTime.currentTime());
   }
 }

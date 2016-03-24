@@ -70,7 +70,7 @@ public final class TimeRangeMeter extends MeterBase implements TimeSensor {
 
   public final long start()
   {
-    long startTime = CurrentTime.getCurrentTime();
+    long startTime = CurrentTime.currentTime();
 
     _activeCount.incrementAndGet();
 
@@ -81,7 +81,7 @@ public final class TimeRangeMeter extends MeterBase implements TimeSensor {
   {
     _activeCount.decrementAndGet();
     
-    long time = CurrentTime.getCurrentTime() - startTime;
+    long time = CurrentTime.currentTime() - startTime;
     
     _count.incrementAndGet();
     _time.addAndGet(time);

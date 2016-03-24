@@ -136,7 +136,7 @@ public class JournalGroup
       throw new IllegalStateException();
     }
     
-    _sequence = Math.max(_sequence + 1, CurrentTime.getCurrentTime());
+    _sequence = Math.max(_sequence + 1, CurrentTime.currentTime());
     
     JournalSegment segment = _store.openSegment(this, _sequence);
     

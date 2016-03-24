@@ -278,7 +278,7 @@ class ServerHeartbeatData
     
     _state = oldState.onHeartbeatStart();
     
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     _lastHeartbeatTime = now;
     
@@ -318,7 +318,7 @@ class ServerHeartbeatData
     Objects.requireNonNull(update);
     
     if (update.isUp()) {
-      _lastHeartbeatTime = CurrentTime.getCurrentTime();
+      _lastHeartbeatTime = CurrentTime.currentTime();
     }
     
     if (update.getSequence() <= _lastSequence) {
@@ -349,7 +349,7 @@ class ServerHeartbeatData
   
   protected void updateSequence()
   {
-    long now = CurrentTime.getCurrentTime();
+    long now = CurrentTime.currentTime();
     
     _lastSequence = Math.max(_lastSequence + 1, now);
     update();
@@ -358,7 +358,7 @@ class ServerHeartbeatData
   protected boolean updateStateChange(ServerBartenderState oldState)
   {
     if (_state != oldState) {
-      long now = CurrentTime.getCurrentTime();
+      long now = CurrentTime.currentTime();
     
       _lastStateChange = Math.max(_lastStateChange + 1, now);
       

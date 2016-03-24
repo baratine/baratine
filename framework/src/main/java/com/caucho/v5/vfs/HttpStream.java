@@ -215,7 +215,7 @@ class HttpStream extends StreamImpl {
     if (stream != null) {
       long now;
       
-      now = CurrentTime.getCurrentTime();
+      now = CurrentTime.currentTime();
       
       if (now < streamTime + 5000) {
         // if the stream is still valid, use it
@@ -923,7 +923,7 @@ class HttpStream extends StreamImpl {
       
       long now;
       
-      now = CurrentTime.getCurrentTime();
+      now = CurrentTime.currentTime();
       
       synchronized (LOCK) {
         oldSaved = _savedStream;

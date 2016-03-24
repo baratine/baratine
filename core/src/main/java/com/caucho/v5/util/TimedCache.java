@@ -110,12 +110,12 @@ public class TimedCache<K,V>
       _expireInterval = expireInterval;
       _value = value;
 
-      _checkTime = CurrentTime.getCurrentTime();
+      _checkTime = CurrentTime.currentTime();
     }
 
     boolean isValid()
     {
-      return CurrentTime.getCurrentTime() < _checkTime + _expireInterval;
+      return CurrentTime.currentTime() < _checkTime + _expireInterval;
     }
 
     V getValue()

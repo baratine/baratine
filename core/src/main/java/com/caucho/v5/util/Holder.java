@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,25 +27,44 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.event;
+package com.caucho.v5.util;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Pin;
-import io.baratine.service.Result;
-import io.baratine.service.Service;
+import java.util.function.Supplier;
 
 /**
- * API-based event service.
+ * holder for a changing value, like for a builder.
  */
-@Service("event://")
-public interface EventService
+public class Holder<T> implements Supplier<T>
 {
-  <T> void publisherPath(String path, Class<T> api, @Pin Result<T> result);
-  <T> void publisher(Class<T> api, @Pin Result<T> result);
+  private Supplier<T> _supplier;
+  private T _value;
   
-  <T> void consumer(String path, @Pin T consumer, Result<? super Cancel> result);
-  <T> void consumer(Class<T> api, @Pin T consumer, Result<? super Cancel> result);
+  public Holder(Supplier<T> supplier)
+  {
+    _supplier = supplier;
+  }
   
-  <T> void subscriber(String path, @Pin T consumer, Result<? super Cancel> result);  
-  <T> void subscriber(Class<T> api, @Pin T consumer, Result<? super Cancel> result);  
+  @Override
+  public T get()
+  {
+    Supplier<T> supplier = _supplier;
+    
+    if (supplier != null) {
+      return supplier.get();
+    }
+    else {
+      return _value;
+    }
+  }
+  
+  public void close()
+  {
+    Supplier<T> supplier = _supplier;
+    _supplier = null;
+    
+    if (supplier != null) {
+      _value = supplier.get();
+    }
+    
+  }
 }

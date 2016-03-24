@@ -43,7 +43,7 @@ public class LifecycleNotification extends Notification {
   
   public LifecycleNotification(String type, Object source, long sequence)
   {
-    super(type, source, sequence, CurrentTime.getCurrentTime());
+    super(type, source, sequence, CurrentTime.currentTime());
   }
   
   public LifecycleNotification(String type, Object source, long sequence,
@@ -61,6 +61,6 @@ public class LifecycleNotification extends Notification {
   public LifecycleNotification(String type, Object source, long sequence,
                                String message)
   {
-    super(type, source, sequence, CurrentTime.getCurrentTime(), message);
+    super(type, source, sequence, CurrentTime.currentTime(), message);
   }
 }

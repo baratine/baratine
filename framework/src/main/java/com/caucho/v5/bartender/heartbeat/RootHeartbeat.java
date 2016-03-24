@@ -224,7 +224,7 @@ public class RootHeartbeat extends RootBartender
   
   void updateSequence()
   {
-    _updateSequence = Math.max(_updateSequence + 1, CurrentTime.getCurrentTime());
+    _updateSequence = Math.max(_updateSequence + 1, CurrentTime.currentTime());
   }
 
 

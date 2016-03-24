@@ -128,7 +128,7 @@ public class ArgsBase
     _env = env;
     _programInfo = programInfo;
     
-    _startTime = CurrentTime.getCurrentTime();
+    _startTime = CurrentTime.currentTime();
     
     _argv = fillArgv(argv);
 
