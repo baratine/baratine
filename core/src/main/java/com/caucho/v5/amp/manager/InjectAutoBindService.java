@@ -84,12 +84,16 @@ public class InjectAutoBindService implements InjectAutoBind
                                   InjectionPoint<T> ip)
   {
     Service service = ip.annotation(Service.class);
+    Class<T> rawClass = ip.key().rawClass();
     
     if (service == null) {
-      return null;
+      service = rawClass.getAnnotation(Service.class);
+      
+      if (service == null) {
+        return null;
+      }
     }
     
-    Class<T> rawClass = ip.key().rawClass();
     
     String address = _serviceManager.address(rawClass, service.value());
 

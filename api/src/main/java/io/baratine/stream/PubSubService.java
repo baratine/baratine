@@ -27,16 +27,16 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.pubsub;
-
-import io.baratine.stream.ResultStreamBuilder;
+package io.baratine.stream;
 
 /**
  * Streaming pub/sub service
  */
-public interface PubSubServiceSync<T> extends PubSubService<T>
+public interface PubSubService<T>
 {
-  ResultStreamBuilder<T> consume();
+  void consume(ResultStream<T> stream);
   
-  ResultStreamBuilder<T> subscribe();
+  void subscribe(ResultStream<T> stream);
+  
+  void publish(T message);
 }

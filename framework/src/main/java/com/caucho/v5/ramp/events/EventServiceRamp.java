@@ -32,6 +32,8 @@ package com.caucho.v5.ramp.events;
 import java.util.HashMap;
 import java.util.Objects;
 
+import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
@@ -51,9 +53,9 @@ import io.baratine.service.ServiceRef;
  * Implementation of the event bus.
  */
 @Service
-public class SchemeEventImpl
+public class EventServiceRamp
 {
-  private static final L10N L = new L10N(SchemeEventImpl.class);
+  private static final L10N L = new L10N(EventServiceRamp.class);
 //  private ServiceManagerAmp _rampManager;
   
   private HashMap<String,EventNodeAsset> _pubSubNodeMap
@@ -63,12 +65,12 @@ public class SchemeEventImpl
   
   private EventServerImpl _podServer;
   
-  public SchemeEventImpl()
+  public EventServiceRamp()
   {
     this("event:");
   }
   
-  public SchemeEventImpl(String address)
+  public EventServiceRamp(String address)
   {
     Objects.requireNonNull(address);
     
@@ -121,6 +123,37 @@ public class SchemeEventImpl
   public Object lookupPath(String path)
   {
     return lookupPubSubNode(path);
+  }
+  
+  /**
+   * Publish to a location.
+   */
+  public <T> void publish(Class<T> api,
+                          Result<T> result)
+  {
+    String path = api.getName();
+      
+    String address = address(path);
+      
+    ServiceManagerAmp manager = ServiceManagerAmp.current();
+    ServiceRefAmp pubRef = manager.service(address);
+      
+    result.ok(pubRef.as(api));
+  }
+  
+  /**
+   * Publish to a location.
+   */
+  public <T> void publishPath(String path,
+                              Class<T> api,
+                              Result<T> result)
+  {
+    String address = address(path);
+      
+    ServiceManagerAmp manager = ServiceManagerAmp.current();
+    ServiceRefAmp pubRef = manager.service(address);
+      
+    result.ok(pubRef.as(api));
   }
   
   /**

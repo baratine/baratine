@@ -40,6 +40,9 @@ import io.baratine.service.Service;
 @Service("event://")
 public interface EventService
 {
+  <T> void publishPath(String path, Class<T> api, @Pin Result<T> result);
+  <T> void publish(Class<T> api, @Pin Result<T> result);
+  
   <T> void consume(String path, @Pin T consumer, Result<? super Cancel> result);
   <T> void consume(Class<T> api, @Pin T consumer, Result<? super Cancel> result);
   
