@@ -32,15 +32,22 @@ package io.baratine.pipe;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import io.baratine.service.Result;
+
 
 /**
  * {@code OutPipe} sends a sequence of values from a source to a sink.
  */
 public class Pipes
 {
-  public static <T> ResultPipeOut<T> flow(PipeOut.Flow<T> flow)
+  public static <T> PipeOutBuilder<T> flow(PipeOut.Flow<T> flow)
   {
     return new PipeOutResultImpl<>(flow);
+  }
+  
+  public static <T> PipeOutBuilder<T> out(Result<PipeOut<T>> result)
+  {
+    return new PipeOutResultImpl<>(result);
   }
   
   /*
@@ -170,12 +177,13 @@ public class Pipes
     @Override
     public void fail(Throwable exn)
     {
-      _result.handle(null, exn);
+      _result.handle((PipeOut<T>) null, exn);
     }
   }
   
-  static class PipeOutResultImpl<T> implements ResultPipeOut<T>
+  static class PipeOutResultImpl<T> implements PipeOutBuilder<T>
   {
+    private Result<PipeOut<T>> _result;
     private PipeOut.Flow<T> _flow;
     
     PipeOutResultImpl(PipeOut.Flow<T> flow)
@@ -183,6 +191,13 @@ public class Pipes
       Objects.requireNonNull(flow);
       
       _flow = flow;
+    }
+    
+    PipeOutResultImpl(Result<PipeOut<T>> result)
+    {
+      Objects.requireNonNull(result);
+      
+      _result = result;
     }
 
     @Override
@@ -192,9 +207,30 @@ public class Pipes
     }
     
     @Override
+    public void ok(PipeOut<T> pipe)
+    {
+      if (_result != null) {
+        _result.ok(pipe);
+      }
+    }
+    
+    @Override
+    public void fail(Throwable exn)
+    {
+      if (_result != null) {
+        _result.fail(exn);
+      }
+    }
+    
     public void handle(PipeOut<T> pipe, Throwable exn)
     {
-      throw new UnsupportedOperationException(getClass().getName());
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public PipeOutBuilder<T> fail(Consumer<Throwable> exn)
+    {
+      return this;
     }
   }
   

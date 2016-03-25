@@ -44,13 +44,14 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.PipeIn;
 import io.baratine.pipe.PipeOut;
+import io.baratine.pipe.PipeOut.Flow;
 import io.baratine.pipe.ResultPipeOut;
 
 /**
  * Register a publisher to a pipe.
  */
 public class PipeOutMessage<T>
-  extends QueryMessageBase<Void>
+  extends QueryMessageBase<PipeIn<T>>
   implements ResultPipeOut<T>
 {
   private static final L10N L = new L10N(PipeOutMessage.class);
@@ -120,7 +121,7 @@ public class PipeOutMessage<T>
   }
 
   @Override
-  public void ok(Void value)
+  public void ok(PipeOut<T> value)
   {
     throw new IllegalStateException(getClass().getSimpleName());
   }
@@ -142,13 +143,19 @@ public class PipeOutMessage<T>
     
     _pipe = pipe;
     
-    super.ok((Void) null);
+    super.ok((PipeIn<T>) null);
   }
 
   @Override
   protected boolean invokeOk(StubAmp actorDeliver)
   {
-    _result.flow().ready(_pipe);
+    _result.ok(_pipe);
+
+    Flow<T> flow = _result.flow();
+    
+    if (flow != null) {
+      flow.ready(_pipe);
+    }
     
     return true;
   }
@@ -156,20 +163,10 @@ public class PipeOutMessage<T>
   @Override
   protected boolean invokeFail(StubAmp actorDeliver)
   {
-    //System.out.println("Missing Fail:" + this);
     _result.fail(getException());
 
     return true;
   }
-
-  /*
-  @Override
-  public void handle(OutPipe<T> pipe, Throwable exn) throws Exception
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  */
-  
 
   @Override
   public String toString()

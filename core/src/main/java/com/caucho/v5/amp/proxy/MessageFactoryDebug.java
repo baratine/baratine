@@ -37,6 +37,8 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.HeadersNull;
+import com.caucho.v5.amp.message.PipeInMessage;
+import com.caucho.v5.amp.message.PipeOutMessage;
 import com.caucho.v5.amp.message.QueryMessageDebug_N;
 import com.caucho.v5.amp.message.SendMessage_0;
 import com.caucho.v5.amp.message.SendMessage_1;
@@ -310,20 +312,17 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_manager)) {
       HeadersAmp headers = HeadersNull.NULL;
     
-      System.out.println("PIPE_ME_UP:");
-      /*
-      StreamCallMessage<V> msg
-      = new StreamCallMessage<V>(outbox,
-                            outbox.inbox(),
-                            headers,
-                            serviceRef, 
-                            method,
-                            result, 
-                            timeout, 
-                            args);
-    
+      PipeOutMessage<V> msg
+        = new PipeOutMessage<V>(outbox,
+                          outbox.inbox(),
+                          headers,
+                          serviceRef, 
+                          method,
+                          result, 
+                          timeout, 
+                          args);
+  
       msg.offer(timeout);
-      */
     }
   }
   
@@ -337,10 +336,8 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_manager)) {
       HeadersAmp headers = HeadersNull.NULL;
     
-      System.out.println("PIPE_ME_UP:");
-      /*
-      StreamCallMessage<V> msg
-      = new StreamCallMessage<V>(outbox,
+      PipeInMessage<V> msg
+        = new PipeInMessage<V>(outbox,
                             outbox.inbox(),
                             headers,
                             serviceRef, 
@@ -350,7 +347,6 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
                             args);
     
       msg.offer(timeout);
-      */
     }
   }
 
