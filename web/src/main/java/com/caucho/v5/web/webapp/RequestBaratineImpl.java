@@ -98,35 +98,35 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     = Logger.getLogger(RequestBaratineImpl.class.getName());
 
   private static final String FORM_TYPE = "application/x-www-form-urlencoded";
-  
+
   private ConnectionHttp _connHttp;
 
   //private RequestHttpBase _requestHttp;
   private RequestHttpState _requestState;
-  
+
   //private InvocationBaratine _invocation;
 
   private RequestUpgrade _upgrade;
   private int _status = 200;
   private String _statusMessage = "ok";
   private String _contentType;
-  
+
   private List<ViewRef<?>> _views;
-  
+
   private ArrayList<CookieWeb> _cookieList = new ArrayList<>();
-  
+
   private StateRequest _state = StateRequest.ACCEPT;
 
   private boolean _isBodyComplete;
   private TempBuffer _bodyHead;
   private TempBuffer _bodyTail;
-  
+
   // callback for waiting for a body
   private Class<?> _bodyType;
   private Result<Object> _bodyResult;
   private String _bodyParamName;
   private RequestProxy _requestProxy;
-  
+
   private RequestBaratineImpl _next;
   private RequestBaratineImpl _prev;
 
@@ -136,33 +136,33 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     Objects.requireNonNull(connHttp);
     _connHttp = connHttp;
-    
+
     //if (true) throw new UnsupportedOperationException();
-    
+
     //RequestHttpBase requestHttp = null;
     //_requestHttp = requestHttp;
   }
-  
+
   public void init(RequestHttpState requestState)
   {
     _requestState = requestState;
   }
-  
+
   public ConnectionHttp connHttp()
   {
     return _connHttp;
   }
-  
+
   public RequestHttpBase requestHttp()
   {
     return requestState().requestHttp();
   }
-  
+
   public RequestHttpState requestState()
   {
     return _requestState;
   }
-  
+
   public InvocationBaratine invocation()
   {
     return requestState().invocation();
@@ -173,7 +173,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     return invocation().webApp();
   }
-  
+
   private ServiceManagerAmp serviceManager()
   {
     return webApp().serviceManager();
@@ -184,38 +184,38 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     return requestHttp().getRemoteAddr();
   }
-    
+
   @Override
   public String method()
   {
     return requestHttp().getMethod();
   }
-    
+
   @Override
   public String header(String key)
   {
     return requestHttp().getHeader(key);
   }
-  
-  
+
+
   @Override
   public String uri()
   {
     return invocation().getURI();
   }
-  
+
   @Override
   public String path()
   {
     return invocation().path();
   }
-  
+
   @Override
   public String pathInfo()
   {
     return invocation().pathInfo();
   }
-  
+
   @Override
   public String cookie(String key)
   {
@@ -224,10 +224,10 @@ public final class RequestBaratineImpl extends RequestFacadeBase
         return cookie.value();
       }
     }
-    
+
     return null;
   }
-  
+
   @Override
   public Reader getReader()
   {
@@ -241,7 +241,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
     */
   }
-  
+
   @Override
   public ServiceRefAmp service(String address)
   {
@@ -259,24 +259,24 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     return serviceManager().service(type, id);
   }
-  
+
   @Override
   public ServiceRefAmp session(String name)
   {
     ServiceManagerAmp manager = serviceManager();
-    
+
     if (name.indexOf('/') >= 0) {
       throw new IllegalArgumentException(name);
     }
-    
+
     String sessionId = cookie("JSESSIONID");
-    
+
     if (sessionId == null) {
       sessionId = generateSessionId();
-      
+
       cookie("JSESSIONID", sessionId);
     }
-    
+
     return manager.service("session:///" + name + "/" + sessionId);
   }
 
@@ -284,56 +284,56 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public <X> X session(Class<X> type)
   {
     String address = serviceManager().address(type);
-    
+
     return sessionImpl(address + "/").as(type);
   }
-  
+
   private ServiceRefAmp sessionImpl(String address)
   {
     if (! address.startsWith("session:") || ! address.endsWith("/")) {
       throw new IllegalArgumentException(address);
     }
-    
+
     String sessionId = cookie("JSESSIONID");
-    
+
     if (sessionId == null) {
       sessionId = generateSessionId();
-      
+
       cookie("JSESSIONID", sessionId);
     }
-    
+
     return serviceManager().service(address + sessionId);
   }
-  
+
   private String generateSessionId()
   {
     StringBuilder sb = new StringBuilder();
-    
+
     Base64Util.encode(sb, webApp().nextId());
     Base64Util.encode(sb, RandomUtil.getRandomLong());
-    
+
     return sb.toString();
   }
-  
+
   //
   // injection methods
   //
-  
+
   /*
   @Override
   public <T> T instance(Class<T> type, Annotation ...qualifiers)
   {
     InjectManagerAmp inject = InjectManagerAmp.current();
-    
+
     return inject.instance(type, qualifiers);
   }
   */
-  
+
   @Override
   public InjectManager inject()
   {
     WebApp webApp = invocation().webApp();
-    
+
     if (webApp != null) {
       return webApp.inject();
     }
@@ -341,7 +341,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return InjectManagerAmp.current();
     }
   }
-  
+
   /*
   @Override
   public ServiceManager services()
@@ -349,16 +349,16 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     return ServiceManagerAmp.current();
   }
   */
-  
+
   //
   // config methods
   //
-  
+
   @Override
   public Config config()
   {
     WebApp webApp = webApp();
-    
+
     if (webApp != null) {
       return webApp.config();
     }
@@ -366,7 +366,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       throw new IllegalStateException();
     }
   }
-  
+
   /**
    * Starts an upgrade of the HTTP request to a protocol on raw TCP.
    */
@@ -375,7 +375,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     _requestState.upgrade(upgrade);
   }
-  
+
   /**
    * Starts an upgrade of the HTTP request to a protocol on raw TCP.
    */
@@ -383,17 +383,17 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public void upgrade(Object protocol)
   {
     Objects.requireNonNull(protocol);
-    
+
     if (protocol instanceof ServiceWebSocket) {
       ServiceWebSocket<?,?> webSocket = (ServiceWebSocket<?,?>) protocol;
-      
+
       upgradeWebSocket(webSocket);
     }
     else {
       throw new IllegalArgumentException(protocol.toString());
     }
   }
-  
+
   /**
    * Service a request.
    *
@@ -409,17 +409,17 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
     */
     TypeRef type = TypeRef.of(service.getClass()).to(ServiceWebSocket.class).param(0);
-    
+
     ServiceRef selfRef = ServiceRef.current();
-    
+
     service = selfRef.pin(service).as(ServiceWebSocket.class);
-    
+
     Class<T> rawClass = (Class) type.rawClass();
-    
+
     WebSocketBaratineImpl<T,S> ws
       = new WebSocketBaratineImpl<>(webApp().wsManager(),
                                     service, rawClass);
-    
+
     try {
       if (! ws.handshake(this)) {
         throw new ServiceException("WebSocket handshake failed for " + this);
@@ -427,7 +427,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
       e.printStackTrace();
-      
+
       fail(e);
     }
     //request.flush();
@@ -440,7 +440,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     try {
       //getRequestHttp().finishInvocation();
       //getRequestHttp().getResponse().finishRequest();
-      
+
       //getRequestHttp().finishRequest();
       //getRequestHttp().getResponse().finishRequest();
     } catch (IOException e) {
@@ -448,17 +448,17 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
     */
   }
-  
+
   //
   // RequestFacade methods
   //
-  
+
   @Override
   public String getMethod()
   {
     return requestHttp().getMethod();
   }
-  
+
   @Override
   public String getHeader(String key)
   {
@@ -539,7 +539,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public <X> void attribute(X value)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -578,26 +578,26 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public <X> X body(Class<X> type, String paramName)
   {
     Objects.requireNonNull(type);
-    
+
     if (! _isBodyComplete) {
       throw new IllegalStateException(L.l("body cannot be called with incomplete body"));
     }
-    
+
     if (true) {
       return webApp().bodyResolver().body(this, type, paramName);
     }
-  
+
     if (InputStream.class.equals(type)) {
       TempInputStream is = new TempInputStream(_bodyHead);
       _bodyHead = _bodyTail = null;
-      
+
       return (X) is;
     }
     else if (String.class.equals(type)) {
       TempInputStream is = new TempInputStream(_bodyHead);
       _bodyHead = _bodyTail = null;
-      
-      try { 
+
+      try {
         return (X) Utf8Util.readString(is);
       } catch (IOException e) {
         throw new BodyException(e);
@@ -607,8 +607,8 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       TempInputStream is = new TempInputStream(_bodyHead);
 
       _bodyHead = _bodyTail = null;
-      
-      try { 
+
+      try {
         return (X) new InputStreamReader(is, "utf-8");
       } catch (IOException e) {
         throw new BodyException(e);
@@ -616,19 +616,19 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
     else if (Form.class.equals(type)) {
       String contentType = header("content-type");
-      
+
       if (contentType == null || ! contentType.equals(FORM_TYPE)) {
         throw new IllegalStateException(L.l("Form expects {0}", FORM_TYPE));
       }
-      
+
       TempInputStream is = new TempInputStream(_bodyHead);
       _bodyHead = _bodyTail = null;
-      
-      try { 
+
+      try {
         FormImpl form = new FormImpl();
-        
+
         FormBaratine.parseQueryString(form, is, "utf-8");
-        
+
         return (X) form;
       } catch (Exception e) {
         throw new BodyException(e);
@@ -638,10 +638,10 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     else if (header("content-type").startsWith("application/json")) {
       TempInputStream is = new TempInputStream(_bodyHead);
       _bodyHead = _bodyTail = null;
-      
-      try { 
+
+      try {
         Reader reader = new InputStreamReader(is, "utf-8");
-        
+
         JsonReader isJson = new JsonReader(reader);
         return (X) isJson.readObject(type);
       } catch (IOException e) {
@@ -649,7 +649,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       }
     }
     */
-    
+
     throw new IllegalStateException(L.l("Unknown body type: " + type));
   }
 
@@ -676,7 +676,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
                        Result<X> result)
   {
     Objects.requireNonNull(type);
-    
+
     if (_isBodyComplete) {
       result.ok(body(type, paramName));
     }
@@ -693,10 +693,10 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     if (! _isBodyComplete) {
       throw new IllegalStateException(L.l("inputStream cannot be called with incomplete body"));
     }
-    
+
     TempInputStream is = new TempInputStream(_bodyHead);
     _bodyHead = _bodyTail = null;
-    
+
     return is;
   }
 
@@ -770,12 +770,12 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     status(HttpStatus.MOVED_TEMPORARILY);
     header("Location", encodeUrl(address));
     type("text/plain; charset=utf-8");
-    
+
     write("Moved: " + encodeUrl(address));
-    
+
     ok();
   }
-  
+
   public String encodeUrl(String address)
   {
     return address;
@@ -794,35 +794,35 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     throw new UnsupportedOperationException();
   }
   */
-  
+
   @Override
   public RequestBaratine status(HttpStatus status)
   {
     Objects.requireNonNull(status);
-    
+
     requestHttp().status(status.code(), status.message());
-    
+
     return this;
   }
-  
+
   public RequestBaratine status(int code, String message)
   {
     if (code <= 0 || code >= 600) {
       throw new IllegalArgumentException(String.valueOf(code));
     }
-    
+
     if (message == null || message.isEmpty()) {
       throw new IllegalArgumentException(message);
     }
-    
+
     _status = code;
     _statusMessage = message;
-    
+
     requestHttp().status(code, message);
-    
+
     return this;
   }
-  
+
   @Override
   public RequestBaratine header(String key, String value)
   {
@@ -830,16 +830,16 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     Objects.requireNonNull(value);
 
     requestHttp().setHeaderOut(key, value);
-    
+
     return this;
   }
-  
+
   //@Override
   public String headerOut(String key)
   {
     return requestHttp().headerOut(key);
   }
-  
+
   //
   // write methods
   //
@@ -849,12 +849,12 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     try {
       OutResponseBase out = requestHttp().getOut();
-    
+
       Utf8Util.write(out, value);
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
     }
-    
+
     return this;
   }
 
@@ -870,7 +870,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public OutWeb<Buffer> write(byte[] buffer, int offset, int length)
   {
     requestHttp().getOut().write(buffer, offset, length);
-    
+
     return this;
   }
 
@@ -879,7 +879,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     try {
       requestHttp().getOut().write(value.getBytes(enc));
-    
+
       return this;
     } catch (IOException e) {
       throw new IllegalStateException(getClass().getName());
@@ -891,7 +891,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     // XXX: hack
     write(new String(buffer, offset, length));
-    
+
     return this;
   }
 
@@ -924,12 +924,12 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     try {
       OutResponseBase out = requestHttp().getOut();
-    
+
       out.flush();
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
     }
-    
+
     return this;
   }
 
@@ -937,7 +937,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     try {
       OutResponseBase out = requestHttp().getOut();
-    
+
       out.write(data);
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
@@ -951,7 +951,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     throw new UnsupportedOperationException();
     /*
     PrintWriter writer = _writer;
-    
+
     if (writer != null) {
       return writer;
     }
@@ -961,7 +961,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
     ResponseWriter newWriter = getResponse().getResponsePrintWriter();
     newWriter.init(getResponse().getOut());
-    
+
     _writer = newWriter;
 
     if (encoding != null) {
@@ -978,13 +978,13 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   //
   // response facade methods
   //
-  
+
   @Override
   public int getStatus()
   {
     return _status;
   }
-  
+
   @Override
   public String getStatusMessage()
   {
@@ -1014,25 +1014,14 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public void ok(Object value)
   {
-    if (value == null) {
-      ok();
-      return;
-    }
-    
     if (view(value)) {
       return;
     }
-    
-    if (value instanceof String) {
-      if (headerOut("content-type") == null) {
-        type("text/plain; charset=utf-8");
-      }
-      
-      write((String) value);
-      ok();
+
+    if (viewPrimitives(value)) {
       return;
     }
-    
+
     log.warning(L.l("{0} does not have a matching view type", value));
 
     halt(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1041,18 +1030,43 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   private boolean view(Object value)
   {
     List<ViewRef<?>> views = _views;
-    
+
     if (views == null) {
       return false;
     }
-    
+
     for (ViewRef<?> view : views) {
       if (((ViewRef) view).render(this, value)) {
         return true;
       }
     }
-    
+
     return false;
+  }
+
+  private boolean viewPrimitives(Object value)
+  {
+    if (value instanceof String
+        || value instanceof Character
+        || value instanceof Boolean
+        || value instanceof Number) {
+      if (headerOut("content-type") == null) {
+        type("text/plain; charset=utf-8");
+      }
+
+      write(value.toString());
+      ok();
+
+      return true;
+    }
+    else if (value == null) {
+      ok();
+
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   @Override
@@ -1069,19 +1083,19 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public void fail(Throwable exn)
   {
     log.log(Level.FINE, exn.toString(), exn);
-    
+
     if (exn instanceof FileNotFoundException) {
       status(HttpStatus.NOT_FOUND);
       type("text/plain; charset=utf-8");
-      
+
       write("File Not Found\n");
     }
     else {
       status(HttpStatus.INTERNAL_SERVER_ERROR);
       type("text/plain; charset=utf-8");
-    
+
       write("Internal Server Error: " + exn + "\n");
-      
+
       writeTrace(exn);
     }
 
@@ -1091,26 +1105,26 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       log.log(Level.WARNING, e.toString(), e);
     }
   }
-  
+
   private void writeTrace(Throwable exn)
   {
     if (CurrentTime.isTest() && ! log.isLoggable(Level.FINE)) {
       return;
     }
-    
+
     while (exn != null) {
       for (StackTraceElement stack : exn.getStackTrace()) {
         write("\n  ");
         write(String.valueOf(stack));
       }
-    
+
       exn = exn.getCause();
       if (exn != null) {
         write("\n\nCaused by: " + exn);
       }
     }
   }
-  
+
   //
   // http response
   //
@@ -1123,12 +1137,12 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     if (cookieList == null) {
       return;
     }
-    
+
     for (CookieWeb cookie : cookieList) {
       printCookie(os, cookie);
     }
   }
-  
+
   private void printCookie(WriteBuffer os, CookieWeb cookie)
     throws IOException
   {
@@ -1151,25 +1165,25 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     if (_cookieList == null) {
       _cookieList = new ArrayList<>();
     }
-    
+
     _cookieList.add(new WebCookie(key, value));
     */
 
     return this;
   }
-  
+
   //
   // service methods
-  
+
   //
   // implementation methods
   //
-  
+
   /*
   @Override
   public ResponseBaratine getResponse()
   {
-    return _response; 
+    return _response;
   }
   */
 
@@ -1180,17 +1194,17 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     _invocation = (InvocationBaratine) invocation;
   }
   */
-  
+
   public void requestProxy(RequestProxy proxy)
   {
     _requestProxy = proxy;
   }
-  
+
   RequestProxy requestProxy()
   {
     return _requestProxy;
   }
-  
+
   /*
   @Override
   public StateConnection resume()
@@ -1199,55 +1213,55 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return super.resume();
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
-      
+
       return StateConnection.CLOSE;
     }
   }
   */
-  
+
   @Override
   public StateConnection onCloseRead()
   {
     _state = _state.toCloseRead();
-    
+
     switch (_state) {
     case CLOSE_READ:
       return StateConnection.CLOSE_READ_S;
-      
-    case CLOSE: 
+
+    case CLOSE:
       return StateConnection.CLOSE;
-      
+
     default:
       return StateConnection.CLOSE;
     }
   }
-  
+
   //@Override
   public void next(ConnectionProtocol next)
   {
     RequestBaratineImpl nextBar = (RequestBaratineImpl) next;
     _next = nextBar;
-    
+
     if (nextBar != null) {
       nextBar._prev = this;
     }
   }
-  
+
   public RequestBaratineImpl next()
   {
     return _next;
   }
-  
+
   public RequestBaratineImpl prev()
   {
     return _prev;
   }
-  
+
   @Override
   public boolean isPrevCloseWrite()
   {
     RequestBaratineImpl prev = prev();
-    
+
     if (prev == null) {
       return true;
     }
@@ -1255,45 +1269,45 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return prev._state.isCloseWrite();
     }
   }
-  
+
   //@Override
   public void onCloseWrite()
   {
     StateRequest state = _state;
-    
+
     _state = state.toCloseWrite();
-    
+
     ConnectionHttp connHttp = connHttp();
-    
+
     RequestBaratineImpl reqNext = next();
-    
+
     connHttp.onCloseWrite();
-    
+
     if (reqNext != null) {
       reqNext.writePending();
     }
-    
+
     switch (state) {
     case CLOSE_READ:
       connHttp().connTcp().proxy().requestWake();
       break;
     }
-    
+
     _next = null;
     /*
     RequestHttpBase requestHttp = _requestHttp;
     _requestHttp = null;
-    
+
     if (requestHttp != null) {
       requestHttp.freeSelf();
     }
     */
   }
-  
+
   private void writePending()
   {
     RequestHttpBase reqHttp = requestHttp();
-    
+
     if (reqHttp != null) {
       reqHttp.writePending();
     }
@@ -1307,7 +1321,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
       //return StateConnection.CLOSE;
       return nextState;
-      
+
       /*
       if (_invocation == null && getRequestHttp().parseInvocation()) {
         if (_invocation == null) {
@@ -1315,7 +1329,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
         }
         return _invocation.service(this, getResponse());
       }
-      else 
+      else
       if (_upgrade != null) {
         return _upgrade.service();
       }
@@ -1329,38 +1343,38 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
       e.printStackTrace();
-      
+
       toClose();
-      
+
       return StateConnection.CLOSE_READ_A;
     }
   }
-  
+
   /*
   private StateConnection accept()
   {
     try {
       _state = StateRequest.ACTIVE;
-      
+
       _requestHttp = _connHttp.newRequestHttp();
 
       _invocation = (InvocationBaratine) _requestHttp.parseInvocation(this);
-      
+
       if (_invocation == null) {
         _state = StateRequest.CLOSE;
-        
+
         return StateConnection.CLOSE;
       }
-      
+
       if (! _isBodyComplete) {
         // XXX: only on non-upgrade and non-101
         _requestHttp.readBodyChunk(this);
       }
-      
+
       StateConnection nextState = _invocation.service(this);
-      
+
       ServiceRef.flushOutboxAndExecuteLast();
-      
+
       if (! _isBodyComplete) {
         return StateConnection.READ;
       }
@@ -1375,36 +1389,36 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       }
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
-      
+
       e.printStackTrace();
-      
+
       toClose();
-      
+
       return StateConnection.CLOSE;
     }
   }
   */
-  
+
   private StateConnection readBody()
   {
     try {
       //_requestHttp.readBodyChunk(this);
-      
+
       /*
       if (! _isBodyComplete) {
         // XXX: only on non-upgrade and non-101
         _requestHttp.readBodyChunk(this);
       }
       */
-      
+
       if (! _isBodyComplete) {
         return StateConnection.READ;
       }
-      
+
       requestProxy().bodyComplete(this);
-      
+
       ServiceRef.flushOutboxAndExecuteLast();
-      
+
       if (requestHttp().isKeepalive()) {
         return StateConnection.READ;
       }
@@ -1413,15 +1427,15 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       }
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
-      
+
       e.printStackTrace();
-      
+
       toClose();
-      
+
       return StateConnection.CLOSE;
     }
   }
-  
+
   //
   // body callback
   //
@@ -1437,34 +1451,34 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       _bodyTail = tBuf;
     }
   }
-  
+
   @Override
   public void bodyComplete()
   {
     _isBodyComplete = true;
-    
+
     //connHttp().requestComplete();
-    
+
     if (_bodyResult != null) {
       _bodyResult.ok(body(_bodyType, _bodyParamName));
     }
   }
-  
+
   private void toClose()
   {
   }
-  
+
   @Override
   public void views(List<ViewRef<?>> views)
   {
     _views = views;
   }
-  
+
   @Override
   public String toString()
   {
     InvocationBaratine invocation = invocation();
-    
+
     if (invocation != null) {
       return getClass().getSimpleName() + "[" + invocation.getURI() + "]";
     }
@@ -1472,63 +1486,63 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return getClass().getSimpleName() + "[null]";
     }
   }
-  
+
   private static class WriterBaratine extends Writer
   {
     private RequestBaratineImpl _request;
-    
+
     WriterBaratine(RequestBaratineImpl request)
     {
       _request = request;
     }
-    
+
     @Override
     public void write(char []buffer, int offset, int length)
     {
       _request.write(buffer, offset, length);
     }
-    
+
     @Override
     public void flush()
     {
       _request.flush();
     }
-    
+
     public void close()
     {
     }
   }
-  
+
   private static class WriterBaratineEnc extends Writer
   {
     private RequestBaratineImpl _request;
     private String _enc;
-    
+
     WriterBaratineEnc(RequestBaratineImpl request, String enc)
     {
       _request = request;
       _enc = enc;
     }
-    
+
     @Override
     public void write(char []buffer, int offset, int length)
     {
       _request.write(buffer, offset, length, _enc);
     }
-    
+
     @Override
     public void flush()
       throws IOException
     {
       _request.flush();
     }
-    
+
     public void close()
     {
-      
+
     }
   }
-  
+
   private enum StateRequest
   {
     ACCEPT {
@@ -1538,30 +1552,30 @@ public final class RequestBaratineImpl extends RequestFacadeBase
         //return request.accept();
         return null;
       }
-      
+
       @Override
       public StateRequest toUpgrade() { return StateRequest.UPGRADE; }
     },
-    
+
     ACTIVE {
       @Override
       public StateRequest toUpgrade() { return StateRequest.UPGRADE; }
-      
+
       @Override
       public StateConnection service(RequestBaratineImpl request)
       {
         return request.readBody();
       }
-      
+
     },
-    
+
     UPGRADE,
-    
+
     CLOSE_READ {
       @Override
       public StateRequest toCloseWrite() { return CLOSE; }
     },
-    
+
     CLOSE_WRITE {
       @Override
       public StateRequest toCloseRead() { return CLOSE; }
@@ -1569,7 +1583,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       @Override
       public boolean isCloseWrite() { return true; }
     },
-    
+
     CLOSE {
       @Override
       public StateRequest toCloseRead() { return this; }
@@ -1600,7 +1614,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     {
       return CLOSE_WRITE;
     }
-    
+
     public boolean isCloseWrite()
     {
       return false;

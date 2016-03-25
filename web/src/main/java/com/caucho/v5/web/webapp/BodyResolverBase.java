@@ -34,6 +34,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Field;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Utf8Util;
@@ -52,7 +54,6 @@ public class BodyResolverBase implements BodyResolver
   @Override
   public <T> T body(RequestWeb request, Class<T> type, String name)
   {
-
     if (InputStream.class.equals(type)) {
       InputStream is = request.inputStream(); // new TempInputStream(_bodyHead);
 
@@ -90,10 +91,10 @@ public class BodyResolverBase implements BodyResolver
     else if (header("content-type").startsWith("application/json")) {
       TempInputStream is = new TempInputStream(_bodyHead);
       _bodyHead = _bodyTail = null;
-      
-      try { 
+
+      try {
         Reader reader = new InputStreamReader(is, "utf-8");
-        
+
         JsonReader isJson = new JsonReader(reader);
         return (X) isJson.readObject(type);
       } catch (IOException e) {
@@ -158,35 +159,78 @@ public class BodyResolverBase implements BodyResolver
   {
     Object result = null;
 
+    String str = form.getFirst(param);
+
     if (type == String.class) {
-      result = form.getFirst(param);
+      result = str;
     }
-    else if (type == boolean.class || type == Boolean.class) {
-      result = Boolean.parseBoolean(form.getFirst(param));
+    else if (type == boolean.class) {
+      result = transform(str, false, v -> Boolean.parseBoolean(v));
     }
-    else if (type == byte.class || type == Byte.class) {
-      result = Byte.parseByte(form.getFirst(param));
+    else if (type == Boolean.class) {
+      result = transform(str, null, v -> Boolean.parseBoolean(v));
     }
-    else if (type == short.class || type == Short.class) {
-      result = Short.parseShort(form.getFirst(param));
+    else if (type == byte.class) {
+      result = transform(str, (byte) 0, v -> Byte.parseByte(v));
     }
-    else if (type == char.class || type == Character.class) {
-      result = form.getFirst(param).charAt(0);
+    else if (type == Byte.class) {
+      result = transform(str, null, v -> Byte.parseByte(v));
     }
-    else if (type == int.class || type == Integer.class) {
-      result = Integer.parseInt(form.getFirst(param));
+    else if (type == short.class) {
+      result = transform(str, (short) 0, v -> Short.parseShort(v));
     }
-    else if (type == long.class || type == Long.class) {
-      result = Long.parseLong(form.getFirst(param));
+    else if (type == Short.class) {
+      result = transform(str, null, v -> Short.parseShort(v));
     }
-    else if (type == float.class || type == Float.class) {
-      result = Float.parseFloat(form.getFirst(param));
+    else if (type == char.class) {
+      result = transform(str, (char) 0, v -> str.length() > 0 ? str.charAt(0) : (char) 0);
     }
-    else if (type == double.class || type == Double.class) {
-      result = Double.parseDouble(form.getFirst(param));
+    else if (type == Character.class) {
+      result = transform(str, null, v -> str.length() > 0 ? str.charAt(0) : null);
+    }
+    else if (type == int.class) {
+      result = transform(str, 0, v -> Integer.parseInt(v));
+    }
+    else if (type == Integer.class) {
+      result = transform(str, null, v -> Integer.parseInt(v));
+    }
+    else if (type == long.class) {
+      result = transform(str, 0L, v -> Long.parseLong(v));
+    }
+    else if (type == Long.class) {
+      result = transform(str, null, v -> Long.parseLong(v));
+    }
+    else if (type == float.class) {
+      result = transform(str, (float) 0, v -> Float.parseFloat(v));
+    }
+    else if (type == Float.class) {
+      result = transform(str, null, v -> Float.parseFloat(v));
+    }
+    else if (type == double.class) {
+      result = transform(str, 0.0, v -> Double.parseDouble(v));
+    }
+    else if (type == Double.class) {
+      result = transform(str, null, v -> Double.parseDouble(v));
     }
 
     return (T) result;
+  }
+
+  public static <T> Object transform(String str, Object defaultV, Function<String,T> fun)
+  {
+    return str != null ? fun.apply(str) : defaultV;
+
+    /*
+    if (str != null) {
+      try {
+        return fun.apply(str);
+      }
+      catch (Exception e) {
+      }
+    }
+
+    return defaultV;
+    */
   }
 
   private void setFieldValue(Object bean, Field field, String rawValue)

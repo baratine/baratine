@@ -43,7 +43,7 @@ import com.caucho.v5.inject.type.TypeRef;
 class ViewRef<T>
 {
   private final ViewWeb<T> _view;
-  
+
   private final Class<T> _type;
 
   /**
@@ -52,11 +52,11 @@ class ViewRef<T>
   public ViewRef(ViewWeb<T> view)
   {
     Objects.requireNonNull(view);
-    
+
     _view = view;
 
     TypeRef viewType = TypeRef.of(view.getClass()).to(ViewWeb.class);
-    
+
     TypeRef typeRef = viewType.param(0);
 
     if (typeRef != null) {
@@ -73,11 +73,11 @@ class ViewRef<T>
   public ViewRef(ViewWeb<T> view, Type type)
   {
     Objects.requireNonNull(view);
-    
+
     _view = view;
 
     TypeRef viewType = TypeRef.of(type).to(ViewWeb.class);
-    
+
     TypeRef typeRef = viewType.param(0);
 
     if (typeRef != null) {
@@ -87,7 +87,7 @@ class ViewRef<T>
       _type = (Class) Object.class;
     }
   }
-  
+
   /**
    * Creates the view and analyzes the type
    */
@@ -95,24 +95,25 @@ class ViewRef<T>
   {
     Objects.requireNonNull(view);
     Objects.requireNonNull(type);
-    
+
     _view = view;
     _type = type;
   }
-  
+
   ViewWeb<T> view()
   {
     return _view;
   }
-  
+
   Class<?> type()
   {
     return _type;
   }
-  
+
   boolean render(RequestWeb req, Object value)
   {
-    if (! _type.isAssignableFrom(value.getClass())) {
+    if (value != null
+        && ! _type.isAssignableFrom(value.getClass())) {
       return false;
     }
     else {
