@@ -30,7 +30,6 @@
 package com.caucho.v5.http.websocket;
 
 import java.io.IOException;
-import java.io.Reader;
 
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;

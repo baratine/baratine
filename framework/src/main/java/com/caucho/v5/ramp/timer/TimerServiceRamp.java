@@ -113,9 +113,7 @@ public class TimerServiceRamp implements TimerServiceAmp
 
     // _timerMap.put(task, listener);
     
-    System.out.println("RUNA: " + unit.toMillis(delay));
     listener.alarm().runAfter(unit.toMillis(delay));
-    System.out.println("RUNA2: " + unit.toMillis(delay));
     
     result.ok(listener);
   }
@@ -124,7 +122,7 @@ public class TimerServiceRamp implements TimerServiceAmp
    * Implements {@link TimerService#runAfter(Runnable, long, TimeUnit)}
    */
   @Override
-  public void runEvery(@Service Consumer<? super Cancel> task, 
+  public void runEvery(@Pin Consumer<? super Cancel> task, 
                        long delay, 
                        TimeUnit unit,
                        Result<? super Cancel> result)
@@ -144,7 +142,7 @@ public class TimerServiceRamp implements TimerServiceAmp
    * Implements {@link TimerService#schedule(Runnable, TimerScheduler)}
    */
   @Override
-  public void schedule(@Service Consumer<? super Cancel> task, 
+  public void schedule(@Pin Consumer<? super Cancel> task, 
                        TimerScheduler scheduler,
                        Result<? super Cancel> result)
   {
@@ -173,7 +171,7 @@ public class TimerServiceRamp implements TimerServiceAmp
    * Implements {@link TimerService#runAt(Runnable, long)}
    */
   @Override
-  public void runAt(@Service Consumer<? super Cancel> task, 
+  public void runAt(@Pin Consumer<? super Cancel> task, 
                     long time,
                     Result<? super Cancel> result)
   {
@@ -202,7 +200,7 @@ public class TimerServiceRamp implements TimerServiceAmp
    * Implements {@link TimerService#cron(Runnable, String)}
    */
   @Override
-  public void cron(@Service Consumer<? super Cancel> task, 
+  public void cron(@Pin Consumer<? super Cancel> task, 
                    String cronExpr,
                    Result<? super Cancel> result)
   {
@@ -351,7 +349,6 @@ public class TimerServiceRamp implements TimerServiceAmp
       
       if (alarm != null) {
         alarm.queueAt(time);
-        System.out.println("QA: " + new Date(time) + " " + time); 
       }
     }
 
@@ -380,13 +377,11 @@ public class TimerServiceRamp implements TimerServiceAmp
     @Override
     public void handleAlarm(Alarm alarm)
     {
-      System.out.println("HA: " + alarm);
       if (isClosed()) {
         return;
       }
 
       try {
-        System.out.println("TA: " + _task);
         _task.accept(this);
       } catch (Throwable e) {
         log.log(Level.FINER, e.toString(), e);

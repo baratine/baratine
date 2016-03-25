@@ -234,7 +234,7 @@ public class AlarmClock {
     long lastTime = _now.getAndSet(now);
     
     long nextTime = _nextAlarmTime.get();
-    
+
     if (now < nextTime) {
       return nextTime;
     }

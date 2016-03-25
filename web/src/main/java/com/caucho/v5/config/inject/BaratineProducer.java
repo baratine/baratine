@@ -105,7 +105,7 @@ public class BaratineProducer
   @Service
   public Object service(InjectionPoint ip)
   {
-    Class<?> type = (Class<?>) ip.type();
+    Class<?> type = ip.key().rawClass();
     
     Service service = findService(ip.annotations());
     

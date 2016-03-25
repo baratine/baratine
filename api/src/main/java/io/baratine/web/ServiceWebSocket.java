@@ -55,6 +55,11 @@ public interface ServiceWebSocket<T,S>
                      WebSocket<S> webSocket)
     throws IOException
   {
+    close(webSocket);
+  }
+  
+  default void close(WebSocket<S> webSocket)
+  {
     webSocket.close();
   }
 }

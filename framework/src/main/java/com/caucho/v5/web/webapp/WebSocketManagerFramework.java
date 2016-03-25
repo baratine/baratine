@@ -54,6 +54,11 @@ public class WebSocketManagerFramework extends WebSocketManager
   public <S> void serialize(WebSocket<S> ws, S value)
     throws IOException
   {
+    if (value instanceof String) {
+      ws.write((String) value);
+      return;
+    }
+    
     try (WriterWs writer = new WriterWs(ws)) {
       SerializerJson<S> ser = (SerializerJson) _serializer.serializer(value.getClass());
       

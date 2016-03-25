@@ -119,7 +119,7 @@ public interface TimerService
    * @param delay
    * @param unit
    */
-  void runEvery(@Service Consumer<? super Cancel> task, 
+  void runEvery(@Pin Consumer<? super Cancel> task, 
                 long delay, 
                 TimeUnit unit,
                 Result<? super Cancel> result);
