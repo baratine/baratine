@@ -222,7 +222,7 @@ public class StubAssetStore extends ClassStub
   private static class MethodFindOne extends MethodAmpBase
   {
     private ServiceManagerAmp _ampManager;
-    private ClassStub _skelEntity;
+    private ClassStub _stubAsset;
 
     private VaultDriver _driver;
     private String _address;
@@ -235,7 +235,7 @@ public class StubAssetStore extends ClassStub
                   String[] fields)
     {
       _ampManager = ampManager;
-      _skelEntity = skel;
+      _stubAsset = skel;
       _driver = driver;
       _address = address;
       _fields = fields;
@@ -258,8 +258,10 @@ public class StubAssetStore extends ClassStub
         result.ok(null);
       }
       else {
+        Class<?> api = (Class<?>) _stubAsset.api().getType();
+        
         Object obj = _ampManager.service(_address + '/' + id)
-                                .as(_skelEntity.getApiClass());
+                                .as(api);
 
         result.ok(obj);
       }

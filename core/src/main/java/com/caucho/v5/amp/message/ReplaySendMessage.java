@@ -36,7 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.journal.ActorJournal;
+import com.caucho.v5.amp.journal.StubJournal;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
@@ -66,7 +66,7 @@ public class ReplaySendMessage<V> extends MessageAmpResult<V>
   @Override
   public void invoke(InboxAmp inbox, StubAmp actor)
   {
-    if (actor instanceof ActorJournal) {
+    if (actor instanceof StubJournal) {
       return;
     }
     
@@ -78,7 +78,7 @@ public class ReplaySendMessage<V> extends MessageAmpResult<V>
       if (childLookup instanceof ServiceRefAmp) {
         ServiceRefAmp childServiceRef = (ServiceRefAmp) childLookup;
         
-        actor = childServiceRef.getActor();
+        actor = childServiceRef.stub();
       }
     }
     

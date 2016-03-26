@@ -44,10 +44,10 @@ import com.caucho.v5.bartender.pod.PodRef;
 /**
  * The proxy for a client registered in the ramp server.
  */
-abstract public class ActorAmpOut extends StubAmpBase
+abstract public class StubAmpOut extends StubAmpBase
 {
   private static final Logger log
-    = Logger.getLogger(ActorAmpOut.class.getName());
+    = Logger.getLogger(StubAmpOut.class.getName());
   
   private final ServiceManagerAmp _ampManager;
   
@@ -59,7 +59,7 @@ abstract public class ActorAmpOut extends StubAmpBase
   private ServiceRefAmp _selfServiceRef;
   private ServiceRefAmp _serviceRef;
 
-  protected ActorAmpOut(ServiceManagerAmp ampManager,
+  protected StubAmpOut(ServiceManagerAmp ampManager,
                         String remoteAddress,
                         ServiceRefAmp selfServiceRef)
   {
@@ -113,18 +113,20 @@ abstract public class ActorAmpOut extends StubAmpBase
     return _selfServiceRef;
   }
 
+  /*
   @Override
-  public Class<?> getApiClass()
+  public AnnotatedType getApiClass()
   {
     return getClass();
   }
+  */
   
   @Override
   public Object onLookup(String path, ServiceRefAmp parentRef)
   {
     PodRef podCaller = null;
     
-    ActorLink actorLink = new ActorLink(getServiceManager(), path, parentRef, podCaller, this);
+    StubLink actorLink = new StubLink(getServiceManager(), path, parentRef, podCaller, this);
     
     ServiceRefAmp actorRef = parentRef.pin(actorLink, parentRef.address() + path);
     
@@ -139,7 +141,7 @@ abstract public class ActorAmpOut extends StubAmpBase
   public StubAmp worker(StubAmp actorMessage)
   {
     //System.out.println("GA: " +  this + " " + actorMessage);
-    if (actorMessage instanceof ActorLink) {
+    if (actorMessage instanceof StubLink) {
       return this;
     }
     else {
@@ -165,7 +167,7 @@ abstract public class ActorAmpOut extends StubAmpBase
                          long id,
                          Object result)
   {
-    ActorLink connProxy = (ActorLink) rampActor;
+    StubLink connProxy = (StubLink) rampActor;
 
     getOut().reply(headers, connProxy.getRemoteAddress(), id, result);
   }
@@ -177,7 +179,7 @@ abstract public class ActorAmpOut extends StubAmpBase
                          Throwable exn)
   {
     try {
-      ActorLink connProxy = (ActorLink) actorDeliver;
+      StubLink connProxy = (StubLink) actorDeliver;
 
       getOut().queryError(headers, connProxy.getRemoteAddress(), id, exn);
     } catch (Throwable e) {
@@ -196,7 +198,7 @@ abstract public class ActorAmpOut extends StubAmpBase
                           Throwable exn,
                           boolean isComplete)
   {
-    ActorLink actorLink = (ActorLink) rampActor;
+    StubLink actorLink = (StubLink) rampActor;
 
     getOut().streamReply(headers, actorLink.getRemoteAddress(), id, sequence,
                          values, exn, isComplete);
@@ -208,7 +210,7 @@ abstract public class ActorAmpOut extends StubAmpBase
                            String addressFrom, 
                            long qid)
   {
-    ActorLink actorLink = (ActorLink) queryActor;
+    StubLink actorLink = (StubLink) queryActor;
 
     getOut().streamCancel(headers, actorLink.getRemoteAddress(), addressFrom, qid);
   }

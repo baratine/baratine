@@ -298,7 +298,7 @@ public class ServiceRefPodApp extends ServiceRefWrapper
     }
 
     @Override
-    protected MethodRefAmp getDelegate()
+    protected MethodRefAmp delegate()
     {
       ServiceRefAmp delegate = ServiceRefPodApp.this.delegate();
       
@@ -331,7 +331,7 @@ public class ServiceRefPodApp extends ServiceRefWrapper
     }
 
     @Override
-    protected MethodRefAmp getDelegate()
+    protected MethodRefAmp delegate()
     {
       ServiceRefAmp delegate = ServiceRefPodApp.this.delegate();
       

@@ -158,7 +158,7 @@ class MethodStub_VarArgs extends MethodStubBase
       
       ((Result) result).ok(value);
     } catch (ArrayIndexOutOfBoundsException e) {
-      if (args.length != getParameterTypes().length) {
+      if (args.length != parameters().length) {
         throw new ServiceException(L.l("{0} in {1} called with invalid argument length ({2}).",
                                    name(), actor, args.length));
                                          

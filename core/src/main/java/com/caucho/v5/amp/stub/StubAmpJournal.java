@@ -29,6 +29,8 @@
 
 package com.caucho.v5.amp.stub;
 
+import java.lang.reflect.AnnotatedType;
+
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.LoadState;
@@ -40,41 +42,42 @@ import com.caucho.v5.amp.spi.MessageAmp;
  */
 public class StubAmpJournal extends StubAmpBase
 {
-  private final ClassStub _skel;
+  private final ClassStub _stubClass;
   private final JournalAmp _journal;
-  private final StubAmp _actorMain;
+  private final StubAmp _stubMain;
   private final String _path;
   
-  public StubAmpJournal(ClassStub skel,
+  public StubAmpJournal(ClassStub stubClass,
                  JournalAmp journal,
                  StubAmp actorMain,
                  String path)
   {
-    _skel = skel;
+    _stubClass = stubClass;
     _journal = journal;
-    _actorMain = actorMain;
+    _stubMain = actorMain;
     _path = path;
   }
   
+  @Override
   public String name()
   {
     return _path;
   }
   
   @Override
-  public Class<?> getApiClass()
+  public AnnotatedType api()
   {
-    return _skel.getApiClass();
+    return _stubClass.api();
   }
   
   @Override
-  public boolean isExported()
+  public boolean isPublic()
   {
-    return _skel.isExported();
+    return _stubClass.isPublic();
   }
   
   @Override
-  public JournalAmp getJournal()
+  public JournalAmp journal()
   {
     return _journal;
   }
@@ -83,10 +86,10 @@ public class StubAmpJournal extends StubAmpBase
   public LoadState load(MessageAmp msg)
   {
     // return _actor.load(msg, actor);
-    StubAmp actorMain = _actorMain;
+    StubAmp actorMain = _stubMain;
     
     if (actorMain != null) {
-      return _actorMain.load(msg);
+      return _stubMain.load(msg);
     }
     else {
       return LoadStateLoadBase.LOAD;
@@ -96,7 +99,7 @@ public class StubAmpJournal extends StubAmpBase
   @Override
   public void onModify()
   {
-    _actorMain.onModify();
+    _stubMain.onModify();
   }
 
   /*
@@ -115,8 +118,8 @@ public class StubAmpJournal extends StubAmpBase
   @Override
   public Object bean()
   {
-    if (_actorMain != null) {
-      return _actorMain.bean();
+    if (_stubMain != null) {
+      return _stubMain.bean();
     }
     
     return super.bean();
@@ -125,8 +128,8 @@ public class StubAmpJournal extends StubAmpBase
   @Override
   public Object onLookup(String path, ServiceRefAmp parentRef)
   {
-    if (_actorMain != null) {
-      return _actorMain.onLookup(path, parentRef);
+    if (_stubMain != null) {
+      return _stubMain.onLookup(path, parentRef);
     }
     
     return super.onLookup(path, parentRef);
@@ -135,7 +138,7 @@ public class StubAmpJournal extends StubAmpBase
   @Override
   public MethodAmp []getMethods()
   {
-    return _skel.getMethods();
+    return _stubClass.getMethods();
     
     /*
     MethodAmp []baseMethods = _skel.getMethods();
@@ -153,7 +156,7 @@ public class StubAmpJournal extends StubAmpBase
   @Override
   public MethodAmp getMethod(String name)
   {
-    return _skel.getMethod(this, name);
+    return _stubClass.getMethod(this, name);
     
     /*
     MethodAmp method = _skel.getMethod(this, name);
@@ -165,6 +168,6 @@ public class StubAmpJournal extends StubAmpBase
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _skel + "]";
+    return getClass().getSimpleName() + "[" + _stubClass + "]";
   }
 }

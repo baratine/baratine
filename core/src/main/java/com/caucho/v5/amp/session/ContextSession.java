@@ -218,7 +218,7 @@ public class ContextSession
     for (ServiceRef service : _serviceMap.values()) {
       ServiceRefAmp serviceAmp = (ServiceRefAmp) service;
       
-      ActorSkeletonSession actor = (ActorSkeletonSession) serviceAmp.getActor();
+      ActorSkeletonSession actor = (ActorSkeletonSession) serviceAmp.stub();
       
       consumer.accept(actor.bean());
     }

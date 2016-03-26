@@ -69,9 +69,9 @@ public class ServiceRefAlias extends ServiceRefWrapper
   }
   
   @Override
-  public StubAmp getActor()
+  public StubAmp stub()
   {
-    return _serviceRef.getActor();
+    return _serviceRef.stub();
   }
   
   @Override

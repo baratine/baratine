@@ -124,8 +124,8 @@ public class ProcServices extends ProcFileBase
         
         out.println("\n  { \"service\" : \"" + address + "\",");
     
-        if (! Object.class.equals(service.apiClass())) {
-          out.println("    \"api\" : \"" + service.apiClass().getName() + "\",");
+        if (! Object.class.equals(service.api().getType())) {
+          out.println("    \"api\" : \"" + service.api().getType() + "\",");
         }
 
         out.println("    \"queue-size\" : \"" + service.inbox().getSize() + "\"");

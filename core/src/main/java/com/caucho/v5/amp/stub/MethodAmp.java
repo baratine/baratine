@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 
@@ -45,11 +44,10 @@ import io.baratine.stream.ResultStream;
  */
 public interface MethodAmp
 {
-  boolean isClosed();
-  
   String name();
   
-  // RampActor getActor();
+  boolean isClosed();
+  
   
   default boolean isDirect()
   {
@@ -64,12 +62,16 @@ public interface MethodAmp
   Annotation[] getAnnotations();
   
   Class<?> getReturnType();
+
+  ParameterAmp []parameters();
   
+  /*
   Class<?> []getParameterTypes();
   
   Type []getGenericParameterTypes();
   
   Annotation [][]getParameterAnnotations();
+  */
   
   default boolean isVarArgs()
   {

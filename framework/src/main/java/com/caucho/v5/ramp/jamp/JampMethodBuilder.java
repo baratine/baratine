@@ -29,8 +29,6 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import io.baratine.service.MethodRef;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -38,6 +36,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.util.L10N;
 
@@ -67,66 +66,43 @@ class JampMethodBuilder
 
     Annotation []methodAnns = method.getAnnotations();
 
-    Type []paramTypes = method.getParameterTypes();
-    Annotation [][]paramAnns = method.getParameterAnnotations();
+    ParameterAmp []parameters = method.parameters();
 
     Type varArgType = null;
     Annotation []varArgAnns = null;
 
-    if (method.isVarArgs() && paramTypes != null) {
-      int lenNew = paramTypes.length - 1;
+    if (method.isVarArgs() && parameters != null) {
+      int lenNew = parameters.length - 1;
 
-      varArgType = getVarArgType(paramTypes[lenNew]);
-      Type []paramTypesNew = new Type[lenNew];
+      varArgType = getVarArgType(parameters[lenNew].type());
+      ParameterAmp []paramTypesNew = new ParameterAmp[lenNew];
 
       for (int i = 0; i < lenNew; i++) {
-        paramTypesNew[i] = varArgType;
+        paramTypesNew[i] = ParameterAmp.of(varArgType);
       }
 
-      paramTypes = paramTypesNew;
-
-      if (paramAnns != null) {
-        varArgAnns = paramAnns[lenNew];
-
-        Annotation [][]paramAnnsNew = new Annotation[lenNew][];
-        System.arraycopy(paramAnns, 0, paramAnnsNew, 0, lenNew);
-
-        paramAnns = paramAnnsNew;
-      }
+      parameters = paramTypesNew;
     }
 
     String defaultValue = null; // XXX:
 
-    if (paramTypes != null) {
-      _params = new JampArg[paramTypes.length];
+    if (parameters != null) {
+      _params = new JampArg[parameters.length];
 
-      if (paramAnns == null) {
-        for (int i = 0; i < paramTypes.length; i++) {
-          JampMarshal marshal = JampMarshal.create(paramTypes[i]);
+      for (int i = 0; i < parameters.length; i++) {
+        Type type = parameters[i].type();
 
-          _params[i] = new JampArgQuery(marshal,
-                                        defaultValue,
-                                        "p" + i);
-        }
+        JampMarshal marshal = JampMarshal.create(type);
+
+        _params[i] = new JampArgQuery(marshal,
+                                      defaultValue,
+                                      "p" + i);
       }
-      else {
-        for (int i = 0; i < paramTypes.length; i++) {
-          // Annotation []anns = paramAnns[i];
 
-          Type type = paramTypes[i];
+      if (varArgType != null) {
+        JampMarshal marshal = JampMarshal.create(varArgType);
 
-          JampMarshal marshal = JampMarshal.create(type);
-
-          _params[i] = new JampArgQuery(marshal,
-                                        defaultValue,
-                                        "p" + i);
-        }
-
-        if (varArgType != null) {
-          JampMarshal marshal = JampMarshal.create(varArgType);
-
-          _varArgsMarshal = marshal;
-        }
+        _varArgsMarshal = marshal;
       }
     }
   }

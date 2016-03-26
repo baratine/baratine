@@ -97,7 +97,7 @@ public class PipeInMessage<T>
     try {
       MethodAmp method = getMethod();
     
-      StubAmp actorMessage = serviceRef().getActor();
+      StubAmp actorMessage = serviceRef().stub();
 
       LoadState load = actorDeliver.load(actorMessage, this);
       

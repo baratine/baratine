@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -108,11 +107,12 @@ public class MethodAmpTrace implements MethodAmp
   }
   
   @Override
-  public Class<?> []getParameterTypes()
+  public ParameterAmp []parameters()
   {
-    return delegate().getParameterTypes();
+    return delegate().parameters();
   }
   
+  /*
   @Override
   public Type []getGenericParameterTypes()
   {
@@ -124,6 +124,7 @@ public class MethodAmpTrace implements MethodAmp
   {
     return delegate().getParameterAnnotations();
   }
+  */
   
   @Override
   public boolean isVarArgs()

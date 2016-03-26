@@ -126,7 +126,7 @@ public class ServiceRefLinkFactoryBuilder
     
     ServiceRefAmp service = _manager.newService(actorFactory).ref();
   
-    ActorAmpOut actor = (ActorAmpOut) service.getActor().delegateMain();
+    StubAmpOut actor = (StubAmpOut) service.stub();
     actor.init(_manager);
 
     ServiceRefLinkFactory channelService
@@ -189,11 +189,11 @@ public class ServiceRefLinkFactoryBuilder
       
       String addressRemote = _addressRemote;
       
-      return new ActorAmpOutClient(_manager, outManager, addressRemote, _callerRef, channel);
+      return new StubAmpOutClient(_manager, outManager, addressRemote, _callerRef, channel);
     }
     
     @Override
-    public StubAmp mainActor()
+    public StubAmp stubMain()
     {
       return get();
     }

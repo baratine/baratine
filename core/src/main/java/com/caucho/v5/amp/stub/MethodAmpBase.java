@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
@@ -79,19 +78,7 @@ public class MethodAmpBase implements MethodAmp
   }
   
   @Override
-  public Class<?>[] getParameterTypes()
-  {
-    return null;
-  }
-  
-  @Override
-  public Type [] getGenericParameterTypes()
-  {
-    return null;
-  }
-  
-  @Override
-  public Annotation [][] getParameterAnnotations()
+  public ParameterAmp[] parameters()
   {
     return null;
   }

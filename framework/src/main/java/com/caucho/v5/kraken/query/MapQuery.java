@@ -28,20 +28,21 @@
 
 package com.caucho.v5.kraken.query;
 
-import io.baratine.service.MethodRef;
-import io.baratine.spi.Headers;
-
 import java.lang.reflect.Type;
 import java.util.Objects;
 
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.kelp.MapKelp;
 import com.caucho.v5.kelp.RowCursor;
 import com.caucho.v5.kelp.TableKelp;
 import com.caucho.v5.kelp.query.EnvKelp;
 import com.caucho.v5.kelp.query.ExprKelp;
 import com.caucho.v5.kraken.table.TableKraken;
+
+import io.baratine.service.MethodRef;
+import io.baratine.spi.Headers;
 
 
 public class MapQuery extends QueryKraken
@@ -125,7 +126,7 @@ public class MapQuery extends QueryKraken
   
   private MarshalMap []createMarshal(MethodRefAmp method)
   {
-    Type []param = method.getParameterTypes();
+    ParameterAmp []param = method.parameters();
     
     MarshalMap []map = new MarshalMap[param.length];
     
@@ -136,7 +137,7 @@ public class MapQuery extends QueryKraken
         result = _results[i];
       }
       
-      map[i] = createMarshalArg(param[i], result); 
+      map[i] = createMarshalArg(param[i].type(), result); 
     }
     
     return map;

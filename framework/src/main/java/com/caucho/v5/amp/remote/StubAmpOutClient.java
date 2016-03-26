@@ -29,43 +29,70 @@
 
 package com.caucho.v5.amp.remote;
 
+import java.util.Objects;
+import java.util.logging.Logger;
+
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**
- * The outbound actor for a connection received by a server.
+ * The proxy for a client registered in the ramp server.
  */
-public class ActorAmpOutServer extends ActorAmpOut
+public class StubAmpOutClient extends StubAmpOut
 {
-  private final OutAmp _out;
+  private static final Logger log
+    = Logger.getLogger(StubAmpOutClient.class.getName());
   
-  public ActorAmpOutServer(ServiceManagerAmp ampManager,
-                           OutAmp out,
+  private final OutAmpManager _outManager;
+  private final ChannelClient _channel;
+  
+  public StubAmpOutClient(ServiceManagerAmp ampManager,
+                           OutAmpManager outManager,
                            String remoteAddress,
-                           ServiceRefAmp selfServiceRef)
+                           ServiceRefAmp selfServiceRef,
+                           ChannelClient channel)
   {
     super(ampManager, remoteAddress, selfServiceRef);
     
-    _out = out;
-    
-    init(ampManager);
+    Objects.requireNonNull(outManager);
+    Objects.requireNonNull(channel);
+
+    _outManager = outManager;
+    _channel = channel;
   }
 
   @Override
   OutAmp getOut()
   {
-    return _out;
+    OutAmp out = _outManager.getOut(_channel);
+    
+    return out;
   }
 
   @Override
   OutAmp getCurrentOut()
   {
-    return _out;
+    return _outManager.getCurrentOut();
+  }
+  
+  @Override
+  public boolean isUp()
+  {
+    return _outManager.isUp();
+  }
+  
+  @Override
+  public void onShutdown(ShutdownModeAmp mode)
+  {
+    super.onShutdown(mode);
+    
+    _outManager.close();
   }
 
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _out + "]";
+    return getClass().getSimpleName() + "[" + _outManager + "]";
   }
 }

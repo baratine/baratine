@@ -127,8 +127,8 @@ class MethodStub_N extends MethodStubBase
       Object value = _methodHandle.invokeExact(bean, args);
 
       ((Result) result).ok(value);
-    } catch (ArrayIndexOutOfBoundsException e) {
-      if (args.length != getParameterTypes().length) {
+    } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
+      if (args.length != parameters().length) {
         throw new ServiceExceptionIllegalArgument(L.l("{0} in {1} called with invalid argument length ({2}).",
                                    name(), actor, args.length));
                                          

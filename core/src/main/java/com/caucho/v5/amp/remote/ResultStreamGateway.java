@@ -158,7 +158,7 @@ public class ResultStreamGateway implements ResultStream<Object>, Cancel
     
     msg = new StreamGatewayResultMessage(outbox,
                                          _serviceRef.inbox(),
-                                         _serviceRef.getActor(), 
+                                         _serviceRef.stub(), 
                                          _qid);
     
     //msg.offer(timeout);

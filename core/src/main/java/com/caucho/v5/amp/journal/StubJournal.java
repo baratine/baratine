@@ -44,9 +44,9 @@ import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.amp.thread.ThreadPool;
 
 /**
- * Journaling actor
+ * Journaling stub
  */
-public final class ActorJournal extends StubAmpBase
+public final class StubJournal extends StubAmpBase
   // implements ActorAmp
 {
   private final StubAmp _actor;
@@ -56,7 +56,7 @@ public final class ActorJournal extends StubAmpBase
   private JournalAmp _fromPeerJournal;
   private LoadStateJournal _loadState;
   
-  public ActorJournal(StubAmp actor, 
+  public StubJournal(StubAmp actor, 
                       JournalAmp journal,
                       JournalAmp toPeerJournal,
                       JournalAmp fromPeerJournal)
@@ -109,7 +109,7 @@ public final class ActorJournal extends StubAmpBase
   {
     _inbox = inbox;
     
-    getJournal().setInbox(inbox);
+    journal().setInbox(inbox);
   }
 
   public InboxAmp getInbox()
@@ -124,7 +124,7 @@ public final class ActorJournal extends StubAmpBase
   }
   
   @Override
-  public boolean isPrimary()
+  public boolean isMain()
   {
     return false;
   }
@@ -136,7 +136,7 @@ public final class ActorJournal extends StubAmpBase
   }
   
   @Override
-  public JournalAmp getJournal()
+  public JournalAmp journal()
   {
     return _journal;
   }
@@ -200,18 +200,22 @@ public final class ActorJournal extends StubAmpBase
     }
   }
 
+  /*
   @Override
   public <V> void onComplete(Result<V> result, V value)
   {
   }
+  */
   
+  /*
   @Override
   public void onFail(Result<?> result, Throwable exn)
   {
   }
+  */
   
   @Override
-  public <T> boolean complete(Result<T> result, T value)
+  public <T> boolean ok(Result<T> result, T value)
   {
     return false;
   }
@@ -239,7 +243,7 @@ public final class ActorJournal extends StubAmpBase
   }
   
   @Override
-  public void checkpointEnd(boolean isValid)
+  public void onSaveEnd(boolean isValid)
   {
     _journal.saveEnd(isValid);
     

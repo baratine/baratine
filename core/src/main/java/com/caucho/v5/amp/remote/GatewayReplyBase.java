@@ -65,7 +65,7 @@ public class GatewayReplyBase implements GatewayReply
       MessageAmp msg = new QueryReplyMessage(outbox,
                                              _serviceRef, 
                                              headers,
-                                             _serviceRef.getActor(),
+                                             _serviceRef.stub(),
                                              qid, 
                                              value);
     
@@ -84,7 +84,7 @@ public class GatewayReplyBase implements GatewayReply
       _serviceRef.offer(new QueryErrorMessage(outbox,
                                               _serviceRef, 
                                               headers,
-                                              _serviceRef.getActor(),
+                                              _serviceRef.stub(),
                                               qid, 
                                               exn));
     }

@@ -41,11 +41,12 @@ import com.caucho.v5.amp.marshal.ResultImport;
 import com.caucho.v5.amp.marshal.ResultStreamImport;
 import com.caucho.v5.amp.message.ResultStreamAmp;
 import com.caucho.v5.amp.message.StreamForkMessage;
-import com.caucho.v5.amp.remote.ActorLink;
+import com.caucho.v5.amp.remote.StubLink;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
@@ -94,25 +95,12 @@ public class MethodPod implements MethodAmp
   }
   
   @Override
-  public Type []getGenericParameterTypes()
+  public ParameterAmp []parameters()
   {
     MethodRefAmp localMethod = findLocalMethod();
     
     if (localMethod != null) {
-      return localMethod.getParameterTypes();
-    }
-    else {
-      return null;
-    }
-  }
-  
-  @Override
-  public Class<?> []getParameterTypes()
-  {
-    MethodRefAmp localMethod = findLocalMethod();
-    
-    if (localMethod != null) {
-      return localMethod.getParameterClasses();
+      return localMethod.parameters();
     }
     else {
       return null;
@@ -165,19 +153,6 @@ public class MethodPod implements MethodAmp
     
     if (localMethod != null) {
       return (Class) localMethod.getReturnType();
-    }
-    else {
-      return null;
-    }
-  }
-
-  @Override
-  public Annotation[][] getParameterAnnotations()
-  {
-    MethodRefAmp localMethod = findLocalMethod();
-    
-    if (localMethod != null) {
-      return localMethod.getParameterAnnotations();
     }
     else {
       return null;
@@ -388,12 +363,12 @@ public class MethodPod implements MethodAmp
     
     MethodShim methodShim;
     
-    ClassLoader methodLoader = methodRef.getService().getDelegateClassLoader();
+    ClassLoader methodLoader = methodRef.serviceRef().getDelegateClassLoader();
     
     //System.out.println("SR: " + serviceRef + " " + serviceRef.getActor());
     
     if (methodLoader == _sourceLoader
-        || serviceRef.getActor() instanceof ActorLink) {
+        || serviceRef.stub() instanceof StubLink) {
       //methodShim = new MethodShimIdentity(methodRef.getMethod());
       methodShim = new MethodShimIdentity(methodRef, 
                                           isLocalService(serviceRef));
@@ -524,7 +499,7 @@ public class MethodPod implements MethodAmp
         _methodRef.method().stream(headers, result, actor, args);
       }
       else {
-        ServiceRefAmp serviceRef = _methodRef.getService();
+        ServiceRefAmp serviceRef = _methodRef.serviceRef();
 
         try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef.manager())) {
           StreamForkMessage<T> msg;
@@ -571,7 +546,7 @@ public class MethodPod implements MethodAmp
       _importContext = importContext;
       _isLocalService = isLocalService;
       
-      _args = _importContext.marshalArgs(methodRef.getParameterClasses());
+      _args = _importContext.marshalArgs(methodRef.parameters());
       
       Type retType = methodRef.getReturnType();
       

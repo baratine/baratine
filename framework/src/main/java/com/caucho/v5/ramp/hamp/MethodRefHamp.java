@@ -37,6 +37,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.service.ServiceRefLazyInvalid;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.deploy2.DeployHandle2;
 import com.caucho.v5.http.pod.PodContainer;
 import com.caucho.v5.http.pod.PodLoader;
@@ -115,7 +116,7 @@ public class MethodRefHamp
   {
     Objects.requireNonNull(delegate);
     
-    Class<?> []paramTypes = delegate.getParameterClasses();
+    ParameterAmp []paramTypes = delegate.parameters();
 
     if (paramTypes == null) {
       _args = NULL_ARGS;
@@ -125,10 +126,10 @@ public class MethodRefHamp
       _args = new MarshalHamp[paramTypes.length - 1];
       
       for (int i = 0; i < paramTypes.length - 1; i++){
-        _args[i] = new MarshalHampType(paramTypes[i]);
+        _args[i] = new MarshalHampType(paramTypes[i].rawClass());
       }
       
-      Class<?> tailClass = paramTypes[paramTypes.length - 1];
+      Class<?> tailClass = paramTypes[paramTypes.length - 1].rawClass();
       
       _argTail = new MarshalHampType(tailClass.getComponentType());
     }
@@ -136,7 +137,7 @@ public class MethodRefHamp
       _args = new MarshalHamp[paramTypes.length];
       
       for (int i = 0; i < paramTypes.length; i++){
-        _args[i] = new MarshalHampType(paramTypes[i]);
+        _args[i] = new MarshalHampType(paramTypes[i].rawClass());
       }
       _argTail = MarshalHampBase.IDENTITY;
     }
@@ -159,7 +160,7 @@ public class MethodRefHamp
   ClassLoader getClassLoader()
   {
     ClassLoader serviceLoader;
-    serviceLoader = getMethod().getService().manager().classLoader();
+    serviceLoader = getMethod().serviceRef().manager().classLoader();
     
     if (_podCaller != null) {
       String podId;

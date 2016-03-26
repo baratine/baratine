@@ -44,6 +44,7 @@ import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.deploy2.DeployHandle2;
@@ -126,7 +127,7 @@ public class RampImport
   /**
    * Marshal from an array of source types to an array of dest types.
    */
-  public ModuleMarshal[] marshalArgs(Class<?>[] sourceTypes)
+  public ModuleMarshal[] marshalArgs(ParameterAmp [] sourceTypes)
   {
     if (sourceTypes == null) {
       return new ModuleMarshal[0];
@@ -135,7 +136,7 @@ public class RampImport
     ModuleMarshal[] marshal = new ModuleMarshal[sourceTypes.length];
     
     for (int i = 0; i < marshal.length; i++) {
-      marshal[i] = marshal(sourceTypes[i]);
+      marshal[i] = marshal(sourceTypes[i].rawClass());
     }
     
     return marshal;
@@ -144,16 +145,16 @@ public class RampImport
   /**
    * Marshal from an array of source types to an array of dest types.
    */
-  public Class<?>[] marshalParamTypes(Class<?>[] sourceTypes)
+  public ParameterAmp[] marshalParamTypes(ParameterAmp [] sourceTypes)
   {
     if (sourceTypes == null) {
       return null;
     }
     
-    Class<?>[] paramTypes = new Class<?>[sourceTypes.length];
+    ParameterAmp[] paramTypes = new ParameterAmp[sourceTypes.length];
     
     for (int i = 0; i < paramTypes.length; i++) {
-      paramTypes[i] = marshalType(sourceTypes[i]);
+      paramTypes[i] = ParameterAmp.of(marshalType(sourceTypes[i].rawClass()));
     }
     
     return paramTypes;

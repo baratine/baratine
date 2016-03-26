@@ -47,9 +47,9 @@ import com.caucho.v5.amp.stub.StubAmp;
  */
 public class LoadStateJournal implements LoadState
 {
-  private ActorJournal _journalActor;
+  private StubJournal _journalActor;
   
-  LoadStateJournal(ActorJournal journalActor)
+  LoadStateJournal(StubJournal journalActor)
   {
     Objects.requireNonNull(journalActor);
     
@@ -127,9 +127,9 @@ public class LoadStateJournal implements LoadState
     // ActorAmp actorInvoke = method.getActorInvoke(actorMessage);
     StubAmp actorInvoke = actorMessage;
     
-    ActorJournal journalActor = _journalActor;
+    StubJournal journalActor = _journalActor;
     
-    JournalAmp journal = journalActor.getJournal();
+    JournalAmp journal = journalActor.journal();
     InboxAmp inbox = journalActor.getInbox();
     
     journal.writeSend(actorInvoke, method.name(), args, inbox);
@@ -206,9 +206,9 @@ public class LoadStateJournal implements LoadState
     // ActorAmp actorInvoke = method.getActorInvoke(actorMessage);
     StubAmp actorInvoke = actorMessage;
     
-    ActorJournal journalActor = _journalActor;
+    StubJournal journalActor = _journalActor;
     
-    JournalAmp journal = journalActor.getJournal();
+    JournalAmp journal = journalActor.journal();
     InboxAmp inbox = journalActor.getInbox();
 
     journal.writeQuery(actorInvoke, method.name(), args, inbox);

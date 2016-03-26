@@ -73,7 +73,7 @@ public class QueryWithResultMessage_N<V> extends QueryWithResultMessage<V>
   @Override
   public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
-    StubAmp actorMessage = serviceRef().getActor();
+    StubAmp actorMessage = serviceRef().stub();
 
     // actorDeliver.load(actorService, message)
     //             .query(actorDeliver, actorService, ...)

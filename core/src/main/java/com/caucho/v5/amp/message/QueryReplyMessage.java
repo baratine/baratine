@@ -142,7 +142,7 @@ public final class QueryReplyMessage implements MessageAmp
   @Override
   public void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
-    StubAmp actor = _serviceRef.getActor();
+    StubAmp actor = _serviceRef.stub();
     
     // kraken/210a vs baratine/2245
     StubAmp actorInvoke = actorDeliver.worker(actor);

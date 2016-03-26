@@ -142,7 +142,7 @@ public class StreamResultMessage<T>
   @Override
   public void invoke(InboxAmp inbox, StubAmp actor)
   {
-    if (! actor.isPrimary()) {
+    if (! actor.isMain()) {
       return;
     }
     

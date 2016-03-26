@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 
@@ -89,21 +88,9 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
   }
   
   @Override
-  public Class<?>[] getParameterTypes()
+  public ParameterAmp[] parameters()
   {
-    return delegate().getParameterTypes();
-  }
-  
-  @Override
-  public Type [] getGenericParameterTypes()
-  {
-    return delegate().getGenericParameterTypes();
-  }
-  
-  @Override
-  public Annotation [][] getParameterAnnotations()
-  {
-    return delegate().getParameterAnnotations();
+    return delegate().parameters();
   }
   
   //

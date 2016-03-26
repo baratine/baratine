@@ -61,7 +61,7 @@ public class StreamCancelMessage<T>
   @Override
   public void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
-    StubAmp actorMessage = _serviceRef.getActor();
+    StubAmp actorMessage = _serviceRef.stub();
 
     actorDeliver.load(actorMessage, this)
                 .streamCancel(actorDeliver, actorMessage,

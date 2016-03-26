@@ -29,20 +29,19 @@
 
 package com.caucho.v5.amp.spi;
 
-import io.baratine.service.MethodRef;
-import io.baratine.service.Result;
-import io.baratine.service.ResultFuture;
-import io.baratine.spi.Headers;
-import io.baratine.stream.ResultStream;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.MethodRef;
+import io.baratine.service.Result;
+import io.baratine.spi.Headers;
+import io.baratine.stream.ResultStream;
 
 /**
  * handle to an actor method.
@@ -50,21 +49,21 @@ import com.caucho.v5.amp.stub.StubAmp;
 public interface MethodRefAmp extends MethodRef
 {
   @Override
-  ServiceRefAmp getService();
+  ServiceRefAmp serviceRef();
   
   boolean isUp();
   
   boolean isClosed();
   
-  InboxAmp getInbox();
+  InboxAmp inbox();
 
   MethodAmp method();
   
   void offer(MessageAmp message);
 
-  Class<?> []getParameterClasses();
+  //Class<?> []getParameterClasses();
 
-  StubAmp getActor(StubAmp actorDeliver);
+  StubAmp stubActive(StubAmp actorDeliver);
   
   void send(Headers headers, Object ...args);
   
@@ -98,12 +97,7 @@ public interface MethodRefAmp extends MethodRef
   /** 
    * Types of the method arguments.
    */
-  Type []getParameterTypes();
-  
-  /**
-   * Annotations for each method parameter.
-   */
-  Annotation [][]getParameterAnnotations();
+  ParameterAmp []parameters();
 
   /**
    * True if the final argument is variable-length.

@@ -53,7 +53,7 @@ public class MethodAmpLazyProxy extends MethodAmpWrapper
     MethodAmp delegate = _delegate;
     
     if (delegate == null) {
-      MethodRefAmp methodRefDelegate = _methodRefLazy.getDelegate();
+      MethodRefAmp methodRefDelegate = _methodRefLazy.delegate();
       
       if (methodRefDelegate != null) {
         delegate = _delegate = methodRefDelegate.method();

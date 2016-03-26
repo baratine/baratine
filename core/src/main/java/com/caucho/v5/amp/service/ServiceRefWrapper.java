@@ -29,13 +29,8 @@
 
 package com.caucho.v5.amp.service;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.MethodRef;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +43,10 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 /**
  * Wrapper for service filtering.
@@ -84,9 +83,9 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public StubAmp getActor()
+  public StubAmp stub()
   {
-    return delegate().getActor();
+    return delegate().stub();
   }
   
   @Override
@@ -132,7 +131,7 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   */
   
   @Override
-  public Class<?> apiClass()
+  public AnnotatedType api()
   {
     ServiceRefAmp delegate = delegate();
     
@@ -140,7 +139,7 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
       System.out.println("FAILED_DELEGATE: " + this);
     }
     
-    return delegate().apiClass();
+    return delegate().api();
   }
   
   /*

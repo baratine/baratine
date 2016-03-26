@@ -29,10 +29,6 @@
 
 package com.caucho.v5.bartender.pod;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionUnavailable;
-import io.baratine.spi.Headers;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +39,12 @@ import com.caucho.v5.amp.service.MethodRefBase;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Result;
+import io.baratine.service.ServiceExceptionUnavailable;
+import io.baratine.spi.Headers;
 
 /**
  * Method for a pod node call.
@@ -86,21 +87,21 @@ public class MethodRefPod extends MethodRefBase
   }
 
   @Override
-  public ServiceRefAmp getService()
+  public ServiceRefAmp serviceRef()
   {
     return _serviceRef;
   }
   
   @Override
-  public Type []getParameterTypes()
+  public ParameterAmp []parameters()
   {
     MethodRefAmp localMethod = findLocalMethod();
     
     if (localMethod != null) {
-      return localMethod.getParameterTypes();
+      return localMethod.parameters();
     }
     else {
-      return super.getParameterTypes();
+      return super.parameters();
     }
   }
   
@@ -114,19 +115,6 @@ public class MethodRefPod extends MethodRefBase
     }
     else {
       return Object.class;
-    }
-  }
-  
-  @Override
-  public Class<?> []getParameterClasses()
-  {
-    MethodRefAmp localMethod = findLocalMethod();
-    
-    if (localMethod != null) {
-      return localMethod.getParameterClasses();
-    }
-    else {
-      return null;
     }
   }
   
@@ -157,7 +145,7 @@ public class MethodRefPod extends MethodRefBase
   }
 
   @Override
-  public InboxAmp getInbox()
+  public InboxAmp inbox()
   {
     return _serviceRef.inbox();
   }
@@ -260,7 +248,7 @@ public class MethodRefPod extends MethodRefBase
     
     if (serviceRefActive == null) {
       throw new ServiceExceptionUnavailable(L.l("No service available for {0}",
-                                                getService()));
+                                                serviceRef()));
     }
 
     MethodRefActive methodRefActive = _methodRefActive;

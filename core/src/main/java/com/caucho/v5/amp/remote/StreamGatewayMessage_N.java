@@ -93,7 +93,7 @@ public class StreamGatewayMessage_N
   @Override
   public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
-    StubAmp actorMessage = serviceRef().getActor();
+    StubAmp actorMessage = serviceRef().stub();
 
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,

@@ -76,7 +76,7 @@ public class QueryWithResultMessage_0<V>
   @Override
   public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
-    StubAmp actorMessage = serviceRef().getActor();
+    StubAmp actorMessage = serviceRef().stub();
 
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,

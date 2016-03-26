@@ -59,7 +59,7 @@ public class UnsubscribeMessage extends MessageAmpBase
   @Override
   public void invoke(InboxAmp mailbox, StubAmp actor)
   {
-    StubAmp actorMessage = _service.getActor();
+    StubAmp actorMessage = _service.stub();
 
     actorMessage.unsubscribe(_subscriber);
   }

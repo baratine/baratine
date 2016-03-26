@@ -105,8 +105,8 @@ public interface OutAmp
     String addressRemote = address;
     String addressSelf = address;
     
-    ActorAmpOut actorOut
-      = new ActorAmpOutServer(manager, this, addressRemote, callerRef);
+    StubAmpOut actorOut
+      = new StubAmpOutServer(manager, this, addressRemote, callerRef);
     
     return actorOut.getServiceRef();
   }

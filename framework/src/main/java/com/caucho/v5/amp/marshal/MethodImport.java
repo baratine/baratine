@@ -29,14 +29,15 @@
 
 package com.caucho.v5.amp.marshal;
 
-import io.baratine.service.Result;
-
 import java.util.Objects;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
+import com.caucho.v5.amp.stub.ParameterAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.Result;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -50,7 +51,7 @@ public class MethodImport extends MethodAmpBase
   private PodImport _moduleImport;
   private final ModuleMarshal [] _marshal;
   private final ModuleMarshal _resultMarshal;
-  private Class<?>[] _paramTypes;
+  private ParameterAmp[] _paramTypes;
   private Class<?> _returnType;
 
   public MethodImport(ServiceRefImport serviceRef,
@@ -65,22 +66,22 @@ public class MethodImport extends MethodAmpBase
     _moduleImport = serviceRef.getModuleImport();
     Objects.requireNonNull(_moduleImport);
     
-    _marshal = _moduleImport.getArg().marshalArgs(getDelegate().getParameterTypes());
-    _paramTypes = _moduleImport.getArg().marshalParamTypes(getDelegate().getParameterTypes());
+    _marshal = _moduleImport.getArg().marshalArgs(delegate().parameters());
+    _paramTypes = _moduleImport.getArg().marshalParamTypes(delegate().parameters());
     
-    _resultMarshal = _moduleImport.marshalResult(getDelegate().getReturnType(),
+    _resultMarshal = _moduleImport.marshalResult(delegate().getReturnType(),
                                                  retType);
     
-    _returnType = _moduleImport.getResult().marshalType(getDelegate().getReturnType());
+    _returnType = _moduleImport.getResult().marshalType(delegate().getReturnType());
   }
 
-  public MethodAmp getDelegate()
+  public MethodAmp delegate()
   {
     return _delegate;
   }
   
   @Override
-  public Class<?> []getParameterTypes()
+  public ParameterAmp []parameters()
   {
     return _paramTypes;
   }
@@ -109,7 +110,7 @@ public class MethodImport extends MethodAmpBase
       newArgs[i] = args[i];
     }
     
-    getDelegate().send(headers, actor, newArgs);
+    delegate().send(headers, actor, newArgs);
   }
 
   @Override
@@ -136,6 +137,6 @@ public class MethodImport extends MethodAmpBase
     ResultImport queryRefImport
       = new ResultImport(result, _resultMarshal, loader);
     
-    getDelegate().query(headers, queryRefImport, actor, newArgs);
+    delegate().query(headers, queryRefImport, actor, newArgs);
   }
 }

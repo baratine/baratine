@@ -78,14 +78,14 @@ public class ServiceRefPin extends ServiceRefActorBase
       return _bindAddress;
     }
     else {
-      return "callback:" + getActor().name() + "@" + inbox().getAddress();
+      return "callback:" + stub().name() + "@" + inbox().getAddress();
     }
   }
   
   @Override
   public MethodRefAmp getMethod(String methodName)
   {
-    MethodAmp methodBean = getActor().getMethod(methodName);
+    MethodAmp methodBean = stub().getMethod(methodName);
     
     //MethodAmp methodCallback = new MethodAmpChild(methodBean, getActor());
     //return new MethodRefImpl(this, methodCallback, getInbox());
@@ -97,7 +97,7 @@ public class ServiceRefPin extends ServiceRefActorBase
   @Override
   public MethodRefAmp getMethod(String methodName, Type type)
   {
-    MethodAmp methodBean = getActor().getMethod(methodName);
+    MethodAmp methodBean = stub().getMethod(methodName);
     //MethodAmp methodCallback = new MethodAmpChild(methodBean, getActor());
 
     //return new MethodRefImpl(this, methodCallback, getInbox());
@@ -109,7 +109,7 @@ public class ServiceRefPin extends ServiceRefActorBase
   @Override
   public Object onLookupImpl(String path)
   {
-    return getActor().onLookup(path, this);
+    return stub().onLookup(path, this);
   }
 
   @Override
@@ -117,7 +117,7 @@ public class ServiceRefPin extends ServiceRefActorBase
   {
     ServiceRefAmp subscriber = toSubscriber(service);
     
-    offer(new ConsumeMessageCallback(inbox(), subscriber, getActor()));
+    offer(new ConsumeMessageCallback(inbox(), subscriber, stub()));
 
     return new SubscriberCancelPin(subscriber);
   }
@@ -127,7 +127,7 @@ public class ServiceRefPin extends ServiceRefActorBase
   {
     ServiceRefAmp subscriber = toSubscriber(service);
     
-    offer(new SubscribeMessageCallback(inbox(), subscriber, getActor()));
+    offer(new SubscribeMessageCallback(inbox(), subscriber, stub()));
     
     return new SubscriberCancelPin(subscriber);
   }
@@ -169,7 +169,7 @@ public class ServiceRefPin extends ServiceRefActorBase
     // XXX: checkpoint if mode = graceful?
     
     CloseMessageCallback msg = new CloseMessageCallback(inbox(), 
-                                                        getActor());
+                                                        stub());
     
     long offerTimeout = 0;
     
@@ -187,7 +187,7 @@ public class ServiceRefPin extends ServiceRefActorBase
   @Override
   public int hashCode()
   {
-    return getActor().hashCode();
+    return stub().hashCode();
   }
 
   @Override
@@ -199,7 +199,7 @@ public class ServiceRefPin extends ServiceRefActorBase
     
     ServiceRefPin cb = (ServiceRefPin) o;
 
-    return (getActor().equals(cb.getActor())
+    return (stub().equals(cb.stub())
             && (inbox() == cb.inbox()));
   }
   

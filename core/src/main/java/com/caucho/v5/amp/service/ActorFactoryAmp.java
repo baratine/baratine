@@ -38,7 +38,7 @@ import com.caucho.v5.amp.stub.StubAmp;
  */
 public interface ActorFactoryAmp extends Supplier<StubAmp>
 {
-  StubAmp mainActor();
+  StubAmp stubMain();
   
   StubAmp get();
   

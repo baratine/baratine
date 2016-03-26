@@ -189,7 +189,7 @@ abstract public class InboxWrapper implements InboxAmp
   }
   
   @Override
-  public void shutdownActors(ShutdownModeAmp mode)
+  public void shutdownStubs(ShutdownModeAmp mode)
   {
   }
 
@@ -220,9 +220,9 @@ abstract public class InboxWrapper implements InboxAmp
   }
 
   @Override
-  public StubAmp getDirectActor()
+  public StubAmp stubDirect()
   {
-    return delegate().getDirectActor();
+    return delegate().stubDirect();
   }
 
   @Override

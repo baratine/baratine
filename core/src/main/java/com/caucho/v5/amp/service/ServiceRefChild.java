@@ -53,7 +53,7 @@ public class ServiceRefChild extends ServiceRefPin implements CacheListener
   }
   
   @Override
-  public StubAmp getActor()
+  public StubAmp stub()
   {
     StubAmp actor = _actor;
     
@@ -67,7 +67,7 @@ public class ServiceRefChild extends ServiceRefPin implements CacheListener
       _actor = _prevActor;
     }
     else {
-      _actor = selfRef.getActor();
+      _actor = selfRef.stub();
     }
     
     return _actor;

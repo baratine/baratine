@@ -241,7 +241,7 @@ public class ChannelServerJampRpc implements ChannelServer
     }
     
     MethodRefAmp methodRef = _registry.method(address, methodName);
-    ServiceRefAmp serviceRef = methodRef.getService();
+    ServiceRefAmp serviceRef = methodRef.serviceRef();
     String addressService = serviceRef.address();
 
     if (addressService.startsWith("session:")) {

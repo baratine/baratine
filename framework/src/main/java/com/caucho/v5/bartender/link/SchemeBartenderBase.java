@@ -29,6 +29,7 @@
 
 package com.caucho.v5.bartender.link;
 
+import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,6 +43,7 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.PodRef;
+import com.caucho.v5.inject.type.AnnotatedTypeClass;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -102,9 +104,9 @@ public class SchemeBartenderBase extends ServiceRefBase
   }
   
   @Override
-  public Class<?> apiClass()
+  public AnnotatedType api()
   {
-    return Object.class;
+    return AnnotatedTypeClass.ofObject();
   }
 
   @Override

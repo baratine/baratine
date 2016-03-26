@@ -29,9 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.Result;
-import io.baratine.stream.ResultStream;
-
+import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
@@ -40,16 +38,20 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
-import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.bartender.pod.PodRef;
+import com.caucho.v5.inject.type.AnnotatedTypeClass;
+
+import io.baratine.service.Result;
+import io.baratine.stream.ResultStream;
 
 /**
  * Actor for a link to a remote Bartender server.
  */
-public class ActorLink extends StubAmpBase
+public class StubLink extends StubAmpBase
 {
   // private final String _addressRemote;
   //private final ActorAmpOut _actorOut;
@@ -60,11 +62,11 @@ public class ActorLink extends StubAmpBase
   
   private ServiceRefAmp _selfRef;
   
-  public ActorLink(ServiceManagerAmp ampManager,
+  public StubLink(ServiceManagerAmp ampManager,
                    String addressRemote,
                    ServiceRefAmp parentRef,
                    PodRef podCaller,
-                   ActorAmpOut actorOut)
+                   StubAmpOut actorOut)
   {
     _ampManager = ampManager;
     
@@ -121,9 +123,9 @@ public class ActorLink extends StubAmpBase
   }
 
   @Override
-  public Class<?> getApiClass()
+  public AnnotatedType api()
   {
-    return getClass();
+    return new AnnotatedTypeClass(getClass());
   }
 
   @Override
@@ -135,7 +137,7 @@ public class ActorLink extends StubAmpBase
   @Override
   public Object onLookup(String path, ServiceRefAmp parentRef)
   {
-    ActorLink actorLink = new ActorLink(getServiceManager(),
+    StubLink actorLink = new StubLink(getServiceManager(),
                                         getRemoteAddress() + path, parentRef, // getServiceRefCaller(),
                                         _podCaller, null); // _actorOut);
     
@@ -262,7 +264,7 @@ public class ActorLink extends StubAmpBase
                      Object []args)
     {
       // RampConnectionProxy connActor = (RampConnectionProxy) actor;
-      ActorAmpOut outActor = (ActorAmpOut) actor;
+      StubAmpOut outActor = (StubAmpOut) actor;
       
       OutAmp conn = outActor.getOut();
       
@@ -289,7 +291,7 @@ public class ActorLink extends StubAmpBase
         
         //RampConnectionProxy connActor = (RampConnectionProxy) actor;
         // ActorLink connActor = (ActorLink) actor;
-        ActorAmpOut outActor = (ActorAmpOut) actor;
+        StubAmpOut outActor = (StubAmpOut) actor;
 
         OutAmp conn = outActor.getOut();
 
@@ -329,7 +331,7 @@ public class ActorLink extends StubAmpBase
       long qid = queryRef.getId();
       
       //RampConnectionProxy connActor = (RampConnectionProxy) actor;
-      ActorAmpOut outActor = (ActorAmpOut) actor;
+      StubAmpOut outActor = (StubAmpOut) actor;
 
       OutAmp conn = outActor.getOut();
       

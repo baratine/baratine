@@ -29,8 +29,7 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-
+import java.lang.reflect.AnnotatedType;
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
@@ -38,6 +37,8 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.LoadState;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.service.Result;
 
 /**
  * amp disruptor method
@@ -51,7 +52,7 @@ public class StubAmpMultiWorker extends StubAmpStateBase
     _delegate = delegate;
   }
   
-  private StubAmp getDelegate()
+  private StubAmp delegate()
   {
     return _delegate;
   }
@@ -66,25 +67,25 @@ public class StubAmpMultiWorker extends StubAmpStateBase
   @Override
   public String name()
   {
-    return getDelegate().name();
+    return delegate().name();
   }
   
   @Override
-  public Class<?> getApiClass()
+  public AnnotatedType api()
   {
-    return getDelegate().getApiClass();
+    return delegate().api();
   }
   
   @Override
-  public boolean isExported()
+  public boolean isPublic()
   {
-    return getDelegate().isExported();
+    return delegate().isPublic();
   }
   
   @Override
   public Object bean()
   {
-    return getDelegate().bean();
+    return delegate().bean();
   }
   
   @Override
@@ -96,50 +97,50 @@ public class StubAmpMultiWorker extends StubAmpStateBase
   @Override
   public MethodAmp []getMethods()
   {
-    return getDelegate().getMethods();
+    return delegate().getMethods();
   }
   
   @Override
   public MethodAmp getMethod(String name)
   {
-    return getDelegate().getMethod(name);
+    return delegate().getMethod(name);
   }
   
   @Override
   public StubAmp worker(StubAmp actor)
   {
     // baratine/1072
-    return getDelegate();
+    return delegate();
   }
   
   @Override
   public void onInit(Result<? super Boolean> result)
   {
-    getDelegate().onInit(result);
+    delegate().onInit(result);
   }
 
   @Override
   public void onShutdown(ShutdownModeAmp mode)
   {
-    getDelegate().onShutdown(mode);
+    delegate().onShutdown(mode);
   }
 
   @Override
   public void beforeBatch()
   {
-    getDelegate().beforeBatch();
+    delegate().beforeBatch();
   }
   
   @Override
   public void afterBatch()
   {
-    getDelegate().afterBatch();
+    delegate().afterBatch();
   }
   
   @Override
   public LoadState load(StubAmp actorMessage, MessageAmp msg)
   {
-    return getDelegate().load(msg);
+    return delegate().load(msg);
   }
   
   @Override
@@ -148,7 +149,7 @@ public class StubAmpMultiWorker extends StubAmpStateBase
                          long qid, 
                          Object value)
   {
-    getDelegate().queryReply(headers, actor, qid, value);
+    delegate().queryReply(headers, actor, qid, value);
   }
   
   @Override
@@ -157,7 +158,7 @@ public class StubAmpMultiWorker extends StubAmpStateBase
                          long qid, 
                          Throwable exn)
   {
-    getDelegate().queryError(headers, actor, qid, exn);
+    delegate().queryError(headers, actor, qid, exn);
   }
   
   @Override
@@ -169,13 +170,13 @@ public class StubAmpMultiWorker extends StubAmpStateBase
                           Throwable exn,
                           boolean isComplete)
   {
-    getDelegate().streamReply(headers, actor, qid, sequence,
+    delegate().streamReply(headers, actor, qid, sequence,
                               values, exn, isComplete);
   }
   
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + getDelegate() + "]";
+    return getClass().getSimpleName() + "[" + delegate() + "]";
   }
 }

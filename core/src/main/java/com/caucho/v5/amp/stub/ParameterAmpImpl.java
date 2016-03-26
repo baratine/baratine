@@ -27,13 +27,45 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.bartender.xa;
+package com.caucho.v5.amp.stub;
 
-public interface XAService
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.util.Objects;
+
+
+/**
+ * method parameter
+ */
+public class ParameterAmpImpl implements ParameterAmp
 {
-  boolean begin();
+  private Parameter _param;
   
-  boolean commit();
+  ParameterAmpImpl(Parameter parameter)
+  {
+    Objects.requireNonNull(parameter);
   
-  boolean rollback();
+    _param = parameter;
+  }
+  
+  public String name()
+  {
+    return _param.getName();
+  }
+  
+  public Type type()
+  {
+    return _param.getParameterizedType();
+  }
+  
+  public Class<?> rawClass()
+  {
+    return _param.getType();
+  }
+  
+  public Annotation[] annotations()
+  {
+    return _param.getAnnotations();
+  }
 }

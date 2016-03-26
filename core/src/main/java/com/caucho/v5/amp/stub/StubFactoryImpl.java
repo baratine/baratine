@@ -87,7 +87,7 @@ public class StubFactoryImpl implements ActorFactoryAmp
   }
   
   @Override
-  public StubAmp mainActor()
+  public StubAmp stubMain()
   {
     return _stubMain;
   }

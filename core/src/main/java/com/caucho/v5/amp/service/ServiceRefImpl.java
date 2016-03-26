@@ -61,7 +61,7 @@ public class ServiceRefImpl extends ServiceRefCore
   {
     start();
     
-    Object child = getActor().onLookup(path, this);
+    Object child = stub().onLookup(path, this);
 
     if (child == null) {
       return null;

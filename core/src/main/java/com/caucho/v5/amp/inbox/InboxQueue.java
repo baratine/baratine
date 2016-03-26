@@ -57,6 +57,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.L10N;
 
@@ -79,7 +80,7 @@ public class InboxQueue extends InboxBase
   private String _bindAddress;
 
   private final QueueDeliver<MessageAmp> _queue;
-  private final StubAmp _actor;
+  private final StubAmp _stubMain;
   private final WorkerDeliver<MessageAmp> _worker;
   
   private final boolean _isLifecycleAware;
@@ -106,11 +107,9 @@ public class InboxQueue extends InboxBase
 
     _inboxMessage = new InboxMessage(this);
     
-    StubAmp actor = serviceQueueFactory.getMainActor();
+    StubAmp stubMain = serviceQueueFactory.stubMain();
 
-    // String address = "anon:" + actor.getApiClass().getName();
-    String name = actor.name();
-    // String address = serviceQueueFactory.getName();
+    String name = stubMain.name();
 
     if (name != null) {
     }
@@ -121,16 +120,17 @@ public class InboxQueue extends InboxBase
       name = config.name();
     }
     else {
-      name = "anon:" + actor.getApiClass().getSimpleName();
+      TypeRef typeRef = TypeRef.of(stubMain.api().getType());
+      name = "anon:" + typeRef.rawClass().getSimpleName();
     }
 
     _anonAddress = name;
 
     if (config.isPublic()) {
-      _serviceRef = new ServiceRefPublic(actor, this);
+      _serviceRef = new ServiceRefPublic(stubMain, this);
     }
     else {
-      _serviceRef = new ServiceRefCore(actor, this);
+      _serviceRef = new ServiceRefCore(stubMain, this);
     }
     
     // queueBuilder.setOutboxContext(new OutboxContextAmpImpl(this));
@@ -140,9 +140,9 @@ public class InboxQueue extends InboxBase
 
     _worker = worker(_queue);
 
-    _actor = actor;
+    _stubMain = stubMain;
     
-    _isLifecycleAware = actor.isLifecycleAware() || ! _queue.isSingleWorker();
+    _isLifecycleAware = stubMain.isLifecycleAware() || ! _queue.isSingleWorker();
 
     long timeout = config.queueTimeout();
 
@@ -204,10 +204,10 @@ public class InboxQueue extends InboxBase
         return;
       }
       
-      init(_actor);
+      init(_stubMain);
     }
     
-    start(_actor);
+    start(_stubMain);
   }
   
   /**
@@ -228,7 +228,7 @@ public class InboxQueue extends InboxBase
   /**
    * Init calls the @OnInit methods.
    */
-  private void init(StubAmp actor)
+  private void init(StubAmp stub)
   {
     //BuildMessageAmp buildMessage = new BuildMessageAmp(this);
 
@@ -238,7 +238,7 @@ public class InboxQueue extends InboxBase
     _queue.wake();
   }
 
-  private void start(StubAmp actor)
+  private void start(StubAmp stub)
   {
     if (! _lifecycle.toStarting()) {
       return;
@@ -256,7 +256,7 @@ public class InboxQueue extends InboxBase
       
       MessageAmp onActiveMsg = new OnActiveMessage(this, isSingle());
       
-      JournalAmp journal = actor.getJournal();
+      JournalAmp journal = stub.journal();
       
       // buildContext.setMessage(onActiveMsg);
       
@@ -264,7 +264,7 @@ public class InboxQueue extends InboxBase
         if (log.isLoggable(Level.FINER)) {
           log.finer(L.l("journal replay {0} ({1})",
                         serviceRef().address(),
-                        serviceRef().apiClass().getName()));
+                        serviceRef().api().getType()));
         }
 
         onActiveMsg = new OnActiveReplayMessage(this, isSingle());
@@ -298,23 +298,23 @@ public class InboxQueue extends InboxBase
   }
 
   public Supplier<Deliver<MessageAmp>>
-  createDeliverFactory(Supplier<StubAmp> supplierActor,
+  createDeliverFactory(Supplier<StubAmp> supplierStub,
                        ServiceConfig config)
   {
     return new DeliverInboxFactory(this,
-                                       supplierActor,
+                                       supplierStub,
                                        config);
   }
   
-  public Deliver<MessageAmp> createDeliver(StubAmp actor)
+  public Deliver<MessageAmp> createDeliver(StubAmp stub)
   {
     boolean isDebug = manager().isDebug() || log.isLoggable(Level.FINE);
 
     if (isDebug) {
-      return new DeliverInboxDebug(this, actor);
+      return new DeliverInboxDebug(this, stub);
     }
     else {
-      return new DeliverInbox(this, actor);
+      return new DeliverInbox(this, stub);
     }
   }
 
@@ -337,7 +337,9 @@ public class InboxQueue extends InboxBase
   
   public String getDebugName()
   {
-    return _actor.getApiClass().getSimpleName() + "-" + manager().getDebugId();
+    TypeRef typeRef = TypeRef.of(_stubMain.api().getType());
+    
+    return typeRef.rawClass().getSimpleName() + "-" + manager().getDebugId();
   }
 
   @Override
@@ -389,9 +391,9 @@ public class InboxQueue extends InboxBase
   }
 
   @Override
-  public StubAmp getDirectActor()
+  public StubAmp stubDirect()
   {
-    return _actor;
+    return _stubMain;
   }
 
   @Override
@@ -467,9 +469,9 @@ public class InboxQueue extends InboxBase
   public final void offerAndWake(MessageAmp message, long callerTimeout)
   {
     if (isClosed()) { // _lifecycle.isAfterStopping()) {
-      message.fail(new ServiceExceptionClosed(L.l("Closed {0}, actor {1} for message {2}",
+      message.fail(new ServiceExceptionClosed(L.l("Closed {0}, stub {1} for message {2}",
                                                     serviceRef(),
-                                                    _actor,
+                                                    _stubMain,
                                                     message)));
       
       return;
@@ -571,7 +573,7 @@ public class InboxQueue extends InboxBase
   }
 
   @Override
-  public void shutdownActors(ShutdownModeAmp mode)
+  public void shutdownStubs(ShutdownModeAmp mode)
   {
     _worker.shutdown(mode);
   }

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,57 +27,55 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.stub;
+package com.caucho.v5.inject.type;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
-
 /**
- * Baratine actor skeleton
+ * AnnotatedTypeClass wraps a class.
  */
-public class StubAmpBeanChild extends StubAmpBean
+public class AnnotatedTypeClass implements AnnotatedType
 {
-  private String _childPath;
+  private static final AnnotatedType _annotatedTypeObject
+    = new AnnotatedTypeClass(Object.class);
   
-  protected StubAmpBeanChild(ClassStub skel,
-                              Object bean,
-                              String path,
-                              String childPath,
-                              ActorContainerAmp container)
+  private Class<?> _type;
+  
+  public AnnotatedTypeClass(Class<?> type)
   {
-    super(skel, bean, path, container);
-    
-    Objects.requireNonNull(container);
-    
-    _childPath = childPath;
+    Objects.requireNonNull(type);
+    _type = type;
   }
   
   @Override
-  public boolean isJournalReplay()
+  public Type getType()
   {
-    return getContainer().isJournalReplay();
-  }
-  
-  @Override
-  public String journalKey()
-  {
-    return _childPath;
+    return _type;
   }
 
   @Override
-  public void onSaveChildren(SaveResult saveResult)
+  public <T extends Annotation> T getAnnotation(Class<T> annotationClass)
   {
+    return _type.getAnnotation(annotationClass);
   }
-  
+
   @Override
-  public void onLru(ServiceRefAmp serviceRef)
+  public Annotation[] getAnnotations()
   {
-    ActorContainerAmp container = getContainer();
-    
-    if (loadState().isModified()) {
-      container.onLruModified(serviceRef);
-    }
+    return _type.getAnnotations();
+  }
+
+  @Override
+  public Annotation[] getDeclaredAnnotations()
+  {
+    return _type.getDeclaredAnnotations();
+  }
+
+  public static AnnotatedType ofObject()
+  {
+    return _annotatedTypeObject;
   }
 }

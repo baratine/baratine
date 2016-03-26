@@ -395,7 +395,7 @@ public class InHamp implements InAmpWebSocket
     SendMessage_N sendMessage
       = new SendMessage_N(outbox,
                           headers, 
-                          method.getService(), method.method(),
+                          method.serviceRef(), method.method(),
                           args);
     
     long timeout = 1000L; // mailbox delay timeout
@@ -462,7 +462,7 @@ public class InHamp implements InAmpWebSocket
                                         getInboxCaller(),
                                         headers, 
                                         from, qid, 
-                                        methodRef.getService(),
+                                        methodRef.serviceRef(),
                                         methodRef.method(), 
                                         timeout, args);
 
@@ -477,7 +477,7 @@ public class InHamp implements InAmpWebSocket
       if (log.isLoggable(_logLevel)) {
         log.log(_logLevel, "hamp-query " + methodRef.getName() + " " + debugArgs(args)
                    + " (in " + this + ")"
-                   + "\n  {qid:" + qid + ", to:" + methodRef.getService() + ", from:" + from + "," + headers + "}");
+                   + "\n  {qid:" + qid + ", to:" + methodRef.serviceRef() + ", from:" + from + "," + headers + "}");
       }
     } catch (Throwable e) {
       if (log.isLoggable(Level.FINE)) {
@@ -627,7 +627,7 @@ public class InHamp implements InAmpWebSocket
       = new StreamCallMessage<Object>(outbox,
                                       getInboxCaller(),
                                       headers, 
-                                      method.getService(), method.method(), 
+                                      method.serviceRef(), method.method(), 
                                       result,
                                       timeout,
                                       args);
@@ -639,7 +639,7 @@ public class InHamp implements InAmpWebSocket
       if (log.isLoggable(_logLevel)) {
         log.log(_logLevel, "stream-r " + method.getName() + " " + debugArgs(args)
                 + " (in " + this + ")"
-                + "\n  {qid:" + qid + ", to:" + method.getService() + ", from:" + from + "," + headers + "}");
+                + "\n  {qid:" + qid + ", to:" + method.serviceRef() + ", from:" + from + "," + headers + "}");
       }
 
     } catch (Throwable e) {

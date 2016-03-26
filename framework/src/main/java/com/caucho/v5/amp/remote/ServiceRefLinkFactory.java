@@ -45,13 +45,13 @@ public class ServiceRefLinkFactory
   private ServiceManagerAmp _manager;
   private ServiceRefAmp _serviceRefOut;
   private ServiceRefAmp _queryMapRef;
-  private ActorAmpOut _actorOut;
+  private StubAmpOut _actorOut;
   
   private String _scheme;
 
   public ServiceRefLinkFactory(ServiceManagerAmp manager, 
                                ServiceRefAmp serviceRefOut,
-                               ActorAmpOut actorOut, 
+                               StubAmpOut actorOut, 
                                ServiceRefAmp queryMapRef,
                                String scheme)
   {
@@ -86,7 +86,7 @@ public class ServiceRefLinkFactory
   public ServiceRefAmp createLinkService(String path, PodRef podCaller)
   {
     
-    ActorLink actorLink;
+    StubLink actorLink;
     
     String address = _scheme + "//" + _serviceRefOut.address() + path;
     
@@ -95,17 +95,17 @@ public class ServiceRefLinkFactory
     if (_queryMapRef != null) {
       //String addressSelf = "/system";
       //ServiceRefAmp systemRef = _manager.getSystemInbox().getServiceRef();
-      actorLink = new ActorLinkUnidir(_manager, path, parentRef, _queryMapRef, podCaller, _actorOut);
+      actorLink = new StubLinkUnidir(_manager, path, parentRef, _queryMapRef, podCaller, _actorOut);
     }
     else {
-      actorLink = new ActorLink(_manager, path, parentRef, podCaller, _actorOut);
+      actorLink = new StubLink(_manager, path, parentRef, podCaller, _actorOut);
     }
 
     ServiceRefAmp linkRef = _serviceRefOut.pin(actorLink, address);
     
     // ServiceRefClient needed to maintain workers, cloud/0420
     ServiceRefAmp clientRef = new ServiceRefClient(address,
-                                                       linkRef.getActor(),
+                                                       linkRef.stub(),
                                                        linkRef.inbox());
     
     actorLink.initSelfRef(clientRef);

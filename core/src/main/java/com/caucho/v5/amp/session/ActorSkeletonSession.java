@@ -65,7 +65,7 @@ public class ActorSkeletonSession extends StubAmpBean
   }
   
   @Override
-  public String getJournalKey()
+  public String journalKey()
   {
     return _keyString;
   }

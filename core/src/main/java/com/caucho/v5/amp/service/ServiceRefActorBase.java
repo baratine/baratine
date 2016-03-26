@@ -94,11 +94,11 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   @Override
   public boolean isPublic()
   {
-    return _actor.isExported();
+    return _actor.isPublic();
   }
   
   @Override
-  public StubAmp getActor()
+  public StubAmp stub()
   {
     return _actor;
   }

@@ -70,7 +70,7 @@ public interface MethodRef
   /**
    * The owning service.
    */
-  ServiceRef getService();
+  ServiceRef serviceRef();
   
   /**
    * Call a method without a result value.

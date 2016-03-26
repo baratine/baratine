@@ -92,7 +92,7 @@ public class StubAmpStateBase extends StubAmpBase implements ActorAmpState
   @Override
   public boolean isJournalReplay()
   {
-    return getJournal() != null;
+    return journal() != null;
   }
 
   protected boolean isModifiedChild(StubAmp actor)

@@ -36,19 +36,19 @@ import com.caucho.v5.bartender.pod.PodRef;
 /**
  * The proxy for a client registered in the ramp server.
  */
-public class ActorLinkUnidir extends ActorLink
+public class StubLinkUnidir extends StubLink
 {
   //private final ServiceManagerAmp _rampManager;
   //private final String _selfAddress;
   
   private ServiceRefAmp _queryMapRef;
 
-  public ActorLinkUnidir(ServiceManagerAmp ampManager,
+  public StubLinkUnidir(ServiceManagerAmp ampManager,
                          String remoteAddress,
                          ServiceRefAmp parentRef,
                          ServiceRefAmp queryMapRef,
                          PodRef podCaller,
-                         ActorAmpOut actorOut)
+                         StubAmpOut actorOut)
   {
     super(ampManager, remoteAddress, parentRef, podCaller, actorOut);
 
@@ -66,12 +66,12 @@ public class ActorLinkUnidir extends ActorLink
   @Override
   public Object onLookup(String path, ServiceRefAmp parentRef)
   {
-    ActorLinkUnidir actorLink;
+    StubLinkUnidir actorLink;
     
     //String childPath = getRemoteAddress() + path;
     String childPath = parentRef.address() + path;
     
-    actorLink = new ActorLinkUnidir(getServiceManager(),
+    actorLink = new StubLinkUnidir(getServiceManager(),
                                childPath,
                                parentRef, // getSelfServiceRef(),
                                _queryMapRef,

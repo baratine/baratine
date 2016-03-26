@@ -399,7 +399,7 @@ public class ChannelServerImpl implements ChannelServer
         MessageAmp msg = new QueryReplyMessage(outbox,
                                                _serviceRef,
                                                headers, 
-                                               _serviceRef.getActor(), qid, 
+                                               _serviceRef.stub(), qid, 
                                                value);
       
         long timeout = InboxAmp.TIMEOUT_INFINITY;
@@ -417,7 +417,7 @@ public class ChannelServerImpl implements ChannelServer
         MessageAmp msg = new QueryErrorMessage(outbox,
                                                _serviceRef,
                                                headers, 
-                                               _serviceRef.getActor(), qid, 
+                                               _serviceRef.stub(), qid, 
                                                exn);
       
         long timeout = InboxAmp.TIMEOUT_INFINITY;

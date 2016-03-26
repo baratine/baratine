@@ -81,12 +81,12 @@ public class ServiceRefLazyProxy extends ServiceRefLazy
   }
   
   @Override
-  public StubAmp getActor()
+  public StubAmp stub()
   {
     ServiceRefAmp delegate = delegate();
     
     if (! delegate.isClosed()) {
-      return delegate.getActor();
+      return delegate.stub();
     }
     else {
       return new StubAmpLazyProxy(this);

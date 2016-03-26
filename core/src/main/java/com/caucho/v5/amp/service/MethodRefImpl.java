@@ -56,7 +56,7 @@ public class MethodRefImpl extends MethodRefBase
     return _method.name();
   }
   
-  public final ServiceRefAmp getService()
+  public final ServiceRefAmp serviceRef()
   {
     return _serviceRef;
   }
@@ -68,9 +68,9 @@ public class MethodRefImpl extends MethodRefBase
   }
   
   @Override
-  public final InboxAmp getInbox()
+  public final InboxAmp inbox()
   {
-    return getService().inbox();
+    return serviceRef().inbox();
   }
   
   @Override
@@ -82,7 +82,7 @@ public class MethodRefImpl extends MethodRefBase
   @Override
   public void offer(MessageAmp message)
   {
-    getInbox().offer(message, InboxAmp.TIMEOUT_INFINITY);
+    inbox().offer(message, InboxAmp.TIMEOUT_INFINITY);
   }
   
   @Override

@@ -72,7 +72,7 @@ public class MethodRefNull extends MethodRefBase
   }
   
   @Override
-  public ServiceRefAmp getService()
+  public ServiceRefAmp serviceRef()
   {
     return _serviceRef;
   }
@@ -90,7 +90,7 @@ public class MethodRefNull extends MethodRefBase
   }
   
   @Override
-  public InboxAmp getInbox()
+  public InboxAmp inbox()
   {
     return new InboxNull(_serviceRef.address(), 
                            _serviceRef,

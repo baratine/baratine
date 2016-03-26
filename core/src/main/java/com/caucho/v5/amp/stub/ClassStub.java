@@ -29,10 +29,10 @@
 
 package com.caucho.v5.amp.stub;
 
-import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -48,6 +48,7 @@ import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.inject.type.AnnotatedTypeClass;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
@@ -95,6 +96,7 @@ public class ClassStub
   private final ServiceManagerAmp _ampManager;
 
   private final Class<?> _api;
+  private final AnnotatedType _apiType;
   
   private boolean _isExported;
   // private final Journal _ampJournal;
@@ -131,7 +133,7 @@ public class ClassStub
   private long _timeout;
   
   public ClassStub(ServiceManagerAmp rampManager,
-                       Class<?> api,
+                      Class<?> api,
                        ServiceConfig config)
   {
     if (api.isArray()) {
@@ -148,6 +150,7 @@ public class ClassStub
     
     _ampManager = rampManager;
     _api = api;
+    _apiType = new AnnotatedTypeClass(api);
     
     _timeout = _defaultTimeout;
     //log.fine(L.l("timout for {0} is {1}", api.getSimpleName(), _timeout));
@@ -198,7 +201,7 @@ public class ClassStub
     }
   }
   
-  public boolean isExported()
+  public boolean isPublic()
   {
     return _isExported;
   }
@@ -208,14 +211,9 @@ public class ClassStub
     return true;
   }
   
-  public Class<?> getApiClass()
+  public AnnotatedType api()
   {
-    return _api;
-  }
-  
-  public Annotation []getApiAnnotations()
-  {
-    return _api.getAnnotations();
+    return _apiType;
   }
   
   protected ServiceManagerAmp ampManager()

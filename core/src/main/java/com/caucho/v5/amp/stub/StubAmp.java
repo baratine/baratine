@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.stub;
 
-import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
@@ -51,17 +51,15 @@ public interface StubAmp
 {
   String name();
 
-  boolean isExported();
+  AnnotatedType api();
   
-  Class<?> getApiClass();
-  
-  Annotation []getApiAnnotations();
+  boolean isPublic();
   
   Object bean();
   Object loadBean();
   
   /**
-   * Returns a child actor
+   * Returns a child service
    */
   Object onLookup(String path, ServiceRefAmp parentRef);
   
@@ -74,7 +72,7 @@ public interface StubAmp
   void unsubscribe(ServiceRef consumer);
 
   /**
-   * Returns an actor method.
+   * Returns an stub method.
    * 
    * @param methodName the name of the method
    */
@@ -83,22 +81,34 @@ public interface StubAmp
   MethodAmp []getMethods();
 
   void queryReply(HeadersAmp headers, 
-                  StubAmp actor,
+                  StubAmp stub,
                   long qid, 
                   Object value);
   
   void queryError(HeadersAmp headers, 
-                  StubAmp actor,
+                  StubAmp stub,
                   long qid,
                   Throwable exn);
-  
-  default <T> boolean complete(Result<T> result, T value)
+
+  /**
+   * Conditional completion depending on the stub type.
+   * 
+   * The journal uses this to skip its own completion, leaving the processing
+   * for the main stub.
+   */
+  default <T> boolean ok(Result<T> result, T value)
   {
     result.ok(value);
     
     return true;
   }
   
+  /**
+   * Conditional completion depending on the stub type.
+   * 
+   * The journal uses this to skip its own completion, leaving the processing
+   * for the main stub.
+   */
   default boolean fail(Result<?> result, Throwable exn)
   {
     result.fail(exn);
@@ -107,7 +117,7 @@ public interface StubAmp
   }
 
   void streamReply(HeadersAmp headers, 
-                   StubAmp actor,
+                   StubAmp stub,
                    long qid,
                    int sequence,
                    List<Object> values,
@@ -115,7 +125,7 @@ public interface StubAmp
                    boolean isComplete);
 
   default void streamCancel(HeadersAmp headers,
-                            StubAmp queryActor,
+                            StubAmp queryStub,
                             String addressFrom, 
                             long qid)
   {
@@ -126,15 +136,19 @@ public interface StubAmp
   // result
   //
   
+  /*
   default <V> void onComplete(Result<V> result, V value)
   {
     result.ok(value);
   }
+  */
   
+  /*
   default void onFail(Result<?> result, Throwable exn)
   {
     result.fail(exn);
   }
+  */
 
   //
   // Stream (map/reduce)
@@ -162,14 +176,10 @@ public interface StubAmp
   /**
    * Queue building.
    */
-  /*
-  QueueService<MessageAmp> buildQueue(QueueServiceBuilder<MessageAmp> queueBuilder,
-                                       InboxQueue queueMailbox);
-                                       */
 
-  JournalAmp getJournal();
-  void setJournal(JournalAmp journal);
-  String getJournalKey();
+  JournalAmp journal();
+  void journal(JournalAmp journal);
+  String journalKey();
   // boolean requestCheckpoint();
   
   //
@@ -179,8 +189,8 @@ public interface StubAmp
   boolean isLifecycleAware();
   
   /**
-   * True for actors that enable lazy-start. This returns false for the
-   * journal actor.
+   * True for stubs that enable lazy-start. This returns false for the
+   * journal stub.
    */
   boolean isStarted();
   
@@ -198,20 +208,19 @@ public interface StubAmp
   void onInit(Result<? super Boolean> result);
   void replay(InboxAmp inbox,
               QueueDeliver<MessageAmp> queue, 
-              Result<Boolean> cont);
-  //void afterReplay();
+              Result<Boolean> result);
   
   void onActive(Result<? super Boolean> result);
   void onModify();
   
   boolean onSave(Result<Boolean> result);
-  void checkpointEnd(boolean isValid);
+  void onSaveEnd(boolean isValid);
   
   void onShutdown(ShutdownModeAmp mode);
 
   StubAmp worker(StubAmp stubMessage);
 
-  LoadState load(StubAmp actorMessage, MessageAmp msg);
+  LoadState load(StubAmp stubMessage, MessageAmp msg);
   LoadState load(MessageAmp msg);
   LoadState load(InboxAmp inbox, MessageAmp msg);
   LoadState loadReplay(InboxAmp inbox, MessageAmp msg);
@@ -220,16 +229,23 @@ public interface StubAmp
   default void onLru(ServiceRefAmp serviceRef)
   {
   }
-
-  default boolean isPrimary()
+  
+  /**
+   * True for the main stub.
+   * 
+   * The journal uses isMain to skip stream invocation.
+   */
+  // XXX: logic can be removed/replaced with LoadState?
+  default boolean isMain()
   {
     return true;
   }
 
+  /*
   default StubAmp delegateMain()
   {
     return this;
   }
-
+*/
 
 }

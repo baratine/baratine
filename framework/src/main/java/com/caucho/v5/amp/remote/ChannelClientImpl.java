@@ -87,8 +87,8 @@ public class ChannelClientImpl implements ChannelClient
     // XXX:
     // ServiceRefAmp callerRef = _manager.getSystemInbox().getServiceRef();
     
-    ActorAmpOut actorOut
-      = new ActorAmpOutClient(manager, outManager, addressRemote, callerRef, this);
+    StubAmpOut actorOut
+      = new StubAmpOutClient(manager, outManager, addressRemote, callerRef, this);
     
     actorOut.init(manager);
     
@@ -319,7 +319,7 @@ public class ChannelClientImpl implements ChannelClient
         MessageAmp msg = new QueryReplyMessage(outbox,
                                                _serviceRef,
                                                headers, 
-                                               _serviceRef.getActor(), qid, 
+                                               _serviceRef.stub(), qid, 
                                                value);
       
         msg.offer(timeout);
@@ -339,7 +339,7 @@ public class ChannelClientImpl implements ChannelClient
         MessageAmp msg = new QueryErrorMessage(outbox,
                                                _serviceRef,
                                                headers, 
-                                               _serviceRef.getActor(), qid, 
+                                               _serviceRef.stub(), qid, 
                                                exn);
         msg.offer(timeout);
         

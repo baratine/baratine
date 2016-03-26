@@ -80,7 +80,7 @@ public interface InboxAmp // extends OutboxContext<MessageAmp>
   // support operations
   //
   
-  StubAmp getDirectActor();
+  StubAmp stubDirect();
   
   WorkerDeliver<MessageAmp> worker();
 
@@ -124,5 +124,5 @@ public interface InboxAmp // extends OutboxContext<MessageAmp>
   
   void shutdown(ShutdownModeAmp mode);
 
-  void shutdownActors(ShutdownModeAmp mode);
+  void shutdownStubs(ShutdownModeAmp mode);
 }

@@ -36,7 +36,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.util.Hex;
@@ -57,6 +56,7 @@ abstract class MethodStubBase extends MethodAmpBase
   private final Method _method;
   private final boolean _isDirect;
   private final boolean _isModify;
+  private ParameterAmp[] _parameters;
   
   protected MethodStubBase(Method method)
   {
@@ -97,21 +97,13 @@ abstract class MethodStubBase extends MethodAmpBase
   }
   
   @Override
-  public Class<?> []getParameterTypes()
+  public ParameterAmp []parameters()
   {
-    return _method.getParameterTypes();
-  }
-  
-  @Override
-  public Type []getGenericParameterTypes()
-  {
-    return _method.getGenericParameterTypes();
-  }
-  
-  @Override
-  public Annotation [][]getParameterAnnotations()
-  {
-    return _method.getParameterAnnotations();
+    if (_parameters == null) {
+      _parameters = ParameterAmp.of(_method.getParameters());
+    }
+    
+    return _parameters;
   }
   
   @Override

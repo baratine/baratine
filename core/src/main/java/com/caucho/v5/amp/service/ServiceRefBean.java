@@ -29,6 +29,7 @@
 
 package com.caucho.v5.amp.service;
 
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
@@ -49,7 +50,7 @@ public class ServiceRefBean extends ServiceRefLazy
   private ServiceConfig _config;
   private boolean _isClosed;
   private Class<?> _serviceClass;
-  private StubAmp _skel;
+  private StubAmp _stub;
 
   public ServiceRefBean(ServiceManagerAmpImpl manager, 
                         String path,
@@ -64,7 +65,7 @@ public class ServiceRefBean extends ServiceRefLazy
     _serviceSupplier = serviceSupplier;
     _config = config;
     
-    _skel = manager.stubFactory().createSkeletonMain(_serviceClass, path, config);
+    _stub = manager.stubFactory().createSkeletonMain(_serviceClass, path, config);
     
     Thread.dumpStack();
   }
@@ -87,15 +88,15 @@ public class ServiceRefBean extends ServiceRefLazy
   }
   
   @Override
-  public Class<?> apiClass()
+  public AnnotatedType api()
   {
-    return _skel.getApiClass();
+    return _stub.api();
   }
   
   @Override
   public MethodRefAmp getMethod(String name)
   {
-    MethodAmp methodAmp = _skel.getMethod(name);
+    MethodAmp methodAmp = _stub.getMethod(name);
     
     return new MethodRefImpl(this, methodAmp);
   }
@@ -104,7 +105,7 @@ public class ServiceRefBean extends ServiceRefLazy
   public MethodRefAmp getMethod(String name, Type type)
   {
     // XXX: type?
-    MethodAmp methodAmp = _skel.getMethod(name);
+    MethodAmp methodAmp = _stub.getMethod(name);
     
     return new MethodRefImpl(this, methodAmp);
   }

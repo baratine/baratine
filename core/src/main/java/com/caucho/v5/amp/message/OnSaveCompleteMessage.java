@@ -61,7 +61,7 @@ public class OnSaveCompleteMessage extends MessageAmpBase
                      StubAmp actor)
   {
     try {
-      actor.checkpointEnd(_isValid);
+      actor.onSaveEnd(_isValid);
     } catch (Throwable e) {
       log.log(Level.FINE, e.toString(), e);
     }

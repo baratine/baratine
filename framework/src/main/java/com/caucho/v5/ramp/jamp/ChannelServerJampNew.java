@@ -267,7 +267,7 @@ public class ChannelServerJampNew implements ChannelServer
       }
     }
     
-    ServiceRefAmp serviceRef = methodRef.getService();
+    ServiceRefAmp serviceRef = methodRef.serviceRef();
     
     String addressService = serviceRef.address();
 

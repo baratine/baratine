@@ -29,12 +29,8 @@
 
 package com.caucho.v5.amp.service;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -50,6 +46,11 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.inject.type.AnnotatedTypeClass;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 /**
  * Abstract implementation for a service ref.
@@ -107,21 +108,21 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public StubAmp getActor()
+  public StubAmp stub()
   {
     return null;
   }
   
   @Override
-  public Class<?> apiClass()
+  public AnnotatedType api()
   {
-    StubAmp actor = getActor();
+    StubAmp actor = stub();
     
     if (actor != null) {
-      return actor.getApiClass();
+      return actor.api();
     }
     else {
-      return Object.class;
+      return AnnotatedTypeClass.ofObject();
     }
   }
   

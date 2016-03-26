@@ -29,10 +29,6 @@
 
 package com.caucho.v5.amp.service;
 
-import io.baratine.service.Result;
-import io.baratine.spi.Headers;
-import io.baratine.stream.ResultStream;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.concurrent.TimeUnit;
@@ -42,31 +38,36 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.Result;
+import io.baratine.spi.Headers;
+import io.baratine.stream.ResultStream;
 
 /**
  * Sender for an actor ref.
  */
 abstract public class MethodRefWrapper implements MethodRefAmp
 {
-  abstract protected MethodRefAmp getDelegate();
+  abstract protected MethodRefAmp delegate();
 
   @Override
-  public ServiceRefAmp getService()
+  public ServiceRefAmp serviceRef()
   {
-    return getDelegate().getService();
+    return delegate().serviceRef();
   }
 
   @Override
   public String getName()
   {
-    return getDelegate().getName();
+    return delegate().getName();
   }
 
   @Override
   public boolean isUp()
   {
-    MethodRefAmp delegate = getDelegate();
+    MethodRefAmp delegate = delegate();
     
     return delegate != null && delegate.isUp();
   }
@@ -74,46 +75,46 @@ abstract public class MethodRefWrapper implements MethodRefAmp
   @Override
   public boolean isClosed()
   {
-    MethodRefAmp delegate = getDelegate();
+    MethodRefAmp delegate = delegate();
     
     return delegate == null || delegate.isClosed();
   }
 
   @Override
-  public InboxAmp getInbox()
+  public InboxAmp inbox()
   {
-    return getDelegate().getInbox();
+    return delegate().inbox();
   }
 
   @Override
   public void offer(MessageAmp msg)
   {
-    getDelegate().offer(msg);
+    delegate().offer(msg);
   }
   
   @Override
-  public Class<?> []getParameterClasses()
+  public ParameterAmp []parameters()
   {
-    MethodRefAmp delegate = getDelegate();
+    MethodRefAmp delegate = delegate();
     
     if (delegate != null) {
-      return delegate.getParameterClasses();
+      return delegate.parameters();
     }
     else {
-      return new Class[0];
+      return new ParameterAmp[0];
     }
   }
   
   @Override
   public Annotation []getAnnotations()
   {
-    return getDelegate().getAnnotations();
+    return delegate().getAnnotations();
   }
   
   @Override
   public Type getReturnType()
   {
-    MethodRefAmp delegate = getDelegate();
+    MethodRefAmp delegate = delegate();
     
     if (delegate != null) {
       return delegate.getReturnType();
@@ -124,28 +125,9 @@ abstract public class MethodRefWrapper implements MethodRefAmp
   }
   
   @Override
-  public Type []getParameterTypes()
-  {
-    MethodRefAmp delegate = getDelegate();
-    
-    if (delegate != null) {
-      return delegate.getParameterTypes();
-    }
-    else {
-      return new Type[0];
-    }
-  }
-  
-  @Override
-  public Annotation [][]getParameterAnnotations()
-  {
-    return getDelegate().getParameterAnnotations();
-  }
-  
-  @Override
   public boolean isVarArgs()
   {
-    MethodRefAmp delegate = getDelegate();
+    MethodRefAmp delegate = delegate();
     
     if (delegate != null) {
       return delegate.isVarArgs();
@@ -158,32 +140,32 @@ abstract public class MethodRefWrapper implements MethodRefAmp
   @Override
   public MethodAmp method()
   {
-    return getDelegate().method();
+    return delegate().method();
   }
 
   @Override
-  public StubAmp getActor(StubAmp actorDeliver)
+  public StubAmp stubActive(StubAmp actorDeliver)
   {
-    return getDelegate().getActor(actorDeliver);
+    return delegate().stubActive(actorDeliver);
   }
   
   @Override
   public void send(Headers headers, Object... args)
   {
-    getDelegate().send(headers, args);
+    delegate().send(headers, args);
   }
   
   @Override
   public void send(Object... args)
   {
-    getDelegate().send(args);
+    delegate().send(args);
   }
 
   @Override
   public <T> void query(Result<T> cb,
                         Object... args)
   {
-    getDelegate().query(cb, args);
+    delegate().query(cb, args);
   }
 
   @Override
@@ -191,7 +173,7 @@ abstract public class MethodRefWrapper implements MethodRefAmp
                         Result<T> cb,
                         Object... args)
   {
-    getDelegate().query(headers, cb, args);
+    delegate().query(headers, cb, args);
   }
 
   @Override
@@ -200,7 +182,7 @@ abstract public class MethodRefWrapper implements MethodRefAmp
                         long timeout, TimeUnit timeUnit,
                         Object... args)
   {
-    getDelegate().query(headers, cb, timeout, timeUnit, args);
+    delegate().query(headers, cb, timeout, timeUnit, args);
   }
 
   @Override
@@ -208,12 +190,12 @@ abstract public class MethodRefWrapper implements MethodRefAmp
                          ResultStream<T> result,
                          Object... args)
   {
-    getDelegate().stream(headers, result, args);
+    delegate().stream(headers, result, args);
   }
   
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + getDelegate() + "]";
+    return getClass().getSimpleName() + "[" + delegate() + "]";
   }
 }

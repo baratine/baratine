@@ -53,9 +53,9 @@ public class MethodRefError extends MethodRefNull
   }
   
   @Override
-  public InboxAmp getInbox()
+  public InboxAmp inbox()
   {
-    ServiceRefAmp serviceRef = getService();
+    ServiceRefAmp serviceRef = serviceRef();
     
     return new InboxErrorReply(serviceRef.address(), 
                                serviceRef,

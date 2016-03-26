@@ -30,13 +30,12 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.util.List;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.QueueDeliver;
-import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
-import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -102,21 +101,15 @@ public class StubAmpTrace implements ActorAmpState
   }
   
   @Override
-  public boolean isExported()
+  public boolean isPublic()
   {
-    return delegate().isExported();
+    return delegate().isPublic();
   }
   
   @Override
-  public Class<?> getApiClass()
+  public AnnotatedType api()
   {
-    return delegate().getApiClass();
-  }
-  
-  @Override
-  public Annotation []getApiAnnotations()
-  {
-    return delegate().getApiAnnotations();
+    return delegate().api();
   }
   
   @Override
@@ -171,21 +164,21 @@ public class StubAmpTrace implements ActorAmpState
   }
   
   @Override
-  public JournalAmp getJournal()
+  public JournalAmp journal()
   {
-    return delegate().getJournal();
+    return delegate().journal();
   }
 
   @Override
-  public void setJournal(JournalAmp journal)
+  public void journal(JournalAmp journal)
   {
-    delegate().setJournal(journal);
+    delegate().journal(journal);
   }
   
   @Override
-  public String getJournalKey()
+  public String journalKey()
   {
-    return delegate().getJournalKey();
+    return delegate().journalKey();
   }
   
   @Override
@@ -321,9 +314,9 @@ public class StubAmpTrace implements ActorAmpState
   }
   
   @Override
-  public void checkpointEnd(boolean isValid)
+  public void onSaveEnd(boolean isValid)
   {
-    delegate().checkpointEnd(isValid);
+    delegate().onSaveEnd(isValid);
   }
   
   @Override
@@ -402,12 +395,6 @@ public class StubAmpTrace implements ActorAmpState
   public void onSaveChildren(SaveResult saveResult)
   {
     delegateState().onSaveChildren(saveResult);
-  }
-  
-  @Override
-  public StubAmp delegateMain()
-  {
-    return delegate().delegateMain();
   }
 
   @Override

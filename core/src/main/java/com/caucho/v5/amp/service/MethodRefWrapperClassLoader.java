@@ -52,7 +52,7 @@ abstract public class MethodRefWrapperClassLoader extends MethodRefWrapper
     
     MessageAmp msgLoader = new MessageWrapperClassLoader(msg, loader);
     
-    getDelegate().offer(msgLoader);
+    delegate().offer(msgLoader);
   }
   
   @Override
@@ -64,7 +64,7 @@ abstract public class MethodRefWrapperClassLoader extends MethodRefWrapper
     try {
       thread.setContextClassLoader(getDelegateClassLoader());
       
-      getDelegate().send(headers, args);
+      delegate().send(headers, args);
     } finally {
       thread.setContextClassLoader(oldLoader);
     }
@@ -81,7 +81,7 @@ abstract public class MethodRefWrapperClassLoader extends MethodRefWrapper
     try {
       thread.setContextClassLoader(getDelegateClassLoader());
       
-      getDelegate().query(headers, result, args);
+      delegate().query(headers, result, args);
     } finally {
       thread.setContextClassLoader(oldLoader);
     }
@@ -99,7 +99,7 @@ abstract public class MethodRefWrapperClassLoader extends MethodRefWrapper
     try {
       thread.setContextClassLoader(getDelegateClassLoader());
       
-      getDelegate().query(headers, cb, timeout, timeUnit, args);
+      delegate().query(headers, cb, timeout, timeUnit, args);
     } finally {
       thread.setContextClassLoader(oldLoader);
     }
@@ -116,7 +116,7 @@ abstract public class MethodRefWrapperClassLoader extends MethodRefWrapper
     try {
       thread.setContextClassLoader(getDelegateClassLoader());
 
-      getDelegate().stream(headers, result, args);
+      delegate().stream(headers, result, args);
     } finally {
       thread.setContextClassLoader(oldLoader);
     }
@@ -125,6 +125,6 @@ abstract public class MethodRefWrapperClassLoader extends MethodRefWrapper
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + getDelegate() + "]";
+    return getClass().getSimpleName() + "[" + delegate() + "]";
   }
 }

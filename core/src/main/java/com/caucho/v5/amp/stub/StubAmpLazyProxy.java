@@ -61,7 +61,7 @@ public class StubAmpLazyProxy extends StubAmpBase implements ActorAmpState
     StubAmp delegate = _delegate;
   
     if (delegate == null) {
-      StubAmp actor = _serviceRefLazy.getActor();
+      StubAmp actor = _serviceRefLazy.stub();
       
       if (! actor.isClosed()) {
         _delegate = delegate = actor;

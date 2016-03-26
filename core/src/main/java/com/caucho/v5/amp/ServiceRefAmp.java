@@ -29,9 +29,7 @@
 
 package com.caucho.v5.amp;
 
-import io.baratine.service.ServiceExceptionIllegalArgument;
-import io.baratine.service.ServiceRef;
-
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
 
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
@@ -41,6 +39,9 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.ServiceExceptionIllegalArgument;
+import io.baratine.service.ServiceRef;
 
 /**
  * Sender for an actor ref.
@@ -62,7 +63,7 @@ public interface ServiceRefAmp extends ServiceRef
 
   InboxAmp inbox();
   
-  StubAmp getActor();
+  StubAmp stub();
 
   default ClassLoader getDelegateClassLoader()
   {
@@ -78,7 +79,7 @@ public interface ServiceRefAmp extends ServiceRef
   
   MethodRefAmp getMethod(String methodName, Type returnType);
   
-  Class<?> apiClass();
+  AnnotatedType api();
   
   //@Override
   Iterable<? extends MethodRefAmp> getMethods();

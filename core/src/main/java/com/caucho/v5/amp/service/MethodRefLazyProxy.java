@@ -62,7 +62,7 @@ public class MethodRefLazyProxy extends MethodRefLazy
   }
   
   @Override
-  public ServiceRefAmp getService()
+  public ServiceRefAmp serviceRef()
   {
     return _serviceRef;
   }
@@ -70,7 +70,7 @@ public class MethodRefLazyProxy extends MethodRefLazy
   @Override
   public MethodAmp method()
   {
-    MethodRefAmp delegate = getDelegate();
+    MethodRefAmp delegate = delegate();
     
     if (delegate != null) {
       return delegate.method();

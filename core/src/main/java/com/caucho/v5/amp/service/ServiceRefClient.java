@@ -61,7 +61,7 @@ public class ServiceRefClient extends ServiceRefActorBase
   {
     start();
     
-    Object child = getActor().onLookup(path, this);
+    Object child = stub().onLookup(path, this);
 
     if (child instanceof ServiceRefAmp) {
       return (ServiceRefAmp) child;

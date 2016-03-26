@@ -131,7 +131,7 @@ public class StreamResultActorMessage
   {
     _isSent = true;
     
-    StubAmp actorMessage = getServiceRef().getActor();
+    StubAmp actorMessage = getServiceRef().stub();
     
     actorDeliver.load(actorMessage, this)
                 .streamResult(actorDeliver, actorMessage, 

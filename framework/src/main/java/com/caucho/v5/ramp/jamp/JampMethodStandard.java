@@ -29,17 +29,9 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import io.baratine.service.MethodRef;
-import io.baratine.service.ResultFuture;
-import io.baratine.service.ServiceException;
-import io.baratine.service.ServiceExceptionIllegalArgument;
-import io.baratine.web.HttpStatus;
-import io.baratine.web.RequestWeb;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -48,11 +40,19 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.InJson.Event;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.json.ser.JsonFactory;
+
+import io.baratine.service.MethodRef;
+import io.baratine.service.ResultFuture;
+import io.baratine.service.ServiceException;
+import io.baratine.service.ServiceExceptionIllegalArgument;
+import io.baratine.web.HttpStatus;
+import io.baratine.web.RequestWeb;
 
 /**
  * Method introspected using jaxrs
@@ -67,7 +67,7 @@ public class JampMethodStandard extends JampMethodRest
   private MethodRefAmp _methodRef;
   private JampArg []_params;
 
-  private Type[] _paramTypes;
+  private ParameterAmp[] _paramTypes;
 
   private JampArg _paramVarArgs;
   private int _argLength;
@@ -81,11 +81,11 @@ public class JampMethodStandard extends JampMethodRest
     _factory = builder.getJsonFactory();
     
     _methodRef = builder.getMethod();
-    _manager = (ServiceManagerAmp) _methodRef.getService().manager();
+    _manager = (ServiceManagerAmp) _methodRef.serviceRef().manager();
 
 
     _params = builder.getParams();
-    _paramTypes = _methodRef.getParameterTypes();
+    _paramTypes = _methodRef.parameters();
 
     _varArgsMarshal = builder.getVarArgMarshal();
 
@@ -198,7 +198,7 @@ public class JampMethodStandard extends JampMethodRest
       
       //HeadersAmp headers = HeadersNull.NULL;
       
-      ServiceManagerAmp manager = _methodRef.getService().manager();
+      ServiceManagerAmp manager = _methodRef.serviceRef().manager();
       
       Object result = manager.run(60, TimeUnit.SECONDS, 
                                   r->{ _methodRef.query(r, args); });
@@ -283,7 +283,7 @@ public class JampMethodStandard extends JampMethodRest
       int i = 0;
       
       for (; i < _paramTypes.length; i++) {
-        Object arg = jIn.readObject(_paramTypes[i]);
+        Object arg = jIn.readObject(_paramTypes[i].type());
         
         args.add(arg);
         
@@ -435,7 +435,7 @@ public class JampMethodStandard extends JampMethodRest
     }
   }
 
-  private Object []readArgs(JsonReader jIn, Type []paramTypes)
+  private Object []readArgs(JsonReader jIn, ParameterAmp []paramTypes)
   {
     InJson.Event event;
     ArrayList<Object> args = null;
@@ -448,7 +448,7 @@ public class JampMethodStandard extends JampMethodRest
       }
 
       if (paramTypes != null && i < paramTypes.length) {
-        Class<?> paramType = (Class<?>) paramTypes[i];
+        Class<?> paramType = (Class<?>) paramTypes[i].rawClass();
 
         Object value;
 

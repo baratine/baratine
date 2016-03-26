@@ -29,10 +29,6 @@
 
 package com.caucho.v5.amp.service;
 
-import io.baratine.service.Result;
-import io.baratine.spi.Headers;
-import io.baratine.stream.ResultStream;
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -51,7 +47,12 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.Result;
+import io.baratine.spi.Headers;
+import io.baratine.stream.ResultStream;
 
 /**
  * Sender for an actor ref.
@@ -89,19 +90,19 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
   }
 
   @Override
-  public ServiceRefAmp getService()
+  public ServiceRefAmp serviceRef()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
-  public InboxAmp getInbox()
+  public InboxAmp inbox()
   {
-    return getService().inbox();
+    return serviceRef().inbox();
   }
   
   @Override
-  public StubAmp getActor(StubAmp actorDeliver)
+  public StubAmp stubActive(StubAmp actorDeliver)
   {
     return actorDeliver;
   }
@@ -112,21 +113,9 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
   }
   
   @Override
-  public Class<?> []getParameterClasses()
+  public ParameterAmp []parameters()
   {
-    return method().getParameterTypes();
-  }
-  
-  @Override
-  public Type []getParameterTypes()
-  {
-    return method().getGenericParameterTypes();
-  }
-  
-  @Override
-  public Annotation [][]getParameterAnnotations()
-  {
-    return method().getParameterAnnotations();
+    return method().parameters();
   }
   
   @Override
@@ -138,9 +127,9 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
   @Override
   public void send(Headers headers, Object... args)
   {
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(getService().manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
       HeadersAmp headersAmp = (HeadersAmp) headers;
-      MessageAmp msg = new SendMessage_N(outbox, headersAmp, getService(), method(), args);
+      MessageAmp msg = new SendMessage_N(outbox, headersAmp, serviceRef(), method(), args);
     
       long timeout = Integer.MAX_VALUE; // use queue default timeout
     
@@ -182,13 +171,13 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
       timeout = timeUnit.toMillis(timeout);
     }
     
-    ServiceManagerAmp manager = getService().manager();
+    ServiceManagerAmp manager = serviceRef().manager();
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(manager)) {
       // OutboxAmp outbox = manager.getCurrentOutbox();
       // InboxAmp inbox = outbox.getInbox();
       
       msg = new QueryWithResultMessage_N<T>(outbox, result, timeout,
-                                            getService(), method(),
+                                            serviceRef(), method(),
                                             args);
     
       msg.offer(timeout);
@@ -206,7 +195,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
     
     long timeout = -1;
     
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(getService().manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
       HeadersAmp headersAmp = HeadersNull.NULL;
       
       InboxAmp inboxCaller;
@@ -219,7 +208,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
       }
     
       msg = new StreamCallMessage<T>(outbox, inboxCaller, headersAmp,
-                                     getService(), method(), result,
+                                     serviceRef(), method(), result,
                                      timeout, args);
     
       msg.offer(timeout);
@@ -228,7 +217,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
   
   private Object writeReplace()
   {
-    return new MethodRefHandle(getService().address(), getName());
+    return new MethodRefHandle(serviceRef().address(), getName());
   }
 
   @Override

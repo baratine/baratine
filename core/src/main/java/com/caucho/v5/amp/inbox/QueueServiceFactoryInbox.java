@@ -41,7 +41,7 @@ public interface QueueServiceFactoryInbox
 {
   String getName();
   
-  StubAmp getMainActor();
+  StubAmp stubMain();
   
   QueueDeliver<MessageAmp> 
   build(QueueDeliverBuilder<MessageAmp> queueBuilder,

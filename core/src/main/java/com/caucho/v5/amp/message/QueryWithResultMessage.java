@@ -155,7 +155,7 @@ public class QueryWithResultMessage<T>
   {
     MethodAmp method = getMethod();
     
-    if (method.isDirect() && serviceRef().getActor().isStarted()) {
+    if (method.isDirect() && serviceRef().stub().isStarted()) {
       try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
         offerDirect(outbox);
       }
@@ -174,7 +174,7 @@ public class QueryWithResultMessage<T>
     Object oldContext = outbox.getAndSetContext(inbox);
     
     try {
-      invoke(inbox, inbox.getDirectActor());
+      invoke(inbox, inbox.stubDirect());
     } finally {
       outbox.getAndSetContext(oldContext);
     }
@@ -191,7 +191,7 @@ public class QueryWithResultMessage<T>
       
       InboxAmp inbox = inboxTarget();
       
-      invoke(inbox, inbox.getDirectActor());
+      invoke(inbox, inbox.stubDirect());
       
       //outbox.flush();
     } finally {
@@ -213,15 +213,15 @@ public class QueryWithResultMessage<T>
   }
 
   @Override
-  protected boolean invokeOk(StubAmp actorDeliver)
+  protected boolean invokeOk(StubAmp stubDeliver)
   {
-    return actorDeliver.complete(_result, (T) getReply());
+    return stubDeliver.ok(_result, (T) getReply());
   }
   
   @Override
-  protected boolean invokeFail(StubAmp actorDeliver)
+  protected boolean invokeFail(StubAmp stubDeliver)
   {
-    return actorDeliver.fail(_result, getException());
+    return stubDeliver.fail(_result, getException());
   }
   
   protected String getLocation()

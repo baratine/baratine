@@ -207,7 +207,7 @@ public class JournalImpl implements JournalAmp
     try (OutputStream os = openItem(inbox)) {
       // XXX: should keep open
       try (OutH3 out = _serializer.out(os)) {
-        String key = actor.getJournalKey();
+        String key = actor.journalKey();
       
         out.writeLong(CODE_SEND);
         out.writeString(key);
@@ -240,7 +240,7 @@ public class JournalImpl implements JournalAmp
       
         //hOut.initPacket(os);
       
-        String key = actor.getJournalKey();
+        String key = actor.journalKey();
       
         out.writeLong(CODE_QUERY);
         out.writeString(key);

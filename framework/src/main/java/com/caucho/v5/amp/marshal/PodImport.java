@@ -29,20 +29,9 @@
 
 package com.caucho.v5.amp.marshal;
 
-import io.baratine.service.ServiceRef;
-
-import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Map;
-import java.util.logging.Logger;
-
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.proxy.ProxyHandleAmp;
-import com.caucho.v5.bartender.BartenderSystem;
+import com.caucho.v5.amp.stub.ParameterAmp;
 
 
 /**
@@ -106,7 +95,7 @@ public class PodImport
     return _importManager;
   }
 
-  public ModuleMarshal[] marshalArgs(Class<?>[] sourceTypes)
+  public ModuleMarshal[] marshalArgs(ParameterAmp[] sourceTypes)
   {
     return getArg().marshalArgs(sourceTypes);
   }

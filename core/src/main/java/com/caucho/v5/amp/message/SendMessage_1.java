@@ -79,7 +79,7 @@ public final class SendMessage_1 extends MethodMessageBase
   @Override
   public final void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
-    StubAmp actorMessage = serviceRef().getActor();
+    StubAmp actorMessage = serviceRef().stub();
     
     LoadState load = actorDeliver.load(actorMessage, this);
     

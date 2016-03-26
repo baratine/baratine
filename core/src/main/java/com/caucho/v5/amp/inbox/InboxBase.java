@@ -73,7 +73,7 @@ abstract public class InboxBase
   @Override
   public String getAddress()
   {
-    return "actor:" + serviceRef().getActor();
+    return "actor:" + serviceRef().stub();
   }
   
   @Override
@@ -225,7 +225,7 @@ abstract public class InboxBase
   }
   
   @Override
-  public void shutdownActors(ShutdownModeAmp mode)
+  public void shutdownStubs(ShutdownModeAmp mode)
   {
   }
 }

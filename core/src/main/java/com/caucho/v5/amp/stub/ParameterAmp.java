@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,19 +27,51 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.bartender.xa;
+package com.caucho.v5.amp.stub;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import com.caucho.v5.inject.type.TypeRef;
 
-@Documented
-@Retention(RUNTIME)
-@Target({METHOD})
-public @interface Prepare
+
+/**
+ * method parameter
+ */
+public interface ParameterAmp
 {
-  String value();
+  String name();
+  
+  Type type();
+  
+  Class<?> rawClass();
+  
+  Annotation[] annotations();
+  
+  static ParameterAmp of(Parameter parameter)
+  {
+    return new ParameterAmpImpl(parameter);
+  }
+  
+  static ParameterAmp of(Class<?> rawClass)
+  {
+    return new ParameterAmpClass(rawClass);
+  }
+  
+  static ParameterAmp of(Type type)
+  {
+    return new ParameterAmpClass(TypeRef.of(type).rawClass());
+  }
+  
+  static ParameterAmp []of(Parameter []parameters)
+  {
+    ParameterAmp []parametersAmp = new ParameterAmp[parameters.length];
+    
+    for (int i = 0; i < parameters.length; i++) {
+      parametersAmp[i] = of(parameters[i]);
+    }
+    
+    return parametersAmp;
+  }
 }

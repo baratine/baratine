@@ -85,7 +85,7 @@ public class MethodRefImport extends MethodRefBase
   }
 
   @Override
-  public ServiceRefAmp getService()
+  public ServiceRefAmp serviceRef()
   {
     return _serviceRef;
   }
@@ -103,14 +103,14 @@ public class MethodRefImport extends MethodRefBase
   }
 
   @Override
-  public StubAmp getActor(StubAmp actorDeliver)
+  public StubAmp stubActive(StubAmp actorDeliver)
   {
-    return getDelegate().getActor(actorDeliver);
+    return getDelegate().stubActive(actorDeliver);
   }
 
   @Override
-  public InboxAmp getInbox()
+  public InboxAmp inbox()
   {
-    return getDelegate().getInbox();
+    return getDelegate().inbox();
   }
 }

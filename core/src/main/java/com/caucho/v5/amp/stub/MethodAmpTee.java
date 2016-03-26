@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.Objects;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -110,6 +109,13 @@ public class MethodAmpTee implements MethodAmp
   }
   
   @Override
+  public ParameterAmp []parameters()
+  {
+    return delegate().parameters();
+  }
+  
+  /*
+  @Override
   public Class<?> []getParameterTypes()
   {
     return delegate().getParameterTypes();
@@ -126,6 +132,7 @@ public class MethodAmpTee implements MethodAmp
   {
     return delegate().getParameterAnnotations();
   }
+  */
   
   @Override
   public boolean isVarArgs()

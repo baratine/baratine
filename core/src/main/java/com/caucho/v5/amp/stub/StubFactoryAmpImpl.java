@@ -29,6 +29,7 @@
 
 package com.caucho.v5.amp.stub;
 
+import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -56,6 +56,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.ser.JsonFactory;
@@ -358,12 +359,12 @@ public class InJamp
 
     MethodRefAmp method = _channelIn.method(address, methodName);
     
-    Type []paramTypes = method.getParameterTypes();
+    ParameterAmp []paramTypes = method.parameters();
     boolean isVarArgs = method.isVarArgs();
     
     method = method.getActive();
     
-    ServiceRefAmp serviceRef = method.getService();
+    ServiceRefAmp serviceRef = method.serviceRef();
     
     String serviceRefAddress = serviceRef.address();
     
@@ -464,22 +465,22 @@ public class InJamp
     ServiceRefAmp serviceRef;
     MethodRefAmp method;
 
-    Type []paramTypes;
+    ParameterAmp []paramTypes;
     boolean isVarArgs;
     
     try {
       method = _channelIn.method(address, methodName);
       
-      paramTypes = method.getParameterTypes();
+      paramTypes = method.parameters();
       isVarArgs = method.isVarArgs();
       
       method = method.getActive();
 
-      serviceRef = method.getService();
+      serviceRef = method.serviceRef();
     } catch (Exception e) {
       //e.printStackTrace();
       
-      readArgs(jIn, address, methodName, new Class[0], false);
+      readArgs(jIn, address, methodName, new ParameterAmp[0], false);
       
       throw e;
     }
@@ -723,22 +724,22 @@ public class InJamp
     ServiceRefAmp serviceRef;
     MethodRefAmp method;
 
-    Type []paramTypes;
+    ParameterAmp []paramTypes;
     boolean isVarArgs;
 
     try {
       method = _channelIn.method(address, methodName);
 
-      paramTypes = method.getParameterTypes();
+      paramTypes = method.parameters();
       isVarArgs = method.isVarArgs();
 
       method = method.getActive();
 
-      serviceRef = method.getService();
+      serviceRef = method.serviceRef();
     } catch (Exception e) {
       e.printStackTrace();
 
-      readArgs(jIn, address, methodName, new Class[0], false);
+      readArgs(jIn, address, methodName, new ParameterAmp[0], false);
 
       throw e;
     }
@@ -852,7 +853,7 @@ public class InJamp
   private Object []readArgs(JsonReader jIn, 
                             String address,
                             String method,
-                            Type []paramTypes,
+                            ParameterAmp []paramTypes,
                             boolean isVarArgs)
     throws IOException
   {
@@ -983,17 +984,17 @@ public class InJamp
     return args;
   }
 
-  private Type getType(int i, Type []paramTypes, boolean isVarArgs)
+  private Type getType(int i, ParameterAmp []paramTypes, boolean isVarArgs)
   {
     if (paramTypes == null) {
       return null;
     }
     else if (isVarArgs) {
       if (i < paramTypes.length - 1) {
-        return paramTypes[i];
+        return paramTypes[i].type();
       }
       else {
-        Type tailType = paramTypes[paramTypes.length - 1];
+        Type tailType = paramTypes[paramTypes.length - 1].type();
         
         if (tailType instanceof Class<?>) {
           Class<?> tailClass = (Class<?>) tailType;
@@ -1007,7 +1008,7 @@ public class InJamp
     }
     else {
       if (i < paramTypes.length) {
-        return paramTypes[i];
+        return paramTypes[i].type();
       }
       else {
         return null;

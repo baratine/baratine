@@ -589,7 +589,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   {
     if (log.isLoggable(Level.FINEST)) {
       log.finest(L.l("bind {0} for {1} in {2}",
-                    address, service.apiClass().getSimpleName(), this));
+                    address, service.api().getType(), this));
     }
 
     address = toCanonical(address);

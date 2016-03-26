@@ -64,7 +64,7 @@ public class MethodRefDynamic extends MethodRefWrapper
   }
   
   @Override
-  public MethodRefAmp getDelegate()
+  public MethodRefAmp delegate()
   {
     ServiceRefAmp serviceRef = _serviceRefDynamic.delegate();
     

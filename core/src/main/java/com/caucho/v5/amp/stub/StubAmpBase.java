@@ -29,7 +29,8 @@
 
 package com.caucho.v5.amp.stub;
 
-import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
@@ -41,6 +42,7 @@ import com.caucho.v5.amp.spi.LoadState;
 import com.caucho.v5.amp.spi.LoadStateNull;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.inject.type.AnnotatedTypeClass;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
@@ -53,6 +55,9 @@ import io.baratine.service.ServiceRef;
 public class StubAmpBase implements StubAmp
 {
   private static final L10N L = new L10N(StubAmpBase.class);
+  
+  private static final AnnotatedType _annotatedTypeObject
+    = new AnnotatedTypeClass(Object.class);
   
   private LoadState _loadState;
   
@@ -80,7 +85,17 @@ public class StubAmpBase implements StubAmp
   @Override
   public String name()
   {
-    return "anon:" + getApiClass().getSimpleName();
+    AnnotatedType annType = api();
+    Type type = annType.getType();
+    
+    if (type instanceof Class) {
+      Class<?> cl = (Class<?>) type;
+      
+      return "anon:" + cl.getSimpleName();
+    }
+    else {
+      return "anon:" + type;
+    }
   }
   
   @Override
@@ -96,21 +111,15 @@ public class StubAmpBase implements StubAmp
   }
   
   @Override
-  public boolean isExported()
+  public boolean isPublic()
   {
     return false;
   }
   
   @Override
-  public Class<?> getApiClass()
+  public AnnotatedType api()
   {
-    return Object.class;
-  }
-  
-  @Override
-  public Annotation []getApiAnnotations()
-  {
-    return new Annotation[0];
+    return _annotatedTypeObject;
   }
   
   @Override
@@ -144,18 +153,18 @@ public class StubAmpBase implements StubAmp
   }
   
   @Override
-  public JournalAmp getJournal()
+  public JournalAmp journal()
   {
     return null;
   }
 
   @Override
-  public void setJournal(JournalAmp journal)
+  public void journal(JournalAmp journal)
   {
   }
   
   @Override
-  public String getJournalKey()
+  public String journalKey()
   {
     return null;
   }
@@ -359,7 +368,7 @@ public class StubAmpBase implements StubAmp
   */
   
   @Override
-  public void checkpointEnd(boolean isValid)
+  public void onSaveEnd(boolean isValid)
   {
   }
   

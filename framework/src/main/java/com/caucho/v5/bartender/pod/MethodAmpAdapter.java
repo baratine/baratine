@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
@@ -65,7 +66,7 @@ public class MethodAmpAdapter implements MethodAmp
   @Override
   public boolean isClosed()
   {
-    return _methodRef.getService().isClosed();
+    return _methodRef.serviceRef().isClosed();
   }
 
   @Override
@@ -91,26 +92,11 @@ public class MethodAmpAdapter implements MethodAmp
   }
 
   @Override
-  public Class<?>[] getParameterTypes()
+  public ParameterAmp[] parameters()
   {
     if (_methodRef instanceof MethodRefAmp) {
       try {
-        return ((MethodRefAmp) _methodRef).getParameterClasses();
-      } catch (StackOverflowError e) {
-        throw new UnsupportedOperationException(getClass().getName() + " " + _methodRef.getClass().getSimpleName());
-      }
-    }
-    else {
-      return null;
-    }
-  }
-
-  @Override
-  public Type[] getGenericParameterTypes()
-  {
-    if (_methodRef instanceof MethodRefAmp) {
-      try {
-        return ((MethodRefAmp) _methodRef).getParameterTypes();
+        return ((MethodRefAmp) _methodRef).parameters();
       } catch (StackOverflowError e) {
         throw new UnsupportedOperationException(getClass().getName() + " " + _methodRef.getClass().getSimpleName());
       }
@@ -140,12 +126,6 @@ public class MethodAmpAdapter implements MethodAmp
     else {
       return null;
     }
-  }
-
-  @Override
-  public Annotation[][] getParameterAnnotations()
-  {
-    return null;
   }
 
   @Override

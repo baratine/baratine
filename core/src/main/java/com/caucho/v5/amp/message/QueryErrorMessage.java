@@ -137,7 +137,7 @@ public final class QueryErrorMessage implements MessageAmp
   {
     // actorDeliver.queryError(_headers, _from, _qid, _exn);
     
-    StubAmp actorMessage = _serviceRef.getActor();
+    StubAmp actorMessage = _serviceRef.stub();
     
     // kraken/210a vs baratine/2245
     StubAmp actorInvoke = actorDeliver.worker(actorMessage);

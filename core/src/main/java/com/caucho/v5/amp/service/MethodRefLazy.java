@@ -53,7 +53,7 @@ abstract public class MethodRefLazy extends MethodRefWrapper
   }
   
   @Override
-  protected MethodRefAmp getDelegate()
+  protected MethodRefAmp delegate()
   {
     MethodRefAmp delegate = _delegateRef.get();
     

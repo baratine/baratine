@@ -90,7 +90,7 @@ public class InboxNull extends InboxBase
   }
 
   @Override
-  public StubAmp getDirectActor()
+  public StubAmp stubDirect()
   {
     throw serviceNotFound();
   }

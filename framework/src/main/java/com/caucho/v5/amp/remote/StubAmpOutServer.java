@@ -27,64 +27,45 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.bartender.xa;
+package com.caucho.v5.amp.remote;
 
-import java.lang.reflect.Type;
-import java.util.Objects;
-
+import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.service.ServiceRefWrapper;
-import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MessageAmp;
-import com.caucho.v5.amp.spi.MethodRefAmp;
 
 /**
- * Wrapper for XA resources
+ * The outbound actor for a connection received by a server.
  */
-public class ServiceRefXA extends ServiceRefWrapper
+public class StubAmpOutServer extends StubAmpOut
 {
-  private ServiceRefAmp _delegate;
-  private InboxXA _inbox;
+  private final OutAmp _out;
   
-  ServiceRefXA(ServiceRefAmp delegate)
+  public StubAmpOutServer(ServiceManagerAmp ampManager,
+                           OutAmp out,
+                           String remoteAddress,
+                           ServiceRefAmp selfServiceRef)
   {
-    Objects.requireNonNull(delegate);
+    super(ampManager, remoteAddress, selfServiceRef);
     
-    _delegate = delegate;
-    _inbox = new InboxXA(delegate);
-  }
-  
-  @Override
-  protected ServiceRefAmp delegate()
-  {
-    return _delegate;
-  }
-  
-  @Override
-  public InboxAmp inbox()
-  {
-    return _inbox;
-  }
-  
-  @Override
-  public MethodRefAmp getMethod(String name)
-  {
-    MethodRefAmp methodRef = _delegate.getMethod(name);
+    _out = out;
     
-    return new MethodRefXA(this, methodRef);
+    init(ampManager);
   }
-  
+
   @Override
-  public MethodRefAmp getMethod(String name, Type type)
+  OutAmp getOut()
   {
-    MethodRefAmp methodRef = _delegate.getMethod(name, type);
-    
-    return new MethodRefXA(this, methodRef);
+    return _out;
   }
-  
+
   @Override
-  public void offer(MessageAmp message)
+  OutAmp getCurrentOut()
   {
-    message.invoke(_inbox, getActor());
+    return _out;
+  }
+
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _out + "]";
   }
 }

@@ -29,22 +29,21 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.OnLookup;
-import io.baratine.service.OnSave;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-
-import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorContainerAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.service.OnLookup;
+import io.baratine.service.OnSave;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 /**
  * Baratine actor skeleton
@@ -52,7 +51,7 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 public class StubAmpBeanBase extends StubAmpStateBase
   implements StubAmp
 {
-  private final ClassStub _skel;
+  private final ClassStub _stubClass;
   private final String _name;
   
   private final ActorContainerAmp _container;
@@ -65,16 +64,16 @@ public class StubAmpBeanBase extends StubAmpStateBase
   {
     Objects.requireNonNull(skel);
     
-    _skel = skel;
+    _stubClass = skel;
     _name = name;
     
     if (container != null) {
     }
-    else if (_skel.isImplemented(OnLookup.class)
-             || _skel.isImplemented(OnSave.class)
-             || _skel.isJournal()) {
-      if (_skel.isJournal()) {
-        container = new StubContainerJournal(name, _skel.getJournalDelay());
+    else if (_stubClass.isImplemented(OnLookup.class)
+             || _stubClass.isImplemented(OnSave.class)
+             || _stubClass.isJournal()) {
+      if (_stubClass.isJournal()) {
+        container = new StubContainerJournal(name, _stubClass.getJournalDelay());
       }
       else {
         container = new StubContainerBase(name);
@@ -83,7 +82,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
     
     _container = container;
     
-    if (! _skel.isLifecycleAware()) {
+    if (! _stubClass.isLifecycleAware()) {
       setLoadState(LoadStateActorAmp.ACTIVE);
     }
   }
@@ -95,7 +94,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
   
   protected final ClassStub stubClass()
   {
-    return _skel;
+    return _stubClass;
   }
   
   @Override
@@ -105,31 +104,27 @@ public class StubAmpBeanBase extends StubAmpStateBase
   }
   
   @Override
-  public boolean isExported()
+  public boolean isPublic()
   {
-    return _skel.isExported();
+    return _stubClass.isPublic();
   }
   
-  public Class<?> getApiClass()
+  @Override
+  public AnnotatedType api()
   {
-    return _skel.getApiClass();
-  }
-  
-  public Annotation []getApiAnnotations()
-  {
-    return _skel.getApiAnnotations();
+    return _stubClass.api();
   }
 
   @Override
   public MethodAmp []getMethods()
   {
-    return _skel.getMethods();
+    return _stubClass.getMethods();
   }
 
   @Override
   public MethodAmp getMethod(String methodName)
   {
-    MethodAmp method = _skel.getMethod(this, methodName);
+    MethodAmp method = _stubClass.getMethod(this, methodName);
     
     return method;
   }
@@ -172,19 +167,19 @@ public class StubAmpBeanBase extends StubAmpStateBase
   @Override
   public boolean isLifecycleAware()
   {
-    return _skel.isLifecycleAware();
+    return _stubClass.isLifecycleAware();
   }
   
   @Override
   public void onInit(Result<? super Boolean> result)
   {
-    _skel.onInit(this, result);
+    _stubClass.onInit(this, result);
   }
   
   @Override
   public void onActive(Result<? super Boolean> result)
   {
-    _skel.onActive(this, result);
+    _stubClass.onActive(this, result);
     
     if (_container != null) {
       _container.onActive();
@@ -192,13 +187,13 @@ public class StubAmpBeanBase extends StubAmpStateBase
   }
   
   @Override
-  public JournalAmp getJournal()
+  public JournalAmp journal()
   {
     return _journal;
   }
   
   @Override
-  public void setJournal(JournalAmp journal)
+  public void journal(JournalAmp journal)
   {
     _journal = journal;
     
@@ -224,7 +219,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
   {
     SaveResult saveResult = new SaveResult(result);
     
-    _skel.checkpointStart(this, saveResult.addBean());
+    _stubClass.checkpointStart(this, saveResult.addBean());
 
     onSaveChildren(saveResult);
     
@@ -258,7 +253,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
       return serviceRef;
     }
     
-    Object value = _skel.onLookup(this, path);
+    Object value = _stubClass.onLookup(this, path);
     
     if (value == null) {
       return null;
@@ -308,14 +303,14 @@ public class StubAmpBeanBase extends StubAmpStateBase
   @Override
   public void onShutdown(ShutdownModeAmp mode)
   {
-    _skel.shutdown(this, mode);
+    _stubClass.shutdown(this, mode);
   }
 
   @Override
   public void onLoad(Result<? super Boolean> result)
   {
     //_skel.onLoad(actor, result);
-    _skel.onLoad(this, result);
+    _stubClass.onLoad(this, result);
   }
 
   @Override
@@ -344,6 +339,6 @@ public class StubAmpBeanBase extends StubAmpStateBase
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _skel + "]";
+    return getClass().getSimpleName() + "[" + _stubClass + "]";
   }
 }

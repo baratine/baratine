@@ -34,7 +34,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -60,10 +59,9 @@ class MethodStubResult_N extends MethodStubBase
   private final Method _method;
   private final MethodHandle _methodHandle;
   
-  private Type []_paramTypes;
-  private Annotation [][]_paramAnns;
+  private ParameterAmp []_paramTypes;
 
-  private Class<?>[] _paramTypesCl;
+  //private Class<?>[] _paramTypesCl;
 
   MethodStubResult_N(ServiceManagerAmp ampManager,
                      Method method)
@@ -177,75 +175,31 @@ class MethodStubResult_N extends MethodStubBase
   }
   
   @Override
-  public Type []getGenericParameterTypes()
+  public ParameterAmp []parameters()
   {
     if (_paramTypes == null) {
-      Class<?> []paramClasses = _method.getParameterTypes(); 
-      Type []methodParamTypes = _method.getGenericParameterTypes();
+      ParameterAmp []paramClasses = ParameterAmp.of(_method.getParameters()); 
       
-      ArrayList<Type> paramTypeList = new ArrayList<>();
+      ArrayList<ParameterAmp> paramTypeList = new ArrayList<>();
 
       for (int i = 0; i < paramClasses.length; i++) {
-        if (Result.class.isAssignableFrom(paramClasses[i])) {
+        if (Result.class.isAssignableFrom(paramClasses[i].rawClass())) {
           continue;
         }
-        else if (ResultStream.class.isAssignableFrom(paramClasses[i])) {
+        else if (ResultStream.class.isAssignableFrom(paramClasses[i].rawClass())) {
           continue;
         }
         
-        paramTypeList.add(methodParamTypes[i]);
+        paramTypeList.add(paramClasses[i]);
       }
       
-      Type[] paramTypes = new Type[paramTypeList.size()];
+      ParameterAmp[] paramTypes = new ParameterAmp[paramTypeList.size()];
       paramTypeList.toArray(paramTypes);
       
       _paramTypes = paramTypes;
     }
     
     return _paramTypes;
-  }
-  
-  @Override
-  public Class<?> []getParameterTypes()
-  {
-    if (_paramTypesCl == null) {
-      Class<?> []paramTypes = _method.getParameterTypes(); 
-      
-      ArrayList<Type> paramTypeList = new ArrayList<>();
-
-      for (int i = 0; i < paramTypes.length; i++) {
-        if (Result.class.isAssignableFrom(paramTypes[i])) {
-          continue;
-        }
-        else if (ResultStream.class.isAssignableFrom(paramTypes[i])) {
-          continue;
-        }
-        
-        paramTypeList.add(paramTypes[i]);
-      }
-      
-      Class<?>[] paramTypeArray = new Class<?>[paramTypeList.size()];
-      paramTypeList.toArray(paramTypeArray);
-      
-      _paramTypesCl = paramTypeArray;
-    }
-    
-    return _paramTypesCl;
-  }
-  
-  @Override
-  public Annotation [][]getParameterAnnotations()
-  {
-    if (_paramAnns == null) {
-      Annotation [][]methodAnns = _method.getParameterAnnotations();
-      
-      Annotation [][]paramAnns = new Annotation[methodAnns.length - 1][];
-      System.arraycopy(methodAnns, 0, paramAnns, 0, paramAnns.length);
-      
-      _paramAnns = paramAnns;
-    }
-    
-    return _paramAnns;
   }
 
   @Override

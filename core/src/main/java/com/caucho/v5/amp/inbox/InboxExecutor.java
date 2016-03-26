@@ -76,7 +76,7 @@ public class InboxExecutor extends InboxBase
   }
 
   @Override
-  public StubAmp getDirectActor()
+  public StubAmp stubDirect()
   {
     return _actor;
   }
@@ -138,7 +138,7 @@ public class InboxExecutor extends InboxBase
   }
   
   @Override
-  public void shutdownActors(ShutdownModeAmp mode)
+  public void shutdownStubs(ShutdownModeAmp mode)
   {
     _actor.onShutdown(mode);
   }
