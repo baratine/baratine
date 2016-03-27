@@ -32,7 +32,7 @@ package com.caucho.v5.web.webapp;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
@@ -92,7 +92,7 @@ public class WebAppBuilderFramework extends WebAppBuilder
   {
     @Override
     public <T,ID extends Serializable> VaultDriver<T,ID>
-    driver(ServiceManagerAmp ampManager,
+    driver(ServicesAmp ampManager,
            Class<?> serviceType,
            Class<T> entityType, 
            Class<ID> idType,

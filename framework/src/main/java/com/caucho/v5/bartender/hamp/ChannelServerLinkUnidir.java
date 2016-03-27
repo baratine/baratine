@@ -29,7 +29,7 @@
 
 package com.caucho.v5.bartender.hamp;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.GatewayReply;
 import com.caucho.v5.amp.remote.GatewayReplyBase;
@@ -51,7 +51,7 @@ public class ChannelServerLinkUnidir extends ChannelServerLink
   // private InboxAmp _writeMailbox;
   
   public ChannelServerLinkUnidir(HampManager hampManager, 
-                                    ServiceManagerAmp manager,
+                                    ServicesAmp manager,
                                     RegistryAmp registry,
                                     OutAmp conn)
   {

@@ -37,7 +37,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.remote.ChannelServerFactory;
@@ -66,7 +66,7 @@ public class HampService
   
   private final Level _logLevel = Level.FINEST;
   
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
   private ChannelAmp _channel;
   private WebSocket _webSocket;
   //private RemoteEndpoint.Basic _remote;
@@ -83,7 +83,7 @@ public class HampService
   {
   }
 
-  protected HampService(ServiceManagerAmp manager,
+  protected HampService(ServicesAmp manager,
                                   ChannelAmp channel)
   {
     _manager = manager;
@@ -97,7 +97,7 @@ public class HampService
     _callerRef = _channel.getCallerRef();
   }
   
-  public HampService(ServiceManagerAmp ampManager,
+  public HampService(ServicesAmp ampManager,
                                ChannelServerFactory channelFactory)
   {
     _manager = ampManager;
@@ -114,7 +114,7 @@ public class HampService
     return _callerRef;
   }
   
-  protected ServiceManagerAmp getRampManager()
+  protected ServicesAmp getRampManager()
   {
     return _manager;
   }

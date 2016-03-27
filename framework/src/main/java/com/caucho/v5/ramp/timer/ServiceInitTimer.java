@@ -30,7 +30,7 @@
 package com.caucho.v5.ramp.timer;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 /**
  * Binding of the timer service.
@@ -38,7 +38,7 @@ import io.baratine.service.ServiceManager;
 public class ServiceInitTimer implements ServiceInitializer
 {
   @Override
-  public void init(ServiceManager manager)
+  public void init(Services manager)
   {
     manager.newService(new TimerServiceRamp())
            .address("timer:")

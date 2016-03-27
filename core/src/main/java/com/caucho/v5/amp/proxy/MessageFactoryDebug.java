@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.PipeInMessage;
@@ -65,12 +65,12 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
   
   private static final long TIMEOUT = 10 * 1000L;
   
-  private final ServiceManagerAmpImpl _manager;
+  private final ServicesAmpImpl _manager;
   private final DebugQueryMap _debugQueryMap;
   
   private boolean _isFiner;
 
-  MessageFactoryDebug(ServiceManagerAmpImpl ampManager)
+  MessageFactoryDebug(ServicesAmpImpl ampManager)
   {
     _manager = ampManager;
     

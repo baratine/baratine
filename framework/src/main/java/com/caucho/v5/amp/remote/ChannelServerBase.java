@@ -32,7 +32,7 @@ package com.caucho.v5.amp.remote;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceRefNull;
 import com.caucho.v5.amp.service.ServiceRefUnauthorized;
@@ -52,10 +52,10 @@ public class ChannelServerBase implements ChannelServer
   private static final Logger log
     = Logger.getLogger(ChannelServerBase.class.getName());
   
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   private final LookupAmp _registry;
 
-  public ChannelServerBase(ServiceManagerAmp manager,
+  public ChannelServerBase(ServicesAmp manager,
                            LookupAmp registry)
   {
     _manager = manager;
@@ -63,7 +63,7 @@ public class ChannelServerBase implements ChannelServer
   }
 
   @Override
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _manager;
   }

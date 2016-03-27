@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpException;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.proxy.ProxyUtilsAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.bytecode.JavaClass;
@@ -80,7 +80,7 @@ public class ClassGeneratorService<T>
   private HashMap<String,Method> _methodMap = new HashMap<>();
   private JavaClass _jClass;
   
-  ClassGeneratorService(ServiceManagerAmp manager,
+  ClassGeneratorService(ServicesAmp manager,
                         Class<T> type)
   {
     Objects.requireNonNull(manager);

@@ -29,8 +29,8 @@
 
 package com.caucho.v5.amp.stub;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.service.ActorFactoryAmp;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 
 /**
@@ -38,7 +38,7 @@ import com.caucho.v5.amp.service.ServiceConfig;
  */
 public interface StubGenerator
 {
-  ActorFactoryAmp factory(Class<?> serviceClass,
-                           ServiceManagerAmp ampManager,
+  StubFactoryAmp factory(Class<?> serviceClass,
+                           ServicesAmp ampManager,
                            ServiceConfig config);
 }

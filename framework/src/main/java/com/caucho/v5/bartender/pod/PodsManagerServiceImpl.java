@@ -41,7 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
@@ -162,7 +162,7 @@ public class PodsManagerServiceImpl implements PodsManagerService
     
     // _bfsPath.watch(path->updateBfsPath());
     
-    ServiceManagerAmp manager = AmpSystem.currentManager();
+    ServicesAmp manager = AmpSystem.currentManager();
 
     EventsSync events = manager.service(EventsSync.class);
     

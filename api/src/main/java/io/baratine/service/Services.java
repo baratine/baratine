@@ -51,12 +51,12 @@ import io.baratine.spi.ServiceManagerProvider;
  *                      .as(MySub.class);
  * </code></pre>
  */
-public interface ServiceManager
+public interface Services
 {
   /**
    * Returns the current ServiceManager
    */
-  static ServiceManager current()
+  static Services current()
   {
     return ServiceManagerProvider.current().currentManager();
   }
@@ -70,7 +70,7 @@ public interface ServiceManager
    *                         .start();
    * </code></pre>
    */
-  static ServiceManager.ServiceManagerBuilder newManager()
+  static Services.ServicesBuilder newManager()
   {
     return ServiceManagerProvider.current().newManager();
   }
@@ -91,8 +91,8 @@ public interface ServiceManager
    * Creates a new service programmatically.
    * 
    * <pre><code>
-   * manager.newService(myServiceImpl)
-   *        .ref();
+   * services.newService(myServiceImpl)
+   *         .ref();
    * </code></pre>
    * 
    * @param serviceImpl the service implementation.
@@ -100,9 +100,10 @@ public interface ServiceManager
    */
   <T> ServiceRef.ServiceBuilder newService(T serviceImpl);
   
-  <T> ServiceRef.ServiceBuilder newService(Class<T> serviceImplClass);
+  <T> ServiceRef.ServiceBuilder newService(Class<T> type);
   
-  ServiceRef.ServiceBuilder newService(Supplier<?> serviceImplSupplier);
+  <T> ServiceRef.ServiceBuilder newService(Class<T> type, 
+                                           Supplier<? extends T> supplier);
 
   
   /**
@@ -110,18 +111,19 @@ public interface ServiceManager
    */
   ServiceNode node();
   
-  public interface ServiceManagerBuilder
+  public interface ServicesBuilder
   {
     /**
      * Scans META-INF/services for built-in services.
      */
-    ServiceManagerBuilder autoServices(boolean isAutoServices);
+    ServicesBuilder autoServices(boolean isAutoServices);
     
     <T> ServiceRef.ServiceBuilder service(Class<T> type);
     
-    <T> ServiceRef.ServiceBuilder service(Key<?> key, Class<T> api);
+    <T> ServiceRef.ServiceBuilder service(Key<?> key, Class<T> type);
     
-    <T> ServiceRef.ServiceBuilder service(Supplier<? extends T> supplier);
+    <T> ServiceRef.ServiceBuilder service(Class<T> type, 
+                                          Supplier<? extends T> supplier);
     
     /**
      * Sets an executor factory for context-dependent integration.
@@ -131,10 +133,10 @@ public interface ServiceManager
      * 
      * @param factory the supplied factory for thread execution context
      */
-    ServiceManagerBuilder systemExecutor(Supplier<Executor> factory);
+    ServicesBuilder systemExecutor(Supplier<Executor> factory);
     
-    ServiceManager get();
+    Services get();
     
-    ServiceManager start();
+    Services start();
   }
 }

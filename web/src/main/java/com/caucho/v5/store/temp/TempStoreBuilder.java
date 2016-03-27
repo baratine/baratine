@@ -32,7 +32,7 @@ package com.caucho.v5.store.temp;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Filesystem access for a random-access store.
@@ -46,7 +46,7 @@ public class TempStoreBuilder
   
   private int _blockSize = 64 * 1024;
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   
   public TempStoreBuilder(Path path)
   {
@@ -55,12 +55,12 @@ public class TempStoreBuilder
     _path = path;
   }
 
-  public ServiceManagerAmp ampManager()
+  public ServicesAmp ampManager()
   {
     return _ampManager;
   }
   
-  public void ampManager(ServiceManagerAmp ampManager)
+  public void ampManager(ServicesAmp ampManager)
   {
     Objects.requireNonNull(ampManager);
     

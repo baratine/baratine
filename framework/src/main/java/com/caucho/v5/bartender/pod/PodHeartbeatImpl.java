@@ -30,9 +30,8 @@
 package com.caucho.v5.bartender.pod;
 
 import io.baratine.event.EventsSync;
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ClusterBartender;
@@ -123,7 +123,7 @@ public class PodHeartbeatImpl
     _heartbeatLocal = heartbeatLocal;
     
     // EventService eventService = AmpSystem.getCurrent().getEventService();
-    ServiceManager manager = AmpSystem.currentManager();
+    Services manager = AmpSystem.currentManager();
 
     _podEvents = manager.service(PodOnUpdate.ADDRESS)
                         .as(PodOnUpdate.class);
@@ -147,7 +147,7 @@ public class PodHeartbeatImpl
   // @OnInit
   public void start()
   {
-    ServiceManager manager = AmpSystem.currentManager();
+    Services manager = AmpSystem.currentManager();
     //EventService events = AmpSystem.getCurrent().getEventService();
     
     EventsSync events = manager.service(EventsSync.class);

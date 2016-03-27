@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.service;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.inbox.InboxNull;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
@@ -40,10 +40,10 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
  */
 public final class ServiceRefNull extends ServiceRefBase
 {
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   private final String _address;
   
-  public ServiceRefNull(ServiceManagerAmp manager, String address)
+  public ServiceRefNull(ServicesAmp manager, String address)
   {
     _manager = manager;
     _address = address;

@@ -39,7 +39,7 @@ package io.baratine.service;
  */
 public interface ServiceInitializer
 {
-  default public void init(ServiceManager manager)
+  default public void init(Services manager)
   {
   }
 }

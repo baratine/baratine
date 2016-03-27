@@ -43,7 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpException;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.MethodRefAmp;
@@ -90,7 +90,7 @@ public class ClassStub
   
   private HashMap<String,MethodAmp> _rampMethodMap = new HashMap<>();
   
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
 
   private final Class<?> _api;
   private final AnnotatedType _apiType;
@@ -129,7 +129,7 @@ public class ClassStub
   
   private long _timeout;
   
-  public ClassStub(ServiceManagerAmp rampManager,
+  public ClassStub(ServicesAmp rampManager,
                       Class<?> api,
                        ServiceConfig config)
   {
@@ -213,7 +213,7 @@ public class ClassStub
     return _apiType;
   }
   
-  protected ServiceManagerAmp ampManager()
+  protected ServicesAmp ampManager()
   {
     return _ampManager;
   }

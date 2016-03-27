@@ -30,7 +30,7 @@
 package com.caucho.v5.ramp.files;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 import com.caucho.v5.bartender.files.BartenderFileSystem;
 
@@ -41,7 +41,7 @@ import com.caucho.v5.bartender.files.BartenderFileSystem;
 public class ServiceInitBfs implements ServiceInitializer
 {
   @Override
-  public void init(ServiceManager manager)
+  public void init(Services manager)
   {
     BartenderFileSystem bfs = BartenderFileSystem.getCurrent();
     

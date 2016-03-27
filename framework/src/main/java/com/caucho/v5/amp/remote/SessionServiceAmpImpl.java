@@ -40,7 +40,7 @@ import io.baratine.spi.Headers;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 /**
@@ -49,14 +49,14 @@ import com.caucho.v5.amp.ServiceRefAmp;
 @Service
 public class SessionServiceAmpImpl
 {
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   private final ServiceRefAmp _connServiceRef;
   private final ChannelManagerService _sessionManager;
   
   private String _address;
   private ArrayList<Subscription> _subscriptions;
   
-  public SessionServiceAmpImpl(ServiceManagerAmp manager,
+  public SessionServiceAmpImpl(ServicesAmp manager,
                           ChannelManagerService channelManager,
                           ServiceRefAmp connServiceRef,
                           String address)

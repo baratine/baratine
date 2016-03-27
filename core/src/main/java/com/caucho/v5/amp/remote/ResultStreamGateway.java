@@ -32,7 +32,7 @@ package com.caucho.v5.amp.remote;
 import io.baratine.service.Cancel;
 import io.baratine.stream.ResultStream;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -63,7 +63,7 @@ public class ResultStreamGateway implements ResultStream<Object>, Cancel
     _qid = qid;
   }
   
-  private ServiceManagerAmp getManager()
+  private ServicesAmp getManager()
   {
     return _serviceRef.manager();
   }

@@ -39,7 +39,7 @@ import java.util.Map;
 
 import javax.inject.Provider;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorContainerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -73,7 +73,7 @@ public class StubAssetStore extends ClassStub
   private StubAssetItem _skelEntity;
   private String _address;
 
-  public StubAssetStore(ServiceManagerAmp ampManager,
+  public StubAssetStore(ServicesAmp ampManager,
                           Class<?> api,
                           ServiceConfig configService,
                           VaultConfig configResource)
@@ -110,7 +110,7 @@ public class StubAssetStore extends ClassStub
     Class<?> entityClass = _configResource.entityType();
     Key<Object> key = (Key) Key.of(entityClass);
 
-    Provider<Object> provider = ampManager().inject().provider(key);
+    Provider<Object> provider = ampManager().injector().provider(key);
     MethodHandle setter = findIdSetter();
     Convert<String,?> converter = findConverter();
     
@@ -221,14 +221,14 @@ public class StubAssetStore extends ClassStub
 
   private static class MethodFindOne extends MethodAmpBase
   {
-    private ServiceManagerAmp _ampManager;
+    private ServicesAmp _ampManager;
     private ClassStub _stubAsset;
 
     private VaultDriver _driver;
     private String _address;
     private String[] _fields;
 
-    MethodFindOne(ServiceManagerAmp ampManager,
+    MethodFindOne(ServicesAmp ampManager,
                   ClassStub skel,
                   VaultDriver driver,
                   String address,

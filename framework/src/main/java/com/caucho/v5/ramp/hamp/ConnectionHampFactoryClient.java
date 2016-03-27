@@ -34,7 +34,7 @@ import io.baratine.service.ServiceExceptionConnect;
 import java.io.IOException;
 import java.net.URI;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.remote.OutAmp;
 import com.caucho.v5.amp.remote.OutAmpFactory;
@@ -51,7 +51,7 @@ public class ConnectionHampFactoryClient implements OutAmpFactory
   private static final L10N L = new L10N(ConnectionHampFactoryClient.class);
   
   private final URI _uri;
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
   
   private final SessionContextJamp _channelContext = new SessionContextJamp();
   
@@ -62,7 +62,7 @@ public class ConnectionHampFactoryClient implements OutAmpFactory
 
   private JsonFactory _jsonFactory;
   
-  public ConnectionHampFactoryClient(ServiceManagerAmp rampManager,
+  public ConnectionHampFactoryClient(ServicesAmp rampManager,
                                      String uri)
   {
     try {
@@ -76,7 +76,7 @@ public class ConnectionHampFactoryClient implements OutAmpFactory
     _ampManager = rampManager;
   }
   
-  public ConnectionHampFactoryClient(ServiceManagerAmp rampManager,
+  public ConnectionHampFactoryClient(ServicesAmp rampManager,
                                      String uri,
                                      String uid,
                                      String password)

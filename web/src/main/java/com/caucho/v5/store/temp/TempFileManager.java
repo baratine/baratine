@@ -32,7 +32,7 @@ package com.caucho.v5.store.temp;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.util.L10N;
 
@@ -48,7 +48,7 @@ public class TempFileManager
   private final TempStore _tempStore;
 
   public TempFileManager(Path path,
-                         ServiceManagerAmp ampManager)
+                         ServicesAmp ampManager)
   {
     try {
       TempStoreBuilder tempBuilder = new TempStoreBuilder(path);

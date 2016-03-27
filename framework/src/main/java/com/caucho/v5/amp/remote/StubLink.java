@@ -32,7 +32,7 @@ package com.caucho.v5.amp.remote;
 import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -57,12 +57,12 @@ public class StubLink extends StubAmpBase
   //private final ActorAmpOut _actorOut;
   private final PodRef _podCaller;
   private ServiceRefAmp _parentRef;
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   private String _addressRemote;
   
   private ServiceRefAmp _selfRef;
   
-  public StubLink(ServiceManagerAmp ampManager,
+  public StubLink(ServicesAmp ampManager,
                    String addressRemote,
                    ServiceRefAmp parentRef,
                    PodRef podCaller,
@@ -89,7 +89,7 @@ public class StubLink extends StubAmpBase
     return _addressRemote;
   }
   
-  protected ServiceManagerAmp getServiceManager()
+  protected ServicesAmp getServiceManager()
   {
     return _ampManager;
   }

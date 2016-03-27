@@ -31,7 +31,7 @@ package com.caucho.v5.bartender.hamp;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelClientImpl;
 import com.caucho.v5.amp.remote.OutAmp;
@@ -47,7 +47,7 @@ public class ChannelClientBartender extends ChannelClientImpl
   
   public static final String LINK_ADDRESS = "link:///auth";
   
-  public ChannelClientBartender(ServiceManagerAmp manager,
+  public ChannelClientBartender(ServicesAmp manager,
                                 OutAmpManager channel,
                                 String address,
                                 ServiceRefAmp callerRef)

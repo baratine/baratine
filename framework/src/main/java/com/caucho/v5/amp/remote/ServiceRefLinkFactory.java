@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceRefClient;
 import com.caucho.v5.bartender.pod.PodRef;
@@ -42,14 +42,14 @@ import com.caucho.v5.bartender.pod.PodRef;
  */
 public class ServiceRefLinkFactory
 {
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
   private ServiceRefAmp _serviceRefOut;
   private ServiceRefAmp _queryMapRef;
   private StubAmpOut _actorOut;
   
   private String _scheme;
 
-  public ServiceRefLinkFactory(ServiceManagerAmp manager, 
+  public ServiceRefLinkFactory(ServicesAmp manager, 
                                ServiceRefAmp serviceRefOut,
                                StubAmpOut actorOut, 
                                ServiceRefAmp queryMapRef,

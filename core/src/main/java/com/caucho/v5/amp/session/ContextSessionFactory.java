@@ -29,16 +29,16 @@
 
 package com.caucho.v5.amp.session;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Context for a service resource.
  */
 public class ContextSessionFactory
 {
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   
-  public ContextSessionFactory(ServiceManagerAmp ampManager)
+  public ContextSessionFactory(ServicesAmp ampManager)
   {
     _ampManager = ampManager;
   }

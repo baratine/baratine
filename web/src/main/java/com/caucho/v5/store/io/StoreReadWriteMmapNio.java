@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.util.ConcurrentArrayList;
 import com.caucho.v5.util.L10N;
 
@@ -77,7 +77,7 @@ public class StoreReadWriteMmapNio implements StoreReadWrite
   private long _mmapCloseTimeout = 1000L;
   
   private final AtomicBoolean _isClosed = new AtomicBoolean();
-  private ServiceManagerAmp _rampManager;
+  private ServicesAmp _rampManager;
 
   private StoreFsyncService<MmapFile> _fsyncService;
 
@@ -106,7 +106,7 @@ public class StoreReadWriteMmapNio implements StoreReadWrite
                                     .as(StoreFsyncService.class);
   }
   
-  ServiceManagerAmp getRampManager()
+  ServicesAmp getRampManager()
   {
     return _rampManager;
   }

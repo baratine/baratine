@@ -29,7 +29,7 @@
 
 package com.caucho.v5.http.pod;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Abstract application for contexts with ServiceManagerAmp, such as
@@ -37,7 +37,7 @@ import com.caucho.v5.amp.ServiceManagerAmp;
  */
 public interface PodManagerApp
 {
-  ServiceManagerAmp getAmpManager();
+  ServicesAmp getAmpManager();
   
   Throwable getConfigException();
 

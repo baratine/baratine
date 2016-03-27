@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.stub;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -40,10 +40,10 @@ import com.caucho.v5.amp.spi.InboxAmp;
  */
 public class FilterPinReturn
 {
-  private final ServiceManagerAmp _rampManager;
+  private final ServicesAmp _rampManager;
   private final Class<?> _api;
 
-  FilterPinReturn(ServiceManagerAmp rampManager,
+  FilterPinReturn(ServicesAmp rampManager,
                         Class<?> api)
   {
     _rampManager = rampManager;

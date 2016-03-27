@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 import javax.inject.Provider;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.manager.InjectAutoBindService;
@@ -57,8 +57,8 @@ import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.inject.BaratineProducer;
 import com.caucho.v5.http.dispatch.InvocationRouter;
 import com.caucho.v5.http.websocket.WebSocketManager;
-import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
+import com.caucho.v5.inject.InjectorAmp;
+import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
@@ -67,13 +67,13 @@ import io.baratine.config.Config;
 import io.baratine.config.Config.ConfigBuilder;
 import io.baratine.convert.Convert;
 import io.baratine.inject.Binding;
-import io.baratine.inject.InjectManager;
-import io.baratine.inject.InjectManager.BindingBuilder;
-import io.baratine.inject.InjectManager.InjectAutoBind;
-import io.baratine.inject.InjectManager.InjectBuilder;
+import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.BindingBuilder;
+import io.baratine.inject.Injector.InjectAutoBind;
+import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 import io.baratine.vault.Vault;
 import io.baratine.web.CrossOrigin;
@@ -156,11 +156,11 @@ public class WebAppBuilder
       _configBuilder = Configs.config();
       _configBuilder.add(factory.config());
 
-      _injectBuilder = InjectManagerAmp.manager(classLoader());
+      _injectBuilder = InjectorAmp.manager(classLoader());
 
       _injectBuilder.include(BaratineProducer.class);
 
-      _serviceBuilder = ServiceManagerAmp.newManager();
+      _serviceBuilder = ServicesAmp.newManager();
       _serviceBuilder.name("webapp");
       _serviceBuilder.autoServices(true);
       _serviceBuilder.injectManager(()->_injectBuilder.get());
@@ -169,7 +169,7 @@ public class WebAppBuilder
       addStubVault(_serviceBuilder);
       _serviceBuilder.contextManager(true);
 
-      ServiceManagerAmp serviceManager = _serviceBuilder.get();
+      ServicesAmp serviceManager = _serviceBuilder.get();
       Amp.contextManager(serviceManager);
 
       _injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
@@ -272,8 +272,8 @@ public class WebAppBuilder
     _injectBuilder.autoBind(_autoBind);
     
     _injectBuilder.provider(()->webApp.config()).to(Config.class);
-    _injectBuilder.provider(()->webApp.inject()).to(InjectManager.class);
-    _injectBuilder.provider(()->webApp.serviceManager()).to(ServiceManager.class);
+    _injectBuilder.provider(()->webApp.inject()).to(Injector.class);
+    _injectBuilder.provider(()->webApp.serviceManager()).to(Services.class);
 
     generateFromFactory();
 
@@ -281,7 +281,7 @@ public class WebAppBuilder
     get("/**").to(WebStaticFile.class);
     
     _injectBuilder.get();
-    ServiceManagerAmp serviceManager = _serviceBuilder.start();
+    ServicesAmp serviceManager = _serviceBuilder.start();
   }
 
   //@Override
@@ -360,7 +360,7 @@ public class WebAppBuilder
   {
     // find views
 
-    InjectManagerAmp inject = webApp.inject();
+    InjectorAmp inject = webApp.inject();
 
     for (Binding<ViewWeb> binding : inject.bindings(ViewWeb.class)) {
       try {
@@ -376,7 +376,7 @@ public class WebAppBuilder
 
     ArrayList<RouteMap> mapList = new ArrayList<>();
 
-    ServiceManagerAmp manager = webApp.serviceManager();
+    ServicesAmp manager = webApp.serviceManager();
 
     ServiceRefAmp serviceRef = manager.newService(new RouteService()).ref();
 
@@ -520,9 +520,10 @@ public class WebAppBuilder
   }
 
   @Override
-  public <X> ServiceRef.ServiceBuilder service(Supplier<? extends X> supplier)
+  public <X> ServiceRef.ServiceBuilder service(Class<X> type,
+                                               Supplier<? extends X> supplier)
   {
-    ServiceRef.ServiceBuilder builder = _serviceBuilder.service(supplier);
+    ServiceRef.ServiceBuilder builder = _serviceBuilder.service(type, supplier);
 
     return builder;
   }
@@ -585,7 +586,7 @@ public class WebAppBuilder
   }
 
   @Override
-  public InjectManagerAmp inject()
+  public InjectorAmp inject()
   {
     return _injectBuilder.get();
   }
@@ -642,7 +643,7 @@ public class WebAppBuilder
     }
 
     @Override
-    public <T> Provider<T> provider(InjectManager manager, Key<T> key)
+    public <T> Provider<T> provider(Injector manager, Key<T> key)
     {
       Class<?> rawClass = key.rawClass();
 
@@ -657,7 +658,7 @@ public class WebAppBuilder
    */
   static interface RouteWebApp
   {
-    List<RouteMap> toMap(InjectManagerAmp inject, ServiceRefAmp serviceRef);
+    List<RouteMap> toMap(InjectorAmp inject, ServiceRefAmp serviceRef);
   }
 
   /**
@@ -708,7 +709,7 @@ public class WebAppBuilder
     }
 
     @Override
-    public List<RouteMap> toMap(InjectManagerAmp inject,
+    public List<RouteMap> toMap(InjectorAmp inject,
                           ServiceRefAmp serviceRef)
     {
       ArrayList<ViewRef<?>> views = new ArrayList<>();
@@ -803,7 +804,7 @@ public class WebAppBuilder
     }
 
     @Override
-    public List<RouteMap> toMap(InjectManagerAmp inject,
+    public List<RouteMap> toMap(InjectorAmp inject,
                                 ServiceRefAmp serviceRef)
     {
       Function<RequestWeb,ServiceWebSocket<?,?>> fun = null;
@@ -905,7 +906,7 @@ public class WebAppBuilder
 
   static class ConvertAsset<T> implements Convert<String,T>
   {
-    private ServiceManager _manager;
+    private Services _manager;
     private String _address;
     private Class<T> _itemType;
 
@@ -925,10 +926,10 @@ public class WebAppBuilder
       return manager().service(_address + key).as(_itemType);
     }
 
-    private ServiceManager manager()
+    private Services manager()
     {
       if (_manager == null) {
-        _manager = ServiceManager.current();
+        _manager = Services.current();
       }
 
       return _manager;

@@ -35,7 +35,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.db.journal.JournalStore;
 import com.caucho.v5.h3.H3;
@@ -69,7 +69,7 @@ public class TableKelp
   private final Row _row;
   private final byte[] _tableKey;
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
 
   private JournalStore _jbs;
 

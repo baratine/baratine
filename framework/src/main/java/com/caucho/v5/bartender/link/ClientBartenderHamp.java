@@ -32,7 +32,7 @@ package com.caucho.v5.bartender.link;
 import java.net.URI;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelClientImpl;
 import com.caucho.v5.amp.remote.ClientAmpBase;
 import com.caucho.v5.amp.remote.OutAmpFactory;
@@ -60,7 +60,7 @@ public class ClientBartenderHamp extends ClientAmpBase
   public ClientBartenderHamp(String uri,
                               String user, String password)
   {
-    super(ServiceManagerAmp.newManager().get(), uri);
+    super(ServicesAmp.newManager().get(), uri);
     
     try {
       URI userUri = new URI(uri);
@@ -102,9 +102,9 @@ public class ClientBartenderHamp extends ClientAmpBase
   }
   
   @Override
-  protected ServiceManagerAmp delegate()
+  protected ServicesAmp delegate()
   {
-    return (ServiceManagerAmp) super.delegate();
+    return (ServicesAmp) super.delegate();
   }
   
   @Override

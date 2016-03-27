@@ -57,7 +57,7 @@ public interface ServiceRefAmp extends ServiceRef
   String address();
   
   @Override
-  ServiceManagerAmp manager();
+  ServicesAmp manager();
   
   boolean isUp();
 

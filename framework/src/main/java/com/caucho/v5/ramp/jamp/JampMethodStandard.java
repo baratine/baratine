@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
@@ -74,14 +74,14 @@ public class JampMethodStandard extends JampMethodRest
 
   private JampMarshal _varArgsMarshal;
 
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
 
   JampMethodStandard(JampMethodBuilder builder)
   {
     _factory = builder.getJsonFactory();
     
     _methodRef = builder.getMethod();
-    _manager = (ServiceManagerAmp) _methodRef.serviceRef().manager();
+    _manager = (ServicesAmp) _methodRef.serviceRef().manager();
 
 
     _params = builder.getParams();
@@ -198,7 +198,7 @@ public class JampMethodStandard extends JampMethodRest
       
       //HeadersAmp headers = HeadersNull.NULL;
       
-      ServiceManagerAmp manager = _methodRef.serviceRef().manager();
+      ServicesAmp manager = _methodRef.serviceRef().manager();
       
       Object result = manager.run(60, TimeUnit.SECONDS, 
                                   r->{ _methodRef.query(r, args); });

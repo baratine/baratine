@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.marshal;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
 
 
@@ -43,7 +43,7 @@ public class PodImport
   private final ClassLoader _importLoader;
 
   //private ServiceManagerAmp _exportManager;
-  private ServiceManagerAmp _importManager;
+  private ServicesAmp _importManager;
 
   private RampImport _rampArg;
   private RampImport _rampResult;
@@ -86,7 +86,7 @@ public class PodImport
     return _importLoader;
   }
 
-  public ServiceManagerAmp getImportManager()
+  public ServicesAmp getImportManager()
   {
     if (_importManager == null) {
       _importManager = Amp.getContextManager(_importLoader);

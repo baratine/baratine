@@ -29,57 +29,25 @@
 
 package com.caucho.v5.amp.service;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.inbox.InboxNull;
-import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.MethodRefAmp;
-import com.caucho.v5.amp.spi.QueryRefAmp;
+import java.util.function.Supplier;
+
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
- * Sender for an actor ref.
+ * Creates actors inside the context of the inbox.
  */
-public final class ServiceRefRoot extends ServiceRefBase
+public interface StubFactoryAmp extends Supplier<StubAmp>
 {
-  private final ServiceManagerAmp _manager;
+  StubAmp stubMain();
   
-  public ServiceRefRoot(ServiceManagerAmp manager)
-  {
-    _manager = manager;
-  }
+  StubAmp get();
   
-  public String address()
-  {
-    return "/";
-  }
+  ServiceConfig config();
   
-  @Override
-  public boolean isUp()
+  default String address()
   {
-    return false;
-  }
-  
-  @Override
-  public MethodRefAmp getMethod(String methodName)
-  {
-    return new MethodRefNull(this, methodName);
-  }
-  
-  @Override
-  public InboxAmp inbox()
-  {
-    return new InboxNull(address(), this, _manager);
-  }
-  
-  @Override
-  public ServiceRefAmp onLookup(String path)
-  {
-    return _manager.service(path);
+    return config().address();
   }
 
-  @Override
-  public void close()
-  {
-  }
+  String actorName();
 }
-

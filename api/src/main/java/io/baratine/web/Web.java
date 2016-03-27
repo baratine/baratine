@@ -32,7 +32,7 @@ package io.baratine.web;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import io.baratine.inject.InjectManager;
+import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
@@ -134,7 +134,7 @@ public interface Web
    * 
    * @param type instance class of the bean
    */
-  static <T> InjectManager.BindingBuilder<T> bean(Class<T> type)
+  static <T> Injector.BindingBuilder<T> bean(Class<T> type)
   {
     Objects.requireNonNull(type);
     
@@ -144,7 +144,7 @@ public interface Web
   /**
    * Registers a bean instance for injection.
    */
-  static <T> InjectManager.BindingBuilder<T> bean(T bean)
+  static <T> Injector.BindingBuilder<T> bean(T bean)
   {
     Objects.requireNonNull(bean);
     

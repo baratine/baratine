@@ -40,7 +40,7 @@ import io.baratine.stream.ResultStream;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.kelp.RowCursor;
 import com.caucho.v5.kraken.table.TableKraken;
 import com.caucho.v5.util.L10N;
@@ -78,7 +78,7 @@ public class QueryKraken
   
   public Object execSync(Object ...args)
   {
-    ServiceManagerAmp manager = table().getManager();
+    ServicesAmp manager = table().getManager();
     
     return manager.run(10, TimeUnit.SECONDS, r->exec(r, args));
   }
@@ -120,7 +120,7 @@ public class QueryKraken
 
   public Cursor findOneFuture(Object ...args)
   {
-    ServiceManagerAmp manager = table().getManager();
+    ServicesAmp manager = table().getManager();
     
     return manager.run(10, TimeUnit.SECONDS, r->findOne(r, args));
   }

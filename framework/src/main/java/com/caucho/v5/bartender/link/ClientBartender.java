@@ -31,7 +31,7 @@ package com.caucho.v5.bartender.link;
 
 import java.net.URI;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.baratine.client.ServiceManagerClient;
@@ -159,13 +159,13 @@ public class ClientBartender extends ServiceManagerAmpWrapper
   }
   
   @Override
-  protected ServiceManagerAmp delegate()
+  protected ServicesAmp delegate()
   {
     if (_delegate == null) {
       connect();
     }
     
-    return (ServiceManagerAmp) _delegate.delegate();
+    return (ServicesAmp) _delegate.delegate();
   }
 
   @Override

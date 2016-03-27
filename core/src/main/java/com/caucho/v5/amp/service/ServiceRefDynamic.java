@@ -31,7 +31,7 @@ package com.caucho.v5.amp.service;
 
 import java.lang.reflect.Type;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.InboxWrapper;
 import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
@@ -43,11 +43,11 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
  */
 abstract public class ServiceRefDynamic extends ServiceRefWrapper
 {
-  private ServiceManagerAmp _manager = new ServiceManagerDynamic();
+  private ServicesAmp _manager = new ServiceManagerDynamic();
   private InboxAmp _inbox = new InboxDynamic();
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return _manager;
   }
@@ -92,9 +92,9 @@ abstract public class ServiceRefDynamic extends ServiceRefWrapper
   
   private class ServiceManagerDynamic extends ServiceManagerAmpWrapper {
     @Override
-    public ServiceManagerAmp delegate()
+    public ServicesAmp delegate()
     {
-      return (ServiceManagerAmp) ServiceRefDynamic.this.delegate().manager();
+      return (ServicesAmp) ServiceRefDynamic.this.delegate().manager();
     }
     
     public InboxAmp getInbox()

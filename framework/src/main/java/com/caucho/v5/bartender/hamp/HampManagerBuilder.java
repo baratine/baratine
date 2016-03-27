@@ -32,7 +32,7 @@ package com.caucho.v5.bartender.hamp;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.ServerBartender;
 
 /**
@@ -40,7 +40,7 @@ import com.caucho.v5.bartender.ServerBartender;
  */
 public class HampManagerBuilder
 {
-  private Supplier<ServiceManagerAmp> _ampManager;
+  private Supplier<ServicesAmp> _ampManager;
   private ServerBartender _serverSelf;
 
   private AuthHampManager _authManager;
@@ -51,7 +51,7 @@ public class HampManagerBuilder
   {
   }
 
-  public HampManagerBuilder ampManager(Supplier<ServiceManagerAmp> managerRef)
+  public HampManagerBuilder ampManager(Supplier<ServicesAmp> managerRef)
   {
     Objects.requireNonNull(managerRef);
     
@@ -60,7 +60,7 @@ public class HampManagerBuilder
     return this;
   }
   
-  public Supplier<ServiceManagerAmp> getServiceManagerRef()
+  public Supplier<ServicesAmp> getServiceManagerRef()
   {
     return _ampManager;
   }

@@ -32,7 +32,7 @@ package com.caucho.v5.amp.remote;
 import java.io.Closeable;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.service.ServiceRefWrapper;
@@ -53,9 +53,9 @@ abstract public class ClientAmpBase
 
   private ChannelClient _channel;
 
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
   
-  protected ClientAmpBase(ServiceManagerAmp manager, String uri)
+  protected ClientAmpBase(ServicesAmp manager, String uri)
   {
     Objects.requireNonNull(manager);
     
@@ -80,7 +80,7 @@ abstract public class ClientAmpBase
   }
   
   @Override
-  protected ServiceManagerAmp delegate()
+  protected ServicesAmp delegate()
   {
     return _manager;
   }

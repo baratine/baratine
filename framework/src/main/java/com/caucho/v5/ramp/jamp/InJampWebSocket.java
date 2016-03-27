@@ -33,7 +33,7 @@ import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.json.ser.JsonFactory;
@@ -49,11 +49,11 @@ public class InJampWebSocket extends InJamp
   
   private SessionContextJamp _channelContext;
   //private ChannelContextJamp _channelEnv;
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
 
   private ClassLoader _classLoader;
   
-  public InJampWebSocket(ServiceManagerAmp rampManager,
+  public InJampWebSocket(ServicesAmp rampManager,
                              ChannelAmp broker,
                              SessionContextJamp context,
                              JsonFactory jsonFactory)
@@ -67,7 +67,7 @@ public class InJampWebSocket extends InJamp
     _classLoader = rampManager.classLoader();
   }
   
-  private ServiceManagerAmp getManager()
+  private ServicesAmp getManager()
   {
     return _ampManager;
   }

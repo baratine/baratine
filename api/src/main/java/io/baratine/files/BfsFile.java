@@ -29,14 +29,13 @@
 
 package io.baratine.files;
 
-import io.baratine.db.BlobReader;
-import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
-import io.baratine.service.Result;
-import io.baratine.service.Service;
-
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import io.baratine.db.BlobReader;
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.Service;
 
 /**
  * Clustered file system.
@@ -57,8 +56,7 @@ public interface BfsFile
    * @param relativePath
    * @return a <code>ServiceRef</code> proxy for the given path
    */
-  @Direct
-  BfsFile lookup(String relativePath);
+  void lookup(String relativePath, Result<BfsFile> result);
 
   /**
    * Lists the files in this directory.

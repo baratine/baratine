@@ -35,7 +35,7 @@ import java.net.ConnectException;
 import java.util.Objects;
 
 import com.caucho.v5.amp.AmpException;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.remote.OutAmp;
 import com.caucho.v5.amp.remote.OutAmpFactory;
@@ -55,13 +55,13 @@ class OutAmpFactoryBartender implements OutAmpFactory
   
   private final ServerBartender _server;
   private final ServerBartender _selfServer;
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
 
   private final String _path;
   
   // private String _uri;
   
-  public OutAmpFactoryBartender(ServiceManagerAmp ampManager,
+  public OutAmpFactoryBartender(ServicesAmp ampManager,
                                 ServerBartender server,
                                 ServerBartender selfServer,
                                 String path)

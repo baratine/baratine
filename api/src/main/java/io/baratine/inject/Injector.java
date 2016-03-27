@@ -43,7 +43,7 @@ import io.baratine.spi.ServiceManagerProvider;
 /**
  * The injection manager interface
  */
-public interface InjectManager
+public interface Injector
 {
   /**
    * Returns an instance provider for the given Key, which combines
@@ -116,7 +116,7 @@ public interface InjectManager
     
     InjectBuilder autoBind(InjectAutoBind autoBind);
     
-    InjectManager get();
+    Injector get();
   }
   
   public interface BindingBuilder<T>
@@ -134,9 +134,9 @@ public interface InjectManager
   
   public interface InjectAutoBind
   {
-    <T> Provider<T> provider(InjectManager manager, Key<T> key);
+    <T> Provider<T> provider(Injector manager, Key<T> key);
     
-    default <T> Provider<T> provider(InjectManager manager, 
+    default <T> Provider<T> provider(Injector manager, 
                                      InjectionPoint<T> ip)
     {
       return provider(manager, ip.key());

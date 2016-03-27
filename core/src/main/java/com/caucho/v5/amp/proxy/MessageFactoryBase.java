@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.PipeInMessage;
@@ -65,11 +65,11 @@ public final class MessageFactoryBase implements MessageFactoryAmp
   
   private static final long TIMEOUT = 60 * 1000L;
   
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
   
   private long _queryTimeoutMin = TIMEOUT;
   
-  MessageFactoryBase(ServiceManagerAmp manager)
+  MessageFactoryBase(ServicesAmp manager)
   {
     Objects.requireNonNull(manager);
     

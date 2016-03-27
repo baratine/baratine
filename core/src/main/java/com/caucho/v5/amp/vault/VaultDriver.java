@@ -33,7 +33,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 import io.baratine.db.Cursor;
@@ -153,7 +153,7 @@ public interface VaultDriver<ID,T>
 
   // mixing factor and driver
   default <U, J extends Serializable> VaultDriver<U,J>
-  driver(ServiceManagerAmp ampManager,
+  driver(ServicesAmp ampManager,
          Class<?> serviceType,
          Class<U> entityType,
          Class<J> idType,

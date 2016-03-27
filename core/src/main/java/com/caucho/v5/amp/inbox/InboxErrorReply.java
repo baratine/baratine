@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.inbox;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
@@ -42,7 +42,7 @@ public class InboxErrorReply extends InboxNull
 {
   public InboxErrorReply(String address,
                          ServiceRefAmp serviceRef,
-                         ServiceManagerAmp manager)
+                         ServicesAmp manager)
   {
     super(address, serviceRef, manager);
   }

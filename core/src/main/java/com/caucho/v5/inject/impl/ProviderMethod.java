@@ -35,7 +35,7 @@ import javax.inject.Provider;
 
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.inject.BindingAmp;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 
 import io.baratine.inject.Key;
 
@@ -53,7 +53,7 @@ import io.baratine.inject.Key;
  */
 public class ProviderMethod<T,X> implements BindingAmp<T>, Provider<T>
 {
-  private InjectManagerAmp _manager;
+  private InjectorAmp _manager;
   private Method _method;
   private Key<T> _key;
   private int _priority;
@@ -62,7 +62,7 @@ public class ProviderMethod<T,X> implements BindingAmp<T>, Provider<T>
   private Provider<X> _ownerProvider;
   private Provider<?>[] _program;
 
-  public ProviderMethod(InjectManagerAmp manager,
+  public ProviderMethod(InjectorAmp manager,
                        BindingAmp<X> ownerBinding,
                        Method method)
   {

@@ -69,8 +69,8 @@ import com.caucho.v5.health.shutdown.ShutdownSystem;
 import com.caucho.v5.health.warning.WarningSystem;
 import com.caucho.v5.http.container.HttpContainerBuilder;
 import com.caucho.v5.http.container.HttpSystem;
-import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
+import com.caucho.v5.inject.InjectorAmp;
+import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.ServerSocketBar;
@@ -97,10 +97,10 @@ import io.baratine.config.Include;
 import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertManagerType;
 import io.baratine.convert.ConvertManagerType.ConvertTypeBuilder;
-import io.baratine.inject.InjectManager.BindingBuilder;
-import io.baratine.inject.InjectManager.IncludeInject;
-import io.baratine.inject.InjectManager.InjectAutoBind;
-import io.baratine.inject.InjectManager.InjectBuilder;
+import io.baratine.inject.Injector.BindingBuilder;
+import io.baratine.inject.Injector.IncludeInject;
+import io.baratine.inject.Injector.InjectAutoBind;
+import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
@@ -130,7 +130,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   
   //private ArrayList<InjectBuilderWebImpl<?>> _bindings = new ArrayList<>();
   
-  private InjectBuilderAmp _injectServer = InjectManagerAmp.manager();
+  private InjectBuilderAmp _injectServer = InjectorAmp.manager();
   
   private final ArrayList<IncludeInject> _bindings = new ArrayList<>();
   //private final ArrayList<IncludeWeb> _includes = new ArrayList<>();
@@ -481,12 +481,13 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public <T> ServiceRef.ServiceBuilder service(Supplier<? extends T> supplier)
+  public <T> ServiceRef.ServiceBuilder service(Class<T> serviceClass,
+                                               Supplier<? extends T> supplier)
   {
     Objects.requireNonNull(supplier);
     
     ServiceBuilderWebImpl service
-      = new ServiceBuilderWebImpl(this, supplier);
+      = new ServiceBuilderWebImpl(this, serviceClass, supplier);
     
     _includes.add(service);
     
@@ -712,7 +713,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public InjectManagerAmp inject()
+  public InjectorAmp inject()
   {
     return _injectServer.get();
   }
@@ -1017,7 +1018,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     }
     */
 
-    InjectManagerAmp.create();
+    InjectorAmp.create();
     
     //initCdiEnvironment();
 

@@ -29,7 +29,7 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.link.PodAppSupplier;
@@ -61,7 +61,7 @@ public class JampPodManagerPods extends JampPodManager
   }
 
   @Override
-  protected ServiceManagerAmp createAmpManager(String podName)
+  protected ServicesAmp createAmpManager(String podName)
   {
     if (podName == null || "".equals(podName) || "null".equals(podName)) {
       throw new ConfigException(L.l("'{0}' is an invalid pod-name in {1}",

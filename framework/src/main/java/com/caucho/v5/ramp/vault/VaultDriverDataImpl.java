@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.vault.MethodVault;
 import com.caucho.v5.amp.vault.VaultDriver;
@@ -82,10 +82,10 @@ public class VaultDriverDataImpl<ID, T>
   private String _loadSql;
 
   private IdReader<ID> _idReader;
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   private TableInfo _tableInfo;
 
-  public VaultDriverDataImpl(ServiceManagerAmp ampManager,
+  public VaultDriverDataImpl(ServicesAmp ampManager,
                                 Class<T> entityClass,
                                 Class<ID> idClass,
                                 String address)
@@ -98,7 +98,7 @@ public class VaultDriverDataImpl<ID, T>
     _entityClass = entityClass;
     _idClass = idClass;
 
-    _ampManager = ServiceManagerAmp.current();
+    _ampManager = ServicesAmp.current();
 
     _db = _ampManager.service("bardb:///")
                      .as(DatabaseServiceSync.class);

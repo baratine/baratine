@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
@@ -52,7 +52,7 @@ public class DeploySystem2 extends SubSystemBase
   // messages
   public static final int START_PRIORITY = START_PRIORITY_ENV_SYSTEM;
   
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
 
   private final ConcurrentHashMap<String,DeployHandle2<?>> _handleMap
     = new ConcurrentHashMap<>();
@@ -86,7 +86,7 @@ public class DeploySystem2 extends SubSystemBase
     DeployHandle2<I> handle = (DeployHandle2<I>) _handleMap.get(id);
     
     if (handle == null) {
-      ServiceManagerAmp ampManager = _ampManager;
+      ServicesAmp ampManager = _ampManager;
       Objects.requireNonNull(ampManager);
       
       DeployService2Impl<I> serviceImpl

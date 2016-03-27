@@ -41,7 +41,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.QueryErrorMessage;
 import com.caucho.v5.amp.message.QueryReplyMessage;
@@ -72,7 +72,7 @@ public class ChannelServerImpl implements ChannelServer
     
   private final ArrayList<ServiceRefAmp> _serviceCloseList = new ArrayList<>();
   
-  private final Supplier<ServiceManagerAmp> _managerRef;
+  private final Supplier<ServicesAmp> _managerRef;
   private final LookupAmp _registry;
   
   private final LruCache<String,ServiceRefAmp> _replyMap = new LruCache<>(64);
@@ -87,7 +87,7 @@ public class ChannelServerImpl implements ChannelServer
 
   private String _sessionId;
 
-  public ChannelServerImpl(Supplier<ServiceManagerAmp> managerRef,
+  public ChannelServerImpl(Supplier<ServicesAmp> managerRef,
                            LookupAmp registry,
                            OutAmp out,
                            String sessionAddress,
@@ -99,7 +99,7 @@ public class ChannelServerImpl implements ChannelServer
     _address = sessionAddress;
     _sessionId = sessionId;
     
-    ServiceManagerAmp manager = managerRef.get();
+    ServicesAmp manager = managerRef.get();
     
     if (manager == null) {
       throw new ServiceExceptionIllegalState(L.l("ServiceManager is not available for this channel"));
@@ -140,7 +140,7 @@ public class ChannelServerImpl implements ChannelServer
   }
   
   @Override
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _managerRef.get();
   }
@@ -466,7 +466,7 @@ public class ChannelServerImpl implements ChannelServer
       _qid = qid;
     }
     
-    private ServiceManagerAmp getManager()
+    private ServicesAmp getManager()
     {
       return _serviceRef.manager();
     }

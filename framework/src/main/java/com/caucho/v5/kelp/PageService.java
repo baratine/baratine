@@ -29,12 +29,12 @@
 
 package com.caucho.v5.kelp;
 
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 
 import java.util.function.Predicate;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.io.StreamSource;
 import com.caucho.v5.kelp.PageServiceSync.PutType;
 import com.caucho.v5.kelp.query.EnvKelp;

@@ -34,8 +34,8 @@ import javax.inject.Provider;
 import com.caucho.v5.config.Priority;
 
 import io.baratine.convert.ConvertManager;
-import io.baratine.inject.InjectManager;
-import io.baratine.inject.InjectManager.InjectAutoBind;
+import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.Key;
 
 /**
@@ -46,7 +46,7 @@ public class ConvertAutoBind implements InjectAutoBind
 {
   @SuppressWarnings("unchecked")
   @Override
-  public <T> Provider<T> provider(InjectManager inject, Key<T> key)
+  public <T> Provider<T> provider(Injector inject, Key<T> key)
   {
     if (! ConvertManager.class.equals(key.rawClass())) {
       return null;

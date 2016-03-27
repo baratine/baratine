@@ -32,7 +32,7 @@ package com.caucho.v5.amp.stub;
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 
 /**
@@ -43,7 +43,7 @@ public class ClassStubSession extends ClassStub
   private LoadField[] _loadFields;
   //private String _createMethod;
 
-  public ClassStubSession(ServiceManagerAmp rampManager,
+  public ClassStubSession(ServicesAmp rampManager,
                               Class<?> type,
                               ServiceConfig config)
   {

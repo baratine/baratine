@@ -36,7 +36,7 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 
 import io.baratine.service.Result;
@@ -51,7 +51,7 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
   private static final Logger log
     = Logger.getLogger(MethodStubResult_VarArgs.class.getName());
   
-  MethodStubResult_VarArgs(ServiceManagerAmp ampManager,
+  MethodStubResult_VarArgs(ServicesAmp ampManager,
                            Method method)
     throws IllegalAccessException
   {
@@ -59,7 +59,7 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
   }
   
   @Override
-  protected MethodHandle initMethodHandle(ServiceManagerAmp ampManager,
+  protected MethodHandle initMethodHandle(ServicesAmp ampManager,
                                           Method method)
     throws IllegalAccessException
   {

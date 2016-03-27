@@ -31,13 +31,13 @@ package com.caucho.v5.bartender.pod;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 /**
  * Binding the pod service to Baratine's directory.
@@ -49,9 +49,9 @@ public class ServiceInitPod implements ServiceInitializer
     = Logger.getLogger(ServiceInitPod.class.getName());
   
   @Override
-  public void init(ServiceManager manager)
+  public void init(Services manager)
   {
-    ServiceManagerAmp ampManager = (ServiceManagerAmp) manager;
+    ServicesAmp ampManager = (ServicesAmp) manager;
     
     BartenderSystem bartender = BartenderSystem.current();
     

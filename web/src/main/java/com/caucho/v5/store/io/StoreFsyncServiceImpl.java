@@ -32,9 +32,10 @@ package com.caucho.v5.store.io;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.caucho.v5.amp.Direct;
+
 import io.baratine.service.AfterBatch;
 import io.baratine.service.Api;
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 
 

@@ -44,10 +44,10 @@ import com.caucho.v5.loader.EnvironmentLocal;
  */
 public final class Amp
 {
-  private static final EnvironmentLocal<ServiceManagerAmp> _contextManager
+  private static final EnvironmentLocal<ServicesAmp> _contextManager
     = new EnvironmentLocal<>();
   
-  private static final WeakHashMap<ClassLoader,SoftReference<ServiceManagerAmp>> _contextMap
+  private static final WeakHashMap<ClassLoader,SoftReference<ServicesAmp>> _contextMap
   = new WeakHashMap<>();
   
   private Amp() {}
@@ -63,7 +63,7 @@ public final class Amp
   }
   */
   
-  public static ServiceManagerAmp getContextManager()
+  public static ServicesAmp getContextManager()
   {
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     
@@ -89,12 +89,12 @@ public final class Amp
   }
   */
   
-  public static ServiceManagerAmp getContextManager(ClassLoader loader)
+  public static ServicesAmp getContextManager(ClassLoader loader)
   {
-    ServiceManagerAmp manager = _contextManager.getLevel(loader);
+    ServicesAmp manager = _contextManager.getLevel(loader);
     
     if (manager == null) {
-      SoftReference<ServiceManagerAmp> managerRef = _contextMap.get(loader);
+      SoftReference<ServicesAmp> managerRef = _contextMap.get(loader);
 
       if (managerRef != null) {
         return managerRef.get();
@@ -130,14 +130,14 @@ public final class Amp
     */
   }
 
-  public static void contextManager(ServiceManagerAmp manager)
+  public static void contextManager(ServicesAmp manager)
   {
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     
     setContextManager(manager, loader);
   }
 
-  public static void setContextManager(ServiceManagerAmp manager, 
+  public static void setContextManager(ServicesAmp manager, 
                                        ClassLoader loader)
   {
     Objects.requireNonNull(manager);
@@ -162,7 +162,7 @@ public final class Amp
     }
   }
 
-  public static ServiceManagerAmp getCurrentManager()
+  public static ServicesAmp getCurrentManager()
   {
     OutboxAmp outbox = OutboxAmp.current();
     
@@ -174,7 +174,7 @@ public final class Amp
     InboxAmp inbox = outbox.inbox();
 
     if (inbox != null) {
-      ServiceManagerAmp manager = inbox.manager();
+      ServicesAmp manager = inbox.manager();
       
       if (manager != null) {
         return manager;

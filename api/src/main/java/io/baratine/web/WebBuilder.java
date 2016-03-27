@@ -35,10 +35,10 @@ import java.util.function.Supplier;
 import javax.inject.Provider;
 
 import io.baratine.convert.Convert;
-import io.baratine.inject.InjectManager;
-import io.baratine.inject.InjectManager.BindingBuilder;
-import io.baratine.inject.InjectManager.InjectAutoBind;
-import io.baratine.inject.InjectManager.InjectBuilder;
+import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.BindingBuilder;
+import io.baratine.inject.Injector.InjectAutoBind;
+import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 
@@ -116,11 +116,12 @@ public interface WebBuilder
   }
   
   
-  InjectManager inject();
+  Injector inject();
 
   <T> ServiceBuilder service(Class<T> serviceClass);
   
-  <T> ServiceBuilder service(Supplier<? extends T> supplier);
+  <T> ServiceBuilder service(Class<T> serviceClass,
+                             Supplier<? extends T> supplier);
 
   ServiceBuilder service(Key<?> key, Class<?> apiClass);
 

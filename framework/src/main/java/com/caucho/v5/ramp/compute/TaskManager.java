@@ -30,11 +30,11 @@
 package com.caucho.v5.ramp.compute;
 
 import io.baratine.service.Result;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * The task manager has an embedded service manager to keep it isolated
@@ -42,7 +42,7 @@ import com.caucho.v5.amp.ServiceManagerAmp;
  */
 public class TaskManager
 {
-  private ServiceManager _ampManager;
+  private Services _ampManager;
   private TaskService _taskService;
   private int _workers;
   
@@ -62,9 +62,10 @@ public class TaskManager
     try {
       thread.setContextClassLoader(TaskManager.class.getClassLoader());
       
-      _ampManager = ServiceManagerAmp.newManager().start();
+      _ampManager = ServicesAmp.newManager().start();
       
-      _taskService = _ampManager.newService(TaskServiceImpl::new)
+      _taskService = _ampManager.newService(TaskService.class,
+                                            TaskServiceImpl::new)
                                 .workers(workers)
                                 .as(TaskService.class);
     } finally {

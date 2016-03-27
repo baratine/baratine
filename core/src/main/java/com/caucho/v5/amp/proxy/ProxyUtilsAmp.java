@@ -32,7 +32,7 @@ package com.caucho.v5.amp.proxy;
 import io.baratine.service.ServiceRef;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
@@ -172,7 +172,7 @@ abstract public class ProxyUtilsAmp implements ServiceRef
       return (T) inboxSystem.serviceRef().pin(object).as(api);
     }
     else {
-      ServiceManagerAmp manager = ServiceManagerAmp.current();
+      ServicesAmp manager = ServicesAmp.current();
       
       return (T) manager.inboxSystem().serviceRef().pin(object).as(api);
     }

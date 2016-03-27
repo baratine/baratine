@@ -38,7 +38,7 @@ import javax.inject.Provider;
 
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.inject.BindingAmp;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;

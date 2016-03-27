@@ -33,7 +33,7 @@ import java.lang.annotation.Annotation;
 
 import javax.inject.Singleton;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 import io.baratine.inject.Bean;
@@ -48,9 +48,9 @@ import io.baratine.service.Service;
 public class BaratineProducer
 {
   @Bean
-  public ServiceManagerAmp getServiceManager()
+  public ServicesAmp getServiceManager()
   {
-    return ServiceManagerAmp.current();
+    return ServicesAmp.current();
   }
   
   /*
@@ -80,7 +80,7 @@ public class BaratineProducer
       throw new IllegalStateException();
     }
     
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
+    ServicesAmp manager = ServicesAmp.current();
     
     ServiceRefAmp serviceRef = manager.service(lookup.value());
     
@@ -113,7 +113,7 @@ public class BaratineProducer
       throw new IllegalStateException();
     }
     
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
+    ServicesAmp manager = ServicesAmp.current();
     
     String address = service.value();
     

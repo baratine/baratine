@@ -32,10 +32,10 @@ package com.caucho.v5.amp.inbox;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
-import com.caucho.v5.amp.service.ServiceRefImpl;
+import com.caucho.v5.amp.service.ServiceRefLocal;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -50,12 +50,12 @@ import io.baratine.service.ResultFuture;
 public class InboxExecutor extends InboxBase
   implements WorkerDeliver<MessageAmp>
 {
-  private final ServiceRefAmp _actorRef;
-  private final StubAmp _actor;
+  private final ServiceRefAmp _serviceRef;
+  private final StubAmp _stub;
   
   private final Executor _executor;
   
-  public InboxExecutor(ServiceManagerAmp manager,
+  public InboxExecutor(ServicesAmp manager,
                        String path,
                        Executor executor)
   {
@@ -63,8 +63,8 @@ public class InboxExecutor extends InboxBase
     
     Objects.requireNonNull(executor);
     
-    _actor = new StubAmpNull(path);
-    _actorRef = new ServiceRefImpl(path, _actor, this);
+    _stub = new StubAmpNull(path);
+    _serviceRef = new ServiceRefLocal(_stub, this);
     
     _executor = executor;
   }
@@ -72,13 +72,13 @@ public class InboxExecutor extends InboxBase
   @Override
   public ServiceRefAmp serviceRef()
   {
-    return _actorRef;
+    return _serviceRef;
   }
 
   @Override
   public StubAmp stubDirect()
   {
-    return _actor;
+    return _stub;
   }
 
   @Override
@@ -128,7 +128,7 @@ public class InboxExecutor extends InboxBase
   {
     ResultFuture<Boolean> future = new ResultFuture<>();
     
-    _actor.onInit(future);
+    _stub.onInit(future);
   }
 
   @Override
@@ -140,7 +140,7 @@ public class InboxExecutor extends InboxBase
   @Override
   public void shutdownStubs(ShutdownModeAmp mode)
   {
-    _actor.onShutdown(mode);
+    _stub.onShutdown(mode);
   }
   
   /*
@@ -174,7 +174,7 @@ public class InboxExecutor extends InboxBase
         outbox.message(_msg);
         
         //RampActor systemActor = null;
-        StubAmp systemActor = _actor;
+        StubAmp systemActor = _stub;
         
         _msg.invoke(InboxExecutor.this, systemActor);
         

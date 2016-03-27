@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.message;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 
@@ -74,7 +74,7 @@ public class ResultStreamFork implements ResultStreamAmp<Object>
     return _inbox;
   }
   
-  private ServiceManagerAmp getManager()
+  private ServicesAmp getManager()
   {
     return _inbox.manager();
   }

@@ -31,9 +31,9 @@ package com.caucho.v5.amp.remote;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.service.ActorFactoryAmp;
+import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.stub.StubAmp;
 
@@ -42,7 +42,7 @@ import com.caucho.v5.amp.stub.StubAmp;
  */
 public class ServiceRefLinkFactoryBuilder
 {
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   private final OutAmpFactory _outFactory;
   
   private String _name;
@@ -52,7 +52,7 @@ public class ServiceRefLinkFactoryBuilder
   
   private String _scheme = "bartender:";
   
-  public ServiceRefLinkFactoryBuilder(ServiceManagerAmp rampManager,
+  public ServiceRefLinkFactoryBuilder(ServicesAmp rampManager,
                                       OutAmpFactory outFactory)
   {
     Objects.requireNonNull(rampManager);
@@ -115,7 +115,7 @@ public class ServiceRefLinkFactoryBuilder
       channelFactory = new ChannelClientFactory.Base();
     }
     
-    ActorFactoryAmp actorFactory = new ActorFactoryLink(_manager,
+    StubFactoryAmp actorFactory = new ActorFactoryLink(_manager,
                                                         _name,
                                                         _queryMapRef,
                                                         _outFactory,
@@ -135,15 +135,15 @@ public class ServiceRefLinkFactoryBuilder
     return channelService;
   }
   
-  static class ActorFactoryLink implements ActorFactoryAmp {
-    private final ServiceManagerAmp _manager;
+  static class ActorFactoryLink implements StubFactoryAmp {
+    private final ServicesAmp _manager;
     private final OutAmpFactory _outFactory;
     private final ChannelClientFactory _channelFactory;
     private final String _addressRemote;
     private final ServiceRefAmp _callerRef;
     private final ServiceConfig _config;
     
-    public ActorFactoryLink(ServiceManagerAmp manager,
+    public ActorFactoryLink(ServicesAmp manager,
                             String address,
                             ServiceRefAmp callerSelf,
                             OutAmpFactory connFactory,

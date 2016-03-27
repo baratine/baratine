@@ -30,12 +30,12 @@
 package com.caucho.v5.ramp.timer;
 
 import io.baratine.service.Cancel;
-import io.baratine.timer.TimerService;
+import io.baratine.timer.Timers;
 
 /**
  * Timer service.
  */
-public interface TimerServiceAmp extends TimerService
+public interface TimerServiceAmp extends Timers
 {
   void cancel(Cancel cancel);
 }

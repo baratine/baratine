@@ -31,7 +31,7 @@ package com.caucho.v5.bartender.link;
 
 import java.io.Closeable;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -48,15 +48,15 @@ public class ClientBartenderLocal extends ServiceManagerAmpWrapper
   
   private final String _uri = "local:";
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   
   public ClientBartenderLocal()
   {
-    _ampManager = ServiceManagerAmp.newManager().get();
+    _ampManager = ServicesAmp.newManager().get();
   }
   
   @Override
-  public ServiceManagerAmp delegate()
+  public ServicesAmp delegate()
   {
     return _ampManager;
   }

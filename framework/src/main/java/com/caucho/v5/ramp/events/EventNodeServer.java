@@ -31,7 +31,7 @@ package com.caucho.v5.ramp.events;
 
 import java.util.ArrayList;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
 
 /**
@@ -88,7 +88,7 @@ class EventNodeServer {
 
       String eventsPath = "pod://" + podName + EventServerImpl.PATH;
 
-      ServiceManagerAmp manager = ServiceManagerAmp.current();
+      ServicesAmp manager = ServicesAmp.current();
 
       _eventServer = manager.service(eventsPath)
           .node(_nodeIndex)

@@ -30,24 +30,24 @@
 package com.caucho.v5.amp.service;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Lazy init proxy
  */
-public class ServiceRefLazyContext extends ServiceRefLazyProxy
+public class ServiceRefLazyContext extends ServiceRefLazy
 {
-  public ServiceRefLazyContext(ServiceManagerAmp manager, String address)
+  public ServiceRefLazyContext(ServicesAmp manager, String address)
   {
     super(manager, address);
   }
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     // baratine/a240 vs baratine/2102
     
-    ServiceManagerAmp manager = Amp.getContextManager();
+    ServicesAmp manager = Amp.getContextManager();
 
     return manager;
   }

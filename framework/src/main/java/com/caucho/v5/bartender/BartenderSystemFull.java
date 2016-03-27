@@ -35,7 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.heartbeat.HeartbeatImpl;
 import com.caucho.v5.bartender.heartbeat.HeartbeatLocalImpl;
@@ -137,7 +137,7 @@ public class BartenderSystemFull extends BartenderSystem
                                             _podService);
                                             */
     
-    ServiceManagerAmp ampManager = AmpSystem.currentManager();
+    ServicesAmp ampManager = AmpSystem.currentManager();
 
     new SchemePodSystem(this, ampManager).bind("pod:");
   }
@@ -312,7 +312,7 @@ public class BartenderSystemFull extends BartenderSystem
   {
     super.start();
     
-    ServiceManagerAmp rampManager = AmpSystem.currentManager();
+    ServicesAmp rampManager = AmpSystem.currentManager();
 
     _adminService = rampManager.newService(new AdminServiceImpl(this))
                                .address("public:///management")

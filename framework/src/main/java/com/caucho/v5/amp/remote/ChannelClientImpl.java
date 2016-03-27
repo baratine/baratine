@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.QueryErrorMessage;
 import com.caucho.v5.amp.message.QueryReplyMessage;
@@ -65,7 +65,7 @@ public class ChannelClientImpl implements ChannelClient
     
   private final ArrayList<StubAmp> _closeList = new ArrayList<>();
   
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
 
   private OutAmpManager _outManager;
   
@@ -73,7 +73,7 @@ public class ChannelClientImpl implements ChannelClient
 
   private ServiceRefAmp _callerRef;
   
-  public ChannelClientImpl(ServiceManagerAmp manager,
+  public ChannelClientImpl(ServicesAmp manager,
                            OutAmpManager outManager,
                            String channelAddress,
                            ServiceRefAmp callerRef)
@@ -126,7 +126,7 @@ public class ChannelClientImpl implements ChannelClient
   }
   
   @Override
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _manager;
   }

@@ -33,7 +33,7 @@ import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.MethodRefNull;
 import com.caucho.v5.amp.service.ServiceRefAlias;
@@ -58,7 +58,7 @@ public class SchemeBartenderBase extends ServiceRefBase
   
   private final BartenderSystem _bartender;
   private final ServerLinkBartenderBuilder _linkBuilder;
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
   private final ServerBartender _selfServer;
   
   private final ConcurrentHashMap<String,ServerLinkBartender> _linkMap
@@ -98,7 +98,7 @@ public class SchemeBartenderBase extends ServiceRefBase
   }
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return _ampManager;
   }

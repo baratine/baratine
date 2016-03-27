@@ -36,10 +36,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.service.ServiceRefException;
-import com.caucho.v5.amp.service.ServiceRefLazyProxy;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.service.ServiceRefDuplicateBinding;
+import com.caucho.v5.amp.service.ServiceRefLazy;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
@@ -56,14 +56,14 @@ class RegistryImpl implements RegistryAmp
     = Logger.getLogger(RegistryImpl.class.getName());
   private static final L10N L = new L10N(RegistryImpl.class);
   
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   
   private final ConcurrentHashMap<String,ServiceRefAmp> _serviceMap
     = new ConcurrentHashMap<>();
   
   private final LruCache<String,ServiceRefAmp> _cacheServiceMap;
   
-  public RegistryImpl(ServiceManagerAmp manager)
+  public RegistryImpl(ServicesAmp manager)
   {
     _manager = manager;
     
@@ -87,7 +87,7 @@ class RegistryImpl implements RegistryAmp
       }
     }
     else {
-      serviceRef = lookupImpl(ServiceManagerAmpImpl.toCanonical(address));
+      serviceRef = lookupImpl(ServicesAmpImpl.toCanonical(address));
 
       if (serviceRef != null) {
         //_cacheServiceMap.putIfAbsent(address, serviceRef);
@@ -147,7 +147,7 @@ class RegistryImpl implements RegistryAmp
       }
     }
     
-    return new ServiceRefLazyProxy(_manager, address);
+    return new ServiceRefLazy(_manager, address);
   }
   
   private ServiceRefAmp lookupSingle(String address)
@@ -187,7 +187,7 @@ class RegistryImpl implements RegistryAmp
       log.log(Level.FINE, exn.toString(), exn);
       
       ServiceRefAmp errorServiceRef
-        = new ServiceRefException(_manager, address, exn);
+        = new ServiceRefDuplicateBinding(_manager, address, exn);
       
       _serviceMap.put(address, errorServiceRef);
     }

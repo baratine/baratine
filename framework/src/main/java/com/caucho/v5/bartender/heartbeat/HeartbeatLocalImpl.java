@@ -29,12 +29,12 @@
 
 package com.caucho.v5.bartender.heartbeat;
 
-import io.baratine.service.Direct;
 import io.baratine.service.OnActive;
 import io.baratine.service.Result;
 
 import java.util.Objects;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ClusterBartender;
 import com.caucho.v5.bartender.ServerBartender;

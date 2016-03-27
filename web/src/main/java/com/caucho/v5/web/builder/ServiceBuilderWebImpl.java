@@ -32,7 +32,7 @@ package com.caucho.v5.web.builder;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
 
 import io.baratine.inject.Key;
@@ -54,12 +54,14 @@ public class ServiceBuilderWebImpl implements ServiceRef.ServiceBuilder, Include
 
   private boolean _isAddressAuto;
   
-  ServiceBuilderWebImpl(WebServerBuilderImpl serverBuilder,
-                        Supplier<?> supplier)
+  <T> ServiceBuilderWebImpl(WebServerBuilderImpl serverBuilder,
+                            Class<T> serviceClass,
+                            Supplier<? extends T> supplier)
   {
     Objects.requireNonNull(supplier);
     
     _serverBuilder = serverBuilder;
+    _serviceClass = serviceClass;
     _supplier = supplier;
     throw new UnsupportedOperationException();
   }
@@ -99,7 +101,7 @@ public class ServiceBuilderWebImpl implements ServiceRef.ServiceBuilder, Include
     return null;
   }
   
-  public void build(ServiceManagerAmp manager)
+  public void build(ServicesAmp manager)
   {
     ServiceBuilderAmp builder;
     

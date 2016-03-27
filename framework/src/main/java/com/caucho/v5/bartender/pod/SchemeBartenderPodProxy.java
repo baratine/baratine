@@ -31,9 +31,9 @@ package com.caucho.v5.bartender.pod;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.service.MethodRefNull;
 import com.caucho.v5.amp.service.ServiceRefBase;
 import com.caucho.v5.amp.spi.MethodRefAmp;
@@ -47,13 +47,13 @@ import com.caucho.v5.bartender.link.SchemeBartenderBase;
 public class SchemeBartenderPodProxy extends ServiceRefBase
 {
   private final BartenderSystem _bartender;
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   private final SchemeBartenderBase _schemeBartenderPod;
   private final PodBartender _podCaller;
   private final PodRef _podRef;
   
   public SchemeBartenderPodProxy(BartenderSystem bartender,
-                                 ServiceManagerAmp manager,
+                                 ServicesAmp manager,
                                  PodBartender pod)
   {
     _bartender = bartender;
@@ -79,7 +79,7 @@ public class SchemeBartenderPodProxy extends ServiceRefBase
   }
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return _manager;
   }
@@ -96,7 +96,7 @@ public class SchemeBartenderPodProxy extends ServiceRefBase
   @Override
   public ServiceRefAmp bind(String address)
   {
-    address = ServiceManagerAmpImpl.toCanonical(address);
+    address = ServicesAmpImpl.toCanonical(address);
 
     manager().bind(this, address);
 

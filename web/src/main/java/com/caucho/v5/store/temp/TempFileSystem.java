@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SubSystem;
@@ -66,7 +66,7 @@ public class TempFileSystem extends SubSystemBase
                                           RootDirectorySystem.class.getSimpleName()));
 
     Path dataDirectory = rootService.dataDirectory();
-    ServiceManagerAmp ampManager = AmpSystem.currentManager();
+    ServicesAmp ampManager = AmpSystem.currentManager();
     Objects.requireNonNull(ampManager);
     
     TempFileManager manager = new TempFileManager(dataDirectory.resolve("tmp"),

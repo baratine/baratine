@@ -30,15 +30,15 @@
 package com.caucho.v5.ramp.events;
 
 import io.baratine.service.Result;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
-import io.baratine.timer.TimerService;
+import io.baratine.timer.Timers;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
@@ -72,7 +72,7 @@ class EventNodeActorClient extends EventNodeAsset
     
     String eventsPath = "pod://" + podName + EventServerImpl.PATH;
 
-    ServiceManagerAmp  manager = ServiceManagerAmp.current();
+    ServicesAmp  manager = ServicesAmp.current();
     _podServiceRef = manager.service(eventsPath).node(0);
     
     _podServer = _podServiceRef.as(EventServer.class);
@@ -104,9 +104,9 @@ class EventNodeActorClient extends EventNodeAsset
     log.finer(e.toString());
     log.log(Level.FINEST, e.toString(), e);
     
-    ServiceManagerAmp  manager = ServiceManagerAmp.current();
+    ServicesAmp  manager = ServicesAmp.current();
     
-    TimerService timer = manager.service("timer:///").as(TimerService.class);
+    Timers timer = manager.service("timer:///").as(Timers.class);
     
     timer.runAfter(h->resubscribe(timeout), timeout, TimeUnit.SECONDS, 
                    Result.ignore());

@@ -40,7 +40,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.OutboxAmpDirect;
 import com.caucho.v5.amp.inbox.OutboxAmpExecutorFactory;
@@ -69,10 +69,10 @@ import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpSystem;
-import com.caucho.v5.amp.stub.StubFactoryAmp;
+import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 import com.caucho.v5.amp.stub.StubFactoryAmpImpl;
 import com.caucho.v5.amp.stub.StubGenerator;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.L10N;
@@ -92,11 +92,11 @@ import io.baratine.vault.Vault;
 /**
  * Baratine core service manager.
  */
-public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
+public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
 {
-  private static final L10N L = new L10N(ServiceManagerAmpImpl.class);
+  private static final L10N L = new L10N(ServicesAmpImpl.class);
   private static final Logger log
-    = Logger.getLogger(ServiceManagerAmpImpl.class.getName());
+    = Logger.getLogger(ServicesAmpImpl.class.getName());
   
   private final String _name;
   private final ClassLoader _classLoader;
@@ -107,13 +107,13 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   
   //private final InboxFactoryAmp _inboxFactory;
   private final ProxyFactoryAmp _proxyFactory;
-  private final StubFactoryAmp _stubFactory;
+  private final StubClassFactoryAmp _stubFactory;
   private final JournalFactoryAmp _journalFactory;
   private final ContextSessionFactory _channelFactory;
   
   private final StubGenerator []_stubGenerators;
   
-  private final Supplier<InjectManagerAmp> _injectManager;
+  private final Supplier<InjectorAmp> _injectManager;
   
   private final InboxAmp _inboxSystem;
   //private final OutboxAmp _systemOutbox;
@@ -152,7 +152,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   private long _journalDelay = -1;
   
   
-  public ServiceManagerAmpImpl(ServiceManagerBuilderAmp builder)
+  public ServicesAmpImpl(ServiceManagerBuilderAmp builder)
   {
     _name = builder.name();
     _debugId = builder.debugId();
@@ -297,6 +297,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     _isAutoStart = isAutoStart;
   }
   
+  /*
   @Override
   public String getSelfServer()
   {
@@ -308,6 +309,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   {
     _selfServer = selfServer;
   }
+  */
   
   @Override
   public RegistryAmp registry()
@@ -323,13 +325,13 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     return _inboxSystem;
   }
 
-  public long getJournalDelay()
+  public long journalDelay()
   {
     return _journalDelay;
   }
 
   @Override
-  public InjectManagerAmp inject()
+  public InjectorAmp injector()
   {
     return _injectManager.get();
   }
@@ -554,7 +556,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
    * newService() creates a new service from a bean
    */
   @Override
-  public ServiceRefAmp toService(Object serviceImpl)
+  public ServiceRefAmp toRef(Object serviceImpl)
   {
     if (serviceImpl instanceof ProxyHandleAmp) {
       ProxyHandleAmp proxy = (ProxyHandleAmp) serviceImpl;
@@ -582,22 +584,24 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
    * newService() creates a new service from a bean
    */
   @Override
-  public ServiceBuilderAmp newService(Supplier<?> supplier)
+  public <T> ServiceBuilderAmp newService(Class<T> type,
+                                          Supplier<? extends T> supplier)
   {
+    Objects.requireNonNull(type);
     Objects.requireNonNull(supplier);
     
-    return newService().serviceSupplier((Supplier) supplier);
+    return new ServiceBuilderImpl<>(this, type, supplier);
   }
 
   /**
    * newService() creates a new service from a bean
    */
   @Override
-  public <T> ServiceBuilderAmp newService(Class<T> cl)
+  public <T> ServiceBuilderAmp newService(Class<T> type)
   {
-    Objects.requireNonNull(cl);
+    Objects.requireNonNull(type);
     
-    return new ServiceBuilderImpl<>(this, cl);
+    return new ServiceBuilderImpl<>(this, type);
   }
 
   /**
@@ -689,24 +693,25 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     
     ServiceConfig config = null;
     
-    StubAmp actor = createActor(worker, config);
+    StubAmp stub = stubFactory().stub(worker, config);
     
     InboxAmp inbox = serviceRef.inbox();
     
     ServiceRefAmp newServiceRef;
     
     if (address != null) {
-      newServiceRef = new ServiceRefChild(address, actor, inbox);
+      newServiceRef = new ServiceRefChild(address, stub, inbox);
     }
     else {
-      newServiceRef = new ServiceRefPin(actor, inbox);
+      newServiceRef = new ServiceRefPin(stub, inbox);
     }
     
     return newServiceRef;
   }
 
+  /*
   @Override
-  public StubAmp createActor(Object bean, ServiceConfig config)
+  public StubAmp createStub(Object bean, ServiceConfig config)
   {
     return createActor(null, bean, config);
   }
@@ -720,9 +725,10 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
       return (StubAmp) bean;
     }
     else {
-      return stubFactory().createSkeleton(bean, path, path, null, config);
+      return stubFactory().stub(bean, path, path, null, config);
     }
   }
+  */
   
   protected InboxAmp createSystemInbox()
   {
@@ -759,7 +765,7 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
   }
   
   @Override
-  public StubFactoryAmp stubFactory()
+  public StubClassFactoryAmp stubFactory()
   {
     return _stubFactory;
   }
@@ -785,19 +791,6 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
                             long journalDelay)
   {
     return _journalFactory.open(name, journalMaxCount, journalDelay);
-  }
-
-  @Override
-  public ServiceRefAmp toServiceRef(Object proxy)
-  {
-    if (proxy instanceof ProxyHandleAmp) {
-      ProxyHandleAmp proxyHandle = (ProxyHandleAmp) proxy;
-      
-      return proxyHandle.__caucho_getServiceRef();
-    }
-    else {
-      return null;
-    }
   }
   
   @Override

@@ -32,7 +32,7 @@ package com.caucho.v5.bartender.files;
 import java.util.Objects;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.kraken.KrakenSystem;
 import com.caucho.v5.kraken.table.TableManagerKraken;
 import com.caucho.v5.store.temp.TempFileSystem;
@@ -47,7 +47,7 @@ public class FileServiceBuilder
   private String _tableName = "caucho_bfs_file";
   private TableManagerKraken _tableManager;
   private String _address;
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   private BartenderFileSystem _system;
   private FileHash _hash = FileHashStandard.STANDARD;
   private String _prefix = "";
@@ -64,7 +64,7 @@ public class FileServiceBuilder
     Objects.requireNonNull(_system);
   }
   
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _ampManager;
   }

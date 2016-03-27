@@ -33,7 +33,7 @@ import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.proxy.MessageFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ActorSkeletonSession;
@@ -43,14 +43,14 @@ import com.caucho.v5.amp.spi.ActorContainerAmp;
 /**
  * Creates service stubs for service implementation beans..
  */
-public class StubFactoryAmpImpl implements StubFactoryAmp
+public class StubFactoryAmpImpl implements StubClassFactoryAmp
 {
   /*
   private static WeakHashMap<ClassLoader,SoftReference<AmpProxyCache>> _cacheMap
     = new WeakHashMap<>();
     */
     
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
   
   //private AmpProxyCache _proxyCache;
   
@@ -62,7 +62,7 @@ public class StubFactoryAmpImpl implements StubFactoryAmp
   
   private MessageFactoryAmp _messageFactory;
       
-  public StubFactoryAmpImpl(ServiceManagerAmp ampManager)
+  public StubFactoryAmpImpl(ServicesAmp ampManager)
   {
     Objects.requireNonNull(ampManager);
     
@@ -70,7 +70,7 @@ public class StubFactoryAmpImpl implements StubFactoryAmp
   }
 
   @Override
-  public StubAmp createSkeleton(Object bean,
+  public StubAmp stub(Object bean,
                                  String path,
                                  String childPath,
                                  ActorContainerAmp container,

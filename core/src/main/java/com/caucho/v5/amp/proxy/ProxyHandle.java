@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.proxy;
 
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 import java.io.Serializable;
 
@@ -53,6 +53,6 @@ public class ProxyHandle implements Serializable
   
   private Object readResolve()
   {
-    return ServiceManager.current().service(_address).as(_api);
+    return Services.current().service(_address).as(_api);
   }
 }

@@ -30,7 +30,7 @@
 package com.caucho.v5.ramp.pubsub;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 
 /**
@@ -39,7 +39,7 @@ import io.baratine.service.ServiceRef;
 public class ServiceInitPubSub implements ServiceInitializer
 {
   @Override
-  public void init(ServiceManager manager)
+  public void init(Services manager)
   {
     SchemePubSubRamp scheme = new SchemePubSubRamp("pubsub:", manager);
     

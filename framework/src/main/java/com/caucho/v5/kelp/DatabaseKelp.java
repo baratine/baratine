@@ -32,7 +32,7 @@ package com.caucho.v5.kelp;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.db.journal.JournalStore;
 import com.caucho.v5.kelp.segment.SegmentKelp;
@@ -87,7 +87,7 @@ public class DatabaseKelp
   private final int _deltaLeafMax;
   private final int _deltaTreeMax;
   
-  private ServiceManagerAmp _rampManager;
+  private ServicesAmp _rampManager;
   
   private DatabaseServiceKelp _dbService;
 
@@ -195,7 +195,7 @@ public class DatabaseKelp
     return _path;
   }
 
-  ServiceManagerAmp getRampManager()
+  ServicesAmp getRampManager()
   {
     return _rampManager;
   }

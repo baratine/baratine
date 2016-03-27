@@ -32,7 +32,7 @@ package com.caucho.v5.amp.remote;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
@@ -53,10 +53,10 @@ public class RegistryAmpServerShared implements RegistryAmp
   private final LruCache<MethodKey,MethodRefAmp> _methodCache
     = new LruCache<>(8192);
   
-  private final Supplier<ServiceManagerAmp> _managerRef;
+  private final Supplier<ServicesAmp> _managerRef;
   private final String _podName;
 
-  public RegistryAmpServerShared(Supplier<ServiceManagerAmp> managerRef,
+  public RegistryAmpServerShared(Supplier<ServicesAmp> managerRef,
                                  String podName)
   {
     _managerRef = managerRef;
@@ -97,7 +97,7 @@ public class RegistryAmpServerShared implements RegistryAmp
   
   private ServiceRefAmp lookupImpl(String address)
   {
-    ServiceManagerAmp manager = _managerRef.get();
+    ServicesAmp manager = _managerRef.get();
 
     if (address.startsWith("public://")) {
       return manager.service(address);

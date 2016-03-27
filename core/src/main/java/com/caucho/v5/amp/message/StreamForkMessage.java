@@ -31,7 +31,7 @@ package com.caucho.v5.amp.message;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -94,7 +94,7 @@ public class StreamForkMessage<T>
     return _callerInbox;
   }
   
-  private ServiceManagerAmp getManager()
+  private ServicesAmp getManager()
   {
     return getCallerInbox().manager();
   }

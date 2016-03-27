@@ -27,21 +27,34 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.service;
+package com.caucho.v5.amp.stub;
 
-import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.service.ServiceConfig;
+import com.caucho.v5.amp.session.ContextSession;
+import com.caucho.v5.amp.spi.ActorContainerAmp;
 
 /**
- * Handles the context for an actor, primarily including its
- * query map.
+ * Creates MPC skeletons and stubs.
  */
-public class ServiceRefBound extends ServiceRefImpl
+public interface StubClassFactoryAmp
 {
-  public ServiceRefBound(String address,
-                             StubAmp actor,
-                             InboxAmp inbox)
+  default StubAmp stub(Object bean, ServiceConfig config)
   {
-    super(address, actor, inbox);
+    return stub(bean, null, null, null, config);
   }
+  
+  StubAmp stub(Object bean,
+                          String path,
+                          String childPath,
+                          ActorContainerAmp container,
+                          ServiceConfig config);
+  
+  StubAmp createSkeletonMain(Class<?> api,
+                              String path,
+                              ServiceConfig config);
+  
+  StubAmp createSkeletonSession(Object bean,
+                                 String key,
+                                 ContextSession context,
+                                 ServiceConfig config);
 }

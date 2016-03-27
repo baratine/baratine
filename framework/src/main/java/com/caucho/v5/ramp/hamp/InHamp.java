@@ -41,7 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpException;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.SendMessage_N;
@@ -97,7 +97,7 @@ public class InHamp implements InAmpWebSocket
   private int _fromAddressCacheIndex;
   private GatewayReply []_fromAddressCacheRing = new GatewayReply[256];
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   //private Supplier<OutboxAmp> _outboxFactory;
   
   private final Level _logLevel = Level.FINEST;
@@ -110,7 +110,7 @@ public class InHamp implements InAmpWebSocket
   private PodContainer _podContainer;
   private static AtomicInteger _idGen = new AtomicInteger();
 
-  public InHamp(ServiceManagerAmp rampManager,
+  public InHamp(ServicesAmp rampManager,
                 ChannelAmp channel)
   {
     _ampManager = rampManager;
@@ -161,7 +161,7 @@ public class InHamp implements InAmpWebSocket
   }
   */
   
-  protected ServiceManagerAmp getManager()
+  protected ServicesAmp getManager()
   {
     return _ampManager;
   }

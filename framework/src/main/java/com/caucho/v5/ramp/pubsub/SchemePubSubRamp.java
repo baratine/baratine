@@ -31,7 +31,7 @@ package com.caucho.v5.ramp.pubsub;
 
 import io.baratine.service.OnLookup;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 
 import java.util.HashMap;
@@ -45,7 +45,7 @@ import com.caucho.v5.amp.Amp;
 @Service
 public class SchemePubSubRamp
 {
-  private ServiceManager _rampManager;
+  private Services _rampManager;
   
   private HashMap<String,PubSubServiceRamp<?>> _pubSubNodeMap
     = new HashMap<>();
@@ -68,7 +68,7 @@ public class SchemePubSubRamp
     this(address, Amp.getCurrentManager());
   }
   
-  public SchemePubSubRamp(String address, ServiceManager rampManager)
+  public SchemePubSubRamp(String address, Services rampManager)
   {
     Objects.requireNonNull(address);
     Objects.requireNonNull(rampManager);
@@ -81,7 +81,7 @@ public class SchemePubSubRamp
     // _podServer = new PubSubServiceRamp(this);
   }
 
-  ServiceManager getManager()
+  Services getManager()
   {
     return _rampManager;
   }

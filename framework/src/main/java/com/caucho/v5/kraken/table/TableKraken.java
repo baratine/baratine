@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.h3.H3;
 import com.caucho.v5.h3.OutFactoryH3;
@@ -158,7 +158,7 @@ public class TableKraken
     return _tableManager;
   }
 
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _tableManager.getManager();
   }

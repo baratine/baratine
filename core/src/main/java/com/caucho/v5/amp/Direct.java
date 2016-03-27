@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.service;
+package com.caucho.v5.amp;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.lang.annotation.ElementType.METHOD;

@@ -32,7 +32,7 @@ package com.caucho.v5.amp.marshal;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceRefWrapper;
 import com.caucho.v5.amp.spi.MethodRefAmp;
@@ -43,7 +43,7 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 public class ServiceRefImport extends ServiceRefWrapper implements ImportAware
 {
   private final ServiceRefAmp _delegate;
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   
   private final PodImport _moduleImport;
 
@@ -103,7 +103,7 @@ public class ServiceRefImport extends ServiceRefWrapper implements ImportAware
   }
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return _manager;
   }

@@ -38,7 +38,7 @@ import java.lang.reflect.Type;
 import javax.inject.Provider;
 
 import com.caucho.v5.config.ConfigExceptionLocation;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.InjectProgram;
 
 import io.baratine.inject.InjectionPoint;
@@ -50,14 +50,14 @@ import io.baratine.inject.Key;
 class InjectMethod<T> extends InjectProgram
   implements InjectionPoint<T>
 {
-  private InjectManagerAmp _inject;
+  private InjectorAmp _inject;
   private Key<T> _key;
   
   private Method _method;
   private MethodHandle _methodHandle;
   private Provider<?>[] _program;
   
-  InjectMethod(InjectManagerAmp inject,
+  InjectMethod(InjectorAmp inject,
                       Method method)
   {
     _inject = inject;

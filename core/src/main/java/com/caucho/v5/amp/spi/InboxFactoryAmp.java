@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.spi;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.inbox.QueueServiceFactoryInbox;
 import com.caucho.v5.amp.service.ServiceConfig;
 
@@ -42,7 +42,7 @@ public interface InboxFactoryAmp
   /**
    * Creates an inbox for an actor.
    */
-  InboxAmp create(ServiceManagerAmp manager,
+  InboxAmp create(ServicesAmp manager,
                   QueueServiceFactoryInbox serviceQueueFactory,
                   ServiceConfig config);
 }

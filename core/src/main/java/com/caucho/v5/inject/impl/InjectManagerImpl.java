@@ -60,7 +60,7 @@ import javax.inject.Singleton;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.inject.BindingAmp;
 import com.caucho.v5.inject.BindingInject;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.InjectProgram;
 import com.caucho.v5.inject.InjectProvider;
 import com.caucho.v5.inject.type.TypeRef;
@@ -80,7 +80,7 @@ import io.baratine.inject.Key;
 /**
  * The injection manager for a given environment.
  */
-public class InjectManagerImpl implements InjectManagerAmp
+public class InjectManagerImpl implements InjectorAmp
 {
   private static final L10N L = new L10N(InjectManagerImpl.class);
   private static final Logger log = Logger.getLogger(InjectManagerImpl.class.getName());
@@ -194,7 +194,7 @@ public class InjectManagerImpl implements InjectManagerAmp
         InjectManagerImpl inject = _localManager.getLevel(loader);
         
         if (inject == null) {
-          inject = (InjectManagerImpl) InjectManagerAmp.manager(loader).get();
+          inject = (InjectManagerImpl) InjectorAmp.manager(loader).get();
           _localManager.set(inject, loader);
         }
         
@@ -213,7 +213,7 @@ public class InjectManagerImpl implements InjectManagerAmp
           }
         }
         
-        inject = (InjectManagerImpl) InjectManagerAmp.manager(loader).get();
+        inject = (InjectManagerImpl) InjectorAmp.manager(loader).get();
         
         _loaderManagerMap.put(loader, new SoftReference<>(inject));
         

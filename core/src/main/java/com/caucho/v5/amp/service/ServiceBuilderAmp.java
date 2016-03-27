@@ -42,6 +42,8 @@ public interface ServiceBuilderAmp extends ServiceRef.ServiceBuilder
 {
   ServiceBuilderAmp api(Class<?> cl);
   
+  ServiceBuilderAmp serviceClass(Class<?> returnType);
+  
   @Override
   ServiceBuilderAmp workers(int workers);
   
@@ -68,4 +70,5 @@ public interface ServiceBuilderAmp extends ServiceRef.ServiceBuilder
   {
     return ref().start();
   }
+
 }

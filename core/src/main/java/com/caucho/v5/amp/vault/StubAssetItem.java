@@ -37,7 +37,7 @@ import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -59,7 +59,7 @@ public class StubAssetItem extends ClassStub
   
   private VaultConfig<?,?> _configResource;
 
-  public StubAssetItem(ServiceManagerAmp ampManager, 
+  public StubAssetItem(ServicesAmp ampManager, 
                         Class<?> api,
                         ServiceConfig configService,
                         VaultConfig<?,?> configResource)

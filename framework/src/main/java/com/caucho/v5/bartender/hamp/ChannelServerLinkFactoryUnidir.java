@@ -29,7 +29,7 @@
 
 package com.caucho.v5.bartender.hamp;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelServerFactory;
 import com.caucho.v5.amp.remote.ChannelServerImpl;
@@ -57,7 +57,7 @@ public class ChannelServerLinkFactoryUnidir implements ChannelServerFactory
   @Override
   public ChannelServerImpl create(OutAmp conn)
   {
-    ServiceManagerAmp ampManager = _hampManager.ampManager();
+    ServicesAmp ampManager = _hampManager.ampManager();
 
     ChannelServerImpl channel
       = new ChannelServerLinkUnidir(_hampManager, ampManager, _registry, conn);

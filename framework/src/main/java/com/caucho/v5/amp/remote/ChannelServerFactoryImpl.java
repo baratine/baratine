@@ -31,7 +31,7 @@ package com.caucho.v5.amp.remote;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 
 /**
@@ -40,13 +40,13 @@ import com.caucho.v5.amp.spi.RegistryAmp;
 public class ChannelServerFactoryImpl
   implements ChannelServerFactory
 {
-  private final Supplier<ServiceManagerAmp> _managerRef;
+  private final Supplier<ServicesAmp> _managerRef;
   
   private final RegistryAmpServerShared _registry;
   
   private ChannelManagerService _sessionManager;
   
-  public ChannelServerFactoryImpl(Supplier<ServiceManagerAmp> managerRef,
+  public ChannelServerFactoryImpl(Supplier<ServicesAmp> managerRef,
                                   ChannelManagerService sessionManager,
                                   String podName)
   {
@@ -75,12 +75,12 @@ public class ChannelServerFactoryImpl
     return initRegistry(registryIn, address);
   }
   
-  protected Supplier<ServiceManagerAmp> getRampManagerRef()
+  protected Supplier<ServicesAmp> getRampManagerRef()
   {
     return _managerRef;
   }
   
-  protected ServiceManagerAmp getRampManager()
+  protected ServicesAmp getRampManager()
   {
     return _managerRef.get();
   }

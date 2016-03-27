@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Filesystem access for a random-access store.
@@ -47,7 +47,7 @@ public class StoreBuilder
   
   private boolean _isMmap = true;
   private boolean _isJniMmap = false;
-  private ServiceManagerAmp _rampManager;
+  private ServicesAmp _rampManager;
   
   public StoreBuilder(Path path)
   {
@@ -85,7 +85,7 @@ public class StoreBuilder
     return _isJniMmap;
   }
   
-  public StoreBuilder ampManager(ServiceManagerAmp rampManager)
+  public StoreBuilder ampManager(ServicesAmp rampManager)
   {
     Objects.requireNonNull(rampManager);
     
@@ -94,7 +94,7 @@ public class StoreBuilder
     return this;
   }
   
-  public ServiceManagerAmp ampManager()
+  public ServicesAmp ampManager()
   {
     return _rampManager;
   }

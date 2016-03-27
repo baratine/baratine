@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.util.L10N;
 
@@ -28,7 +28,7 @@ public class Profile
 
   private Profile()
   {
-    ServiceManagerAmp manager = ServiceManagerAmp.newManager().start();
+    ServicesAmp manager = ServicesAmp.newManager().start();
     
     ProfileTask task = ProfileTask.create();
     _profilerService = manager.newService(new ProfilerServiceImpl(task))

@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.spi;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.MessageDeliver;
 import com.caucho.v5.amp.stub.StubAmp;
 
@@ -54,6 +54,6 @@ public interface MessageAmp extends MessageDeliver<MessageAmp>, Message
   
   static MessageAmp current()
   {
-    return (MessageAmp) ServiceManagerAmp.current().currentMessage();
+    return (MessageAmp) ServicesAmp.current().currentMessage();
   }
 }

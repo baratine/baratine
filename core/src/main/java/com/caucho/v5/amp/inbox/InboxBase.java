@@ -31,7 +31,7 @@ package com.caucho.v5.amp.inbox;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.message.OnInitMessage;
@@ -53,19 +53,19 @@ import io.baratine.stream.ResultStream;
 abstract public class InboxBase 
   implements InboxAmp
 {
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   
   // private final AtomicLong _qId = new AtomicLong();
 
   private final AtomicReference<QueryMap> _queryMapRef = new AtomicReference<>();
   
-  protected InboxBase(ServiceManagerAmp manager)
+  protected InboxBase(ServicesAmp manager)
   {
     _manager = manager;
   }
   
   @Override
-  public final ServiceManagerAmp manager()
+  public final ServicesAmp manager()
   {
     return _manager;
   }

@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ErrorAmp;
 import com.caucho.v5.amp.ErrorCodesAmp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.SendMessage_N;
@@ -133,7 +133,7 @@ public class InJamp
   }
   */
   
-  private ServiceManagerAmp getManager()
+  private ServicesAmp getManager()
   {
     return _channelIn.getManager();
   }

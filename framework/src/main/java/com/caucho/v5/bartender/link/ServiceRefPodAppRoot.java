@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceRefNull;
 import com.caucho.v5.amp.service.ServiceRefWrapper;
@@ -48,13 +48,13 @@ public class ServiceRefPodAppRoot extends ServiceRefWrapper
 {
   private static final L10N L = new L10N(ServiceRefPodAppRoot.class);
   
-  private final ServiceManagerAmp _rampManager;
+  private final ServicesAmp _rampManager;
   private final PodContainer _podContainer;
   
-  private final ConcurrentHashMap<String,Supplier<ServiceManagerAmp>> _podMap
+  private final ConcurrentHashMap<String,Supplier<ServicesAmp>> _podMap
     = new ConcurrentHashMap<>();
   
-  public ServiceRefPodAppRoot(ServiceManagerAmp manager,
+  public ServiceRefPodAppRoot(ServicesAmp manager,
                               PodContainer podContainer)
   {
     Objects.requireNonNull(manager);
@@ -65,7 +65,7 @@ public class ServiceRefPodAppRoot extends ServiceRefWrapper
   }
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return _rampManager;
   }
@@ -76,7 +76,7 @@ public class ServiceRefPodAppRoot extends ServiceRefWrapper
     return "pod://";
   }
 
-  protected ServiceRefAmp lookup(ServiceManagerAmp manager, String path)
+  protected ServiceRefAmp lookup(ServicesAmp manager, String path)
   {
     return manager.service("local://" + path);
   }
@@ -104,9 +104,9 @@ public class ServiceRefPodAppRoot extends ServiceRefWrapper
                                 subPath);
   }
   
-  private Supplier<ServiceManagerAmp> getPodManagerSupplier(String podNodeName)
+  private Supplier<ServicesAmp> getPodManagerSupplier(String podNodeName)
   {
-    Supplier<ServiceManagerAmp> supplier = _podMap.get(podNodeName);
+    Supplier<ServicesAmp> supplier = _podMap.get(podNodeName);
     
     if (supplier == null) {
       supplier = new PodAppSupplier(_podContainer, podNodeName);

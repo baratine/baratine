@@ -43,7 +43,7 @@ import io.baratine.service.Pin;
  *     &#64;Inject &#64;Lookup("timer:") TimerServicer _timer;
  * </pre>
  *
- * <p> or with the <code>{@link io.baratine.service.ServiceManager}</code>:
+ * <p> or with the <code>{@link io.baratine.service.Services}</code>:
  *
  * <pre>
  *     ServiceManager.current().lookup("timer:").as(TimerService.class);
@@ -51,9 +51,9 @@ import io.baratine.service.Pin;
  *
  * <p> Service name: "timer:"
  *
- * @see io.baratine.service.ServiceManager
+ * @see io.baratine.service.Services
  */
-public interface TimerServiceSync extends TimerService
+public interface TimersSync extends Timers
 {
   /**
    * Run the <code>Runnable</code> at the given time.

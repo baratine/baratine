@@ -30,9 +30,9 @@
 package com.caucho.v5.ramp.pipe;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 /**
@@ -41,9 +41,9 @@ import com.caucho.v5.amp.ServiceRefAmp;
 public class ServiceInitPipe implements ServiceInitializer
 {
   @Override
-  public void init(ServiceManager manager)
+  public void init(Services manager)
   {
-    ServiceManagerAmp managerAmp = (ServiceManagerAmp) manager;
+    ServicesAmp managerAmp = (ServicesAmp) manager;
     
     SchemePipeImpl pipeScheme = new SchemePipeImpl("pipe:");
     

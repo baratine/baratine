@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.service.ServiceRefImpl;
+import com.caucho.v5.amp.service.ServiceRefLocal;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -49,7 +49,7 @@ public class InboxExecutorBase extends InboxBase
 {
   private final String _path;
   private final Executor _executor;
-  private final StubAmpNull _actor;
+  private final StubAmpNull _stub;
   private final ServiceRefAmp  _serviceRef;
   
   public InboxExecutorBase(String path,
@@ -62,8 +62,8 @@ public class InboxExecutorBase extends InboxBase
     Objects.requireNonNull(executor);
     
     _executor = executor;
-    _actor = new StubAmpNull(path);
-    _serviceRef = new ServiceRefImpl(path, _actor, this);
+    _stub = new StubAmpNull(path);
+    _serviceRef = new ServiceRefLocal(_stub, this);
   }
   
   @Override
@@ -81,7 +81,7 @@ public class InboxExecutorBase extends InboxBase
   @Override
   public StubAmp stubDirect()
   {
-    return _actor;
+    return _stub;
   }
 
   @Override
@@ -124,13 +124,13 @@ public class InboxExecutorBase extends InboxBase
   {
     ResultFuture<Boolean> future = new ResultFuture<>();
     
-    _actor.onInit(future);
+    _stub.onInit(future);
   }
   
   @Override
   public void shutdownStubs(ShutdownModeAmp mode)
   {
-    _actor.onShutdown(mode);
+    _stub.onShutdown(mode);
   }
   
   /*
@@ -153,7 +153,7 @@ public class InboxExecutorBase extends InboxBase
       outbox.message(msg);
       
       //RampActor systemActor = null;
-      StubAmp systemActor = _actor;
+      StubAmp systemActor = _stub;
       
       msg.invoke(InboxExecutorBase.this, systemActor);
       

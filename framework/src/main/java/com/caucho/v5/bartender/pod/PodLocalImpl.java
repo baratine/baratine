@@ -35,7 +35,8 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.Direct;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
@@ -46,7 +47,6 @@ import com.caucho.v5.bartender.heartbeat.RootHeartbeat;
 import com.caucho.v5.bartender.heartbeat.ServerHeartbeat;
 import com.caucho.v5.lifecycle.Lifecycle;
 
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 
 @InService(HeartbeatServiceLocal.class)
@@ -140,7 +140,7 @@ public class PodLocalImpl
       return;
     }
     
-    ServiceManagerAmp rampManager = AmpSystem.currentManager();
+    ServicesAmp rampManager = AmpSystem.currentManager();
     
     String clusterId = _serverSelf.getClusterId();
     

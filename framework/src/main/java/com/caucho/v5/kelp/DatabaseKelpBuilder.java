@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.store.temp.TempStore;
 import com.caucho.v5.store.temp.TempStoreBuilder;
@@ -71,7 +71,7 @@ public class DatabaseKelpBuilder
   private int _deltaMax = 16;
   private long _memorySize = 4 * 1024 * 1024;
   
-  private ServiceManagerAmp _rampManager;
+  private ServicesAmp _rampManager;
 
   private int _gcThreshold = 4;
   private int _gcMaxCollect = -1;
@@ -350,14 +350,14 @@ public class DatabaseKelpBuilder
     return _memorySize;
   }
   
-  public DatabaseKelpBuilder rampManager(ServiceManagerAmp manager)
+  public DatabaseKelpBuilder rampManager(ServicesAmp manager)
   {
     _rampManager = manager;
     
     return this;
   }
   
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _rampManager;
   }
@@ -417,7 +417,7 @@ public class DatabaseKelpBuilder
     }
 
     if (_rampManager == null) {
-      _rampManager = ServiceManagerAmp.newManager().get();
+      _rampManager = ServicesAmp.newManager().get();
     }
     
     if (_tempStore == null) {

@@ -87,7 +87,7 @@ public interface ServiceRef
    * 
    * @return the service's manager
    */
-  ServiceManager manager();
+  Services manager();
   
   /**
    * Lookup a specific method of this service.
@@ -157,7 +157,7 @@ public interface ServiceRef
       return null;
     }
     else {
-      return ServiceManager.current().service(address);
+      return Services.current().service(address);
     }
   }
   

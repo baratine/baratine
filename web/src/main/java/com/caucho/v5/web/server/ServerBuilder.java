@@ -57,7 +57,7 @@ import com.caucho.v5.health.shutdown.ShutdownSystem;
 import com.caucho.v5.health.warning.WarningSystem;
 import com.caucho.v5.http.container.HttpContainerBuilder;
 import com.caucho.v5.http.container.HttpSystem;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.ServerSocketBar;
 import com.caucho.v5.io.SocketSystem;
@@ -411,7 +411,7 @@ public class ServerBuilder
     }
     */
 
-    InjectManagerAmp.create();
+    InjectorAmp.create();
     
     //initCdiEnvironment();
 

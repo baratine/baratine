@@ -47,7 +47,7 @@ import io.baratine.service.ServiceExceptionClosed;
 /**
  * Service ref for an object pinned to a parent inbox.
  */
-public class ServiceRefPin extends ServiceRefActorBase
+public class ServiceRefPin extends ServiceRefStubBase
 {
   private static final Logger log = Logger.getLogger(ServiceRefPin.class.getName());
   

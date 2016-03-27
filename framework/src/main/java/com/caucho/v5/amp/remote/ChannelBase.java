@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 
@@ -43,15 +43,15 @@ import com.caucho.v5.amp.spi.RegistryAmp;
  */
 public class ChannelBase implements ChannelAmp
 {
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
   
-  public ChannelBase(ServiceManagerAmp manager)
+  public ChannelBase(ServicesAmp manager)
   {
     _manager = manager;
   }
   
   @Override
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _manager;
   }

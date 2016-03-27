@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
 
@@ -51,7 +51,7 @@ class MethodStubResultStream_N extends MethodStubResult_N {
   private static final Logger log
   = Logger.getLogger(MethodStubResultStream_N.class.getName());
 
-  MethodStubResultStream_N(ServiceManagerAmp ampManager, Method method)
+  MethodStubResultStream_N(ServicesAmp ampManager, Method method)
     throws IllegalAccessException
   {
     super(ampManager, method);

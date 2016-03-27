@@ -30,7 +30,6 @@
 package com.caucho.v5.kelp;
 
 import io.baratine.service.AfterBatch;
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
@@ -48,6 +47,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.db.journal.JournalStore;
 import com.caucho.v5.db.journal.JournalStream;

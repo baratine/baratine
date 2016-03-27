@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.Key;
@@ -52,14 +52,14 @@ public class ProviderConstructor<T> extends ProviderBase<T>
   
   private Class<T> _type;
 
-  private InjectManagerAmp _manager;
+  private InjectorAmp _manager;
   private Constructor<?> _ctor;
   private MethodHandle _ctorHandle;
   private Provider<?>[] _ctorParam;
   
   private Consumer<T> _inject;
 
-  public ProviderConstructor(InjectManagerAmp injector,
+  public ProviderConstructor(InjectorAmp injector,
                              Key<T> key,
                              int priority,
                              InjectScope<T> scope,

@@ -29,10 +29,10 @@
 
 package com.caucho.v5.bartender.heartbeat;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.bartender.ClusterBartender;
 import com.caucho.v5.bartender.ServerBartender;
 
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 
 public interface HeartbeatServiceLocal

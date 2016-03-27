@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.inbox;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -70,7 +70,7 @@ public class InboxNull extends InboxBase
 
   public InboxNull(String address,
                      ServiceRefAmp serviceRef,
-                     ServiceManagerAmp manager)
+                     ServicesAmp manager)
   {
     super(manager);
     
@@ -121,7 +121,8 @@ public class InboxNull extends InboxBase
   {
     return true;
   }
-  
+
+  @Override
   public String toString()
   {
     return getClass().getSimpleName() + "[" + _address + "]";

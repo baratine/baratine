@@ -29,7 +29,6 @@
 
 package com.caucho.v5.web.builder;
 
-import javax.inject.Qualifier;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,7 +41,9 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import javax.inject.Qualifier;
+import javax.inject.Qualifier;
 
+import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
@@ -52,6 +53,7 @@ import io.baratine.service.Api;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef.ServiceBuilder;
+import io.baratine.service.Workers;
 import io.baratine.vault.Vault;
 import io.baratine.web.Body;
 import io.baratine.web.Cookie;
@@ -216,26 +218,46 @@ class IncludeWebClass implements IncludeWeb
       if (introspectRoute(builder, path, beanFactory, m)) {
       }
       else if (m.isAnnotationPresent(Service.class)) {
-        Service service = m.getAnnotation(Service.class);
-        Api api = m.getAnnotation(Api.class);
-        
-        String address = service.value();
-        
-        Class<?> apiClass = m.getReturnType();
-        
-        if (api != null) {
-          apiClass = api.value();
-        }
-
-        if (address.isEmpty()) {
-          address = "/" + apiClass.getSimpleName();
-        }
-        
-        builder.service(()->newInstance(beanSupplier,m)).api(apiClass).address(address);
+        introspectService(builder, m, beanSupplier);
       }
       else if (isProduces(m)) {
         builder.provider(()->newInstance(beanSupplier,m)).to(Key.of(m));
       }
+    }
+  }
+  
+  private <T> void introspectService(WebBuilder builder,
+                                     Method method,
+                                     Supplier<Object> beanFactory)
+  {
+    Service service = method.getAnnotation(Service.class);
+    Api api = method.getAnnotation(Api.class);
+    
+    String address = service.value();
+
+    /*
+    if (address.isEmpty()) {
+      address = "/" + apiClass.getSimpleName();
+    }
+    */
+    
+    Class<T> type = (Class<T>) method.getReturnType();
+    Supplier<T> supplier = ()->(T) newInstance(beanFactory,method);
+    
+    ServiceBuilder serviceBuilder = builder.service(type, supplier);
+    
+    if (api != null) {
+      serviceBuilder.api(api.value());
+    }
+    
+    if (! address.isEmpty()) {
+      serviceBuilder.address(address);
+    }
+    
+    Workers workers = method.getAnnotation(Workers.class);
+    
+    if (workers != null) {
+      serviceBuilder.workers(workers.value());
     }
   }
   

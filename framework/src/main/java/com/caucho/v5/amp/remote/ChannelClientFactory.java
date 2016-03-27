@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 
@@ -38,13 +38,13 @@ import com.caucho.v5.amp.ServiceRefAmp;
  */
 public interface ChannelClientFactory
 {
-  ChannelClient createChannelClient(ServiceManagerAmp manager,
+  ChannelClient createChannelClient(ServicesAmp manager,
                                     OutAmpManager outManager,
                                     String address);
 
   public class Base implements ChannelClientFactory {
     @Override
-    public ChannelClient createChannelClient(ServiceManagerAmp manager,
+    public ChannelClient createChannelClient(ServicesAmp manager,
                                              OutAmpManager outManager,
                                              String address)
 

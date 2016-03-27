@@ -34,7 +34,7 @@ import io.baratine.service.ServiceExceptionConnect;
 import java.io.IOException;
 import java.net.URI;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.remote.OutAmp;
 import com.caucho.v5.amp.remote.OutAmpFactory;
@@ -49,14 +49,14 @@ public class OutHampFactoryClient implements OutAmpFactory
   private static final L10N L = new L10N(OutHampFactoryClient.class);
   
   private final URI _uri;
-  private final ServiceManagerAmp _rampManager;
+  private final ServicesAmp _rampManager;
   
   private String _host = "admin.resin";
   
   private String _uid;
   private String _password;
   
-  public OutHampFactoryClient(ServiceManagerAmp rampManager,
+  public OutHampFactoryClient(ServicesAmp rampManager,
                                      String uri)
   {
     try {
@@ -68,7 +68,7 @@ public class OutHampFactoryClient implements OutAmpFactory
     _rampManager = rampManager;
   }
   
-  public OutHampFactoryClient(ServiceManagerAmp rampManager,
+  public OutHampFactoryClient(ServicesAmp rampManager,
                                      String uri,
                                      String uid,
                                      String password)

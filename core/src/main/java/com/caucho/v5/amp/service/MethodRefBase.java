@@ -34,7 +34,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryWithResultMessage_N;
@@ -171,7 +171,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
       timeout = timeUnit.toMillis(timeout);
     }
     
-    ServiceManagerAmp manager = serviceRef().manager();
+    ServicesAmp manager = serviceRef().manager();
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(manager)) {
       // OutboxAmp outbox = manager.getCurrentOutbox();
       // InboxAmp inbox = outbox.getInbox();

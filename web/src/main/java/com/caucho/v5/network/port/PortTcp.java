@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.thread.IdleThreadLauncher;
 import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.config.ConfigException;
@@ -227,7 +227,7 @@ public class PortTcp implements PortSocket
   // The port lifecycle
   private final Lifecycle _lifecycle = new Lifecycle();
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
 
   private PortTcpBuilder _builder;
 
@@ -276,7 +276,7 @@ public class PortTcp implements PortSocket
   }
   
   @Override
-  public ServiceManagerAmp ampManager()
+  public ServicesAmp ampManager()
   {
     return _ampManager;
   }

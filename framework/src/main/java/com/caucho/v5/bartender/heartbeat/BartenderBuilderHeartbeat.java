@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderBuilder;
 import com.caucho.v5.bartender.BartenderBuilderPod;
@@ -400,7 +400,7 @@ public class BartenderBuilderHeartbeat extends BartenderBuilder
     
     _bartender = bartender;
     
-    ServiceManagerAmp manager = AmpSystem.currentManager();
+    ServicesAmp manager = AmpSystem.currentManager();
     
     manager.service("local://").bind("public:///cluster_root.0");
     
@@ -609,7 +609,7 @@ public class BartenderBuilderHeartbeat extends BartenderBuilder
   
   private UpdatePod initClusterPod(ClusterHeartbeat cluster)
   {
-    ServiceManagerAmp rampManager = AmpSystem.currentManager();
+    ServicesAmp rampManager = AmpSystem.currentManager();
     
     RackHeartbeat rack = cluster.findRack("rack");
     
@@ -682,7 +682,7 @@ public class BartenderBuilderHeartbeat extends BartenderBuilder
   {
     ServerBartender serverSelf = _bartender.serverSelf();
     
-    ServiceManagerAmp rampManager = AmpSystem.currentManager();
+    ServicesAmp rampManager = AmpSystem.currentManager();
     
     UpdatePodBuilder podBuilder = new UpdatePodBuilder();
   

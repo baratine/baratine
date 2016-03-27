@@ -32,7 +32,7 @@ package com.caucho.v5.kelp.segment;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.kelp.io.CompressorKelp;
 import com.caucho.v5.kelp.io.CompressorNull;
 import com.caucho.v5.util.L10N;
@@ -48,7 +48,7 @@ public class SegmentKelpBuilder
   private boolean _isCreate = true;
   private ArrayList<Integer> _segmentSizes = new ArrayList<>();
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   
   public SegmentKelpBuilder create(boolean isCreate)
   {
@@ -98,12 +98,12 @@ public class SegmentKelpBuilder
     return _segmentSizes;
   }
 
-  public void ampManager(ServiceManagerAmp ampManager)
+  public void ampManager(ServicesAmp ampManager)
   {
     _ampManager = ampManager;
   }
   
-  public ServiceManagerAmp ampManager()
+  public ServicesAmp ampManager()
   {
     return _ampManager;
   }

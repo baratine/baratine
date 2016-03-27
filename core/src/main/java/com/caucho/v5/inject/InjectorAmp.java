@@ -40,20 +40,20 @@ import com.caucho.v5.inject.impl.InjectManagerImpl;
 import io.baratine.config.Config;
 import io.baratine.convert.Convert;
 import io.baratine.inject.Binding;
-import io.baratine.inject.InjectManager;
+import io.baratine.inject.Injector;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**
  * The injection manager for a given environment.
  */
-public interface InjectManagerAmp extends InjectManager
+public interface InjectorAmp extends Injector
 {
-  public static InjectManagerAmp current()
+  public static InjectorAmp current()
   {
     return current(Thread.currentThread().getContextClassLoader());
   }
 
-  public static InjectManagerAmp current(ClassLoader classLoader)
+  public static InjectorAmp current(ClassLoader classLoader)
   {
     //return ServiceManagerProvider.current().injectCurrent(classLoader);
     return InjectManagerImpl.current(classLoader);
@@ -82,19 +82,19 @@ public interface InjectManagerAmp extends InjectManager
     InjectBuilderAmp context(boolean isContext);
 
     @Override
-    InjectManagerAmp get();
+    InjectorAmp get();
   }
  
   //
   // XXX: implementation
   //
 
-  public static InjectManagerAmp create(ClassLoader classLoader)
+  public static InjectorAmp create(ClassLoader classLoader)
   {
     return InjectManagerImpl.create(classLoader);
   }
 
-  public static InjectManagerAmp create()
+  public static InjectorAmp create()
   {
     return create(Thread.currentThread().getContextClassLoader());
   }

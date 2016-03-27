@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -49,7 +49,7 @@ abstract public class StubAmpOut extends StubAmpBase
   private static final Logger log
     = Logger.getLogger(StubAmpOut.class.getName());
   
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
   
   // the address advertised to the remote
   private final String _remoteAddress;
@@ -59,7 +59,7 @@ abstract public class StubAmpOut extends StubAmpBase
   private ServiceRefAmp _selfServiceRef;
   private ServiceRefAmp _serviceRef;
 
-  protected StubAmpOut(ServiceManagerAmp ampManager,
+  protected StubAmpOut(ServicesAmp ampManager,
                         String remoteAddress,
                         ServiceRefAmp selfServiceRef)
   {
@@ -72,17 +72,17 @@ abstract public class StubAmpOut extends StubAmpBase
     _selfAddress = selfServiceRef.address();
   }
   
-  protected void init(ServiceManagerAmp ampManager)
+  protected void init(ServicesAmp ampManager)
   {
     _serviceRef = createService(getServiceManager());
   }
   
-  protected ServiceManagerAmp getServiceManager()
+  protected ServicesAmp getServiceManager()
   {
     return _ampManager;
   }
   
-  protected ServiceRefAmp createService(ServiceManagerAmp ampManager)
+  protected ServiceRefAmp createService(ServicesAmp ampManager)
   {
     return ampManager.newService(this).ref();
   }

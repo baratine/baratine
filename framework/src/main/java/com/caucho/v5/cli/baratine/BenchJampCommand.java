@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.cli.daemon.ArgsDaemon;
 import com.caucho.v5.cli.server.ServerCommandBase;
@@ -318,7 +318,7 @@ public class BenchJampCommand extends ServerCommandBase<ArgsCli>
         MethodRefAmp methodRef = (MethodRefAmp)_methodRef;
         Object []args = _args;
         
-        ServiceManagerAmp manager = methodRef.serviceRef().manager();
+        ServicesAmp manager = methodRef.serviceRef().manager();
 
         _context.waitForStart();
 

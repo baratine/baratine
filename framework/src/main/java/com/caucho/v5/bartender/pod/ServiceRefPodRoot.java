@@ -38,9 +38,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.service.ServiceRefWrapper;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.bartender.ServerBartender;
@@ -54,8 +54,8 @@ public class ServiceRefPodRoot extends ServiceRefWrapper
   private static final L10N L = new L10N(ServiceRefPodRoot.class);
   private static final Logger log = Logger.getLogger(ServiceRefPodRoot.class.getName());
   
-  private final ServiceManagerAmp _managerSystem;
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _managerSystem;
+  private final ServicesAmp _manager;
   private PodBartender _pod;
   private String _address;
   private ServiceRefAmp [][]_services;
@@ -67,7 +67,7 @@ public class ServiceRefPodRoot extends ServiceRefWrapper
     = new AtomicReference<>();
   
   ServiceRefPodRoot(SchemePod podScheme,
-                    ServiceManagerAmp manager,
+                    ServicesAmp manager,
                     PodBartender pod,
                     String address)
   {
@@ -95,7 +95,7 @@ public class ServiceRefPodRoot extends ServiceRefWrapper
   }
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return _manager;
   }
@@ -110,7 +110,7 @@ public class ServiceRefPodRoot extends ServiceRefWrapper
   @Override
   public ServiceRefAmp bind(String address)
   {
-    address = ServiceManagerAmpImpl.toCanonical(address);
+    address = ServicesAmpImpl.toCanonical(address);
 
     manager().bind(this, address);
 

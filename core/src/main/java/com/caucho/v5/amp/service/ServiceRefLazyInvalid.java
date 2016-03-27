@@ -31,19 +31,19 @@ package com.caucho.v5.amp.service;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.LookupAmp;
 
 /**
  * Lazy init proxy for invalid refs.
  */
-public class ServiceRefLazyInvalid extends ServiceRefLazy
+public class ServiceRefLazyInvalid extends ServiceRefLazyBase
 {
   private final LookupAmp _lookup;
   private final String _address;
     
-  public ServiceRefLazyInvalid(ServiceManagerAmp manager,
+  public ServiceRefLazyInvalid(ServicesAmp manager,
                                LookupAmp lookup,
                                String address)
   {

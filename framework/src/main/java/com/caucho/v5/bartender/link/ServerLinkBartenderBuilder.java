@@ -31,7 +31,7 @@ package com.caucho.v5.bartender.link;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.http.pod.PodContainer;
 import com.caucho.v5.loader.ContextClassLoader;
 import com.caucho.v5.loader.EnvLoader;
@@ -42,7 +42,7 @@ import com.caucho.v5.loader.EnvLoader;
 public class ServerLinkBartenderBuilder
 {
   private String _webSocketPath = "/bartender";
-  private ServiceManagerAmp _rampManager;
+  private ServicesAmp _rampManager;
   
   public ServerLinkBartenderBuilder webSocketPath(String path)
   {
@@ -58,7 +58,7 @@ public class ServerLinkBartenderBuilder
     return _webSocketPath;
   }
   
-  public ServerLinkBartenderBuilder rampManager(ServiceManagerAmp manager)
+  public ServerLinkBartenderBuilder rampManager(ServicesAmp manager)
   {
     Objects.requireNonNull(manager);
     
@@ -67,7 +67,7 @@ public class ServerLinkBartenderBuilder
     return this;
   }
 
-  public ServiceManagerAmp getRampManager()
+  public ServicesAmp getRampManager()
   {
     return _rampManager;
   }

@@ -29,8 +29,7 @@
 
 package com.caucho.v5.kraken.table;
 
-import io.baratine.service.Direct;
-
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.kelp.TableKelp;
 
 

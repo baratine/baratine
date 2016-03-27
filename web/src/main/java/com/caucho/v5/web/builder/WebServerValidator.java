@@ -43,7 +43,7 @@ import javax.inject.Qualifier;
 import com.caucho.v5.amp.service.ValidatorService;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.inject.InjectManager.IncludeInject;
+import io.baratine.inject.Injector.IncludeInject;
 import io.baratine.service.Service;
 import io.baratine.vault.Vault;
 import io.baratine.web.Delete;

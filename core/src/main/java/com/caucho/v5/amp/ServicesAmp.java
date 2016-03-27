@@ -46,25 +46,24 @@ import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.StubFactoryAmp;
+import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 
-import io.baratine.inject.InjectManager;
+import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
-import io.baratine.service.Service;
-import io.baratine.service.ServiceManager;
 import io.baratine.service.ServiceRef;
+import io.baratine.service.Services;
 import io.baratine.spi.Message;
 
 /**
  * Manages an AMP domain.
  */
-public interface ServiceManagerAmp extends ServiceManager, LookupAmp
+public interface ServicesAmp extends Services, LookupAmp
 {
-  static ServiceManagerAmp current()
+  static ServicesAmp current()
   {
-    return (ServiceManagerAmp) ServiceManager.current();
+    return (ServicesAmp) Services.current();
   }
   
   @Override
@@ -81,37 +80,24 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   <T> T newProxy(ServiceRefAmp actorRef, 
                     Class<T> api,
                     Class<?> ...apis);
-  
-  /*
-  <T> T createPinProxy(ServiceRefAmp actorRef, 
-                    Class<T> api,
-                    Class<?> ...apis);
-                    */
 
   String address(Class<?> type);
   
   String address(Class<?> type, String address);
 
-  //ServiceBuilderAmp newService();
-  
-  ServiceRefAmp toService(Object value);
+  ServiceRefAmp toRef(Object value);
 
   @Override
   ServiceBuilderAmp newService(Object value);
 
   @Override
-  ServiceBuilderAmp newService(Supplier<?> supplier);
+  <T> ServiceBuilderAmp newService(Class<T> type, 
+                                   Supplier<? extends T> supplier);
 
   @Override
   <T> ServiceBuilderAmp newService(Class<T> type);
 
   ServiceBuilderAmp service(Key<?> key, Class<?> apiClass);
-  
-  //ServiceRefAmp service(ActorAmp actor);
-  
-  //ServiceConfig.Builder newServiceConfig();
-                           
-  //ServiceRefAmp service(ActorFactoryAmp actorFactory);
   
   ServiceRefAmp pin(ServiceRefAmp parent,
                     Object listener);
@@ -122,12 +108,6 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   
   ServiceRefAmp bind(ServiceRefAmp service, String address);
   
-  /*
-  ServiceRefAmp service(QueueServiceFactoryInbox serviceFactory,
-                         ServiceConfig config);
-                         */
-
-  
   /**
    * Returns the domain's broker.
    */
@@ -137,42 +117,15 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   
   String getDebugId();
   
-  InjectManager inject();
+  Injector injector();
   
-  /**
-   * @return
-   */
   InboxAmp inboxSystem();
 
-  /*
-  <T> T createQueue(InboxAmp mailbox, 
-                    Object bean, 
-                    String address,
-                    Class<T> api);
-                    */
-  
   ProxyFactoryAmp proxyFactory();
   
-  StubFactoryAmp stubFactory();
+  StubClassFactoryAmp stubFactory();
   
-  StubAmp createActor(Object bean, ServiceConfig config);
-  
-  //ActorAmp createActor(String actorName, Object bean, ServiceConfig config);
-  /*
-  ActorAmp createActor(Object child, 
-                       String address, String childPath,
-                       ActorContainerAmp container,
-                       ServiceConfig config);
-                       */
-  
-  // ActorAmp createMainActor(Class<?> beanClass, String name, ServiceConfig config);
-  
-  /*
-  ActorAmp createActorSession(Object bean,
-                              String key,
-                              ContextSession context,
-                              ServiceConfig config);
-                              */
+  // StubAmp createStub(Object bean, ServiceConfig config);
   
   <T> T run(long timeout,
             TimeUnit unit,
@@ -195,7 +148,7 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   }
 
   
-  ServiceRefAmp toServiceRef(Object proxy);
+  //ServiceRefAmp toRef(Object proxy);
   
   QueueFullHandler getQueueFullHandler();
   
@@ -212,31 +165,17 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
   void close();
   void shutdown(ShutdownModeAmp mode);
   
-  //
-  // module
-  //
-  
-  // ModuleAmp getModule();
-  
-  //RampSystem getSystem();
-  
-  //<T> DisruptorBuilder<T> disruptor(Class<T> api);
-  
-  /**
-   * Creates a module builder.
-   */
-  // ModuleRef.Builder module(String name, String version);
-  
   void addAutoStart(ServiceRef serviceRef);
   
   void start();
 
   boolean isAutoStart();
   void setAutoStart(boolean isAutoStart);
+
+  /*
   String getSelfServer();
   void setSelfServer(String hostName);
-  //String getPeerServer();
-  //void setPeerServer(String hostName);
+  */
   
   //
   // debug/stats
@@ -267,18 +206,4 @@ public interface ServiceManagerAmp extends ServiceManager, LookupAmp
     @Override
     void close();
   }
-
-
-  /*
-  interface DisruptorBuilder<T>
-  {
-    //DisruptorBuilder<T> peer(T serviceImpl);
-    
-    DisruptorBuilder<T> next(T serviceImpl);
-    
-    ServiceRef build();
-    
-    ServiceRef build(ServiceConfig config);
-  }
-  */
 }

@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.remote.ChannelAmp;
@@ -72,7 +72,7 @@ public class EndpointHampClient extends HampService
 
   // private HampChannelBrokerClient _broker;
   
-  public EndpointHampClient(ServiceManagerAmp ampManager,
+  public EndpointHampClient(ServicesAmp ampManager,
                             ServerHeartbeat server,
                             String selfHostName,
                             ChannelAmp channel)

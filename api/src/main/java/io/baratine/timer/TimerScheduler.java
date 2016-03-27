@@ -32,7 +32,7 @@ package io.baratine.timer;
 /**
  * Schedules the next timer invocation.
  *
- * @see TimerService
+ * @see Timers
  */
 public interface TimerScheduler
 {

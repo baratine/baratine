@@ -32,7 +32,7 @@ package com.caucho.v5.bartender.link;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionConnect;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.remote.OutAmp;
 import com.caucho.v5.amp.remote.OutAmpFactory;
@@ -48,14 +48,14 @@ class OutAmpFactoryBartenderClient implements OutAmpFactory
 {
   private static final L10N L = new L10N(OutAmpFactoryBartenderClient.class);
   
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
   private final String _selfHostName;
   private final String _uri;
   
   private String _user;
   private String _password;
 
-  public OutAmpFactoryBartenderClient(ServiceManagerAmp ampManager,
+  public OutAmpFactoryBartenderClient(ServicesAmp ampManager,
                                       String selfHostName,
                                       String uri,
                                       String user,

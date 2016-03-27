@@ -39,13 +39,12 @@ import io.baratine.files.Status;
 import io.baratine.files.Watch;
 import io.baratine.files.WriteOption;
 import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
 import io.baratine.service.OnInit;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 
 import java.io.IOException;
@@ -60,7 +59,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.Direct;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
@@ -168,7 +168,7 @@ public class FileServiceRootImpl
     createFileQuery();
     // createDirQuery();
     
-    ServiceManagerAmp manager = builder.getManager();
+    ServicesAmp manager = builder.getManager();
     String address = builder.getAddress();
 
     _serviceRef = manager.newService(this).address(address).ref();
@@ -179,7 +179,7 @@ public class FileServiceRootImpl
 
   FileServiceRootImpl(String address,
                       String podName,
-                      ServiceManagerAmp manager)
+                      ServicesAmp manager)
   {
     this(new FileServiceBuilder().address(address).pod(podName));
   }
@@ -242,7 +242,7 @@ public class FileServiceRootImpl
   public void onActive()
   {
     FileChangeService listener = new FileChangeService();
-    ServiceManager manager = ServiceManager.current();
+    Services manager = Services.current();
     
     _fileTable.addListener(manager.newService(listener).as(TableListener.class));
     // _dirTable.addListener(new DirChangeListener());

@@ -30,7 +30,6 @@
 package com.caucho.v5.kelp;
 
 import io.baratine.service.AfterBatch;
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 
 import java.io.IOException;
@@ -41,6 +40,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.kelp.Page.Type;

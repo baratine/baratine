@@ -29,7 +29,7 @@
 
 package com.caucho.v5.bartender.pod;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 /**
@@ -40,7 +40,7 @@ public class ServiceRefPodRootNode extends ServiceRefPodRoot
   private int _hash;
   
   ServiceRefPodRootNode(SchemePod podScheme,
-                        ServiceManagerAmp manager,
+                        ServicesAmp manager,
                         PodBartender pod,
                         String address,
                         int hash)

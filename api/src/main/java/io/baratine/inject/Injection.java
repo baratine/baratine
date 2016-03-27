@@ -29,7 +29,7 @@
 
 package io.baratine.inject;
 
-import io.baratine.inject.InjectManager.InjectBuilder;
+import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**

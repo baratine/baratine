@@ -29,23 +29,23 @@
 
 package com.caucho.v5.bartender.files;
 
-import io.baratine.db.BlobReader;
-import io.baratine.files.BfsFileSync;
-import io.baratine.files.Status;
-import io.baratine.files.Watch;
-import io.baratine.files.WriteOption;
-import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
-import io.baratine.service.Result;
-import io.baratine.service.Service;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.db.BlobReader;
+import io.baratine.files.BfsFile;
+import io.baratine.files.Status;
+import io.baratine.files.Watch;
+import io.baratine.files.WriteOption;
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.Service;
 
 /**
  * Entry to the filesystem.
@@ -115,7 +115,7 @@ public class BfsFileImpl implements BfsFileAmp
 
   @Override
   @Direct
-  public BfsFileSync lookup(String path)
+  public void lookup(String path, Result<BfsFile> result)
   {
     if (path.startsWith("/")
         || path.contains("//")
@@ -124,7 +124,7 @@ public class BfsFileImpl implements BfsFileAmp
       throw new IllegalArgumentException(L.l("'{0}' is an invalid path", path));
     }
 
-    return _root.lookup(_relPath + "/" + path);
+    result.ok(_root.lookup(_relPath + "/" + path));
   }
 
   @Override

@@ -32,7 +32,7 @@ package com.caucho.v5.network.port;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.ServerSocketBar;
 import com.caucho.v5.network.ssl.JsseSSLFactory;
@@ -59,7 +59,7 @@ public class PortTcpBuilder
 
   private String _address;
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   
   public PortTcpBuilder(Config env)
   {
@@ -68,7 +68,7 @@ public class PortTcpBuilder
     _env = env;
   }
 
-  public void ampManager(ServiceManagerAmp ampManager)
+  public void ampManager(ServicesAmp ampManager)
   {
     _ampManager = ampManager;
   }
@@ -200,7 +200,7 @@ public class PortTcpBuilder
     
   }
 
-  public ServiceManagerAmp ampManager()
+  public ServicesAmp ampManager()
   {
     Objects.requireNonNull(_ampManager);
     

@@ -33,7 +33,7 @@ import io.baratine.service.Result;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.service.ServiceRefLazyProxy;
+import com.caucho.v5.amp.service.ServiceRefLazy;
 import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -48,10 +48,10 @@ public class StubAmpLazyProxy extends StubAmpBase implements ActorAmpState
   private static final L10N L = new L10N(StubAmpLazyProxy.class);
   private static final Logger log = Logger.getLogger(StubAmpLazyProxy.class.getName());
   
-  private ServiceRefLazyProxy _serviceRefLazy;
+  private ServiceRefLazy _serviceRefLazy;
   private StubAmp _delegate;
   
-  public StubAmpLazyProxy(ServiceRefLazyProxy serviceRefLazy)
+  public StubAmpLazyProxy(ServiceRefLazy serviceRefLazy)
   {
     _serviceRefLazy = serviceRefLazy;
   }

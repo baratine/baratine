@@ -29,12 +29,12 @@
 
 package com.caucho.v5.network.port;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Represents listen port for a protocol-independent connection.
  */
 public interface PortSocket
 {
-  ServiceManagerAmp ampManager();
+  ServicesAmp ampManager();
 }

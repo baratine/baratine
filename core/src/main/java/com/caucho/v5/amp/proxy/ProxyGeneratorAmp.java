@@ -79,7 +79,10 @@ import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
 /**
- * Extends a decorator, implementing the missing methods.
+ * Generates service proxies.
+ * 
+ * Proxy methods create Baratine messages and offer the messages to the
+ * target service's inbox.
  */
 @ModulePrivate
 public class ProxyGeneratorAmp<T> {

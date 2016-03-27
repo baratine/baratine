@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
@@ -52,10 +52,10 @@ public class PodKraken
   //private ProxyKrakenRef []_proxies;
   private ConcurrentHashMap<String,ProxyKrakenRef> _proxyMap = new ConcurrentHashMap<>();
 
-  private ServiceManagerAmp _rampManager;
+  private ServicesAmp _rampManager;
   
   public PodKraken(TableManagerKraken krakenManager,
-                   ServiceManagerAmp rampManager,
+                   ServicesAmp rampManager,
                    PodBartender pod)
   {
     Objects.requireNonNull(krakenManager);

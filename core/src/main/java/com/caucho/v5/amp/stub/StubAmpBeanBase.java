@@ -32,7 +32,7 @@ package com.caucho.v5.amp.stub;
 import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
@@ -267,13 +267,13 @@ public class StubAmpBeanBase extends StubAmpStateBase
       return handle.__caucho_getServiceRef();
     }
     else {
-      ServiceManagerAmp manager = parentRef.manager();
+      ServicesAmp manager = parentRef.manager();
       
       String address = parentRef.address() + path;
       
       ServiceConfig config = null;
       
-      StubFactoryAmp proxyFactory = manager.stubFactory();
+      StubClassFactoryAmp proxyFactory = manager.stubFactory();
       
       StubAmp actor;
       
@@ -281,7 +281,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
         actor = (StubAmp) value;
       }
       else {
-        actor = proxyFactory.createSkeleton(value, address, path, container, config);
+        actor = proxyFactory.stub(value, address, path, container, config);
       }
       
       serviceRef = parentRef.pin(actor, address);

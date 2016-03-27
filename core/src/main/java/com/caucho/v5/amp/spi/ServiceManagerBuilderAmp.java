@@ -32,21 +32,21 @@ package com.caucho.v5.amp.spi;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.stub.StubGenerator;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 
 import io.baratine.service.QueueFullHandler;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceNode;
 
 /**
  * Creates a AMP domain.
  */
-public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerBuilder
+public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
 {
   public static ServiceManagerBuilderAmp newManager()
   {
@@ -113,8 +113,8 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
   ServiceManagerBuilderAmp stubGenerator(StubGenerator factory);
   StubGenerator[] stubGenerators();
   
-  Supplier<InjectManagerAmp> injectManager(ServiceManagerAmp ampManager);
-  ServiceManagerBuilderAmp injectManager(Supplier<InjectManagerAmp> inject);
+  Supplier<InjectorAmp> injectManager(ServicesAmp ampManager);
+  ServiceManagerBuilderAmp injectManager(Supplier<InjectorAmp> inject);
   
   /**
    * Returns the pod node.
@@ -137,15 +137,15 @@ public interface ServiceManagerBuilderAmp extends ServiceManager.ServiceManagerB
    * Creates the manager and start the services.
    */
   @Override
-  ServiceManagerAmp start();
+  ServicesAmp start();
   
   /**
    * Creates the manager without starting the services.
    */
   @Override
-  ServiceManagerAmp get();
+  ServicesAmp get();
 
-  ServiceManagerAmp getRaw();
+  ServicesAmp getRaw();
 
 
   /**

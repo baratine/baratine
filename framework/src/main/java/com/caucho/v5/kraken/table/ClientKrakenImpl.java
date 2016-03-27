@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
@@ -102,7 +102,7 @@ public final class ClientKrakenImpl implements ClientKraken
       throw new IllegalStateException(L.l("{0} is an unknown pod {1}", podId, pod));
     }
     
-    ServiceManagerAmp rampManager = AmpSystem.currentManager();
+    ServicesAmp rampManager = AmpSystem.currentManager();
     _podManager = new PodKraken(tableManager, rampManager, pod);
     
     startBind();
@@ -167,7 +167,7 @@ public final class ClientKrakenImpl implements ClientKraken
       throw new IllegalStateException(L.l("{0} is an unknown pod", podName));
     }
     
-    ServiceManagerAmp rampManager = AmpSystem.currentManager();
+    ServicesAmp rampManager = AmpSystem.currentManager();
     
     return new PodKraken(_tableManager, rampManager, pod);
   }

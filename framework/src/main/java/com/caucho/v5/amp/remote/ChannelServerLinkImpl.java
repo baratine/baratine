@@ -31,7 +31,7 @@ package com.caucho.v5.amp.remote;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Broker specific to the server link. The broker will serve link-specific
@@ -43,7 +43,7 @@ import com.caucho.v5.amp.ServiceManagerAmp;
  */
 public class ChannelServerLinkImpl extends ChannelServerImpl
 {
-  public ChannelServerLinkImpl(Supplier<ServiceManagerAmp> manager,
+  public ChannelServerLinkImpl(Supplier<ServicesAmp> manager,
                                OutAmp out)
   {
     super(manager, manager.get().registry(), out, "session", "session");

@@ -37,10 +37,10 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.Direct;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.util.Hex;
 
-import io.baratine.service.Direct;
 import io.baratine.service.Modify;
 import io.baratine.service.Pin;
 import io.baratine.service.Result;
@@ -112,7 +112,7 @@ abstract class MethodStubBase extends MethodAmpBase
     return _method.isVarArgs();
   }
   
-  protected MethodHandle filterMethod(ServiceManagerAmp rampManager,
+  protected MethodHandle filterMethod(ServicesAmp rampManager,
                                       MethodHandle mh,
                                       Method method)
   {

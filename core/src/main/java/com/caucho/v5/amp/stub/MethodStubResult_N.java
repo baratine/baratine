@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 
 import io.baratine.service.Result;
@@ -63,7 +63,7 @@ class MethodStubResult_N extends MethodStubBase
 
   //private Class<?>[] _paramTypesCl;
 
-  MethodStubResult_N(ServiceManagerAmp ampManager,
+  MethodStubResult_N(ServicesAmp ampManager,
                      Method method)
     throws IllegalAccessException
   {
@@ -90,7 +90,7 @@ class MethodStubResult_N extends MethodStubBase
     return _methodHandle;
   }
   
-  protected MethodHandle initMethodHandle(ServiceManagerAmp ampManager,
+  protected MethodHandle initMethodHandle(ServicesAmp ampManager,
                                           Method method)
     throws IllegalAccessException
   {

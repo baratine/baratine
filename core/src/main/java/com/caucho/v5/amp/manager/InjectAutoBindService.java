@@ -34,11 +34,11 @@ import java.util.Arrays;
 
 import javax.inject.Provider;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.inject.impl.ServiceImpl;
 
-import io.baratine.inject.InjectManager;
-import io.baratine.inject.InjectManager.InjectAutoBind;
+import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.service.Service;
@@ -48,15 +48,15 @@ import io.baratine.service.Service;
  */
 public class InjectAutoBindService implements InjectAutoBind
 {
-  private ServiceManagerAmp _serviceManager;
+  private ServicesAmp _serviceManager;
   
-  public InjectAutoBindService(ServiceManagerAmp serviceManager)
+  public InjectAutoBindService(ServicesAmp serviceManager)
   {
     _serviceManager = serviceManager;
   }
 
   @Override
-  public <T> Provider<T> provider(InjectManager manager, Key<T> key)
+  public <T> Provider<T> provider(Injector manager, Key<T> key)
   {
     Class<T> rawClass = key.rawClass();
     
@@ -83,7 +83,7 @@ public class InjectAutoBindService implements InjectAutoBind
   }
 
   @Override
-  public <T> Provider<T> provider(InjectManager manager, 
+  public <T> Provider<T> provider(Injector manager, 
                                   InjectionPoint<T> ip)
   {
     Service service = ip.annotation(Service.class);

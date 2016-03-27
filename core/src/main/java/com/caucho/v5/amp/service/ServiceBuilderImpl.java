@@ -35,32 +35,34 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
 import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
 import com.caucho.v5.amp.inbox.InboxQueue;
 import com.caucho.v5.amp.inbox.QueueServiceFactoryInbox;
-import com.caucho.v5.amp.journal.StubJournal;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.journal.StubJournal;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.session.SessionServiceManagerImpl;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.stub.ClassStub;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpJournal;
+import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
-import com.caucho.v5.amp.stub.ClassStub;
 import com.caucho.v5.amp.stub.StubGenerator;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.Key;
+import io.baratine.service.Api;
 import io.baratine.service.Journal;
 import io.baratine.service.Queue;
 import io.baratine.service.QueueFullHandler;
@@ -77,10 +79,10 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   private static final Logger log
     = Logger.getLogger(ServiceBuilderImpl.class.getName());
   
-  private final ServiceManagerAmpImpl _manager;
+  private final ServicesAmpImpl _services;
 
   private Object _worker;
-  private Supplier<T> _serviceSupplier;
+  private Supplier<? extends T> _serviceSupplier;
   
   private String _address;
   
@@ -96,6 +98,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
 
   private boolean _isForeign;
 
+  private Class<T> _type;
   private Class<T> _serviceClass;
 
   private long _journalDelay;
@@ -112,28 +115,51 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
 
   private String _name;
   
-  public ServiceBuilderImpl(ServiceManagerAmpImpl manager)
+  public ServiceBuilderImpl(ServicesAmpImpl manager)
   {
     Objects.requireNonNull(manager);
     
-    _manager = manager;
+    _services = manager;
     
     initDefaults();
   }
 
-  public ServiceBuilderImpl(ServiceManagerAmpImpl manager,
+  public ServiceBuilderImpl(ServicesAmpImpl manager,
                             Class<T> serviceClass)
   {
     Objects.requireNonNull(manager);
-    _manager = manager;
+    _services = manager;
     
     initDefaults();
     
     Objects.requireNonNull(serviceClass);
     
+    _type = serviceClass;
+    
     validateServiceClass(serviceClass);
     
     _serviceClass = serviceClass;
+    
+    introspectAnnotations(serviceClass);
+  }
+
+  public ServiceBuilderImpl(ServicesAmpImpl manager,
+                            Class<T> serviceClass,
+                            Supplier<? extends T> supplier)
+  {
+    Objects.requireNonNull(manager);
+    Objects.requireNonNull(serviceClass);
+    Objects.requireNonNull(supplier);
+    
+    _services = manager;
+    
+    initDefaults();
+    
+    //validateServiceClass(serviceClass);
+    
+    _type = serviceClass;
+    //_serviceClass = serviceClass;
+    _serviceSupplier = supplier;
     
     introspectAnnotations(serviceClass);
   }
@@ -145,8 +171,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     queueSizeMax(16 * 1024);
     queueSize(64);
     
-    if (_manager.getJournalDelay() >= 0) {
-      journalDelay(_manager.getJournalDelay(), TimeUnit.MILLISECONDS);
+    if (_services.journalDelay() >= 0) {
+      journalDelay(_services.journalDelay(), TimeUnit.MILLISECONDS);
     }
   }
   
@@ -164,7 +190,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   {
     Objects.requireNonNull(builder);
     
-    _manager = null;
+    _services = null;
     
     _address = builder.address();
     
@@ -227,7 +253,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   
   private ClassLoader classLoader()
   {
-    return _manager.classLoader();
+    return _services.classLoader();
   }
 
   public ServiceBuilderAmp service(Object worker)
@@ -296,7 +322,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     if (service != null) {
       if (_address == null && service.value().length() > 0) {
-        addressAuto();
+        addressAuto(serviceClass);
       }
     }
     
@@ -445,32 +471,75 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   @Override
   public ServiceBuilderImpl addressAuto()
   {
+    return addressAuto(_serviceClass);
+  }
+  
+  private ServiceBuilderImpl addressAuto(Class<?> serviceClass)
+  {
     String address;
-    
+   
     if (_api != null) {
-      address = _manager.address(_api);
+      address = _services.address(_api);
     }
-    else if (_serviceClass != null) {
-      address = _manager.address(_serviceClass);
+    else if (_type != null) {
+      address = address(_type);
+    }
+    else if (serviceClass != null) {
+      address = address(serviceClass);
     }
     else if (_worker != null) {
-      address = _manager.address(_worker.getClass());
+      address = address(_worker.getClass());
     }
     else {
       throw new IllegalStateException();
     }
     
+    //System.out.println("AA: " + _address +  " + serviceClass + " " + _api + " " + _type);
     _address = getPath(address);
 
     //_path = address;
     String podName = getPod(address);
     
     if (! podName.isEmpty()
-        && ! podName.equals(_manager.node().podName())) {
+        && ! podName.equals(_services.node().podName())) {
       _isForeign = true;
     }
 
     return this;
+  }
+  
+  private String address(Class<?> serviceClass)
+  {
+    Service service = serviceClass.getAnnotation(Service.class);
+    
+    if (service != null && ! service.value().isEmpty()) {
+      return service.value();
+    }
+    
+    Api apiAnn = serviceClass.getAnnotation(Api.class);
+    
+    if (apiAnn != null) {
+      return _services.address(apiAnn.value());
+    }
+    
+    Class<?> api = findApi(serviceClass);
+
+    if (api != null) {
+      return _services.address(api);
+    }
+    
+    return _services.address(serviceClass); 
+  }
+  
+  private Class<?> findApi(Class<?> serviceClass)
+  {
+    for (Class<?> api : serviceClass.getInterfaces()) {
+      if (api.isAnnotationPresent(Service.class)) {
+        return api;
+      }
+    }
+    
+    return null;
   }
 
   @Override
@@ -518,7 +587,18 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   @Override
   public ServiceBuilderAmp api(Class<?> api)
   {
+    Objects.requireNonNull(api);
     _api = api;
+
+    return this;
+  }
+
+  @Override
+  public ServiceBuilderAmp serviceClass(Class<?> serviceClass)
+  {
+    Objects.requireNonNull(serviceClass);
+    
+    _serviceClass = (Class) serviceClass;
 
     return this;
   }
@@ -619,15 +699,13 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   {
     ServiceConfig config = config();
     
-    //ActorAmp actor = _manager.createActor(_worker, config);
-    
-    ActorFactoryAmp factory = new StubFactoryImpl(()->createStub(_worker), config);
+    StubFactoryAmp factory = new StubFactoryImpl(()->createStub(_worker), config);
     
     //ServiceRefAmp serviceRef = _manager.service(()->_worker, _address, config);
     ServiceRefAmp serviceRef = service(factory);
 
     if (_address != null) {
-      if (_manager.service(_address).isClosed()) {
+      if (_services.service(_address).isClosed()) {
         serviceRef = serviceRef.bind(_address);
       }
     }
@@ -637,26 +715,44 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   
   private StubAmp createStub(Object worker)
   {
-    return _manager.createActor(worker, config());
+    return createStub(worker, config());
+  }
+  
+  private StubAmp createStub(Object bean, ServiceConfig config)
+  {
+    String path = null;
+    
+    if (bean instanceof StubAmp) {
+      return (StubAmp) bean;
+    }
+    else {
+      return stubFactory().stub(bean, path, path, null, config);
+    }
+  }
+  
+  private StubClassFactoryAmp stubFactory()
+  {
+    return _services.stubFactory();
   }
   
   private ServiceRefAmp buildWorkers()
   {
     ServiceConfig config = config();
     
-    ActorFactoryAmp actorFactory = new StubFactoryImpl(()->createStub(_serviceSupplier.get()),
-                                                           config);
+    StubFactoryAmp stubFactory
+      = new StubFactoryImpl(()->createStub(_serviceSupplier.get()),
+                            config);
       
-    ServiceRefAmp serviceRef = service(actorFactory);
+    ServiceRefAmp serviceRef = service(stubFactory);
 
     if (_address != null) {
-      if (_manager.service(_address).isClosed()) {
+      if (_services.service(_address).isClosed()) {
         serviceRef = serviceRef.bind(_address);
       }
     }
       
     if (config.isAutoStart()) {
-      _manager.addAutoStart(serviceRef);
+      _services.addAutoStart(serviceRef);
     }
       
     return serviceRef;
@@ -674,7 +770,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     ClassLoader oldLoader = thread.getContextClassLoader();
     
     try {
-      thread.setContextClassLoader(_manager.classLoader());
+      thread.setContextClassLoader(_services.classLoader());
     
       return buildSessionImpl();
     } finally {
@@ -693,17 +789,17 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     SessionServiceManagerImpl context;
     
     context = new SessionServiceManagerImpl(address,
-                                            _manager,
+                                            _services,
                                             _serviceClass,
                                             supplier,
                                             config);
 
-    ServiceRefAmp serviceRef = _manager.newService(context).ref();
+    ServiceRefAmp serviceRef = _services.newService(context).ref();
     
     context.setServiceRef(serviceRef);
     
     if (address != null) {
-      if (_manager.service(_address).isClosed()) {
+      if (_services.service(_address).isClosed()) {
         // XXX:
         serviceRef.bind(address);
       }
@@ -716,7 +812,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   {
     ServiceConfig config = config();
     
-    ActorFactoryAmp factory = pluginFactory(_serviceClass, config);
+    StubFactoryAmp factory = pluginFactory(_serviceClass, config);
     
     if (factory != null) {
       return service(factory);
@@ -751,7 +847,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       return _serviceSupplier.get();
     }
     
-    InjectManagerAmp injectManager = _manager.inject();
+    InjectorAmp injectManager = _services.injector();
     
     if (injectManager != null) {
       Key<?> key = Key.of(serviceClass, ServiceImpl.class);
@@ -775,7 +871,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       return (Supplier) _serviceSupplier;
     }
     
-    InjectManagerAmp injectManager = _manager.inject();
+    InjectorAmp injectManager = _services.injector();
     
     if (injectManager != null) {
       Key<T> key = Key.of(serviceClass, ServiceImpl.class);
@@ -787,16 +883,16 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     }
   }
   
-  private ActorFactoryAmp pluginFactory(Class<?> serviceClass,
+  private StubFactoryAmp pluginFactory(Class<?> serviceClass,
                                          ServiceConfig config)
   {
     if (serviceClass == null) {
       return null;
     }
     
-    for (StubGenerator generator : _manager.stubGenerators()) {
-      ActorFactoryAmp factory = generator.factory(serviceClass,
-                                                   _manager,
+    for (StubGenerator generator : _services.stubGenerators()) {
+      StubFactoryAmp factory = generator.factory(serviceClass,
+                                                   _services,
                                                    config);
       
       if (factory != null) {
@@ -809,11 +905,11 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   
   private <T> Supplier<T> newSupplier(Key<T> key)
   {
-    InjectManagerAmp injectManager = InjectManagerAmp.current(classLoader());
+    InjectorAmp injector = InjectorAmp.current(classLoader());
     
-    Objects.requireNonNull(injectManager);
+    Objects.requireNonNull(injector);
     
-    return new SupplierBean<>(key, injectManager, classLoader());
+    return new SupplierBean<>(key, injector, classLoader());
   }
   
   /**
@@ -824,7 +920,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
                         String address,
                         ServiceConfig config)
                         */
-  private ServiceRefAmp service(ActorFactoryAmp actorFactory)
+  private ServiceRefAmp service(StubFactoryAmp stubFactory)
   {
     validateOpen();
     
@@ -834,23 +930,23 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     Object oldContext = null;
     
     try {
-      thread.setContextClassLoader(_manager.classLoader());
+      thread.setContextClassLoader(_services.classLoader());
       
       if (outbox != null) {
-        oldContext = outbox.getAndSetContext(_manager.inboxSystem());
+        oldContext = outbox.getAndSetContext(_services.inboxSystem());
       }
       
       //return serviceImpl(beanFactory, address, config);
-      ServiceRefAmp serviceRef = serviceImpl(actorFactory);
+      ServiceRefAmp serviceRef = serviceImpl(stubFactory);
       
-      String address = actorFactory.address();
+      String address = stubFactory.address();
       
       if (address != null) {
-        _manager.bind(serviceRef, address);
+        _services.bind(serviceRef, address);
       }
       
-      if (actorFactory.config().isAutoStart()) {
-        _manager.addAutoStart(serviceRef);
+      if (stubFactory.config().isAutoStart()) {
+        _services.addAutoStart(serviceRef);
       }
       
       return serviceRef;
@@ -869,7 +965,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
                                     ServiceConfig config)
                                     */
   
-  private ServiceRefAmp serviceImpl(ActorFactoryAmp actorFactory)
+  private ServiceRefAmp serviceImpl(StubFactoryAmp stubFactory)
   {
     //Object bean = supplier.get();
     
@@ -885,8 +981,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     //String name = mainActor.getName();
     
-    if (actorFactory.config().isJournal()) {
-      serviceRef = serviceJournal(actorFactory);
+    if (stubFactory.config().isJournal()) {
+      serviceRef = serviceJournal(stubFactory);
 
       /*
       // baratine/10e6
@@ -901,20 +997,20 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       
       QueueServiceFactoryImpl serviceFactory;
       
-      serviceFactory = new QueueServiceFactoryImpl(_manager, actorFactory);
+      serviceFactory = new QueueServiceFactoryImpl(_services, stubFactory);
       
       QueueDeliverBuilderImpl<MessageAmp> queueBuilder
         = new QueueDeliverBuilderImpl<>();
       
       //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
-      queueBuilder.setClassLoader(_manager.classLoader());
+      queueBuilder.setClassLoader(_services.classLoader());
       
-      ServiceConfig config = actorFactory.config();
+      ServiceConfig config = stubFactory.config();
     
       queueBuilder.sizeMax(config.queueSizeMax());
       queueBuilder.size(config.queueSize());
     
-      InboxAmp inbox = new InboxQueue(_manager, 
+      InboxAmp inbox = new InboxQueue(_services, 
                                       queueBuilder,
                                       serviceFactory,
                                       config);
@@ -945,16 +1041,16 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   
   private void validateOpen()
   {
-    if (_manager.isClosed()) {
+    if (_services.isClosed()) {
       throw new IllegalStateException(L.l("{0} is closed", this));
     }
   }
   
-  private ServiceRefAmp serviceJournal(ActorFactoryAmp actorFactory)
+  private ServiceRefAmp serviceJournal(StubFactoryAmp stubFactory)
   {
-    ServiceConfig config = actorFactory.config();
+    ServiceConfig config = stubFactory.config();
     
-    StubAmp stubMain = actorFactory.stubMain();
+    StubAmp stubMain = stubFactory.stubMain();
      
     // XXX: check on multiple names
     String journalName = stubMain.name();
@@ -965,44 +1061,44 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       journalDelay = _journalDelay;
     }
     
-    JournalAmp journal = _manager.journal(journalName, 
+    JournalAmp journal = _services.journal(journalName, 
                                           config.journalMaxCount(),
                                           journalDelay);
     
-    final StubJournal actorJournal = createJournalActor(stubMain, journal);
+    final StubJournal stubJournal = stubJournal(stubMain, journal);
 
     stubMain.journal(journal);
     
     Class<?> api = (Class<?>) stubMain.api().getType();
 
-    ClassStub skel = new ClassStub(_manager, api, config);
+    ClassStub skel = new ClassStub(_services, api, config);
     skel.introspect();
     
     // XXX: 
-    StubAmp actorTop = new StubAmpJournal(skel, journal, stubMain, _name);
+    StubAmp stubTop = new StubAmpJournal(skel, journal, stubMain, _name);
     
     QueueServiceFactoryInbox serviceFactory
-      = new JournalServiceFactory(actorTop, actorJournal, stubMain, config);
+      = new JournalServiceFactory(stubTop, stubJournal, stubMain, config);
 
     ServiceRefAmp serviceRef = service(serviceFactory, config);
 
-    actorJournal.setInbox(serviceRef.inbox());
+    stubJournal.setInbox(serviceRef.inbox());
 
     return serviceRef;
   }
 
-  protected StubJournal createJournalActor(StubAmp actor,
+  protected StubJournal stubJournal(StubAmp stub,
                                             JournalAmp journal)
   {
     JournalAmp toPeerJournal = null;
     JournalAmp fromPeerJournal = null;
 
-    final StubJournal journalActor
-      = new StubJournal(actor, journal, toPeerJournal, fromPeerJournal);
+    final StubJournal stubJournal
+      = new StubJournal(stub, journal, toPeerJournal, fromPeerJournal);
 
-    actor.journal(journal);
+    stub.journal(journal);
     
-    return journalActor;
+    return stubJournal;
   }
   
   /**
@@ -1015,12 +1111,12 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       = new QueueDeliverBuilderImpl<>();
     
     //queueBuilder.setOutboxFactory(OutboxAmpFactory.newFactory());
-    queueBuilder.setClassLoader(_manager.classLoader());
+    queueBuilder.setClassLoader(_services.classLoader());
     
     queueBuilder.sizeMax(config.queueSizeMax());
     queueBuilder.size(config.queueSize());
   
-    InboxAmp inbox = new InboxQueue(_manager, 
+    InboxAmp inbox = new InboxQueue(_services, 
                                     queueBuilder,
                                     serviceFactory,
                                     config);
@@ -1031,11 +1127,11 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   private static class SupplierBean<T> implements Supplier<T>
   {
     private Key<T> _key;
-    private InjectManagerAmp _injectManager;
+    private InjectorAmp _injectManager;
     private ClassLoader _loader;
     
     SupplierBean(Key<T> key, 
-                 InjectManagerAmp injectManager,
+                 InjectorAmp injectManager,
                  ClassLoader loader)
     {
       _key = key;
@@ -1103,16 +1199,16 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   private class QueueServiceFactoryImpl implements QueueServiceFactoryInbox
   {
     //private ServiceManagerAmp _manager;
-    private ActorFactoryAmp _actorFactory;
+    private StubFactoryAmp _stubFactory;
 
-    QueueServiceFactoryImpl(ServiceManagerAmp manager,
-                            ActorFactoryAmp actorFactory)
+    QueueServiceFactoryImpl(ServicesAmp manager,
+                            StubFactoryAmp actorFactory)
     {
       Objects.requireNonNull(manager);
       Objects.requireNonNull(actorFactory);
       
       //_manager = manager;
-      _actorFactory = actorFactory;
+      _stubFactory = actorFactory;
 
       if (config().isJournal()) {
         throw new IllegalStateException();
@@ -1122,18 +1218,18 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     @Override
     public String getName()
     {
-      return _actorFactory.actorName();
+      return _stubFactory.actorName();
     }
     
     public ServiceConfig config()
     {
-      return _actorFactory.config();
+      return _stubFactory.config();
     }
 
     @Override
     public StubAmp stubMain()
     {
-      return _actorFactory.stubMain();
+      return _stubFactory.stubMain();
     }
 
     @Override
@@ -1147,7 +1243,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       }
       
       Supplier<Deliver<MessageAmp>> factory
-        = inbox.createDeliverFactory(_actorFactory, config);
+        = inbox.createDeliverFactory(_stubFactory, config);
       
       if (config.workers() > 0) {
         queueBuilder.multiworker(true);
@@ -1162,30 +1258,30 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
 
   class JournalServiceFactory implements QueueServiceFactoryInbox
   {
-    private StubAmp _actorTop;
-    private StubAmp _actorJournal;
-    private StubAmp _actorMain;
+    private StubAmp _stubTop;
+    private StubAmp _stubJournal;
+    private StubAmp _stubMain;
     //private ServiceConfig _config;
     
-    JournalServiceFactory(StubAmp actorTop,
-                          StubAmp actorJournal,
-                          StubAmp actorMain,
+    JournalServiceFactory(StubAmp stubTop,
+                          StubAmp stubJournal,
+                          StubAmp stubMain,
                           ServiceConfig config)
     {
-      _actorTop = actorTop;
-      _actorJournal = actorJournal;
-      _actorMain = actorMain;
+      _stubTop = stubTop;
+      _stubJournal = stubJournal;
+      _stubMain = stubMain;
       //_config = config;
     }
     
     public String getName()
     {
-      return _actorTop.name();
+      return _stubTop.name();
     }
     
     public StubAmp stubMain()
     {
-      return _actorTop;
+      return _stubTop;
     }
     
     @Override
@@ -1194,10 +1290,10 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
                                           InboxQueue inbox)
     {
       Deliver<MessageAmp> deliverJournal
-        = inbox.createDeliver(_actorJournal);
+        = inbox.createDeliver(_stubJournal);
       
       Deliver<MessageAmp> deliverMain
-        = inbox.createDeliver(_actorMain);
+        = inbox.createDeliver(_stubMain);
       
       return queueBuilder.disruptor(deliverJournal, deliverMain);
     }

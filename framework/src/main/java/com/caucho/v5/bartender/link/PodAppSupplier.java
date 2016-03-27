@@ -35,7 +35,7 @@ import io.baratine.service.ServiceExceptionUnavailable;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.http.pod.PodApp;
 import com.caucho.v5.http.pod.PodAppHandle;
@@ -45,14 +45,14 @@ import com.caucho.v5.util.L10N;
 /**
  * Supplier of ServiceManagerAmp for a named pod.
  */
-public class PodAppSupplier implements Supplier<ServiceManagerAmp>
+public class PodAppSupplier implements Supplier<ServicesAmp>
 {
   private static final L10N L = new L10N(PodAppSupplier.class);
   
   private final PodContainer _podContainer;
   private final String _podNodeName;
 
-  private ServiceManagerAmp _podManager;
+  private ServicesAmp _podManager;
 
   private ServerBartender _serverSelf;
 
@@ -78,9 +78,9 @@ public class PodAppSupplier implements Supplier<ServiceManagerAmp>
   }
 
   @Override
-  public ServiceManagerAmp get()
+  public ServicesAmp get()
   {
-    ServiceManagerAmp podManager = _podManager;
+    ServicesAmp podManager = _podManager;
 
     if (podManager != null && ! podManager.isClosed()) {
       return podManager;

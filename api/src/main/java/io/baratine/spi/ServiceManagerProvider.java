@@ -33,8 +33,8 @@ import java.lang.ref.SoftReference;
 import java.util.ServiceLoader;
 import java.util.WeakHashMap;
 
-import io.baratine.inject.InjectManager.InjectBuilder;
-import io.baratine.service.ServiceManager;
+import io.baratine.inject.Injector.InjectBuilder;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
@@ -75,12 +75,12 @@ abstract public class ServiceManagerProvider implements AutoCloseable
     _classLoader = Thread.currentThread().getContextClassLoader();
   }
 
-  public ServiceManager currentManager()
+  public Services currentManager()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  public ServiceManager.ServiceManagerBuilder newManager()
+  public Services.ServicesBuilder newManager()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

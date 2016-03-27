@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.service.ActorFactoryAmp;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
 import com.caucho.v5.amp.stub.ClassStub;
@@ -58,8 +58,8 @@ public class StubGeneratorVault implements StubGenerator
   private ArrayList<VaultDriver<?,?>> _drivers = new ArrayList<>();
   
   @Override
-  public ActorFactoryAmp factory(Class<?> serviceClass,
-                                 ServiceManagerAmp ampManager,
+  public StubFactoryAmp factory(Class<?> serviceClass,
+                                 ServicesAmp ampManager,
                                  ServiceConfig configService)
   {
     if (Vault.class.isAssignableFrom(serviceClass)) {
@@ -73,8 +73,8 @@ public class StubGeneratorVault implements StubGenerator
     }
   }
 
-  private ActorFactoryAmp factoryResource(Class<?> serviceClass,
-                                          ServiceManagerAmp ampManager,
+  private StubFactoryAmp factoryResource(Class<?> serviceClass,
+                                          ServicesAmp ampManager,
                                           ServiceConfig configService)
   {
     if (! Vault.class.isAssignableFrom(serviceClass)) {
@@ -112,12 +112,12 @@ public class StubGeneratorVault implements StubGenerator
                                              driver);
       
       Consumer<Object> injector = 
-        (Consumer) ampManager.inject().injector(bean.getClass());
+        (Consumer) ampManager.injector().injector(bean.getClass());
       
       injector.accept(bean);
     }
     else {
-      bean = ampManager.inject().instance(Key.of(serviceClass, ServiceImpl.class));
+      bean = ampManager.injector().instance(Key.of(serviceClass, ServiceImpl.class));
     }
     
     if (bean instanceof VaultBase && driver instanceof VaultStore) {
@@ -141,8 +141,8 @@ public class StubGeneratorVault implements StubGenerator
     return new StubFactoryImpl(()->actor, configService);
   }
 
-  private ActorFactoryAmp factoryStore(Class<?> serviceClass,
-                                       ServiceManagerAmp ampManager,
+  private StubFactoryAmp factoryStore(Class<?> serviceClass,
+                                       ServicesAmp ampManager,
                                        ServiceConfig configService)
   {
     if (! serviceClass.isAnnotationPresent(Asset.class)) {
@@ -176,13 +176,13 @@ public class StubGeneratorVault implements StubGenerator
       
     Key<?> key = Key.of(serviceClass, ServiceImpl.class);
     StubAmpBean actor = new StubAmpBean(skeleton, 
-                                          ampManager.inject().instance(key),
+                                          ampManager.injector().instance(key),
                                           configService);
 
     return new StubFactoryImpl(()->actor, configService);
   }
   
-  private VaultDriver<?,?> driver(ServiceManagerAmp ampManager,
+  private VaultDriver<?,?> driver(ServicesAmp ampManager,
                                      Class<?> serviceClass,
                                      Class<?> entityType,
                                      Class<?> idType,

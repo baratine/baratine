@@ -37,7 +37,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -102,7 +102,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return inbox().manager();
   }
@@ -116,10 +116,10 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   @Override
   public AnnotatedType api()
   {
-    StubAmp actor = stub();
+    StubAmp stub = stub();
     
-    if (actor != null) {
-      return actor.api();
+    if (stub != null) {
+      return stub.api();
     }
     else {
       return AnnotatedTypeClass.ofObject();
@@ -195,6 +195,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
     return manager().service(address() + path);
   }
   
+  /*
   public ServiceRefAmp partition(int hash)
   {
     return this;
@@ -204,6 +205,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   {
     return 1;
   }
+  */
 
   @Override
   public ServiceRefAmp start()

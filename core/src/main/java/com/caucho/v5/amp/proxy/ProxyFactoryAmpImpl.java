@@ -37,9 +37,9 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.stub.ClassStub;
@@ -56,7 +56,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   private static WeakHashMap<ClassLoader,SoftReference<AmpProxyCache>> _cacheMap
     = new WeakHashMap<>();
     
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
   
   private AmpProxyCache _proxyCache;
   
@@ -68,14 +68,14 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   
   private MessageFactoryAmp _messageFactory;
       
-  public ProxyFactoryAmpImpl(ServiceManagerAmp ampManager)
+  public ProxyFactoryAmpImpl(ServicesAmp ampManager)
   {
     Objects.requireNonNull(ampManager);
     
     _ampManager = ampManager;
     
     if (ampManager.isDebug()) {
-      ServiceManagerAmpImpl ampManagerImpl = (ServiceManagerAmpImpl) ampManager;
+      ServicesAmpImpl ampManagerImpl = (ServicesAmpImpl) ampManager;
       
       _messageFactory = new MessageFactoryDebug(ampManagerImpl);
     }

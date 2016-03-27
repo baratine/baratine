@@ -48,7 +48,7 @@ import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.service.ServiceRefDynamic;
@@ -61,7 +61,7 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Lookup;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Startup;
 
@@ -160,7 +160,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     if (RunnerBaratine.class.equals(fieldType)) {
       return RunnerBaratine.this;
     }
-    else if (ServiceManager.class.equals(fieldType) &&
+    else if (Services.class.equals(fieldType) &&
              _baratineMap.size() == 1) {
       return _baratineMap.values()
                          .iterator()
@@ -362,7 +362,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       return _baratineClient;
     }
 
-    ServiceManagerAmp getServiceManager()
+    ServicesAmp getServiceManager()
     {
       /*
       if ("client".equals(_podName)) {
@@ -417,7 +417,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     {
       Class<?> fieldType = field.getType();
 
-      if (ServiceManager.class.isAssignableFrom(fieldType)) {
+      if (Services.class.isAssignableFrom(fieldType)) {
         return new ServiceManagerProxy();
       }
 
@@ -612,7 +612,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     void deployServices()
     {
       for (int i = 0; i < getPod().getNodeCount(); i++) {
-        ServiceManager manager = getPod().node(i).manager();
+        Services manager = getPod().node(i).manager();
         
         for (Class<?> serviceClass : _config.services()) {
           log.finer(L.l("deploying {0} to {1}", serviceClass, manager));
@@ -652,7 +652,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       private String _address;
 
       private ServiceRefAmp _delegate;
-      private ServiceManagerAmp _serviceManager;
+      private ServicesAmp _serviceManager;
 
       ServiceRefTestProxy(String address)
       {
@@ -662,7 +662,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       @Override
       public ServiceRefAmp delegate()
       {
-        ServiceManagerAmp serviceManager = getServiceManager();
+        ServicesAmp serviceManager = getServiceManager();
 
         if (serviceManager != _serviceManager) {
           _delegate = serviceManager.service(_address);
@@ -694,7 +694,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     class ServiceManagerProxy extends ServiceManagerAmpWrapper
     {
       @Override
-      public ServiceManagerAmp delegate()
+      public ServicesAmp delegate()
       {
         return getServiceManager();
       }

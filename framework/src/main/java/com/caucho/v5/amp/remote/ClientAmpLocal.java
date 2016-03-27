@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.baratine.client.ServiceManagerClient;
 
@@ -40,15 +40,15 @@ import com.caucho.v5.baratine.client.ServiceManagerClient;
 public class ClientAmpLocal extends ServiceManagerAmpWrapper
   implements ServiceManagerClient
 {
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
 
-  public ClientAmpLocal(ServiceManagerAmp rampManager)
+  public ClientAmpLocal(ServicesAmp rampManager)
   {
     _manager = rampManager;
   }
   
   @Override
-  protected ServiceManagerAmp delegate()
+  protected ServicesAmp delegate()
   {
     return _manager;
   }

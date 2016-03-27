@@ -33,7 +33,7 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.ramp.hamp.InHamp;
@@ -50,7 +50,7 @@ public class InHampWebSocket extends InHamp
   private SessionContextJamp _channelContext;
   //private ChannelContextJamp _channelEnv;
   
-  public InHampWebSocket(ServiceManagerAmp rampManager,
+  public InHampWebSocket(ServicesAmp rampManager,
                          ChannelAmp channel,
                          SessionContextJamp context)
   {

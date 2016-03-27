@@ -29,7 +29,7 @@
 
 package com.caucho.v5.baratine.client;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.ramp.hamp.ClientHamp;
@@ -56,7 +56,7 @@ public class BaratineClient extends ServiceManagerAmpWrapper
   }
   
   @Override
-  protected ServiceManagerAmp delegate()
+  protected ServicesAmp delegate()
   {
     return _client;
   }

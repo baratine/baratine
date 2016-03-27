@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.baratine.config.Config;
-import io.baratine.inject.InjectManager;
+import io.baratine.inject.Injector;
 import io.baratine.io.Buffer;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
@@ -106,7 +106,7 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
   
   // injection
   
-  InjectManager inject();
+  Injector inject();
   // <X> X instance(Class<X> type, Annotation ...anns);
 
   //ServiceManager services();

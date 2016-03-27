@@ -34,7 +34,7 @@ import java.nio.file.Path;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
@@ -156,7 +156,7 @@ public class JournalSystem extends SubSystemBase
   {
     Path dataDir = RootDirectorySystem.getCurrentDataDirectory();
     
-    ServiceManagerAmp manager = AmpSystem.currentManager();
+    ServicesAmp manager = AmpSystem.currentManager();
     
     Path path = dataDir.resolve("journal/journal.db");
     

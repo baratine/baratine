@@ -29,7 +29,7 @@
 
 package com.caucho.v5.bartender.link;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.http.pod.PodContainer;
@@ -40,7 +40,7 @@ import com.caucho.v5.http.pod.PodContainer;
 public class ActorLinkPodDispatch extends StubAmpBase
 {
   private ServiceRefPodAppRoot _podAppRoot;
-  ActorLinkPodDispatch(ServiceManagerAmp manager,
+  ActorLinkPodDispatch(ServicesAmp manager,
                        PodContainer podContainer)
   {
     _podAppRoot = new ServiceRefPodAppRoot(manager, podContainer);

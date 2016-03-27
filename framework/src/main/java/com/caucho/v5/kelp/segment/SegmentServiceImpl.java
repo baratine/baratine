@@ -42,7 +42,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.TempOutputStream;
 import com.caucho.v5.kelp.TableKelp;
@@ -135,7 +135,7 @@ public class SegmentServiceImpl
   private long _metaOffset;
   private long _metaTail;
   private long _storeChunkSize;
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   private CompressorKelp _compressor;
 
   /**
@@ -212,7 +212,7 @@ public class SegmentServiceImpl
    * Creates the store.
    */
   private void create(SegmentMeta []segmentMetaList,
-                      ServiceManagerAmp manager)
+                      ServicesAmp manager)
     throws IOException
   {
     Objects.requireNonNull(segmentMetaList);
@@ -265,7 +265,7 @@ public class SegmentServiceImpl
     */
   }
   
-  private StoreReadWrite buildStore(ServiceManagerAmp manager)
+  private StoreReadWrite buildStore(ServicesAmp manager)
   {
     StoreBuilder storeBuilder = new StoreBuilder(_path);
     storeBuilder.mmap(true);

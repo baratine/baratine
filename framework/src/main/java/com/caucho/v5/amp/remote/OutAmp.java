@@ -31,7 +31,7 @@ package com.caucho.v5.amp.remote;
 
 import java.util.List;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.bartender.pod.PodRef;
@@ -98,7 +98,7 @@ public interface OutAmp
 
   void close();
 
-  default ServiceRefAmp createServiceRef(ServiceManagerAmp manager,
+  default ServiceRefAmp createServiceRef(ServicesAmp manager,
                                          String address,
                                          ServiceRefAmp callerRef)
   {

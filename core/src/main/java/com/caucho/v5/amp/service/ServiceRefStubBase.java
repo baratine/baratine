@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -55,18 +55,18 @@ import io.baratine.service.ServiceRef;
  * Handles the context for an actor, primarily including its
  * query map.
  */
-abstract class ServiceRefActorBase extends ServiceRefBase
+abstract class ServiceRefStubBase extends ServiceRefBase
 {
   private final static Logger log
-    = Logger.getLogger(ServiceRefActorBase.class.getName());
+    = Logger.getLogger(ServiceRefStubBase.class.getName());
   
   private final InboxAmp _inbox;
-  private final StubAmp _actor;
+  private final StubAmp _stub;
 
-  public ServiceRefActorBase(StubAmp actor,
+  public ServiceRefStubBase(StubAmp stub,
                              InboxAmp inbox)
   {
-    _actor = actor;
+    _stub = stub;
     _inbox = inbox;
   }
 
@@ -79,7 +79,7 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   @Override
   public boolean isUp()
   {
-    return _actor.isUp() && ! _inbox.isClosed();
+    return _stub.isUp() && ! _inbox.isClosed();
   }
 
   @Override
@@ -91,13 +91,13 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   @Override
   public boolean isPublic()
   {
-    return _actor.isPublic();
+    return _stub.isPublic();
   }
   
   @Override
   public StubAmp stub()
   {
-    return _actor;
+    return _stub;
   }
   
   @Override
@@ -105,7 +105,7 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   {
     // start();
     
-    MethodAmp method = _actor.getMethod(methodName);
+    MethodAmp method = _stub.getMethod(methodName);
 
     return createMethod(method);
   }
@@ -117,7 +117,7 @@ abstract class ServiceRefActorBase extends ServiceRefBase
     
     ArrayList<MethodRefAmp> methods = new ArrayList<>();
     
-    for (MethodAmp method : _actor.getMethods()) {
+    for (MethodAmp method : _stub.getMethods()) {
       MethodRefAmp methodRef = createMethod(method);
       
       methods.add(methodRef);
@@ -199,9 +199,9 @@ abstract class ServiceRefActorBase extends ServiceRefBase
       
       ServiceConfig config = null;
       
-      StubAmp actorChild = manager().createActor(child, config);
+      StubAmp stubChild = manager().stubFactory().stub(child, config);
 
-      return createChild(subpath, actorChild);
+      return createChild(subpath, stubChild);
     }
   }
   
@@ -220,7 +220,7 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   {
     // baratine/1618
     // ActorAmp actor = getInbox().getDirectActor();
-    StubAmp actor = _actor;
+    StubAmp actor = _stub;
     
     return actor;
   }
@@ -234,9 +234,9 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   @Override
   public ServiceRefAmp bind(String address)
   {
-    address = ServiceManagerAmpImpl.toCanonical(address);
+    address = ServicesAmpImpl.toCanonical(address);
     
-    ServiceRefAmp bindRef = new ServiceRefBound(address, _actor, _inbox);
+    ServiceRefAmp bindRef = new ServiceRefLocal(_stub, _inbox);
     
     manager().bind(bindRef, address);
     
@@ -255,7 +255,7 @@ abstract class ServiceRefActorBase extends ServiceRefBase
         return (ServiceRefAmp) selfServiceRef.pin(listener);
       }
       else {
-        return manager().toService(listener);
+        return manager().toRef(listener);
       }
     }
   }

@@ -29,49 +29,36 @@
 
 package com.caucho.v5.amp.service;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
+import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.StubAmp;
 
 /**
- * Lazy init proxy
+ * {@link ServiceRef} for a local service.
  */
-public class ServiceRefProxy extends ServiceRefWrapper
+public class ServiceRefLocal extends ServiceRefStubBase
 {
-  private ServiceRefNull _nullService;
-  private ServiceRefAmp _delegate;
-  
-  public ServiceRefProxy(ServiceManagerAmp manager, String address)
+  public ServiceRefLocal(StubAmp stub,
+                        InboxAmp inbox)
   {
-    _nullService = new ServiceRefNull(manager, address);
-  }
-  
-  @Override
-  protected ServiceRefAmp delegate()
-  {
-    ServiceRefAmp delegate = _delegate;
-    
-    if (delegate != null) {
-      return delegate;
-    }
-    else {
-      return _nullService;
-    }
-  }
-  
-  public void setDelegate(ServiceRefAmp delegate)
-  {
-    _delegate = delegate;
+    super(stub, inbox);
   }
 
   @Override
-  public String address()
+  public ServiceRefAmp bind(String address)
   {
-    return delegate().address();
-  }
-  
-  @Override
-  public String toString()
-  {
-    return getClass().getSimpleName() + "[" + _delegate + "]";
+    address = ServicesAmpImpl.toCanonical(address);
+    
+    InboxAmp inbox = inbox();
+    
+    if (inbox.bind(address)) {
+      manager().bind(this, address);
+      
+      return this;
+    }
+    else {
+      return super.bind(address);
+    }
   }
 }

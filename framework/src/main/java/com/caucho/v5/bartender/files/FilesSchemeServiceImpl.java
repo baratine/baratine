@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.pod.PodBartender;
@@ -49,7 +49,7 @@ public class FilesSchemeServiceImpl
 {
   private final FileServiceRoot _root;
   private final HashMap<String,FileServiceRoot> _podMap = new HashMap<>();
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   
   FilesSchemeServiceImpl(FileServiceRoot root)
   {

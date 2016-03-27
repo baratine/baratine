@@ -34,7 +34,7 @@ import io.baratine.service.ServiceRef;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.BartenderSystem;
@@ -127,7 +127,7 @@ public class BartenderFileSystem extends SubSystemBase
   {
     BartenderSystem bartender = BartenderSystem.current();
     
-    ServiceManagerAmp rampManager = AmpSystem.currentManager();
+    ServicesAmp rampManager = AmpSystem.currentManager();
     
     String clusterId = BartenderSystem.getCurrentSelfServer().getClusterId();
     String clusterPod = "cluster_hub." + clusterId;

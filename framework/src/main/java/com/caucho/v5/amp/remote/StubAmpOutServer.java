@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 /**
@@ -39,7 +39,7 @@ public class StubAmpOutServer extends StubAmpOut
 {
   private final OutAmp _out;
   
-  public StubAmpOutServer(ServiceManagerAmp ampManager,
+  public StubAmpOutServer(ServicesAmp ampManager,
                            OutAmp out,
                            String remoteAddress,
                            ServiceRefAmp selfServiceRef)

@@ -38,7 +38,7 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 
@@ -52,7 +52,7 @@ class MethodStub_0 extends MethodStubBase {
   private final MethodHandle _queryMethodHandle;
   private final MethodHandle _sendMethodHandle;
 
-  MethodStub_0(ServiceManagerAmp rampManager,
+  MethodStub_0(ServicesAmp rampManager,
                    Method method)
     throws IllegalAccessException
   {

@@ -31,7 +31,8 @@ package com.caucho.v5.bartender.pod;
 
 import java.util.ArrayList;
 
-import io.baratine.service.Direct;
+import com.caucho.v5.amp.Direct;
+
 import io.baratine.service.Result;
 
 /**

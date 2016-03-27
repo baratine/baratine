@@ -32,7 +32,7 @@ package com.caucho.v5.inject.impl;
 import javax.inject.Provider;
 
 import com.caucho.v5.inject.BindingAmp;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 
 import io.baratine.inject.Key;
 
@@ -47,9 +47,9 @@ public class ProviderDelegate<T> implements BindingAmp<T>, Provider<T>
   
   private Provider<? extends T> _supplier;
 
-  private InjectManagerAmp _manager;
+  private InjectorAmp _manager;
 
-  public ProviderDelegate(InjectManagerAmp manager,
+  public ProviderDelegate(InjectorAmp manager,
                           Key<T> key,
                           int priority,
                           Provider<? extends T> supplier)

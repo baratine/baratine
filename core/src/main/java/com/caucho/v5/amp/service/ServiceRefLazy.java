@@ -29,83 +29,101 @@
 
 package com.caucho.v5.amp.service;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.lang.reflect.Type;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.spi.MethodRefAmp;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpLazyProxy;
 
 /**
  * Lazy init proxy
  */
-abstract public class ServiceRefLazy extends ServiceRefWrapper
+public class ServiceRefLazy extends ServiceRefLazyBase
 {
-  private final ServiceManagerAmp _manager;
-  
-  private final AtomicReference<ServiceRefAmp> _delegateRef
-    = new AtomicReference<>();
+  private final String _address;
     
-  protected ServiceRefLazy(ServiceManagerAmp manager)
+  public ServiceRefLazy(ServicesAmp manager, String address)
   {
-    _manager = manager;
+    super(manager);
+
+    _address = address;
+  }
+  
+  @Override
+  public String address()
+  {
+    return _address;
+  }
+  
+  /*
+  @Override
+  public ServiceManagerAmp getManager()
+  {
+    // baratine/a240 vs baratine/2102
+    
+    return Amp.getContextManager();
+  }
+  */
+  
+  @Override
+  protected ServiceRefAmp newDelegate()
+  {
+    ServiceRefAmp delegate = manager().service(_address);
+
+    if (delegate != null && ! delegate.isClosed()) {
+      return delegate;
+    }
+    else {
+      return new ServiceRefNull(manager(), _address);
+    }
+  }
+  
+  @Override
+  public StubAmp stub()
+  {
+    ServiceRefAmp delegate = delegate();
+    
+    if (! delegate.isClosed()) {
+      return delegate.stub();
+    }
+    else {
+      return new StubAmpLazyProxy(this);
+    }
   }
 
   @Override
-  public ServiceManagerAmp manager()
+  public MethodRefAmp getMethod(String methodName)
   {
-    return _manager;
-  }
-  
-  protected ServiceRefAmp getDelegateLazy()
-  {
-    return _delegateRef.get();
-  }
-  
-  @Override
-  public boolean isClosed()
-  {
-    ServiceRefAmp delegate = _delegateRef.get();
-    
-    return delegate == null || delegate.isClosed();
-  }
-  
-  @Override
-  protected ServiceRefAmp delegate()
-  {
-    ServiceRefAmp delegate = _delegateRef.get();
-    
-    if (delegate == null) {
-      synchronized (_delegateRef) {
-        delegate = _delegateRef.get();
-        
-        if (delegate == null) {
-          delegate = newDelegate();
-          
-          if (delegate != null && ! delegate.isClosed()) {
-            _delegateRef.set(delegate);
-          }
-        }
-      }
+    MethodRefAmp methodRef = delegate().getMethod(methodName);
+
+    if (! methodRef.isClosed()) {
+      return methodRef;
     }
-    
-    return delegate;
+    else {
+      return new MethodRefLazyProxy(this, methodName);
+    }
   }
   
-  abstract protected ServiceRefAmp newDelegate();
   
   @Override
-  public void shutdown(ShutdownModeAmp mode)
+  public MethodRefAmp getMethod(String methodName, Type returnType)
   {
-    ServiceRefAmp delegate = getDelegateLazy();
+    MethodRefAmp methodRef = delegate().getMethod(methodName, returnType);
     
-    if (delegate != null) {
-      delegate.shutdown(mode);
+    if (! methodRef.isClosed()) {
+      return methodRef;
+    }
+    else {
+      // XXX: needs type
+      return new MethodRefLazyProxy(this, methodName);
     }
   }
   
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _delegateRef.get() + "]";
+    return getClass().getSimpleName() + "[" + _address + "]";
   }
 }

@@ -37,7 +37,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryWithResultMessage_N;
@@ -63,7 +63,7 @@ public class VaultDriverBase<ID,T>
   private static final Logger log
     = Logger.getLogger(VaultDriverBase.class.getName());
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   private Class<ID> _idClass;
   private Class<T> _assetClass;
   private String _address;
@@ -73,7 +73,7 @@ public class VaultDriverBase<ID,T>
   
   private FieldBean<T> _idField;
 
-  public VaultDriverBase(ServiceManagerAmp ampManager,
+  public VaultDriverBase(ServicesAmp ampManager,
                          Class<T> assetClass,
                          Class<ID> idClass,
                          String address)
@@ -251,12 +251,12 @@ public class VaultDriverBase<ID,T>
 
   private class MethodVaultCreate<S> implements MethodVault<S>
   {
-    private ServiceManagerAmp _ampManager;
+    private ServicesAmp _ampManager;
     private Supplier<String> _idGen;
     private String _methodName;
     private MethodAmp _method;
     
-    MethodVaultCreate(ServiceManagerAmp ampManager,
+    MethodVaultCreate(ServicesAmp ampManager,
                          Supplier<String> idGen,
                          String methodName)
     {
@@ -305,12 +305,12 @@ public class VaultDriverBase<ID,T>
 
   private class MethodVaultCreateDTO<S> implements MethodVault<S>
   {
-    private ServiceManagerAmp _ampManager;
+    private ServicesAmp _ampManager;
     private Supplier<String> _idGen;
     private String _methodName;
     private MethodAmp _method;
     
-    MethodVaultCreateDTO(ServiceManagerAmp ampManager,
+    MethodVaultCreateDTO(ServicesAmp ampManager,
                          Supplier<String> idGen,
                          String methodName,
                          MethodAmp method)

@@ -29,7 +29,6 @@
 
 package com.caucho.v5.kraken.table;
 
-import io.baratine.service.Direct;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.Result;
 
@@ -40,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.kelp.RowCursor;
 import com.caucho.v5.kelp.TableBuilderKelp;

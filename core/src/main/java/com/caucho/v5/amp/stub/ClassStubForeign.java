@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.stub;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 
 /**
@@ -37,7 +37,7 @@ import com.caucho.v5.amp.service.ServiceConfig;
  */
 public class ClassStubForeign extends ClassStub
 {
-  public ClassStubForeign(ServiceManagerAmp rampManager,
+  public ClassStubForeign(ServicesAmp rampManager,
                               Class<?> api,
                               ServiceConfig config)
   {

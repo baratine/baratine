@@ -31,9 +31,9 @@ package com.caucho.v5.amp.stub;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
-import io.baratine.timer.TimerService;
+import io.baratine.timer.Timers;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,7 +50,7 @@ public class StubContainerJournal extends StubContainerBase
   private AtomicBoolean _isCheckpointStarted = new AtomicBoolean();
   
   private long _journalDelay;
-  private TimerService _timerService;
+  private Timers _timerService;
   private Consumer<Cancel> _startSaveRef;
   
   private boolean _isActive;
@@ -89,9 +89,9 @@ public class StubContainerJournal extends StubContainerBase
     _serviceSelf = ServiceRef.current();
     
     if (_journalDelay > 0) {
-      ServiceManager manager = _serviceSelf.manager();
+      Services manager = _serviceSelf.manager();
       
-      _timerService = manager.service("timer:").as(TimerService.class);
+      _timerService = manager.service("timer:").as(Timers.class);
       Consumer<Cancel> startSave = h->startSave();
       
       _startSaveRef = (Consumer<Cancel>) _serviceSelf.pin(startSave).as(Consumer.class);

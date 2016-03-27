@@ -34,16 +34,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
+import com.caucho.v5.inject.InjectorAmp;
+import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.InjectManagerImpl;
 import com.caucho.v5.loader.EnvLoader;
 
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 import io.baratine.spi.ServiceManagerProvider;
 
@@ -60,13 +60,13 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
   }
   
   @Override
-  public ServiceManager currentManager()
+  public Services currentManager()
   {
     return Amp.getCurrentManager();
   }
   
   @Override
-  public ServiceManager.ServiceManagerBuilder newManager()
+  public Services.ServicesBuilder newManager()
   {
     return new ServiceManagerBuilderImpl();
   }
@@ -91,7 +91,7 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
     }
 
     try {
-      ServiceManagerAmp manager = Amp.getContextManager();
+      ServicesAmp manager = Amp.getContextManager();
     
       if (manager != null) {
         return manager.inboxSystem().serviceRef();
@@ -143,13 +143,13 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
   }
 
   //@Override
-  public InjectManagerAmp injectCurrent(ClassLoader classLoader)
+  public InjectorAmp injectCurrent(ClassLoader classLoader)
   {
     return InjectManagerImpl.current(classLoader);
   }
 
   //@Override
-  public InjectManagerAmp injectCreate(ClassLoader classLoader)
+  public InjectorAmp injectCreate(ClassLoader classLoader)
   {
     return InjectManagerImpl.create(classLoader);
   }

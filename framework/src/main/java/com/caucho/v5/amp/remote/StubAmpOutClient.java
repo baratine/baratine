@@ -32,7 +32,7 @@ package com.caucho.v5.amp.remote;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
@@ -47,7 +47,7 @@ public class StubAmpOutClient extends StubAmpOut
   private final OutAmpManager _outManager;
   private final ChannelClient _channel;
   
-  public StubAmpOutClient(ServiceManagerAmp ampManager,
+  public StubAmpOutClient(ServicesAmp ampManager,
                            OutAmpManager outManager,
                            String remoteAddress,
                            ServiceRefAmp selfServiceRef,

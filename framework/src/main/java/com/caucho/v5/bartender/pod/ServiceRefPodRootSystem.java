@@ -37,9 +37,9 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.service.ServiceRefWrapper;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.util.L10N;
@@ -50,7 +50,7 @@ import com.caucho.v5.util.L10N;
 public class ServiceRefPodRootSystem extends ServiceRefPodRoot
 {
   ServiceRefPodRootSystem(SchemePod podScheme,
-                    ServiceManagerAmp manager,
+                    ServicesAmp manager,
                     PodBartender pod,
                     String address)
   {

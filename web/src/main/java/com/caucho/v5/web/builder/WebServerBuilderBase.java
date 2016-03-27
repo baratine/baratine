@@ -35,10 +35,10 @@ import java.util.function.Supplier;
 import javax.inject.Provider;
 
 import io.baratine.convert.Convert;
-import io.baratine.inject.InjectManager;
-import io.baratine.inject.InjectManager.BindingBuilder;
-import io.baratine.inject.InjectManager.InjectAutoBind;
-import io.baratine.inject.InjectManager.InjectBuilder;
+import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.BindingBuilder;
+import io.baratine.inject.Injector.InjectAutoBind;
+import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpMethod;
@@ -82,7 +82,7 @@ class WebServerBuilderBase implements WebServerBuilder
   //
 
   @Override
-  public InjectManager inject()
+  public Injector inject()
   {
     return delegate().inject();
   }
@@ -128,9 +128,10 @@ class WebServerBuilderBase implements WebServerBuilder
   }
   
   @Override
-  public <T> ServiceRef.ServiceBuilder service(Supplier<? extends T> supplier)
+  public <T> ServiceRef.ServiceBuilder service(Class<T> serviceClass,
+                                               Supplier<? extends T> supplier)
   {
-    return delegate().service(supplier);
+    return delegate().service(serviceClass, supplier);
   }
 
   @Override

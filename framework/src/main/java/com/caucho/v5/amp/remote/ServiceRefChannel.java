@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceRefBase;
 
@@ -46,7 +46,7 @@ public class ServiceRefChannel extends ServiceRefBase
   }
 
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return _channel.getManager();
   }

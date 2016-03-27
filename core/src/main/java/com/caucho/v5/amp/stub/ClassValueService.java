@@ -33,16 +33,16 @@ import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Generates a concrete service class.
  */
 public class ClassValueService extends ClassValue<Supplier<Object>>
 {
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
 
-  ClassValueService(ServiceManagerAmp manager)
+  ClassValueService(ServicesAmp manager)
   {
     Objects.requireNonNull(manager);
     
@@ -53,7 +53,7 @@ public class ClassValueService extends ClassValue<Supplier<Object>>
   protected Supplier<Object> computeValue(Class<?> type)
   {
     if (! Modifier.isAbstract(type.getModifiers())) {
-      return ()->_manager.inject().instance(type);
+      return ()->_manager.injector().instance(type);
     }
     
     System.out.println("DERP: " + this);

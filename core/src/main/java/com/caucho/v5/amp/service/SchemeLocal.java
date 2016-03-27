@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.service;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.InboxNull;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -43,9 +43,9 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
  */
 public final class SchemeLocal extends ServiceRefBase
 {
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   
-  public SchemeLocal(ServiceManagerAmp manager)
+  public SchemeLocal(ServicesAmp manager)
   {
     _manager = manager;
   }

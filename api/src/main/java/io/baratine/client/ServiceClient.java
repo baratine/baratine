@@ -29,13 +29,13 @@
 
 package io.baratine.client;
 
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.spi.WebServerProvider;
 
 /**
  * Client interface to a remote Baratine service.
  */
-public interface ServiceClient extends ServiceManager, AutoCloseable
+public interface ServiceClient extends Services, AutoCloseable
 {
   static Builder newClient(String url)
   {

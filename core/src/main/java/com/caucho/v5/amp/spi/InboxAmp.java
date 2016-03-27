@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.spi;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.stub.MethodAmp;
@@ -51,7 +51,7 @@ public interface InboxAmp // extends OutboxContext<MessageAmp>
   // information/reflection
   //
   
-  ServiceManagerAmp manager();
+  ServicesAmp manager();
   
   String getAddress();
   

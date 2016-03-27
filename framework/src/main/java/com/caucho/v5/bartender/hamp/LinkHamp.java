@@ -37,7 +37,7 @@ import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.remote.ChannelServerLinkImpl;
@@ -73,12 +73,12 @@ public class LinkHamp extends ClientAmpBase implements Runnable
   public LinkHamp(InputStream is,
                   OutputStream os)
   {
-    this(ServiceManagerAmp.newManager().start(),
+    this(ServicesAmp.newManager().start(),
          "remote://",
          is, os);
   }
 
-  public LinkHamp(ServiceManagerAmp manager,
+  public LinkHamp(ServicesAmp manager,
                   String peerAddress,
                   InputStream is, 
                   OutputStream os)
@@ -135,9 +135,9 @@ public class LinkHamp extends ClientAmpBase implements Runnable
     _address = address;
   }
   
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
-    return (ServiceManagerAmp) delegate();
+    return (ServicesAmp) delegate();
   }
 
   @Override

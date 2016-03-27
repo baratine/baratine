@@ -39,7 +39,7 @@ import com.caucho.v5.web.builder.ServiceBuilderWebImpl;
 import com.caucho.v5.web.webapp.HttpBaratineBuilder;
 
 import io.baratine.config.Config;
-import io.baratine.inject.InjectManager.IncludeInject;
+import io.baratine.inject.Injector.IncludeInject;
 import io.baratine.web.IncludeWeb;
 
 /**

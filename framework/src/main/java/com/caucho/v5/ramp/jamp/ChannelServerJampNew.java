@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.inbox.OutboxAmpBase;
 import com.caucho.v5.amp.remote.ChannelServer;
@@ -67,7 +67,7 @@ public class ChannelServerJampNew implements ChannelServer
   private ConcurrentHashMap<String,ServiceRefAmp> _linkServiceMap;
   private ArrayList<ServiceRefAmp> _serviceCloseList;
   
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   private final LookupAmp _registry;
   
   //private HttpServletRequest _req;
@@ -88,7 +88,7 @@ public class ChannelServerJampNew implements ChannelServer
 
   public ChannelServerJampNew(RequestWeb req,
                               WebJamp jamp,
-                              ServiceManagerAmp manager)
+                              ServicesAmp manager)
   {
     Objects.requireNonNull(manager);
     
@@ -195,7 +195,7 @@ public class ChannelServerJampNew implements ChannelServer
   }
   
   @Override
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _manager;
   }

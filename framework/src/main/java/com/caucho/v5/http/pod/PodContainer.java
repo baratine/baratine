@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.baratine.ServicePod;
 import com.caucho.v5.baratine.ServicePod.NodeBaratine;
@@ -55,7 +55,7 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.PathImpl;
 
 import io.baratine.service.Result;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 /**
  * Contains Baratine service pod deployments.
@@ -122,7 +122,7 @@ public class PodContainer
   //private ShutdownModeAmp _shutdownMode = ShutdownModeAmp.IMMEDIATE;
   private ShutdownModeAmp _shutdownMode = ShutdownModeAmp.GRACEFUL;
   private AmpSystem _ampSystem;
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
   
   /**
    * Creates the webApp with its environment loader.
@@ -657,7 +657,7 @@ public class PodContainer
     }
     
     @Override
-    public ServiceManager manager()
+    public Services manager()
     {
       return node(0).manager();
     }
@@ -681,9 +681,9 @@ public class PodContainer
     }
     
     @Override
-    public ServiceManager manager()
+    public Services manager()
     {
-      ServiceManagerAmp manager = _handle.requestManager();
+      ServicesAmp manager = _handle.requestManager();
 
       if (manager != null) {
         return manager;

@@ -40,7 +40,7 @@ import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.timer.TimerService;
+import io.baratine.timer.Timers;
 
 
 /**
@@ -60,9 +60,9 @@ public class AmpSystem extends SubSystemBase
   private final SystemManager _systemManager;
   // private final HempBrokerManager _hempBrokerManager;
   // private final HempBroker _broker;
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
   
-  private final TimerService _timerService;
+  private final Timers _timerService;
 
   //private TaskManager _taskManager;
   
@@ -104,7 +104,7 @@ public class AmpSystem extends SubSystemBase
      */
 
     _timerService = _ampManager.service("timer:")
-                                .as(TimerService.class);
+                                .as(Timers.class);
     
     //_taskManager = new TaskManager();
 
@@ -128,7 +128,7 @@ public class AmpSystem extends SubSystemBase
     return SystemManager.getCurrentSystem(AmpSystem.class);
   }
   
-  public static ServiceManagerAmp currentManager()
+  public static ServicesAmp currentManager()
   {
     AmpSystem system = getCurrent();
     
@@ -146,12 +146,12 @@ public class AmpSystem extends SubSystemBase
     return _address;
   }
   
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _ampManager;
   }
 
-  public TimerService getTimerService()
+  public Timers getTimerService()
   {
     return _timerService;
   }

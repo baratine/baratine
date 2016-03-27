@@ -34,13 +34,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.vault.IdAssetGenerator;
 import com.caucho.v5.deploy2.DeployInstance2;
 import com.caucho.v5.http.dispatch.InvocationRouter;
 import com.caucho.v5.http.websocket.WebSocketManager;
-import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
+import com.caucho.v5.inject.InjectorAmp;
+import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.loader.DynamicClassLoader;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.CurrentTime;
@@ -65,9 +65,9 @@ public class WebApp
   
   private InvocationRouter<InvocationBaratine> _router;
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
 
-  private InjectManagerAmp _injectManager;
+  private InjectorAmp _injectManager;
 
   private Throwable _configException;
 
@@ -178,13 +178,13 @@ public class WebApp
   }
   
   // @Override
-  public InjectManagerAmp inject()
+  public InjectorAmp inject()
   {
     return _injectManager;
   }
 
   // @Override
-  public ServiceManagerAmp serviceManager()
+  public ServicesAmp serviceManager()
   {
     return _ampManager;
   }

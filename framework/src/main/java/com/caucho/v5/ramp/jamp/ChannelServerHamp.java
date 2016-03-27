@@ -31,7 +31,7 @@ package com.caucho.v5.ramp.jamp;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelServerImpl;
 import com.caucho.v5.amp.remote.OutAmp;
@@ -45,7 +45,7 @@ public class ChannelServerHamp extends ChannelServerImpl
   private String _addressPod;
   private String _sessionId;
 
-  ChannelServerHamp(Supplier<ServiceManagerAmp> ampManagerRef,
+  ChannelServerHamp(Supplier<ServicesAmp> ampManagerRef,
                           RegistryAmp registry,
                           OutAmp out,
                           String address,

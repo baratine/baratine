@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 
@@ -44,11 +44,11 @@ public class OutboxAmpExecutorFactory implements Supplier<OutboxAmp>
 {
   private Supplier<Executor> _factory;
   private InboxAmp _systemInbox;
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
   
   private CachedExecutorInbox _lastInbox;
   
-  public OutboxAmpExecutorFactory(ServiceManagerAmp manager,
+  public OutboxAmpExecutorFactory(ServicesAmp manager,
                                   Supplier<Executor> factory, 
                                   InboxAmp systemInbox)
   {

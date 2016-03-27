@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.health.shutdown.ShutdownSystem;
 import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.network.port.ConnectionTcp;
@@ -81,7 +81,7 @@ public class ConnectionHttp implements ConnectionProtocol
     _conn = conn;
     _sequence = sequence;
     
-    ServiceManagerAmp ampManager = conn.port().ampManager();
+    ServicesAmp ampManager = conn.port().ampManager();
     
     _outProxy = ampManager.newService(new OutHttpProxyImpl(this))
                           .name(conn.toString())

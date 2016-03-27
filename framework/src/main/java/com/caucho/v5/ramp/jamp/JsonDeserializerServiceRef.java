@@ -33,7 +33,7 @@ import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.ser.JsonSerializerBase;
 
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 public class JsonDeserializerServiceRef extends JsonSerializerBase
 {
@@ -48,7 +48,7 @@ public class JsonDeserializerServiceRef extends JsonSerializerBase
     else {
       String address = in.readString();
       System.out.println("JDSR: " + address);
-      ServiceManager manager = ServiceManager.current();
+      Services manager = Services.current();
       
       return manager.service(address);
     }

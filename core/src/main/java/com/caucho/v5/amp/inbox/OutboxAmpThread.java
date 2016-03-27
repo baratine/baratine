@@ -30,7 +30,7 @@
 package com.caucho.v5.amp.inbox;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.thread.ThreadPool;
 
@@ -52,7 +52,7 @@ public class OutboxAmpThread
       return inbox;
     }
     
-    ServiceManagerAmp manager = Amp.getContextManager();
+    ServicesAmp manager = Amp.getContextManager();
     
     if (manager != null) {
       return manager.inboxSystem();

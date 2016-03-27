@@ -31,7 +31,7 @@ package com.caucho.v5.ramp.jamp;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelManagerService;
 import com.caucho.v5.amp.remote.ChannelServer;
 import com.caucho.v5.amp.remote.ChannelServerFactoryImpl;
@@ -45,7 +45,7 @@ public class ChannelServerFactoryJampDispatch
 {
   private String _addressPod;
 
-  public ChannelServerFactoryJampDispatch(Supplier<ServiceManagerAmp> ampManagerRef,
+  public ChannelServerFactoryJampDispatch(Supplier<ServicesAmp> ampManagerRef,
                                           ChannelManagerService sessionManager,
                                           String addressPod,
                                           String podName)

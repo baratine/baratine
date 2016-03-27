@@ -42,7 +42,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.json.Json;
 import com.caucho.v5.json.io.InJson.Event;
@@ -71,7 +71,7 @@ public class TableManagerVault<ID,T>
     _db = db;
     _entityInfo = entityDesc;
     
-    _config = InjectManagerAmp.current().instance(Config.class);
+    _config = InjectorAmp.current().instance(Config.class);
     Objects.requireNonNull(_config);
   }
 

@@ -31,7 +31,7 @@ package com.caucho.v5.amp.service;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 
@@ -43,11 +43,11 @@ public class ServiceRefException extends ServiceRefBase
   private static final Logger log
     = Logger.getLogger(ServiceRefException.class.getName());
   
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
   private String _address;
   private RuntimeException _exn;
   
-  public ServiceRefException(ServiceManagerAmp manager,
+  public ServiceRefException(ServicesAmp manager,
                              String address, 
                              RuntimeException exn)
   {

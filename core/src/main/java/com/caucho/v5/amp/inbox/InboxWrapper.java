@@ -33,7 +33,7 @@ import io.baratine.service.Cancel;
 import io.baratine.service.Result;
 import io.baratine.stream.ResultStream;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.HeadersAmp;
@@ -52,7 +52,7 @@ abstract public class InboxWrapper implements InboxAmp
   abstract protected InboxAmp delegate();
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return delegate().manager();
   }

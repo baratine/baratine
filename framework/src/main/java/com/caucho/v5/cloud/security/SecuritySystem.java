@@ -36,7 +36,7 @@ import com.caucho.v5.http.security.AuthenticatorRole;
 import com.caucho.v5.http.security.BasicPrincipal;
 import com.caucho.v5.http.security.DigestBuilder;
 import com.caucho.v5.http.security.DigestCredentials;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.ramp.hamp.SignedCredentials;
 import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
@@ -287,7 +287,7 @@ public class SecuritySystem extends SubSystemBase
   
   private AuthenticatorRole findAuthenticator()
   {
-    InjectManagerAmp injectManager = InjectManagerAmp.current();
+    InjectorAmp injectManager = InjectorAmp.current();
 
     AuthenticatorRole auth;
     

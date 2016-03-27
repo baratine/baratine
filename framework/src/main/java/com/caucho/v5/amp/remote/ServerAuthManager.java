@@ -42,7 +42,7 @@ import com.caucho.v5.http.security.AuthenticatorRole;
 import com.caucho.v5.http.security.BasicPrincipal;
 import com.caucho.v5.http.security.DigestCredentials;
 import com.caucho.v5.http.security.PasswordCredentials;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.ramp.hamp.NonceQuery;
 import com.caucho.v5.ramp.hamp.SignedCredentials;
 import com.caucho.v5.util.CurrentTime;
@@ -74,7 +74,7 @@ public class ServerAuthManager {
   {
     _security = SecuritySystem.getCurrent();
     
-    InjectManagerAmp injectManager = InjectManagerAmp.current();
+    InjectorAmp injectManager = InjectorAmp.current();
     
     _auth = injectManager.instance(io.baratine.inject.Key.of(AuthenticatorRole.class,
                                           Admin.class));

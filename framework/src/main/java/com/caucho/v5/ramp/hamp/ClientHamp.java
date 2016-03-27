@@ -30,7 +30,7 @@
 package com.caucho.v5.ramp.hamp;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ClientAmpBase;
 import com.caucho.v5.amp.remote.OutAmpFactory;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
@@ -55,9 +55,9 @@ public class ClientHamp extends ClientAmpBase
       = new ConnectionHampFactoryClient(delegate(), uri, user, password);
   }
   
-  private static ServiceManagerAmp createRampManager()
+  private static ServicesAmp createRampManager()
   {
-    ServiceManagerBuilderAmp builder = ServiceManagerAmp.newManager();
+    ServiceManagerBuilderAmp builder = ServicesAmp.newManager();
     
     builder.name("hamp:");
     builder.contextManager(false);

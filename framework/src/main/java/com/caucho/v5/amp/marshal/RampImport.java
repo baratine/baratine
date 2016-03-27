@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
@@ -66,7 +66,7 @@ public class RampImport
   private final ClassLoader _sourceLoader;
   private final ClassLoader _targetLoader;
 
-  private ServiceManagerAmp _sourceManager;
+  private ServicesAmp _sourceManager;
   //private ServiceManagerAmp _targetManager;
   
   private ConcurrentHashMap<ImportKey,ModuleMarshal> _marshalMap
@@ -115,7 +115,7 @@ public class RampImport
     return _sourceLoader;
   }
 
-  public ServiceManagerAmp getSourceManager()
+  public ServicesAmp getSourceManager()
   {
     if (_sourceManager == null) {
       _sourceManager = Amp.getContextManager(getSourceLoader());
@@ -371,7 +371,7 @@ public class RampImport
       return new MarshalServiceRef(targetType);
     }
     
-    if (ServiceManagerAmp.class.isAssignableFrom(sourceType)) {
+    if (ServicesAmp.class.isAssignableFrom(sourceType)) {
       return MarshalIdentity.MARSHAL;
     }
 

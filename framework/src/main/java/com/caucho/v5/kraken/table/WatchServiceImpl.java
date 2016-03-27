@@ -43,7 +43,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.ServerOnUpdate;
 import com.caucho.v5.bartender.pod.PodBartender;
@@ -77,7 +77,7 @@ public class WatchServiceImpl implements WatchService
   {
     _serviceRef = ServiceRef.current();
     
-    ServiceManagerAmp manager = AmpSystem.currentManager();
+    ServicesAmp manager = AmpSystem.currentManager();
     
     EventsSync events = manager.service(EventsSync.class);
     

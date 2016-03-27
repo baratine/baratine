@@ -36,7 +36,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.remote.ChannelServer;
 import com.caucho.v5.amp.service.ServiceRefHandle;
@@ -73,11 +73,11 @@ public class WebJamp implements ServiceWeb
   
   private long _rpcTimeout = 60000;
 
-  private ServiceManagerAmp _manager;
+  private ServicesAmp _manager;
 
   public WebJamp()
   {
-    _manager = ServiceManagerAmp.current();
+    _manager = ServicesAmp.current();
     
     _podManager = new JampPodManagerPods();
     

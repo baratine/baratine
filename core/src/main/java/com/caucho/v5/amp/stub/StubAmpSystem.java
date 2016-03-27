@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.stub;
 
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
@@ -39,10 +39,10 @@ import com.caucho.v5.amp.spi.QueryRefAmp;
  */
 public final class StubAmpSystem extends StubAmpNull
 {
-  private final ServiceManagerAmpImpl _manager;
+  private final ServicesAmpImpl _manager;
   private InboxAmp _inbox;
   
-  public StubAmpSystem(String address, ServiceManagerAmpImpl manager)
+  public StubAmpSystem(String address, ServicesAmpImpl manager)
   {
     super(address);
     

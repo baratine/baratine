@@ -39,7 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.config.ConfigException;
@@ -94,7 +94,7 @@ public class NetworkSystem extends SubSystemBase
     _selfServer = selfServer;
     _config = config;
     
-    ServiceManagerAmp manager = AmpSystem.currentManager();
+    ServicesAmp manager = AmpSystem.currentManager();
   }
 
   /**

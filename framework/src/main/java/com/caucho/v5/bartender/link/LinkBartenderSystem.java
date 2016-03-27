@@ -35,7 +35,7 @@ import java.util.logging.Level;
 
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceRefAlias;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
@@ -108,7 +108,7 @@ public class LinkBartenderSystem extends SubSystemBase
                                     AmpSystem.class.getSimpleName()));
     }
     
-    ServiceManagerAmp rampManager = _ampSystem.getManager();
+    ServicesAmp rampManager = _ampSystem.getManager();
     
     _linkManager = createChampManager();
     _linkManagerPublic = createLinkManagerPublic();
@@ -143,7 +143,7 @@ public class LinkBartenderSystem extends SubSystemBase
 
   private HampManager createChampManager()
   {
-    ServiceManagerAmp ampManager = AmpSystem.currentManager();
+    ServicesAmp ampManager = AmpSystem.currentManager();
     
     LinkBartenderServiceImpl linkServiceImpl
       = new LinkBartenderServiceImpl(getServerSelf());
@@ -172,7 +172,7 @@ public class LinkBartenderSystem extends SubSystemBase
 
   private HampManager createLinkManagerPublic()
   {
-    ServiceManagerAmp ampManager = ServiceManagerAmp.newManager().start();
+    ServicesAmp ampManager = ServicesAmp.newManager().start();
     
     HeartbeatSeedServiceImpl seedService
       = new HeartbeatSeedServiceImpl((ServerHeartbeat) _serverSelf);
@@ -188,7 +188,7 @@ public class LinkBartenderSystem extends SubSystemBase
   
   protected void init()
   {
-    ServiceManagerAmp rampManager = getManager();
+    ServicesAmp rampManager = getManager();
       
     ServerLinkBartenderBuilder builder = new ServerLinkBartenderBuilder();
     builder.rampManager(rampManager);
@@ -216,7 +216,7 @@ public class LinkBartenderSystem extends SubSystemBase
     return _ampSystem.getAddress();
   }
   
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _ampSystem.getManager();
   }
@@ -252,13 +252,13 @@ public class LinkBartenderSystem extends SubSystemBase
     PodContainer podContainer = PodContainer.getCurrent();
     
     if (podContainer != null) {
-      ServiceManagerBuilderAmp ampBuilder = ServiceManagerAmp.newManager();
+      ServiceManagerBuilderAmp ampBuilder = ServicesAmp.newManager();
       //ServiceManagerBartender ampManagerChamp = new ServiceManagerBartender(rampBuilder);
       // ServiceManagerAmp ampManagerPod = Amp.newManager();
       
       ampBuilder.name("system-pod," + _serverSelf.getDisplayName());
       ampBuilder.autoServices(true);
-      ServiceManagerAmp ampManagerPod = ampBuilder.start();
+      ServicesAmp ampManagerPod = ampBuilder.start();
       
       ampManagerPod.inboxSystem().serviceRef().bind("public:///system");
       
@@ -280,7 +280,7 @@ public class LinkBartenderSystem extends SubSystemBase
       _schemeBartenderPod = schemeBartenderPod;
 
       // bartender-pod: is bound in AmpSystem
-      ServiceManagerAmp ampManager = _ampSystem.getManager();
+      ServicesAmp ampManager = _ampSystem.getManager();
       SchemeBartenderPodProxy schemeBartenderPodProxy
         = new SchemeBartenderPodProxy(_bartender, ampManager, null);
       schemeBartenderPodProxy.bind(schemeBartenderPodProxy.address());

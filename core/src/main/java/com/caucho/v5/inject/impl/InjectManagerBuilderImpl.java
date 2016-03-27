@@ -49,17 +49,17 @@ import javax.inject.Singleton;
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.convert.ConvertAutoBind;
 import com.caucho.v5.inject.BindingAmp;
-import com.caucho.v5.inject.InjectManagerAmp;
-import com.caucho.v5.inject.InjectManagerAmp.InjectBuilderAmp;
+import com.caucho.v5.inject.InjectorAmp;
+import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.InjectManagerImpl.BindingSet;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Factory;
-import io.baratine.inject.InjectManager;
-import io.baratine.inject.InjectManager.BindingBuilder;
-import io.baratine.inject.InjectManager.InjectAutoBind;
-import io.baratine.inject.InjectManager.InjectBuilder;
+import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.BindingBuilder;
+import io.baratine.inject.Injector.InjectAutoBind;
+import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.service.Lookup;
@@ -200,7 +200,7 @@ public class InjectManagerBuilderImpl implements InjectBuilderAmp
   }
   
   @Override
-  public InjectManagerAmp get()
+  public InjectorAmp get()
   {
     if (_injectManager == null) {
       _injectManager = new InjectManagerImpl(this); 
@@ -238,7 +238,7 @@ public class InjectManagerBuilderImpl implements InjectBuilderAmp
   
   void bind(InjectManagerImpl manager)
   {
-    addBean(manager, Key.of(InjectManager.class), ()->manager);
+    addBean(manager, Key.of(Injector.class), ()->manager);
     
     for (Class<?> beanType : includes()) {
       addInclude(manager, beanType);

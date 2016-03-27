@@ -39,7 +39,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.store.io.InStore;
 import com.caucho.v5.store.io.OutStore;
@@ -376,7 +376,7 @@ public class JournalStore
     private final Path _path;
     private long _segmentSize = 4 * 1024 * 1024;
     private boolean _isMmap = true;
-    private ServiceManagerAmp _rampManager;
+    private ServicesAmp _rampManager;
     
     public Builder(Path path)
     {
@@ -424,14 +424,14 @@ public class JournalStore
       return _isMmap;
     }
     
-    public Builder rampManager(ServiceManagerAmp manager)
+    public Builder rampManager(ServicesAmp manager)
     {
       _rampManager = manager;
       
       return this;
     }
     
-    public ServiceManagerAmp getRampManager()
+    public ServicesAmp getRampManager()
     {
       return _rampManager;
     }
@@ -440,7 +440,7 @@ public class JournalStore
       throws IOException
     {
       if (_rampManager == null) {
-        _rampManager = ServiceManagerAmp.newManager().get();
+        _rampManager = ServicesAmp.newManager().get();
       }
       
       return new JournalStore(this);

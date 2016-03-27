@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
@@ -65,7 +65,7 @@ public final class TableManagerKraken
   private static final L10N L = new L10N(TableManagerKraken.class);
   
   private final SystemManager _resinSystem;
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
 
   
   // private final ClientKraken _clusterClient;
@@ -156,7 +156,7 @@ public final class TableManagerKraken
     return _tableService;
   }
 
-  public ServiceManagerAmp getManager()
+  public ServicesAmp getManager()
   {
     return _ampManager;
   }
@@ -221,7 +221,7 @@ public final class TableManagerKraken
     
     _tempStore = TempFileSystem.getCurrent().getTempStore();
     
-    ServiceManagerAmp rampManager = AmpSystem.currentManager();
+    ServicesAmp rampManager = AmpSystem.currentManager();
     
     _kelpBacking = _kelpManagerBuilder.build();
     

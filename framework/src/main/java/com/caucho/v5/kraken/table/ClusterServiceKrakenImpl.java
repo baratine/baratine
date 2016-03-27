@@ -61,7 +61,7 @@ import io.baratine.db.Cursor;
 import io.baratine.event.EventsSync;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 
 /**
@@ -101,7 +101,7 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
   //@OnInit
   public void start()
   {
-    ServiceManager manager = AmpSystem.currentManager();
+    Services manager = AmpSystem.currentManager();
     
     EventsSync events = manager.service(EventsSync.class);
     /*

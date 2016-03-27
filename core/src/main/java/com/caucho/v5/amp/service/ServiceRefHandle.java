@@ -33,7 +33,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
  * Abstract implementation for a service ref.
@@ -41,14 +41,14 @@ import com.caucho.v5.amp.ServiceManagerAmp;
 public class ServiceRefHandle implements Serializable
 {
   private String _address;
-  private transient ServiceManagerAmp _manager;
+  private transient ServicesAmp _manager;
   
   private ServiceRefHandle()
   {
   }
   
   public ServiceRefHandle(String address,
-                          ServiceManagerAmp manager)
+                          ServicesAmp manager)
   {
     Objects.requireNonNull(address);
     
@@ -86,7 +86,7 @@ public class ServiceRefHandle implements Serializable
     
     // baratine/3320
     //ServiceManagerAmp manager = Amp.getContextManager();
-    ServiceManagerAmp manager = _manager;
+    ServicesAmp manager = _manager;
     
     if (manager == null || ! _address.startsWith("session:")) {
       manager = Amp.getCurrentManager();

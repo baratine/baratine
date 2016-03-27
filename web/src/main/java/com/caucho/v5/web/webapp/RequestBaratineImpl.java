@@ -46,7 +46,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.OutResponseBase;
@@ -57,7 +57,7 @@ import com.caucho.v5.http.protocol.RequestUpgrade;
 import com.caucho.v5.http.protocol.WebCookie;
 import com.caucho.v5.http.protocol2.OutHeader;
 import com.caucho.v5.http.websocket.WebSocketBaratineImpl;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.TempInputStream;
@@ -72,7 +72,7 @@ import com.caucho.v5.util.Utf8Util;
 import com.caucho.v5.web.CookieWeb;
 
 import io.baratine.config.Config;
-import io.baratine.inject.InjectManager;
+import io.baratine.inject.Injector;
 import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.Result;
@@ -174,7 +174,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     return invocation().webApp();
   }
 
-  private ServiceManagerAmp serviceManager()
+  private ServicesAmp serviceManager()
   {
     return webApp().serviceManager();
   }
@@ -263,7 +263,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public ServiceRefAmp session(String name)
   {
-    ServiceManagerAmp manager = serviceManager();
+    ServicesAmp manager = serviceManager();
 
     if (name.indexOf('/') >= 0) {
       throw new IllegalArgumentException(name);
@@ -330,7 +330,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   */
 
   @Override
-  public InjectManager inject()
+  public Injector inject()
   {
     WebApp webApp = invocation().webApp();
 
@@ -338,7 +338,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return webApp.inject();
     }
     else {
-      return InjectManagerAmp.current();
+      return InjectorAmp.current();
     }
   }
 

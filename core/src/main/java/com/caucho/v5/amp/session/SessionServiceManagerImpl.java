@@ -38,7 +38,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -79,7 +79,7 @@ public class SessionServiceManagerImpl
   private ClassStubSession _skeleton;
   
   public SessionServiceManagerImpl(String path,
-                                   ServiceManagerAmp ampManager,
+                                   ServicesAmp ampManager,
                                    Class<?> classResource,
                                    Supplier<?> supplierBean,
                                    ServiceConfig config)

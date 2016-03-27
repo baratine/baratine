@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
@@ -154,7 +154,7 @@ public class EventServerImpl
                 .bind("pod://" + podName + EventServerImpl.PATH);
     }
     
-    ServiceManagerAmp ampManager = AmpSystem.currentManager();
+    ServicesAmp ampManager = AmpSystem.currentManager();
     
     EventsSync events = ampManager.service(EventsSync.class);
     

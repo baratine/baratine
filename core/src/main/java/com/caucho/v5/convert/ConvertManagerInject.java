@@ -43,7 +43,7 @@ import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertManager;
 import io.baratine.convert.ConvertManagerType;
 import io.baratine.inject.Binding;
-import io.baratine.inject.InjectManager;
+import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 
 /**
@@ -58,9 +58,9 @@ public class ConvertManagerInject implements ConvertManager
   private HashMap<Class<?>,ConvertManagerTypeImpl<?>> _convertMap
     = new HashMap<>();
   
-  private InjectManager _injector;
+  private Injector _injector;
   
-  public ConvertManagerInject(InjectManager injector)
+  public ConvertManagerInject(Injector injector)
   {
     _injector = injector;
     

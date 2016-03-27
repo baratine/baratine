@@ -34,7 +34,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.QueueDeliver;
@@ -49,7 +49,7 @@ import com.caucho.v5.amp.message.OnInitMessage;
 import com.caucho.v5.amp.message.OnShutdownMessage;
 import com.caucho.v5.amp.message.ReplayMessage;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.service.ServiceRefCore;
+import com.caucho.v5.amp.service.ServiceRefLocal;
 import com.caucho.v5.amp.service.ServiceRefPublic;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -96,7 +96,7 @@ public class InboxQueue extends InboxBase
 
   private final InboxMessage _inboxMessage;
 
-  public InboxQueue(ServiceManagerAmp manager,
+  public InboxQueue(ServicesAmp manager,
                     QueueDeliverBuilderImpl<MessageAmp> queueBuilder,
                     QueueServiceFactoryInbox serviceQueueFactory,
                     ServiceConfig config)
@@ -130,7 +130,7 @@ public class InboxQueue extends InboxBase
       _serviceRef = new ServiceRefPublic(stubMain, this);
     }
     else {
-      _serviceRef = new ServiceRefCore(stubMain, this);
+      _serviceRef = new ServiceRefLocal(stubMain, this);
     }
     
     // queueBuilder.setOutboxContext(new OutboxContextAmpImpl(this));

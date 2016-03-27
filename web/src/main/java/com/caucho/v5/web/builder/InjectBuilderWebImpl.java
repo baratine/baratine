@@ -32,8 +32,8 @@ package com.caucho.v5.web.builder;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 
-import io.baratine.inject.InjectManager.BindingBuilder;
-import io.baratine.inject.InjectManager.InjectBuilder;
+import io.baratine.inject.Injector.BindingBuilder;
+import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.inject.Key;
 import io.baratine.web.IncludeWeb;
 import io.baratine.web.WebBuilder;

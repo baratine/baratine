@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelClient;
 import com.caucho.v5.amp.remote.ChannelClientFactory;
@@ -65,7 +65,7 @@ class ServerLinkBartender
   private ServerBartender _selfServer;
   private boolean _isSystem;
 
-  private ServiceManagerAmp _rampManager;
+  private ServicesAmp _rampManager;
 
   ServerLinkBartender(ServerLinkBartenderBuilder builder,
                       ServerBartender server,
@@ -249,7 +249,7 @@ class ServerLinkBartender
     }
 
     @Override
-    public ChannelClient createChannelClient(ServiceManagerAmp manager,
+    public ChannelClient createChannelClient(ServicesAmp manager,
                                              OutAmpManager channel,
                                              String address)
     {

@@ -38,7 +38,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.Direct;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
@@ -55,10 +56,9 @@ import com.caucho.v5.util.L10N;
 import io.baratine.event.EventsSync;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
-import io.baratine.timer.TimerService;
+import io.baratine.timer.Timers;
 
 /**
  * Service for handling the bartender heartbeat messages
@@ -75,7 +75,7 @@ public class HeartbeatImpl
   private final RootHeartbeat _root;
   private final ServerSelf _serverSelf;
   
-  private final TimerService _timer;
+  private final Timers _timer;
   private final HeartbeatTask _heartbeatTask;
 
   private final long _heartbeatTimeout = 60000;
@@ -96,7 +96,7 @@ public class HeartbeatImpl
   
   // private final PodServiceImpl _podService;
   
-  private ServiceManagerAmp _rampManager;
+  private ServicesAmp _rampManager;
   private long _lastUpdateTime;
   
   private JoinClient _joinClient;

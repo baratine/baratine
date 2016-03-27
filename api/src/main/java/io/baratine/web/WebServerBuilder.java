@@ -29,7 +29,7 @@
 
 package io.baratine.web;
 
-import io.baratine.inject.InjectManager.InjectBuilder;
+import io.baratine.inject.Injector.InjectBuilder;
 
 public interface WebServerBuilder extends WebBuilder
 {

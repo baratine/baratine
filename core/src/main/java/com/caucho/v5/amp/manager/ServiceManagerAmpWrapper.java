@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
@@ -45,9 +45,9 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.StubFactoryAmp;
+import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 
-import io.baratine.inject.InjectManager;
+import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
@@ -59,9 +59,9 @@ import io.baratine.spi.Message;
 /**
  * Creates AMP actors and proxies.
  */
-abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
+abstract public class ServiceManagerAmpWrapper implements ServicesAmp
 {
-  abstract protected ServiceManagerAmp delegate();
+  abstract protected ServicesAmp delegate();
 
   @Override
   public ServiceRef currentService()
@@ -165,9 +165,10 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   }
 
   @Override
-  public ServiceBuilderAmp newService(Supplier<?> supplier)
+  public <T> ServiceBuilderAmp newService(Class<T> type, 
+                                          Supplier<? extends T> supplier)
   {
-    return delegate().newService(supplier);
+    return delegate().newService(type, supplier);
   }
 
   @Override
@@ -181,28 +182,6 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   {
     return delegate().service(key, api);
   }
-
-  @Override
-  public ServiceRefAmp toService(Object worker)
-  {
-    return delegate().toService(worker);
-  }
-
-  /*
-  @Override
-  public ServiceRefAmp service(ActorAmp actor)
-  {
-    return getDelegate().service(actor);
-  }
-  */
-
-  /*
-  @Override
-  public ServiceRefAmp service(ActorFactoryAmp actorFactory)
-  {
-    return getDelegate().service(actorFactory);
-  }
-  */
 
   @Override
   public ServiceRefAmp pin(ServiceRefAmp context, Object listener)
@@ -268,11 +247,13 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   }
   */
 
+  /*
   @Override
-  public StubAmp createActor(Object bean, ServiceConfig config)
+  public StubAmp createStub(Object bean, ServiceConfig config)
   {
-    return delegate().createActor(bean, config);
+    return delegate().createStub(bean, config);
   }
+  */
 
   @Override
   public ProxyFactoryAmp proxyFactory()
@@ -281,15 +262,15 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   }
 
   @Override
-  public StubFactoryAmp stubFactory()
+  public StubClassFactoryAmp stubFactory()
   {
     return delegate().stubFactory();
   }
 
   @Override
-  public InjectManager inject()
+  public Injector injector()
   {
-    return delegate().inject();
+    return delegate().injector();
   }
 
   /*
@@ -367,9 +348,9 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   }
 
   @Override
-  public ServiceRefAmp toServiceRef(Object proxy)
+  public ServiceRefAmp toRef(Object proxy)
   {
-    return delegate().toServiceRef(proxy);
+    return delegate().toRef(proxy);
   }
 
   @Override
@@ -439,6 +420,7 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
     delegate().setAutoStart(isAutoStart);
   }
   
+  /*
   @Override
   public String getSelfServer()
   {
@@ -450,6 +432,7 @@ abstract public class ServiceManagerAmpWrapper implements ServiceManagerAmp
   {
     delegate().setSelfServer(hostName);
   }
+  */
   
   /*
   @Override

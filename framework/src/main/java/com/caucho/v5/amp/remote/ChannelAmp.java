@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceRefNull;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -46,7 +46,7 @@ public interface ChannelAmp extends LookupAmp
   /**
    * Returns the underlying service manager.
    */
-  ServiceManagerAmp getManager();
+  ServicesAmp getManager();
   
   /**
    * Creates an outbox to the channel.

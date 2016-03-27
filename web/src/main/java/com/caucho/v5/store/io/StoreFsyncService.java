@@ -29,7 +29,8 @@
 
 package com.caucho.v5.store.io;
 
-import io.baratine.service.Direct;
+import com.caucho.v5.amp.Direct;
+
 import io.baratine.service.Result;
 
 

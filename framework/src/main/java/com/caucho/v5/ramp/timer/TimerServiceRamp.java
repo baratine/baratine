@@ -30,15 +30,16 @@
 package com.caucho.v5.ramp.timer;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.LongUnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.config.types.CronType;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.Alarm;
@@ -46,7 +47,6 @@ import com.caucho.v5.util.AlarmListener;
 import com.caucho.v5.util.CurrentTime;
 
 import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.OnLookup;
@@ -56,7 +56,7 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.timer.TaskInfo;
 import io.baratine.timer.TimerScheduler;
-import io.baratine.timer.TimerService;
+import io.baratine.timer.Timers;
 
 /**
  * Timer service.
@@ -89,7 +89,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
   
   /**
-   * Implements {@link TimerService#getCurrentTime()}
+   * Implements {@link Timers#getCurrentTime()}
    */
   @Direct
   public long getCurrentTime()
@@ -98,7 +98,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
 
   /**
-   * Implements {@link TimerService#runAfter(Runnable, long, TimeUnit)}
+   * Implements {@link Timers#runAfter(Runnable, long, TimeUnit)}
    */
   @Override
   public void runAfter(@Pin Consumer<? super Cancel> task, 
@@ -119,7 +119,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
 
   /**
-   * Implements {@link TimerService#runAfter(Runnable, long, TimeUnit)}
+   * Implements {@link Timers#runAfter(Runnable, long, TimeUnit)}
    */
   @Override
   public void runEvery(@Pin Consumer<? super Cancel> task, 
@@ -139,11 +139,11 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
 
   /**
-   * Implements {@link TimerService#schedule(Runnable, TimerScheduler)}
+   * Implements {@link Timers#schedule(Runnable, TimerScheduler)}
    */
   @Override
   public void schedule(@Pin Consumer<? super Cancel> task, 
-                       TimerScheduler scheduler,
+                       LongUnaryOperator scheduler,
                        Result<? super Cancel> result)
   {
     Objects.requireNonNull(task);
@@ -152,7 +152,7 @@ public class TimerServiceRamp implements TimerServiceAmp
     // cancel(task);
 
     long now = CurrentTime.currentTime();
-    long nextTime = scheduler.nextRunTime(now);
+    long nextTime = scheduler.applyAsLong(now);
 
     TimerListener listener = new TimerListener(task, scheduler);
     
@@ -168,7 +168,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
 
   /**
-   * Implements {@link TimerService#runAt(Runnable, long)}
+   * Implements {@link Timers#runAt(Runnable, long)}
    */
   @Override
   public void runAt(@Pin Consumer<? super Cancel> task, 
@@ -182,7 +182,7 @@ public class TimerServiceRamp implements TimerServiceAmp
     RunAtScheduler scheduler = new RunAtScheduler(time);
     
     long now = CurrentTime.currentTime();
-    long nextTime = scheduler.nextRunTime(now);
+    long nextTime = scheduler.applyAsLong(now);
 
     TimerListener listener = new TimerListener(task, scheduler);
 
@@ -197,7 +197,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
 
   /**
-   * Implements {@link TimerService#cron(Runnable, String)}
+   * Implements {@link Timers#cron(Runnable, String)}
    */
   @Override
   public void cron(@Pin Consumer<? super Cancel> task, 
@@ -210,7 +210,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
 
   /**
-   * Implements {@link TimerService#cancel(Runnable)}
+   * Implements {@link Timers#cancel(Runnable)}
    */
   // @Override
   public void cancel(Cancel handle)
@@ -230,7 +230,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
 
   /**
-   * Implements {@link TimerService#getTask(Runnable, Result)}
+   * Implements {@link Timers#getTask(Runnable, Result)}
    */
   public TaskInfo getTask(@Service Runnable task)
   {
@@ -248,7 +248,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   }
 
   /**
-   * Implements {@link TimerService#getTasks(Result)}
+   * Implements {@link Timers#getTasks(Result)}
    */
   public List<TaskInfo> getTasks()
   {
@@ -313,17 +313,17 @@ public class TimerServiceRamp implements TimerServiceAmp
   private class TimerListener implements AlarmListener, Cancel
   {
     private final Consumer<? super Cancel> _task;
-    private final TimerScheduler _scheduler;
+    private final LongUnaryOperator _nextTime;
 
     // private final TaskInfo _info;
 
     private Alarm _alarm;
 
     TimerListener(Consumer<? super Cancel> task,
-                  TimerScheduler scheduler)
+                  LongUnaryOperator nextTime)
     {
       _task = task;
-      _scheduler = scheduler;
+      _nextTime = nextTime;
 
       // _info = new TaskInfo(_task, CurrentTime.getCurrentTime());
       
@@ -392,13 +392,13 @@ public class TimerServiceRamp implements TimerServiceAmp
       } finally {
         // _info.lastCompletedTime(CurrentTime.getCurrentTime());
 
-        TimerScheduler scheduler = _scheduler;
+        LongUnaryOperator nextTimeOp = _nextTime;
 
         boolean isScheduled = false;
 
-        if (scheduler != null && _alarm != null) {
+        if (nextTimeOp != null && _alarm != null) {
           long now = CurrentTime.currentTime();
-          long nextTime = scheduler.nextRunTime(now);
+          long nextTime = nextTimeOp.applyAsLong(now);
 
           if (now < nextTime) {
             _alarm.queueAt(nextTime);
@@ -420,7 +420,8 @@ public class TimerServiceRamp implements TimerServiceAmp
     }
   }
 
-  private static class CronScheduler implements TimerScheduler {
+  private static class CronScheduler implements LongUnaryOperator
+  {
     private final CronType _cronType;
 
     CronScheduler(CronType cronType)
@@ -429,13 +430,14 @@ public class TimerServiceRamp implements TimerServiceAmp
     }
 
     @Override
-    public long nextRunTime(long now)
+    public long applyAsLong(long now)
     {
       return _cronType.nextTime(now);
     }
   }
 
-  private static class RunAtScheduler implements TimerScheduler {
+  private static class RunAtScheduler implements LongUnaryOperator
+  {
     private final long _time;
 
     RunAtScheduler(long time)
@@ -444,13 +446,14 @@ public class TimerServiceRamp implements TimerServiceAmp
     }
 
     @Override
-    public long nextRunTime(long now)
+    public long applyAsLong(long now)
     {
       return _time;
     }
   }
 
-  private static class RunEveryScheduler implements TimerScheduler {
+  private static class RunEveryScheduler implements LongUnaryOperator
+  {
     private final long _period;
 
     RunEveryScheduler(long period)
@@ -459,7 +462,7 @@ public class TimerServiceRamp implements TimerServiceAmp
     }
 
     @Override
-    public long nextRunTime(long now)
+    public long applyAsLong(long now)
     {
       return now + _period;
     }

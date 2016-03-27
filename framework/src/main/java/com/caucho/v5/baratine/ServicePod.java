@@ -29,7 +29,7 @@
 
 package com.caucho.v5.baratine;
 
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 public interface ServicePod
 {
@@ -37,9 +37,9 @@ public interface ServicePod
   
   int getNodeCount();
   
-  ServiceManager manager();
+  Services manager();
   
   public interface NodeBaratine {
-    ServiceManager manager();
+    Services manager();
   }
 }

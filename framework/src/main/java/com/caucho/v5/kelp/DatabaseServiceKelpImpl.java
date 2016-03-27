@@ -29,7 +29,6 @@
 
 package com.caucho.v5.kelp;
 
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.Result.Fork;
@@ -39,6 +38,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.HashKey;

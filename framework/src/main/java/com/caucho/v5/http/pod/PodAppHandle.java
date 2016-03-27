@@ -31,7 +31,7 @@ package com.caucho.v5.http.pod;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.deploy2.DeployHandle2;
 
 /**
@@ -96,7 +96,7 @@ public class PodAppHandle
     return _deployHandle.get();
   }
 
-  public ServiceManagerAmp requestManager()
+  public ServicesAmp requestManager()
   {
     PodManagerApp podApp = request(); // .getPodApp();
 

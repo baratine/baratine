@@ -31,14 +31,14 @@ package com.caucho.v5.bartender.pod;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 public class PodRefImpl implements PodRef
 {
   private final PodBartender _pod;
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   
-  public PodRefImpl(PodBartender pod, ServiceManagerAmp manager)
+  public PodRefImpl(PodBartender pod, ServicesAmp manager)
   {
     Objects.requireNonNull(pod);
     Objects.requireNonNull(manager);

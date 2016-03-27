@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.stub;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.util.L10N;
@@ -44,10 +44,10 @@ public class FilterPinArg
 {
   private static final L10N L = new L10N(FilterPinArg.class);
 
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   private final Class<?> _api;
 
-  FilterPinArg(ServiceManagerAmp manager,
+  FilterPinArg(ServicesAmp manager,
                        Class<?> api)
   {
     _manager = manager;

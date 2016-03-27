@@ -29,7 +29,7 @@
 
 package com.caucho.v5.bartender.pod;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 
@@ -38,7 +38,7 @@ import com.caucho.v5.bartender.BartenderSystem;
  */
 public class SchemePodSystem extends SchemePod
 {
-  public SchemePodSystem(BartenderSystem bartender, ServiceManagerAmp manager)
+  public SchemePodSystem(BartenderSystem bartender, ServicesAmp manager)
   {
     super(bartender, manager);
   }

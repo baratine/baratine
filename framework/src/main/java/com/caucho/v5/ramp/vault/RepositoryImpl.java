@@ -43,7 +43,7 @@ import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseService;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 import io.baratine.vault.Asset;
@@ -78,7 +78,7 @@ public class RepositoryImpl<ID, T>
     _idClass = idClass;
 
     if (db == null) {
-      db = ServiceManager.current()
+      db = Services.current()
                          .service("bardb:///")
                          .as(DatabaseService.class);
     }

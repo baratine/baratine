@@ -30,9 +30,9 @@
 package com.caucho.v5.ramp.events;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 /**
@@ -41,9 +41,9 @@ import com.caucho.v5.amp.ServiceRefAmp;
 public class ServiceInitEvents implements ServiceInitializer
 {
   @Override
-  public void init(ServiceManager manager)
+  public void init(Services manager)
   {
-    ServiceManagerAmp managerAmp = (ServiceManagerAmp) manager;
+    ServicesAmp managerAmp = (ServicesAmp) manager;
     
     EventServiceRamp eventsScheme = new EventServiceRamp("event:");
     

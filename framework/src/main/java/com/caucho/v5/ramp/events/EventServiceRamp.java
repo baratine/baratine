@@ -32,7 +32,7 @@ package com.caucho.v5.ramp.events;
 import java.util.HashMap;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
@@ -135,7 +135,7 @@ public class EventServiceRamp
       
     String address = address(path);
       
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
+    ServicesAmp manager = ServicesAmp.current();
     ServiceRefAmp pubRef = manager.service(address);
       
     result.ok(pubRef.as(api));
@@ -150,7 +150,7 @@ public class EventServiceRamp
   {
     String address = address(path);
       
-    ServiceManagerAmp manager = ServiceManagerAmp.current();
+    ServicesAmp manager = ServicesAmp.current();
     ServiceRefAmp pubRef = manager.service(address);
       
     result.ok(pubRef.as(api));

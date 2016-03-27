@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelManagerService;
 import com.caucho.v5.amp.remote.ChannelManagerServiceImpl;
 import com.caucho.v5.amp.remote.ChannelServerFactory;
@@ -98,7 +98,7 @@ public class JampPodManager
     return "";
   }
   
-  protected ServiceManagerAmp createAmpManager(String podName)
+  protected ServicesAmp createAmpManager(String podName)
   {
     return Amp.getContextManager();
   }
@@ -145,7 +145,7 @@ public class JampPodManager
   }
   
   private ChannelServerFactoryImpl
-  createRegistryFactory(Supplier<ServiceManagerAmp> manager, 
+  createRegistryFactory(Supplier<ServicesAmp> manager, 
                         String podName,
                         ChannelManagerService sessionManager)
   {
@@ -155,7 +155,7 @@ public class JampPodManager
   public class PodContext
   {
     private final String _podName;
-    private final Supplier<ServiceManagerAmp> _ampManagerRef;
+    private final Supplier<ServicesAmp> _ampManagerRef;
     private final RegistryAmp _registryShared;
     //private final ChannelServerJampFactory _sessionRegistryFactory;
     private final ChannelServerFactoryImpl _wsBrokerFactory;
@@ -165,7 +165,7 @@ public class JampPodManager
     
     
     PodContext(String podName,
-               Supplier<ServiceManagerAmp> ampManagerRef,
+               Supplier<ServicesAmp> ampManagerRef,
                //ChannelServerJampFactory channelRegistryFactory,
                ChannelServerFactoryImpl wsBrokerFactory,
                JsonFactory jsonFactory)
@@ -244,7 +244,7 @@ public class JampPodManager
       return _podIndex;
     }
 
-    public ServiceManagerAmp getAmpManager()
+    public ServicesAmp getAmpManager()
     {
       return _ampManagerRef.get();
     }
@@ -268,9 +268,9 @@ public class JampPodManager
     }
   }
   
-  private class PodServiceManagerSupplier implements Supplier<ServiceManagerAmp> {
+  private class PodServiceManagerSupplier implements Supplier<ServicesAmp> {
     private final String _podName;
-    private ServiceManagerAmp _manager;
+    private ServicesAmp _manager;
     
     PodServiceManagerSupplier(String podName)
     {
@@ -278,9 +278,9 @@ public class JampPodManager
     }
     
     @Override
-    public ServiceManagerAmp get()
+    public ServicesAmp get()
     {
-      ServiceManagerAmp manager = _manager;
+      ServicesAmp manager = _manager;
       
       if (manager != null && ! manager.isClosed()) {
         return manager;

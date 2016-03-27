@@ -29,9 +29,9 @@
 
 package com.caucho.v5.kelp;
 
-import io.baratine.service.Direct;
 import io.baratine.service.Result;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**

@@ -38,7 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bytecode.ByteCodeParser;
 import com.caucho.v5.bytecode.JavaClass;
 import com.caucho.v5.bytecode.attr.SourceDebugExtensionAttribute;
@@ -811,9 +811,9 @@ public class JavaCompilerUtil {
     ClassLoader oldLoader = thread.getContextClassLoader();
     
     try {
-      thread.setContextClassLoader(ServiceManagerAmp.class.getClassLoader());
+      thread.setContextClassLoader(ServicesAmp.class.getClassLoader());
       
-      ServiceManagerAmp manager = ServiceManagerAmp.newManager().start();
+      ServicesAmp manager = ServicesAmp.newManager().start();
     
       _compilerService = manager.newService(new JavaCompilerServiceImpl())
                                 .as(JavaCompilerServiceSync.class);

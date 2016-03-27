@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.message;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 
@@ -59,7 +59,7 @@ class StreamCallTargetProxy implements ResultStream<Object>
     //  _resultJoinLocal.start();
   }
 
-  private ServiceManagerAmp getManager()
+  private ServicesAmp getManager()
   {
     return _callerInbox.manager();
   }

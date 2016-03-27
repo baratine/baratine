@@ -31,7 +31,7 @@ package com.caucho.v5.bartender.link;
 
 import io.baratine.service.OnActive;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 
 import java.util.HashMap;
 
@@ -59,7 +59,7 @@ class LinkBartenderServiceImpl
   @OnActive
   public void onActive()
   {
-    ServiceManager manager = AmpSystem.currentManager();
+    Services manager = AmpSystem.currentManager();
     
     _linkEventPublisher = manager.service(LinkBartenderEvents.ADDRESS)
                                  .as(LinkBartenderEvents.class);

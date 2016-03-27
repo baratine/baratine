@@ -39,7 +39,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.MessageWrapperClassLoader;
 import com.caucho.v5.amp.service.MethodRefWrapperClassLoader;
@@ -61,22 +61,22 @@ public class ServiceRefPodApp extends ServiceRefWrapper
   private static final Logger log
     = Logger.getLogger(ServiceRefPodApp.class.getName());
   
-  private final ServiceManagerAmp _rampManager;
+  private final ServicesAmp _rampManager;
   
   private final String _podNodeName;
   private final String _path;
   
   //private final ClassLoader _classLoaderSelf;
   
-  private Supplier<ServiceManagerAmp> _podAppSupplier;
+  private Supplier<ServicesAmp> _podAppSupplier;
 
   // cached delegate and matching pod-app
   private ServiceRefAmp _delegate;
-  private ServiceManagerAmp _podManagerDelegate;
+  private ServicesAmp _podManagerDelegate;
   //private PodApp _podAppSelf;
   
-  ServiceRefPodApp(ServiceManagerAmp manager,
-                        Supplier<ServiceManagerAmp> podAppSupplier,
+  ServiceRefPodApp(ServicesAmp manager,
+                        Supplier<ServicesAmp> podAppSupplier,
                         String podNodeName,
                         String path)
   {
@@ -93,12 +93,12 @@ public class ServiceRefPodApp extends ServiceRefWrapper
     //_classLoaderSelf = Thread.currentThread().getContextClassLoader();
   }
   
-  protected Supplier<ServiceManagerAmp> getPodAppSupplier()
+  protected Supplier<ServicesAmp> getPodAppSupplier()
   {
     return _podAppSupplier;
   }
   
-  protected ServiceManagerAmp getServiceManager()
+  protected ServicesAmp getServiceManager()
   {
     return _rampManager;
   }
@@ -170,7 +170,7 @@ public class ServiceRefPodApp extends ServiceRefWrapper
   
   private ClassLoader getClassLoader()
   {
-    ServiceManagerAmp manager = _podAppSupplier.get();
+    ServicesAmp manager = _podAppSupplier.get();
     
     return manager.classLoader();
   }
@@ -178,7 +178,7 @@ public class ServiceRefPodApp extends ServiceRefWrapper
   @Override
   protected ServiceRefAmp delegate()
   {
-    ServiceManagerAmp podManager = _podAppSupplier.get();
+    ServicesAmp podManager = _podAppSupplier.get();
 
     if (podManager == null) {
       ServerBartender server = BartenderSystem.getCurrentSelfServer();
@@ -241,7 +241,7 @@ public class ServiceRefPodApp extends ServiceRefWrapper
     }
   }
 
-  protected ServiceRefAmp lookup(ServiceManagerAmp manager, String path)
+  protected ServiceRefAmp lookup(ServicesAmp manager, String path)
   {
     ServiceRefAmp serviceRef = manager.service("local://" + path);
 

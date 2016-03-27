@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.ServerBartender;
 
 import io.baratine.web.ServiceWebSocket;
@@ -47,7 +47,7 @@ public class HampManager
   private final AtomicLong _externalMessageReadCount = new AtomicLong();
   private final AtomicLong _externalMessageWriteCount = new AtomicLong();
 
-  private final Supplier<ServiceManagerAmp> _ampManagerRef;
+  private final Supplier<ServicesAmp> _ampManagerRef;
   private final ServerBartender _selfServer;
   private final String _replyScheme;
 
@@ -119,7 +119,7 @@ public class HampManager
     return _replyScheme;
   }
   
-  public ServiceManagerAmp ampManager()
+  public ServicesAmp ampManager()
   {
     return _ampManagerRef.get();
   }

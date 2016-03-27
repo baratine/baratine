@@ -37,9 +37,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.marshal.ImportAware;
 import com.caucho.v5.amp.service.ServiceRefWrapper;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -54,7 +54,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   private static final L10N L = new L10N(ServiceRefPod.class);
   private static final Logger log = Logger.getLogger(ServiceRefPod.class.getName());
   
-  private final ServiceManagerAmp _manager;
+  private final ServicesAmp _manager;
   private final ServiceRefPodRoot _podRoot;
   private final String _path;
   private final int _hash;
@@ -79,7 +79,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   }
   
   @Override
-  public ServiceManagerAmp manager()
+  public ServicesAmp manager()
   {
     return _manager;
   }
@@ -99,7 +99,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   @Override
   public ServiceRefAmp bind(String address)
   {
-    address = ServiceManagerAmpImpl.toCanonical(address);
+    address = ServicesAmpImpl.toCanonical(address);
 
     manager().bind(this, address);
 
@@ -155,7 +155,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   @Override
   public ServiceRefAmp export(ClassLoader importLoader)
   {
-    ServiceManagerAmp manager = Amp.getContextManager(importLoader);
+    ServicesAmp manager = Amp.getContextManager(importLoader);
     
     String path = _podRoot.address() + _path;
     

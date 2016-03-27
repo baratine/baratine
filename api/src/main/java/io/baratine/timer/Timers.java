@@ -31,9 +31,9 @@ package io.baratine.timer;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.LongUnaryOperator;
 
 import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
 import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
@@ -43,38 +43,30 @@ import io.baratine.service.Service;
  * injection (CDI):
  *
  * <pre>
- *     &#64;Inject &#64;Lookup("timer:") TimerServicer _timer;
+ *     &#64;Inject Timers _timers;
  * </pre>
  *
- * <p> or with the <code>{@link io.baratine.service.ServiceManager}</code>:
+ * <p> or with the <code>{@link io.baratine.service.Services}</code>:
  *
  * <pre>
- *     ServiceManager.current().lookup("timer:").as(TimerService.class);
+ *     ServiceManager.current().service(Timers.class);
  * </pre>
  *
  * <p> Service name: "timer:"
  *
- * @see io.baratine.service.ServiceManager
+ * @see io.baratine.service.Services
  */
 @Service("timer:")
-public interface TimerService
+public interface Timers
 {
   /**
-   * Returns the current time.  <code>&#64;{@link Direct}</code> indicates that this
-   * call bypasses the inbox for this service (i.e. callers call this method
-   * directly).
-   *
-   * @return the current time
-   */
-  @Direct
-  long getCurrentTime();
-
-  /**
-   * Run the <code>Runnable</code> at the given time.
+   * Run the task at the given time.
+   * 
+   * The task implements {@code Consumer} to accept a cancel.
    *
    * <pre>
    *     // run 5 seconds from now
-   *     timeService.runAt(task, System.currentTimeMillis() + 5000);
+   *     timers.runAt(task, System.currentTimeMillis() + 5000);
    * </pre>
    *
    * @param task the task to execute
@@ -86,13 +78,13 @@ public interface TimerService
              Result<? super Cancel> result);
 
   /**
-   * Run the <code>Runnable</code> <b>once</b> after the given delay.
+   * Run the task <b>once</b> after the given delay.
    *
    * <pre>
    *     MyRunnable task = new MyRunnable();
    *
    *     // run once 10 seconds from now
-   *     timerService.runAfter(task, 10, TimeUnit.SECONDS);
+   *     timers.runAfter(task, 10, TimeUnit.SECONDS);
    * </pre>
    *
    * @param task the executable timer task
@@ -106,13 +98,13 @@ public interface TimerService
                 Result<? super Cancel> result);
 
   /**
-   * Run the <code>Runnable</code> periodically after the given delay.
+   * Run the task periodically after the given delay.
    *
    * <pre>
    *     MyRunnable task = new MyRunnable();
    *
    *     // run every 10 seconds
-   *     timerService.runEvery(task, 10, TimeUnit.SECONDS);
+   *     timers.runEvery(task, 10, TimeUnit.SECONDS);
    * </pre>
    *
    * @param task
@@ -140,10 +132,10 @@ public interface TimerService
    *
    * <p> <b>Run exactly 5 times, then unregister this task:</b>
    * <pre>
-   *     timerService.schedule(task, new TimerScheduler() {
+   *     timerService.schedule(task, new LongUnaryOperator() {
    *         int count = 0;
    *
-   *         public long nextRunTime(long now) {
+   *         public long applyAsLong(long now) {
    *           if (count++ &gt;= 5) {
    *             return -1; // negative value to cancel
    *           }
@@ -158,7 +150,7 @@ public interface TimerService
    * @param scheduler
    */
   void schedule(@Pin Consumer<? super Cancel> task, 
-                TimerScheduler scheduler,
+                LongUnaryOperator nextTime,
                 Result<? super Cancel> result);
 
   /**

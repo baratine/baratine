@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.bartender.pod.PodRef;
 
@@ -43,7 +43,7 @@ public class StubLinkUnidir extends StubLink
   
   private ServiceRefAmp _queryMapRef;
 
-  public StubLinkUnidir(ServiceManagerAmp ampManager,
+  public StubLinkUnidir(ServicesAmp ampManager,
                          String remoteAddress,
                          ServiceRefAmp parentRef,
                          ServiceRefAmp queryMapRef,

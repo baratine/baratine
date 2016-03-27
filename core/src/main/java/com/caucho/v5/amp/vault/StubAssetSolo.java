@@ -33,7 +33,7 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -54,7 +54,7 @@ public class StubAssetSolo extends ClassStub
   
   private VaultDriver<?, ?> _driver;
 
-  public StubAssetSolo(ServiceManagerAmp ampManager, 
+  public StubAssetSolo(ServicesAmp ampManager, 
                             Class<?> api,
                             ServiceConfig configService,
                             VaultDriver<?,?> driver)

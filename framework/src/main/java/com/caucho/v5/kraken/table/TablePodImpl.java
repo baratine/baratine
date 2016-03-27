@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
@@ -54,7 +54,7 @@ import io.baratine.event.EventsSync;
 import io.baratine.service.Cancel;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
-import io.baratine.service.ServiceManager;
+import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 /**
  * Manages the distributed cache
@@ -176,7 +176,7 @@ public final class TablePodImpl implements TablePod
     // _cacheReplicationActor.start();
     startRequestUpdates();
     
-    ServiceManagerAmp services = AmpSystem.currentManager();
+    ServicesAmp services = AmpSystem.currentManager();
     
     //ServiceRef podUpdateRef = services.service(PodOnUpdate.ADDRESS);
     

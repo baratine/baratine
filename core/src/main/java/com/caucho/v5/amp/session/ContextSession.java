@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.ServiceRefSession;
@@ -43,7 +43,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.ClassStubSession;
-import com.caucho.v5.amp.stub.StubFactoryAmp;
+import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 import com.caucho.v5.util.Murmur32;
 
 import io.baratine.service.Result;
@@ -67,7 +67,7 @@ public class ContextSession
 
   private ClassStubSession _skeleton;
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
 
   private StateResourceManager _state = new StateResourceManager();
 
@@ -77,7 +77,7 @@ public class ContextSession
 
   private boolean _isKey;
   
-  public ContextSession(ServiceManagerAmp ampManager,
+  public ContextSession(ServicesAmp ampManager,
                          String path,
                          boolean isJournal)
   {
@@ -135,7 +135,7 @@ public class ContextSession
 
       //ActorAmp actor = _context.createActorResource(bean, key);
       
-      StubFactoryAmp stubFactory = _ampManager.stubFactory();
+      StubClassFactoryAmp stubFactory = _ampManager.stubFactory();
       
       StubAmp actor = stubFactory.createSkeletonSession(bean, key, this, _config);
     

@@ -35,7 +35,7 @@ import com.caucho.v5.amp.stub.StubAmp;
 /**
  * ServiceRef for the system service.
  */
-public class ServiceRefSystem extends ServiceRefActorBase
+public class ServiceRefSystem extends ServiceRefStubBase
 {
   public ServiceRefSystem(StubAmp actor,
                           InboxAmp inbox)

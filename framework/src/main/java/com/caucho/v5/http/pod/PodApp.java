@@ -35,9 +35,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
+import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
@@ -48,7 +48,7 @@ import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.deploy2.DeployInstance2;
-import com.caucho.v5.inject.InjectManagerAmp;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.javac.WorkDir;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.loader.DependencyContainer;
@@ -76,7 +76,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
   
   private Throwable _configException;
 
-  private ServiceManagerAmp _ampManager;
+  private ServicesAmp _ampManager;
 
   private PodAppBuilder _builder;
   
@@ -84,7 +84,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
 
   //private PodAppController _controller;
 
-  private InjectManagerAmp _injectManager;
+  private InjectorAmp _injectManager;
 
   private String _tag;
 
@@ -177,8 +177,8 @@ public class PodApp implements DeployInstance2, PodManagerApp
 
   private void setAmpConfigException(Throwable e)
   {
-    if (_ampManager instanceof ServiceManagerAmpImpl) {
-      ((ServiceManagerAmpImpl) _ampManager).setConfigException(e);
+    if (_ampManager instanceof ServicesAmpImpl) {
+      ((ServicesAmpImpl) _ampManager).setConfigException(e);
     }
   }
 
@@ -197,7 +197,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
   */
 
   @Override
-  public ServiceManagerAmp getAmpManager()
+  public ServicesAmp getAmpManager()
   {
     return _ampManager;
   }
@@ -206,7 +206,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
   {
     ArrayList<ServiceRefAmp> services = new ArrayList<>();
     
-    ServiceManagerAmp ampManager = getAmpManager();
+    ServicesAmp ampManager = getAmpManager();
     
     RegistryAmp registry = ampManager.registry();
     
@@ -265,7 +265,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
       
       // _invocationDependency.add(_controller);
 
-      _injectManager = InjectManagerAmp.create(_classLoader);
+      _injectManager = InjectorAmp.create(_classLoader);
       //_cdiManager.addExtension(new CdiExtensionBaratine(_cdiManager));
       //_injectManager.scanRoot(_classLoader);
     } catch (Throwable e) {
@@ -283,7 +283,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
   public void postClassLoaderInit()
   {
     // bartender.setLocalShard(pod.getNode(podNode));
-    ServiceManagerBuilderAmp builder = ServiceManagerAmp.newManager();
+    ServiceManagerBuilderAmp builder = ServicesAmp.newManager();
     builder.name(EnvLoader.getEnvironmentName());
     
     BartenderSystem bartender = BartenderSystem.current();
@@ -399,7 +399,7 @@ public class PodApp implements DeployInstance2, PodManagerApp
       
       //ShutdownModeAmp mode = _controller.getShutdownMode();
 
-      ServiceManagerAmp ampManager = _ampManager;
+      ServicesAmp ampManager = _ampManager;
       
       if (ampManager != null) {
         ampManager.shutdown(mode);

@@ -31,13 +31,13 @@ package com.caucho.v5.amp.stub;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.service.ActorFactoryAmp;
+import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 
 /**
  * Basic method for creating actors.
  */
-public class StubFactoryImpl implements ActorFactoryAmp
+public class StubFactoryImpl implements StubFactoryAmp
 {
   private final StubAmp _stubMain;
   private final ServiceConfig _config;

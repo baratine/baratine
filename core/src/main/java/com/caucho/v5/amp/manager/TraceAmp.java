@@ -32,7 +32,7 @@ package com.caucho.v5.amp.manager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceManagerAmp.Trace;
+import com.caucho.v5.amp.ServicesAmp.Trace;
 import com.caucho.v5.amp.message.TraceMessage;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -54,7 +54,7 @@ public class TraceAmp implements Trace
 
   private MessageAmp _message;
   
-  TraceAmp(ServiceManagerAmpImpl manager)
+  TraceAmp(ServicesAmpImpl manager)
   {
     //_manager = manager;
     

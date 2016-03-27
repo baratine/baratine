@@ -31,8 +31,8 @@ package com.caucho.v5.amp.stub;
 
 import java.lang.reflect.Modifier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
-import com.caucho.v5.amp.service.ActorFactoryAmp;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.inject.impl.ServiceImpl;
@@ -49,8 +49,8 @@ public class StubGeneratorService implements StubGenerator
   private static final L10N L = new L10N(StubGeneratorService.class);
   
   @Override
-  public ActorFactoryAmp factory(Class<?> serviceClass,
-                                 ServiceManagerAmp ampManager,
+  public StubFactoryAmp factory(Class<?> serviceClass,
+                                 ServicesAmp ampManager,
                                  ServiceConfig config)
   {
     if (Modifier.isAbstract(serviceClass.getModifiers())) {
@@ -61,7 +61,7 @@ public class StubGeneratorService implements StubGenerator
     return createFactory(ampManager, serviceClass, config);
   }
   
-  private <T> ActorFactoryAmp createFactory(ServiceManagerAmp ampManager,
+  private <T> StubFactoryAmp createFactory(ServicesAmp ampManager,
                                             Class<T> serviceClass,
                                             ServiceConfig config)
   {
@@ -72,13 +72,13 @@ public class StubGeneratorService implements StubGenerator
                                 config);
   }
   
-  private static <T> StubAmp createStub(ServiceManagerAmp ampManager,
+  private static <T> StubAmp createStub(ServicesAmp ampManager,
                                          Key<T> key,
                                          ServiceConfig config)
   {
-    T bean = ampManager.inject().instance(key);
+    T bean = ampManager.injector().instance(key);
     
-    return ampManager.createActor(bean, config);
+    return ampManager.stubFactory().stub(bean, config);
   }
   
   @Override

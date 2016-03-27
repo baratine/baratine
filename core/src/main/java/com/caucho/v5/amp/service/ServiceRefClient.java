@@ -37,7 +37,7 @@ import com.caucho.v5.amp.stub.StubAmp;
  * Handles the context for an actor, primarily including its
  * query map.
  */
-public class ServiceRefClient extends ServiceRefActorBase
+public class ServiceRefClient extends ServiceRefStubBase
 {
   private String _address;
 
@@ -71,7 +71,7 @@ public class ServiceRefClient extends ServiceRefActorBase
       
       ServiceConfig config = null;
       
-      StubAmp childActor = manager().createActor(child, config);
+      StubAmp childActor = manager().stubFactory().stub(child, config);
 
       return new ServiceRefClient(subpath, childActor, inbox());
     }

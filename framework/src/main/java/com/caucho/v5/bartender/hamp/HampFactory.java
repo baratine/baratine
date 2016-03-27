@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelServerFactory;
 import com.caucho.v5.http.websocket.WebSocketHandler;
 
@@ -47,7 +47,7 @@ class HampFactory implements Supplier<ServiceWebSocket>
 {
   // private final ServerEndpointConfig _cfg;
   private final HampManager _hampManager;
-  private final ServiceManagerAmp _ampManager;
+  private final ServicesAmp _ampManager;
   private ChannelServerFactory _channelFactory;
   private ArrayList<String> _subprotocols;
   private String _path;
@@ -87,7 +87,7 @@ class HampFactory implements Supplier<ServiceWebSocket>
     return _hampManager;
   }
   
-  public ServiceManagerAmp getAmpManager()
+  public ServicesAmp getAmpManager()
   {
     return _ampManager;
   }

@@ -31,7 +31,7 @@ package com.caucho.v5.bartender.hamp;
 
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServiceManagerAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.remote.ChannelServerImpl;
 import com.caucho.v5.amp.remote.OutAmp;
@@ -45,7 +45,7 @@ public class ChannelServerLink extends ChannelServerImpl
 {
   public static final String LINK_ADDRESS = "link:///auth";
 
-  public ChannelServerLink(Supplier<ServiceManagerAmp> managerRef,
+  public ChannelServerLink(Supplier<ServicesAmp> managerRef,
                               RegistryAmp registry,
                               OutAmp conn,
                               String address,
@@ -94,7 +94,7 @@ public class ChannelServerLink extends ChannelServerImpl
       return getManager().service(address);
     }
     else {
-      ServiceManagerAmp webAppManager = getWebAppManager(cluster);
+      ServicesAmp webAppManager = getWebAppManager(cluster);
       
       if (webAppManager != null) {
         return webAppManager.service(address);
@@ -105,7 +105,7 @@ public class ChannelServerLink extends ChannelServerImpl
     }
   }
   
-  protected ServiceManagerAmp getWebAppManager(String pod)
+  protected ServicesAmp getWebAppManager(String pod)
   {
     HttpSystem httpSystem = HttpSystem.getCurrent();
     

@@ -29,12 +29,11 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.Direct;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Singleton;
 
+import com.caucho.v5.amp.Direct;
 import com.caucho.v5.util.Base64Web;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.RandomUtil;
