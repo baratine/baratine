@@ -103,7 +103,7 @@ public class SessionServiceAmpImpl
     ServiceRef queue = _manager.service(queueAddress);
     ServiceRef listener = _manager.service(channel);
     
-    Cancel cancel = queue.subscribe(listener);
+    Cancel cancel = null;//queue.subscribe(listener);
     
     if (_subscriptions == null) {
       _subscriptions = new ArrayList<>();
@@ -121,7 +121,7 @@ public class SessionServiceAmpImpl
     ServiceRef queue = _manager.service(queueAddress);
     ServiceRef listener = _manager.service(channel);
     
-    Cancel cancel = queue.consume(listener);
+    Cancel cancel = null;//queue.consume(listener);
     
     if (_subscriptions == null) {
       _subscriptions = new ArrayList<>();

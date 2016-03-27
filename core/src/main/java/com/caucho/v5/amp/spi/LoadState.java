@@ -31,14 +31,13 @@ package com.caucho.v5.amp.spi;
 
 import java.util.ArrayList;
 
-import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.SaveResult;
+import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
 
 
@@ -251,11 +250,6 @@ public interface LoadState
     
     queryActor.streamReply(headers, actorMessage, qid, sequence,
                            values, exn, isComplete);
-  }
-
-  default void consume(StubAmp actor, ServiceRef subscriber)
-  {
-    actor.consume(subscriber);
   }
 
   default void flushPending(StubAmp actorBean, InboxAmp serviceRef)

@@ -296,11 +296,6 @@ public class StubAmpBeanBase extends StubAmpStateBase
   }
   
   @Override
-  public void subscribe(ServiceRef serviceRef)
-  {
-  }
-  
-  @Override
   public void onShutdown(ShutdownModeAmp mode)
   {
     _stubClass.shutdown(this, mode);

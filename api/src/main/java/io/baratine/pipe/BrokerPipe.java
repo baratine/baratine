@@ -27,32 +27,16 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.message;
-
-import io.baratine.service.ServiceRef;
-
-import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.stub.StubAmp;
+package io.baratine.pipe;
 
 /**
- * Message to shut down an instance.
+ * Message-based pipe service.
  */
-public class ConsumeMessageCallback extends ConsumeMessage
+public interface BrokerPipe<T>
 {
-  private StubAmp _actor;
-
-  public ConsumeMessageCallback(InboxAmp mailbox,
-                                ServiceRef service,
-                                StubAmp actor)
-  {
-    super(mailbox, service);
-
-    _actor = actor;
-  }
+  void consume(ResultPipeIn<T> result);
   
-  @Override
-  public void invoke(InboxAmp mailbox, StubAmp actor)
-  {
-    _actor.consume(getService());
-  }
+  void subscribe(ResultPipeIn<T> result);
+  
+  void publish(ResultPipeOut<T> result);
 }

@@ -189,18 +189,6 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
     return delegate().getQueryRef(id);
   }
 
-  @Override
-  public Cancel consume(Object consumer)
-  {
-    return delegate().consume(consumer);
-  }
-
-  @Override
-  public Cancel subscribe(Object subscriber)
-  {
-    return delegate().subscribe(subscriber);
-  }
-
   /*
   @Override
   public ServiceRefAmp unsubscribe(Object service)

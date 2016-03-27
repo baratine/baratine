@@ -33,12 +33,15 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.baratine.service.Result;
+import io.baratine.service.Service;
+import io.baratine.vault.Vault;
 
 
 /**
  * {@code OutPipe} sends a sequence of values from a source to a sink.
  */
-public class Pipes
+@Service("pipe://")
+public class Pipes implements Vault<String,BrokerPipe<?>>
 {
   public static <T> PipeOutBuilder<T> flow(PipeOut.Flow<T> flow)
   {

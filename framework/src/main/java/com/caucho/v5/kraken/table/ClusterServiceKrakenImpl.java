@@ -29,12 +29,6 @@
 
 package com.caucho.v5.kraken.table;
 
-import io.baratine.db.Cursor;
-import io.baratine.service.Result;
-import io.baratine.service.Service;
-import io.baratine.service.ServiceManager;
-import io.baratine.service.ServiceRef;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -49,21 +43,26 @@ import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.bartender.pod.PodOnUpdate;
 import com.caucho.v5.io.StreamSource;
 import com.caucho.v5.kelp.GetStreamResult;
-import com.caucho.v5.kelp.RowCursor;
 import com.caucho.v5.kelp.PageServiceSync.PutType;
+import com.caucho.v5.kelp.RowCursor;
 import com.caucho.v5.kraken.query.CursorKraken;
 import com.caucho.v5.kraken.query.QueryBuilderKraken;
 import com.caucho.v5.kraken.query.QueryException;
 import com.caucho.v5.kraken.query.QueryKraken;
 import com.caucho.v5.kraken.query.QueryParserKraken;
 import com.caucho.v5.kraken.query.UpdateQuery;
-import com.caucho.v5.store.temp.TempReader;
 import com.caucho.v5.store.temp.TempStore;
 import com.caucho.v5.store.temp.TempWriter;
 import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.HashKey;
 import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.db.Cursor;
+import io.baratine.event.EventsSync;
+import io.baratine.service.Result;
+import io.baratine.service.Service;
+import io.baratine.service.ServiceManager;
+import io.baratine.service.ServiceRef;
 
 /**
  * Service for handling the distributed cache
@@ -104,16 +103,22 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
   {
     ServiceManager manager = AmpSystem.currentManager();
     
+    EventsSync events = manager.service(EventsSync.class);
+    /*
     manager.service("event:///" + ServerOnUpdate.class.getName())
            .subscribe(new ServerListener());
+           */
+    events.subscriber(ServerOnUpdate.class, new ServerListener());
     
     ServiceRef selfRef = ServiceRef.current();
     
     PodOnUpdate listener = selfRef.pin(new PodUpdateListener())
                                   .as(PodOnUpdate.class);
-    
+    /*
     manager.service("event:///" + PodOnUpdate.class.getName())
            .subscribe(listener);
+           */
+    events.subscriber(PodOnUpdate.class, listener);
   }
   
   private void updatePod(PodBartender pod)

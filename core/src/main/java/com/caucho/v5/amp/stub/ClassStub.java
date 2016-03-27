@@ -60,14 +60,11 @@ import io.baratine.service.Journal;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Modify;
 import io.baratine.service.OnActive;
-import io.baratine.service.OnConsume;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.OnLoad;
 import io.baratine.service.OnLookup;
 import io.baratine.service.OnSave;
-import io.baratine.service.OnSubscribe;
-import io.baratine.service.OnUnsubscribe;
 import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
@@ -317,30 +314,6 @@ public class ClassStub
       else if (method.isAnnotationPresent(OnLookup.class)) {
         _onLookup = createMethod(method);
         continue;
-      }
-      else if (method.isAnnotationPresent(OnConsume.class)) {
-        if (! isLocalPodNode()) {
-          continue;
-        }
-        
-        _consume = createMethod(method);
-        _consumeApi = method.getParameterTypes()[0];
-      }
-      else if (method.isAnnotationPresent(OnSubscribe.class)) {
-        if (! isLocalPodNode()) {
-          continue;
-        }
-        
-        _subscribe = createMethod(method);
-        _subscribeApi = method.getParameterTypes()[0];
-      }
-      else if (method.isAnnotationPresent(OnUnsubscribe.class)) {
-        if (! isLocalPodNode()) {
-          continue;
-        }
-        
-        _unsubscribe = createMethod(method);
-        _unsubscribeApi = method.getParameterTypes()[0];
       }
       else if (method.isAnnotationPresent(AfterBatch.class)) {
         _afterBatch = createMethodZero(method);

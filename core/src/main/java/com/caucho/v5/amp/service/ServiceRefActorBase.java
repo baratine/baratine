@@ -35,10 +35,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServiceManagerAmpImpl;
-import com.caucho.v5.amp.message.ConsumeMessage;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
-import com.caucho.v5.amp.message.SubscribeMessage;
-import com.caucho.v5.amp.message.UnsubscribeMessage;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -245,44 +242,6 @@ abstract class ServiceRefActorBase extends ServiceRefBase
     
     return bindRef;
   }
-
-  @Override
-  public Cancel consume(Object service)
-  {
-    start();
-    
-    ServiceRef subscriber = toSubscriber(service);
-    
-    offer(new ConsumeMessage(inbox(), subscriber));
-    
-    return new SubscriberCancel(subscriber);
-  }
-
-  @Override
-  public Cancel subscribe(Object service)
-  {
-    start();
-    
-    ServiceRef subscriber = toSubscriber(service);
-    
-    offer(new SubscribeMessage(inbox(), subscriber));
-    
-    return new SubscriberCancel(subscriber);
-  }
-
-  /*
-  @Override
-  public CancelHandle unsubscribe(Object service)
-  {
-    start();
-    
-    ServiceRef subscriber = toSubscriber(service);
-    
-    offer(new UnsubscribeMessage(getInbox(), subscriber)); 
-    
-    return new SubscriberCancel(subscriber);
-  }
-  */
   
   protected ServiceRefAmp toSubscriber(Object listener)
   {
@@ -370,39 +329,5 @@ abstract class ServiceRefActorBase extends ServiceRefBase
   public String toString()
   {
     return getClass().getSimpleName() + "[" + address() + "]";
-  }
-  
-  private class SubscriberCancel implements Cancel {
-    private ServiceRefAmp _subscriber;
-    private boolean _isCancelled;
-    
-    SubscriberCancel(ServiceRef subscriber)
-    {
-      _subscriber = (ServiceRefAmp) subscriber;
-      
-    }
-    @Override
-    public void cancel()
-    {
-      if (! _isCancelled) {
-        _isCancelled = true;
-
-        try {
-          offer(new UnsubscribeMessage(ServiceRefActorBase.this, _subscriber));
-        } catch (ServiceExceptionClosed e) {
-          log.log(Level.FINEST, e.toString(), e);
-        }
-      }
-    }
-    
-    @Override
-    public String toString()
-    {
-      return (getClass().getSimpleName()
-              + "[" + ServiceRefActorBase.this.address()
-              + ",sub=" + _subscriber.address()
-              + "]");
-    }
-    
   }
 }

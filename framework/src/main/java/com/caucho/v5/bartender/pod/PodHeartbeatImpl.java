@@ -29,6 +29,7 @@
 
 package com.caucho.v5.bartender.pod;
 
+import io.baratine.event.EventsSync;
 import io.baratine.service.Direct;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceManager;
@@ -149,8 +150,9 @@ public class PodHeartbeatImpl
     ServiceManager manager = AmpSystem.currentManager();
     //EventService events = AmpSystem.getCurrent().getEventService();
     
-    manager.service(ServerOnUpdate.ADDRESS)
-           .subscribe((ServerOnUpdate) s->onServerUpdate(s));
+    EventsSync events = manager.service(EventsSync.class);
+    
+    events.subscriber(ServerOnUpdate.class, s->onServerUpdate(s));
     
     for (ServerHeartbeat server : _serverSelf.getCluster().getServers()) {
       onServerUpdate(server);

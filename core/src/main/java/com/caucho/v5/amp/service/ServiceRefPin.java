@@ -29,23 +29,20 @@
 
 package com.caucho.v5.amp.service;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.ServiceExceptionClosed;
-
 import java.lang.reflect.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.CloseMessageCallback;
-import com.caucho.v5.amp.message.ConsumeMessageCallback;
-import com.caucho.v5.amp.message.SubscribeMessageCallback;
-import com.caucho.v5.amp.message.UnsubscribeMessage;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.ServiceExceptionClosed;
 
 /**
  * Service ref for an object pinned to a parent inbox.
@@ -113,38 +110,6 @@ public class ServiceRefPin extends ServiceRefActorBase
   }
 
   @Override
-  public Cancel consume(Object service)
-  {
-    ServiceRefAmp subscriber = toSubscriber(service);
-    
-    offer(new ConsumeMessageCallback(inbox(), subscriber, stub()));
-
-    return new SubscriberCancelPin(subscriber);
-  }
-
-  @Override
-  public Cancel subscribe(Object service)
-  {
-    ServiceRefAmp subscriber = toSubscriber(service);
-    
-    offer(new SubscribeMessageCallback(inbox(), subscriber, stub()));
-    
-    return new SubscriberCancelPin(subscriber);
-  }
-
-  /*
-  @Override
-  public ServiceRefAmp unsubscribe(Object service)
-  {
-    offer(new UnsubscribeMessageCallback(getInbox(), 
-                                         toSubscriber(service),
-                                         getActor()));
-    
-    return this;
-  }
-  */
-
-  @Override
   public ServiceRefAmp bind(String address)
   {
     if (_bindAddress == null) {
@@ -201,43 +166,5 @@ public class ServiceRefPin extends ServiceRefActorBase
 
     return (stub().equals(cb.stub())
             && (inbox() == cb.inbox()));
-  }
-  
-  private class SubscriberCancelPin implements Cancel {
-    private ServiceRefAmp _subscriber;
-    private boolean _isCancelled;
-    
-    SubscriberCancelPin(ServiceRefAmp subscriber)
-    {
-      _subscriber = subscriber;
-      
-    }
-    @Override
-    public void cancel()
-    {
-      if (! _isCancelled) {
-        _isCancelled = true;
-
-        /*
-        offer(new UnsubscribeMessageCallback(getInbox(),
-                                             _subscriber));
-                                             */
-        try {
-          offer(new UnsubscribeMessage(ServiceRefPin.this, _subscriber));
-        } catch (ServiceExceptionClosed e) {
-          log.log(Level.FINEST, e.toString(), e);
-        }
-      }
-    }
-    
-    @Override
-    public String toString()
-    {
-      return (getClass().getSimpleName()
-              + "[" + ServiceRefPin.this.address()
-              + ",sub=" + _subscriber.address()
-              + "]");
-    }
-    
   }
 }

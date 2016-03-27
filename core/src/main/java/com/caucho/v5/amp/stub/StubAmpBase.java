@@ -47,7 +47,6 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionMethodNotFound;
-import io.baratine.service.ServiceRef;
 
 /**
  * Abstract stream for an actor.
@@ -375,23 +374,6 @@ public class StubAmpBase implements StubAmp
   @Override
   public void onShutdown(ShutdownModeAmp mode)
   {
-  }
-
-  @Override
-  public void consume(ServiceRef consumer)
-  {
-  }
-
-  @Override
-  public void subscribe(ServiceRef service)
-  {
-    // XXX: exception?
-  }
-
-  @Override
-  public void unsubscribe(ServiceRef service)
-  {
-    // XXX: exception?
   }
   
   public String toString()

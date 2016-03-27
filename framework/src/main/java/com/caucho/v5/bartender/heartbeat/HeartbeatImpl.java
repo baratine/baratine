@@ -29,13 +29,6 @@
 
 package com.caucho.v5.bartender.heartbeat;
 
-import io.baratine.service.AfterBatch;
-import io.baratine.service.Cancel;
-import io.baratine.service.Direct;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-import io.baratine.timer.TimerService;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -58,6 +51,14 @@ import com.caucho.v5.bartender.pod.UpdatePodSystem;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.event.EventsSync;
+import io.baratine.service.AfterBatch;
+import io.baratine.service.Cancel;
+import io.baratine.service.Direct;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
+import io.baratine.timer.TimerService;
 
 /**
  * Service for handling the bartender heartbeat messages
@@ -307,8 +308,12 @@ public class HeartbeatImpl
   {
     _lifecycle.toActive();
     
+    EventsSync events = _rampManager.service(EventsSync.class);
+    /*
     _rampManager.service(LinkBartenderEvents.ADDRESS)
                 .subscribe(new NetworkLinkListener());
+                */
+    events.subscriber(LinkBartenderEvents.class, new NetworkLinkListener());
     
     addTargetServers();
     

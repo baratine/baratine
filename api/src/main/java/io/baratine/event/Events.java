@@ -27,49 +27,27 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.message;
+package io.baratine.event;
 
+import io.baratine.service.Cancel;
+import io.baratine.service.Pin;
+import io.baratine.service.Result;
+import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
-
-import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.stub.StubAmp;
+import io.baratine.vault.Vault;
 
 /**
- * Message to shut down an instance.
+ * API-based event service.
  */
-public class ConsumeMessage extends MessageAmpBase
+@Service("event://")
+public interface Events extends Vault<String,ServiceRef>
 {
-  private final InboxAmp _inbox;
-  private final ServiceRef _service;
-
-  public ConsumeMessage(InboxAmp mailbox,
-                        ServiceRef service)
-  {
-    _inbox = mailbox;
-    _service = service;
-  }
+  <T> void publisherPath(String path, Class<T> api, @Pin Result<T> result);
+  <T> void publisher(Class<T> api, @Pin Result<T> result);
   
-  protected ServiceRef getService()
-  {
-    return _service;
-  }
+  <T> void consumer(String path, @Pin T consumer, Result<? super Cancel> result);
+  <T> void consumer(Class<T> api, @Pin T consumer, Result<? super Cancel> result);
   
-  @Override
-  public InboxAmp inboxTarget()
-  {
-    return _inbox;
-  }
-  
-  @Override
-  public void invoke(InboxAmp mailbox, StubAmp actor)
-  {
-    actor.load(actor, this).consume(actor, _service);
-  }
-  
-  public void offer()
-  {
-    long timeout = InboxAmp.TIMEOUT_INFINITY;
-    
-    inboxTarget().offerAndWake(this, timeout);
-  }
+  <T> void subscriber(String path, @Pin T consumer, Result<? super Cancel> result);  
+  <T> void subscriber(Class<T> api, @Pin T consumer, Result<? super Cancel> result);  
 }

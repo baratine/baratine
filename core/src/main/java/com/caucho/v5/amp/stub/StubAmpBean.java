@@ -119,24 +119,6 @@ public class StubAmpBean extends StubAmpBeanBase
   }
   
   @Override
-  public void consume(ServiceRef serviceRef)
-  {
-    stubClass().consume(this, serviceRef);
-  }
-  
-  @Override
-  public void subscribe(ServiceRef serviceRef)
-  {
-    stubClass().subscribe(this, serviceRef);
-  }
-  
-  @Override
-  public void unsubscribe(ServiceRef serviceRef)
-  {
-    stubClass().unsubscribe(this, serviceRef);
-  }
-  
-  @Override
   public int hashCode()
   {
     return bean().hashCode();

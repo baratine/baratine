@@ -29,11 +29,6 @@
 
 package com.caucho.v5.kraken.table;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceException;
-import io.baratine.service.ServiceRef;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
@@ -41,12 +36,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
+import com.caucho.v5.amp.ServiceManagerAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.bartender.pod.PodOnUpdate;
-import com.caucho.v5.bartender.pod.ServerPod;
 import com.caucho.v5.io.StreamSource;
 import com.caucho.v5.kelp.BackupKelp;
 import com.caucho.v5.kelp.GetStreamResult;
@@ -54,6 +49,13 @@ import com.caucho.v5.kelp.PageServiceSync.PutType;
 import com.caucho.v5.kraken.table.TablePodNode.NodeTableContext;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.event.EventsSync;
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceException;
+import io.baratine.service.ServiceManager;
+import io.baratine.service.ServiceRef;
 /**
  * Manages the distributed cache
  */
@@ -174,13 +176,17 @@ public final class TablePodImpl implements TablePod
     // _cacheReplicationActor.start();
     startRequestUpdates();
     
-    ServiceRef podUpdateRef = AmpSystem.currentManager()
-                                       .service(PodOnUpdate.ADDRESS);
+    ServiceManagerAmp services = AmpSystem.currentManager();
+    
+    //ServiceRef podUpdateRef = services.service(PodOnUpdate.ADDRESS);
     
     _updateRef = _tableManager.getStoreServiceRef()
                               .pin((PodOnUpdate) p->onPodUpdate(p));
     
-    _updateCancel = podUpdateRef.subscribe(_updateRef);
+    EventsSync events = services.service(EventsSync.class); 
+    
+    _updateCancel = events.subscriber(PodOnUpdate.class, 
+                                      _updateRef.as(PodOnUpdate.class));
   }
   
   public void stop()

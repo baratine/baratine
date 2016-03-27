@@ -139,26 +139,6 @@ public interface ServiceRef
   }
   
   /**
-   * Subscribes a listener to the service. Multiple subscribers all receive
-   * a copy of a callback method.
-   * 
-   * The listener will be pinned to the context service.
-   *
-   * @return a CancelHandle for unsubscribing
-   */
-  Cancel subscribe(Object listener);
-  
-  /**
-   * Registers a listener as a consumer of the service. Only a single consumer
-   * receives a copy of a callback method.
-   * 
-   * The listener will be pinned to the context service.
-   *
-   * @return a CancelHandle for unsubscribing
-   */
-  Cancel consume(Object listener);
-  
-  /**
    * Start the service if it's not already started.
    */
   ServiceRef start();

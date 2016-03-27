@@ -29,6 +29,7 @@
 
 package com.caucho.v5.bartender.pod;
 
+import io.baratine.event.EventsSync;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 
@@ -163,9 +164,10 @@ public class PodsManagerServiceImpl implements PodsManagerService
     
     ServiceManagerAmp manager = AmpSystem.currentManager();
 
+    EventsSync events = manager.service(EventsSync.class);
+    
     // on server updates the self-server might become the owner
-    manager.service(ServerOnUpdate.ADDRESS)
-           .subscribe((ServerOnUpdate) s->onServerUpdate(s));
+    events.subscriber(ServerOnUpdate.class, s->onServerUpdate(s));
     
     _podsConfig.onJoinStart();
   }

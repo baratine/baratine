@@ -30,6 +30,7 @@
 package com.caucho.v5.kraken.table;
 
 import io.baratine.db.DatabaseWatch;
+import io.baratine.event.EventsSync;
 import io.baratine.service.Cancel;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
@@ -78,11 +79,10 @@ public class WatchServiceImpl implements WatchService
     
     ServiceManagerAmp manager = AmpSystem.currentManager();
     
-    manager.service(ServerOnUpdate.ADDRESS)
-           .subscribe((ServerOnUpdate) s->onServerUpdate(s));
+    EventsSync events = manager.service(EventsSync.class);
     
-    manager.service(PodOnUpdate.ADDRESS)
-           .subscribe((PodOnUpdate) p->onPodUpdate(p));
+    events.subscriber(ServerOnUpdate.class, s->onServerUpdate(s));
+    events.subscriber(PodOnUpdate.class, p->onPodUpdate(p));
   }
   
   private void onServerUpdate(ServerBartender server)

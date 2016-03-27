@@ -93,8 +93,7 @@ class EventNodeAsset extends StubAmpBase
     return _root;
   }
   
-  @Override
-  public void subscribe(ServiceRef subscriber)
+  void subscribe(ServiceRef subscriber)
   {
     subscribeImpl(subscriber);
   }
@@ -115,12 +114,6 @@ class EventNodeAsset extends StubAmpBase
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  @Override
-  public void consume(ServiceRef consumer)
-  {
-    consumeImpl(consumer);
-  }
-
   public Cancel consumeImpl(ServiceRef consumer)
   {
     _consumerList.add(consumer);
@@ -132,8 +125,8 @@ class EventNodeAsset extends StubAmpBase
     return new CancelSubscribe(consumer);
   }
 
-  @Override
-  public void unsubscribe(ServiceRef subscriber)
+  //@Override
+  private void unsubscribe(ServiceRef subscriber)
   {
     _subscriberList.remove(subscriber);
     _consumerList.remove(subscriber);

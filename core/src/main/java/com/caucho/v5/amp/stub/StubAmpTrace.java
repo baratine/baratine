@@ -29,7 +29,6 @@
 
 package com.caucho.v5.amp.stub;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +44,6 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
 
 /**
  * Trace actor for debugging.
@@ -323,24 +321,6 @@ public class StubAmpTrace implements ActorAmpState
   public void onShutdown(ShutdownModeAmp mode)
   {
     delegate().onShutdown(mode);
-  }
-
-  @Override
-  public void consume(ServiceRef consumer)
-  {
-    delegate().consume(consumer);
-  }
-
-  @Override
-  public void subscribe(ServiceRef service)
-  {
-    delegate().subscribe(service);
-  }
-
-  @Override
-  public void unsubscribe(ServiceRef service)
-  {
-    delegate().unsubscribe(service);
   }
 
   @Override

@@ -36,14 +36,14 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.PipeIn;
 import io.baratine.pipe.PipeOut;
-import io.baratine.pipe.PipeService;
+import io.baratine.pipe.BrokerPipe;
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 
 /**
  * Implementation of the pipes
  */
-class PipeNode<T> implements PipeService<T>
+class PipeNode<T> implements BrokerPipe<T>
 {
   private static final L10N L = new L10N(PipeNode.class);
     

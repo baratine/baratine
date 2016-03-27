@@ -268,18 +268,6 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
     
     return this;
   }
-
-  @Override
-  public Cancel consume(Object consumer)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  @Override
-  public Cancel subscribe(Object subscriber)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
   
   @Override
   public void close()

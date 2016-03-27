@@ -67,14 +67,11 @@ import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
 import io.baratine.service.MethodRef;
 import io.baratine.service.OnActive;
-import io.baratine.service.OnConsume;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.OnLoad;
 import io.baratine.service.OnLookup;
 import io.baratine.service.OnSave;
-import io.baratine.service.OnSubscribe;
-import io.baratine.service.OnUnsubscribe;
 import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.Timeout;
@@ -362,18 +359,6 @@ public class ProxyGeneratorAmp<T> {
         }
         
         if (method.isAnnotationPresent(OnLookup.class)) {
-          continue;
-        }
-        
-        if (method.isAnnotationPresent(OnConsume.class)) {
-          continue;
-        }
-        
-        if (method.isAnnotationPresent(OnSubscribe.class)) {
-          continue;
-        }
-        
-        if (method.isAnnotationPresent(OnUnsubscribe.class)) {
           continue;
         }
         

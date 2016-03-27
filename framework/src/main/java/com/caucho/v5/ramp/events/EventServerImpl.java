@@ -29,6 +29,7 @@
 
 package com.caucho.v5.ramp.events;
 
+import io.baratine.event.EventsSync;
 import io.baratine.service.Cancel;
 
 import java.util.HashMap;
@@ -155,8 +156,9 @@ public class EventServerImpl
     
     ServiceManagerAmp ampManager = AmpSystem.currentManager();
     
-    _updateHandle = ampManager.service(ServerOnUpdate.ADDRESS)
-                              .subscribe((ServerOnUpdate) x->onServerUpdate(x));
+    EventsSync events = ampManager.service(EventsSync.class);
+    
+    _updateHandle = events.subscriber(ServerOnUpdate.class, x->onServerUpdate(x));
   }
 
   void destroy()

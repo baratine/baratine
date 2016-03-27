@@ -27,16 +27,28 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.pipe;
+package io.baratine.event;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Pin;
+import io.baratine.service.Service;
 
 /**
- * Message-based pipe service.
+ * API-based event service.
  */
-public interface PipeService<T>
+@Service("event:")
+public interface EventsSync extends Events
 {
-  void consume(ResultPipeIn<T> result);
+  @Pin
+  <T> T publisherPath(String path, Class<T> api);
+  @Pin
+  <T> T publisher(Class<T> api);
   
-  void subscribe(ResultPipeIn<T> result);
+  <T> Cancel consumer(String path, @Pin T consumer);
   
-  void publish(ResultPipeOut<T> result);
+  <T> Cancel consumer(Class<T> api, @Pin T consumer);
+  
+  <T> Cancel subscriber(String path, @Pin T subscriber);
+  
+  <T> Cancel subscriber(Class<T> api, @Pin T subscriber);
 }
