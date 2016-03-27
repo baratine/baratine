@@ -45,7 +45,7 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.InjectManager.IncludeInject;
 import io.baratine.service.Service;
-import io.baratine.service.Vault;
+import io.baratine.vault.Vault;
 import io.baratine.web.Delete;
 import io.baratine.web.Get;
 import io.baratine.web.IncludeWeb;

@@ -32,7 +32,7 @@ package com.caucho.v5.web.builder;
 import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.web.BaratineWebProvider;
 
-import io.baratine.service.ServiceClient;
+import io.baratine.client.ServiceClient;
 import io.baratine.spi.WebServerProvider;
 import io.baratine.web.WebServerBuilder;
 

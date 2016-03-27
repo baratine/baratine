@@ -50,8 +50,8 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.db.Cursor;
-import io.baratine.service.Asset;
-import io.baratine.service.IdAsset;
+import io.baratine.vault.Asset;
+import io.baratine.vault.IdAsset;
 
 class EntityInfo<ID,T>
 {

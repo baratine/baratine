@@ -30,7 +30,7 @@
 package com.caucho.v5.ramp.jamp;
 
 import io.baratine.service.ServiceExceptionIllegalState;
-import io.baratine.service.SessionContext;
+import io.baratine.web.SessionContext;
 
 import java.util.function.Function;
 

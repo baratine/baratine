@@ -29,8 +29,8 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import io.baratine.service.SessionContext;
 import io.baratine.web.RequestWeb;
+import io.baratine.web.SessionContext;
 
 import java.util.HashMap;
 import java.util.List;

@@ -29,11 +29,11 @@
 
 package com.caucho.v5.baratine.client;
 
-import io.baratine.service.ServiceClient;
-
 import java.io.Closeable;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+
+import io.baratine.client.ServiceClient;
 
 
 /**

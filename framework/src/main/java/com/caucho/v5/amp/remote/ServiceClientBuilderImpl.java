@@ -33,7 +33,7 @@ import java.util.Objects;
 
 import com.caucho.v5.baratine.client.BaratineClient;
 
-import io.baratine.service.ServiceClient;
+import io.baratine.client.ServiceClient;
 
 /**
  * Builder for a service client.

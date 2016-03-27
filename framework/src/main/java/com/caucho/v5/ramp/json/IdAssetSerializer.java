@@ -38,7 +38,7 @@ import com.caucho.v5.json.ser.JsonException;
 import com.caucho.v5.json.ser.JsonSerializerBase;
 import com.caucho.v5.util.QDate;
 
-import io.baratine.service.IdAsset;
+import io.baratine.vault.IdAsset;
 
 public class IdAssetSerializer extends JsonSerializerBase<IdAsset>
 {

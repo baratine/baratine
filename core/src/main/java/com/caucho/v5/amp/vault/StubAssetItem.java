@@ -44,10 +44,10 @@ import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.ClassStub;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 
-import io.baratine.service.Id;
 import io.baratine.service.OnLoad;
 import io.baratine.service.OnSave;
 import io.baratine.service.Result;
+import io.baratine.vault.Id;
 
 /**
  * Actor skeleton for a resource entity.

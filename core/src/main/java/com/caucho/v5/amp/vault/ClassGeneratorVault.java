@@ -58,7 +58,7 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.service.Vault;
+import io.baratine.vault.Vault;
 
 /**
  * Generates a concrete Vault class.

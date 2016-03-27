@@ -34,7 +34,7 @@ import com.caucho.v5.amp.manager.ServiceManagerAmpWrapper;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.ramp.hamp.ClientHamp;
 
-import io.baratine.service.ServiceClient;
+import io.baratine.client.ServiceClient;
 
 
 /**

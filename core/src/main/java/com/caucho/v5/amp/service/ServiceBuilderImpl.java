@@ -373,8 +373,12 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     if (p < 0) {
       return "";
     }
-    
+
     int q = path.indexOf('/', p + 3);
+    
+    if (q < 0) {
+      return "";
+    }
     
     return path.substring(p + 3, q);
   }

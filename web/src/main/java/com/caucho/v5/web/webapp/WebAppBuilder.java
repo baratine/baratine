@@ -75,7 +75,7 @@ import io.baratine.inject.Key;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceManager;
 import io.baratine.service.ServiceRef;
-import io.baratine.service.Vault;
+import io.baratine.vault.Vault;
 import io.baratine.web.CrossOrigin;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.IncludeWeb;

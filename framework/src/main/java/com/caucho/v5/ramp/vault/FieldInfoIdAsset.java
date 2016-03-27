@@ -31,7 +31,7 @@ package com.caucho.v5.ramp.vault;
 
 import java.lang.reflect.Field;
 
-import io.baratine.service.IdAsset;
+import io.baratine.vault.IdAsset;
 
 class FieldInfoIdAsset<T,V> extends FieldReflected<T,V>
 {

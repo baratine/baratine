@@ -42,9 +42,9 @@ import com.caucho.v5.amp.stub.TransferAsset;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.Id;
 import io.baratine.service.Result;
-import io.baratine.service.Vault;
+import io.baratine.vault.Id;
+import io.baratine.vault.Vault;
 
 /**
  * Validation of the configuration

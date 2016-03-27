@@ -53,8 +53,8 @@ import com.caucho.v5.convert.bean.FieldBeanFactory;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.Id;
 import io.baratine.service.Result;
+import io.baratine.vault.Id;
 
 public class VaultDriverBase<ID,T>
   implements VaultDriver<ID,T>

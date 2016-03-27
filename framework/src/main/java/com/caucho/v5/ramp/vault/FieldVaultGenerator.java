@@ -45,7 +45,7 @@ import com.caucho.v5.convert.bean.FieldShort;
 import com.caucho.v5.convert.bean.FieldString;
 
 import io.baratine.db.Cursor;
-import io.baratine.service.IdAsset;
+import io.baratine.vault.IdAsset;
 
 class FieldVaultGenerator
 {

@@ -39,7 +39,7 @@ import com.caucho.v5.convert.bean.FieldBean;
 import com.caucho.v5.convert.bean.FieldBeanFactory;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.Id;
+import io.baratine.vault.Id;
 
 /**
  * Copies to and from a transfer object.

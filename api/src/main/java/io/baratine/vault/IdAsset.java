@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package io.baratine.service;
+package io.baratine.vault;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

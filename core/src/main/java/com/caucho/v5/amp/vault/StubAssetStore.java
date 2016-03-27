@@ -54,10 +54,10 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.convert.Convert;
 import io.baratine.inject.Key;
-import io.baratine.service.Id;
-import io.baratine.service.IdAsset;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
+import io.baratine.vault.Id;
+import io.baratine.vault.IdAsset;
 
 /**
  * Actor skeleton for a resource.

@@ -67,9 +67,9 @@ public interface StubAmp
   // pub/sub
   //
 
-  void consume(ServiceRef consumer);
-  void subscribe(ServiceRef consumer);
-  void unsubscribe(ServiceRef consumer);
+  //void consume(ServiceRef consumer);
+  //void subscribe(ServiceRef consumer);
+  //void unsubscribe(ServiceRef consumer);
 
   /**
    * Returns an stub method.

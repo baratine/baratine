@@ -34,7 +34,7 @@ package io.baratine.service;
  * Initializer hook on service manager start.
  * 
  * Service initializers are loaded from
- * META-INF/services/io.baratine.core.ServiceInitializers
+ * META-INF/services/io.baratine.core.ServiceInitializer
  * using the JDK's ServiceLoader api.
  */
 public interface ServiceInitializer

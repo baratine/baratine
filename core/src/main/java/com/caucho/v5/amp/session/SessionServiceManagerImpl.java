@@ -48,13 +48,13 @@ import com.caucho.v5.config.ConfigExceptionLocation;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.AfterBatch;
-import io.baratine.service.Id;
 import io.baratine.service.OnActive;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.OnLookup;
 import io.baratine.service.OnSave;
 import io.baratine.service.ServiceRef;
+import io.baratine.vault.Id;
 
 /**
  * Manager for @ServiceResource.

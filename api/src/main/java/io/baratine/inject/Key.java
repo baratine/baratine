@@ -37,6 +37,7 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 import javax.inject.Qualifier;
@@ -112,6 +113,11 @@ public class Key<T>
   public Annotation []annotations()
   {
     return new Annotation[0];
+  }
+
+  public Class<? extends Annotation> []annotationTypes()
+  {
+    return _annTypes;
   }
 
   public static <T> Key<T> of(Class<T> type)

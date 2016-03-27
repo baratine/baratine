@@ -31,7 +31,7 @@ package com.caucho.v5.amp.vault;
 
 import java.util.Objects;
 
-import io.baratine.service.Vault;
+import io.baratine.vault.Vault;
 
 /**
  * Provides resource load() and save()

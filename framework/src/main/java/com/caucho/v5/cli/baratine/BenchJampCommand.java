@@ -41,9 +41,9 @@ import com.caucho.v5.cli.spi.CommandArgumentException;
 import com.caucho.v5.health.shutdown.ExitCode;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.client.ServiceClient;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
-import io.baratine.service.ServiceClient;
 import io.baratine.service.ServiceRef;
 
 /**

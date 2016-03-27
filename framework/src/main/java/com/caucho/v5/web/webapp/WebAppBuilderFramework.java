@@ -40,7 +40,7 @@ import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
 
-import io.baratine.service.Asset;
+import io.baratine.vault.Asset;
 
 /**
  * Baratine's web-app instance builder

@@ -41,13 +41,13 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseService;
-import io.baratine.service.Asset;
-import io.baratine.service.IdAsset;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceManager;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
+import io.baratine.vault.Asset;
+import io.baratine.vault.IdAsset;
 
 public class RepositoryImpl<ID, T>
   implements Repository<ID,T>

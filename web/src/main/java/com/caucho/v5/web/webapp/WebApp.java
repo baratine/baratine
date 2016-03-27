@@ -47,7 +47,7 @@ import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.config.Config;
-import io.baratine.service.IdAsset;
+import io.baratine.vault.IdAsset;
 
 /**
  * Baratine's web-app handle. 

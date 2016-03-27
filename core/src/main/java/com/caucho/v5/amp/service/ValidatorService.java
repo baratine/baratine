@@ -43,7 +43,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.Shim;
-import io.baratine.service.Vault;
+import io.baratine.vault.Vault;
 
 /**
  * Validation of the configuration

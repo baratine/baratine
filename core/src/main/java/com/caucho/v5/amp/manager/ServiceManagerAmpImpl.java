@@ -86,8 +86,8 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceExceptionQueueFull;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
-import io.baratine.service.Vault;
 import io.baratine.spi.Message;
+import io.baratine.vault.Vault;
 
 /**
  * Baratine core service manager.
@@ -485,9 +485,13 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     if (p > 0) {
       q = address.indexOf('/', p + 3);
     }
+    
+    if (address.indexOf('{') > 0) {
+      return addressBraces(api, address);
+    }
 
     boolean isPrefix
-    = address.startsWith("session:") || address.startsWith("pod"); 
+      = address.startsWith("session:") || address.startsWith("pod"); 
 
     if (address.isEmpty()
         || p > 0 && q < 0 && isPrefix) {
@@ -502,6 +506,40 @@ public class ServiceManagerAmpImpl implements ServiceManagerAmp, AutoCloseable
     }
     
     return address;
+  }
+  
+  private String addressBraces(Class<?> api, String address)
+  {
+    StringBuilder sb = new StringBuilder();
+    
+    int i = 0;
+    for (; i < address.length(); i++) {
+      char ch = address.charAt(i);
+      
+      if (ch != '{') {
+        sb.append(ch);
+        continue;
+      }
+      
+      int j = address.indexOf('}', i);
+      
+      if (j < 0) {
+        throw new IllegalArgumentException(address);
+      }
+      
+      String var = address.substring(i + 1, j);
+      
+      i = j;
+      
+      if ("class".equals(var)) {
+        sb.append(api.getSimpleName());
+      }
+      else {
+        throw new IllegalArgumentException(address);
+      }
+    }
+    
+    return sb.toString();
   }
 
   @Override

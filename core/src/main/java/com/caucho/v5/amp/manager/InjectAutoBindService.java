@@ -29,6 +29,9 @@
 
 package com.caucho.v5.amp.manager;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+
 import javax.inject.Provider;
 
 import com.caucho.v5.amp.ServiceManagerAmp;
@@ -87,13 +90,16 @@ public class InjectAutoBindService implements InjectAutoBind
     Class<T> rawClass = ip.key().rawClass();
     
     if (service == null) {
+      service = metaService(ip.key());
+    }
+
+    if (service == null) {
       service = rawClass.getAnnotation(Service.class);
-      
-      if (service == null) {
-        return null;
-      }
     }
     
+    if (service == null) {
+      return null;
+    }
     
     String address = _serviceManager.address(rawClass, service.value());
 
@@ -105,5 +111,26 @@ public class InjectAutoBindService implements InjectAutoBind
     else {
       return null;
     }
+  }
+  
+  private Service metaService(Key<?> key)
+  {
+    for (Annotation ann : key.annotations()) {
+      Service service = ann.annotationType().getAnnotation(Service.class);
+
+      if (service != null) {
+        return service;
+      }
+    }
+    
+    for (Class<?> annType : key.annotationTypes()) {
+      Service service = annType.getAnnotation(Service.class);
+
+      if (service != null) {
+        return service;
+      }
+    }
+    
+    return null;
   }
 }

@@ -27,16 +27,14 @@
  * @author Alex Rojkov
  */
 
-package io.baratine.service;
+package io.baratine.vault;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Asset
+/**
+ * Provides OnLookup
+ * 
+ * @param <ID> the type of the id/key 
+ * @param <T> the type of the entity
+ */
+public interface Vault<ID,T>
 {
-  String value() default "";
 }

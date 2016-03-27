@@ -27,8 +27,9 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.service;
+package io.baratine.client;
 
+import io.baratine.service.ServiceManager;
 import io.baratine.spi.WebServerProvider;
 
 /**

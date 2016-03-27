@@ -51,12 +51,12 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseServiceSync;
-import io.baratine.service.Asset;
-import io.baratine.service.IdAsset;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
+import io.baratine.vault.Asset;
+import io.baratine.vault.IdAsset;
 
 public class VaultDriverDataImpl<ID, T>
   extends VaultDriverBase<ID,T>

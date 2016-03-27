@@ -52,7 +52,7 @@ import io.baratine.service.Api;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef.ServiceBuilder;
-import io.baratine.service.Vault;
+import io.baratine.vault.Vault;
 import io.baratine.web.Body;
 import io.baratine.web.Cookie;
 import io.baratine.web.CrossOrigin;

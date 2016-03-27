@@ -33,7 +33,7 @@ import java.lang.ref.SoftReference;
 import java.util.ServiceLoader;
 import java.util.WeakHashMap;
 
-import io.baratine.service.ServiceClient.Builder;
+import io.baratine.client.ServiceClient.Builder;
 import io.baratine.web.WebServerBuilder;
 
 /**

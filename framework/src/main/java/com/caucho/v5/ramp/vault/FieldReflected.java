@@ -39,8 +39,8 @@ import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.db.Cursor;
-import io.baratine.service.Id;
 import io.baratine.service.ServiceException;
+import io.baratine.vault.Id;
 
 class FieldReflected<T,V> implements FieldInfo<T,V>
 {

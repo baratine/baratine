@@ -46,8 +46,8 @@ import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.inject.type.TypeRef;
 
 import io.baratine.inject.Key;
-import io.baratine.service.Asset;
-import io.baratine.service.Vault;
+import io.baratine.vault.Asset;
+import io.baratine.vault.Vault;
 
 /**
  * Creates an actor supplier based on a Resource and Store.
