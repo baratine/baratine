@@ -87,7 +87,7 @@ public class SessionServiceManagerImpl
     _classResource = classResource;
     _supplierBean = supplierBean;
     
-    _skeleton = new ClassStubSession(ampManager, classResource, config);
+    _skeleton = new ClassStubSession(ampManager, classResource);
     
     ContextSessionFactory factory = new ContextSessionFactory(ampManager);
     

@@ -70,7 +70,7 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpSystem;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
-import com.caucho.v5.amp.stub.StubFactoryAmpImpl;
+import com.caucho.v5.amp.stub.StubClassFactoryAmpImpl;
 import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.type.TypeRef;
@@ -172,7 +172,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     //_inboxFactory = new InboxFactoryQueue(this);
     
     _proxyFactory = new ProxyFactoryAmpImpl(this);
-    _stubFactory = new StubFactoryAmpImpl(this);
+    _stubFactory = new StubClassFactoryAmpImpl(this);
     _journalFactory = builder.journalFactory();
     _journalDelay = builder.getJournalDelay();
     
@@ -682,6 +682,8 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
                            Object worker,
                            String address)
   {
+    Objects.requireNonNull(worker);
+    
     if (worker instanceof ProxyHandleAmp) {
       ProxyHandleAmp proxy = (ProxyHandleAmp) worker;
       
@@ -693,7 +695,14 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     
     ServiceConfig config = null;
     
-    StubAmp stub = stubFactory().stub(worker, config);
+    StubAmp stub;
+    
+    if (worker instanceof StubAmp) {
+      stub = (StubAmp) worker;
+    }
+    else {
+      stub = stubFactory().stub(worker, config);
+    }
     
     InboxAmp inbox = serviceRef.inbox();
     

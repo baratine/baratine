@@ -45,7 +45,6 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.AmpException;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
-import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.inject.type.AnnotatedTypeClass;
@@ -56,7 +55,6 @@ import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
-import io.baratine.service.Journal;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Modify;
 import io.baratine.service.OnActive;
@@ -76,13 +74,13 @@ import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
 /**
- * Makai actor skeleton
+ * Stub for a bean's class.
  */
-public class ClassStub
+public class StubClass
 {
-  private static final L10N L = new L10N(ClassStub.class);
+  private static final L10N L = new L10N(StubClass.class);
   private static final Logger log
-    = Logger.getLogger(ClassStub.class.getName());
+    = Logger.getLogger(StubClass.class.getName());
   
   private static long _defaultTimeout = 10;
   
@@ -90,15 +88,15 @@ public class ClassStub
   
   private HashMap<String,MethodAmp> _rampMethodMap = new HashMap<>();
   
-  private final ServicesAmp _ampManager;
+  private final ServicesAmp _services;
 
-  private final Class<?> _api;
-  private final AnnotatedType _apiType;
+  private final Class<?> _type;
+  private final AnnotatedType _annType;
   
-  private boolean _isExported;
-  // private final Journal _ampJournal;
-  private final boolean _isJournal;
-  private final long _journalDelay;
+  // api restricts the available methods 
+  private final Class<?> _api;
+  
+  private boolean _isPublic;
   
   private MethodAmp _onInit;
   private MethodAmp _onActive;
@@ -106,91 +104,51 @@ public class ClassStub
 
   private MethodAmp _onLoad;
   private MethodAmp _onSave;
-  // private MethodAmp _onRestore;
   
   private MethodAmp _onLookup;
   
   private Method_0_Base _beforeBatch = Method_0_Base.NULL;
-  private Method_0_Base _afterBatch= Method_0_Base.NULL;
-  
-  private MethodAmp _consume;
-  private Class<?> _consumeApi = ServiceRef.class;
-  
-  private MethodAmp _subscribe;
-  private Class<?> _subscribeApi = ServiceRef.class;
-  
-  private MethodAmp _unsubscribe;
-  private Class<?> _unsubscribeApi = ServiceRef.class;
+  private Method_0_Base _afterBatch = Method_0_Base.NULL;
   
   private MethodHandle _getMethod;
-  // private JournalAmp _journal;
   
   private boolean _isLifecycleAware;
   
   private long _timeout;
   
-  public ClassStub(ServicesAmp rampManager,
-                      Class<?> api,
-                       ServiceConfig config)
+  public StubClass(ServicesAmp services,
+                   Class<?> type,
+                   Class<?> api)
   {
-    if (api.isArray()) {
-      throw new IllegalArgumentException(api.getName());
+    Objects.requireNonNull(services);
+    Objects.requireNonNull(type);
+    Objects.requireNonNull(api);
+    
+    if (type.isArray()) {
+      throw new IllegalArgumentException(type.getName());
     }
     
-    if (ServiceRef.class.isAssignableFrom(api)) {
-      throw new IllegalStateException(String.valueOf(api));
+    if (ServiceRef.class.isAssignableFrom(type)) {
+      throw new IllegalStateException(String.valueOf(type));
     }
     
-    if (StubAmp.class.isAssignableFrom(api)) {
-      throw new IllegalStateException(String.valueOf(api));
+    if (StubAmp.class.isAssignableFrom(type)) {
+      throw new IllegalStateException(String.valueOf(type));
     }
     
-    _ampManager = rampManager;
+    _services = services;
+    _type = type;
+    _annType = new AnnotatedTypeClass(type);
+    
     _api = api;
-    _apiType = new AnnotatedTypeClass(api);
     
     _timeout = _defaultTimeout;
-    //log.fine(L.l("timout for {0} is {1}", api.getSimpleName(), _timeout));
-    
-    //Service service = api.getAnnotation(Service.class);
-    
-    /*
-    Remote export = api.getAnnotation(Remote.class);
-    
-    if (export != null) {
-      _isExported = export != null;
-    }
-    */
-    
-    Journal ampJournal = api.getAnnotation(Journal.class);
-    
-    boolean isJournal = false;
-    long journalDelay = -1;
-    
-    if (ampJournal != null) {
-      _isLifecycleAware = true;
-      isJournal = true;
-      journalDelay = ampJournal.delay();
-    }
-    
-    if (config != null) {
-      if (config.isJournal()) {
-        isJournal = config.isJournal();
-      }
-      
-      if (config.journalDelay() >= 0) {
-        journalDelay = config.journalDelay();
-      }
-    }
-    
-    _isJournal = isJournal;
-    _journalDelay = journalDelay;
   }
   
   public void introspect()
   {
     try {
-      addMethods(_api);
+      addMethods(_type);
     } catch (RuntimeException e) {
       throw e;
     } catch (Exception e) {
@@ -200,7 +158,7 @@ public class ClassStub
   
   public boolean isPublic()
   {
-    return _isExported;
+    return _isPublic;
   }
   
   protected boolean isLocalPodNode()
@@ -210,12 +168,12 @@ public class ClassStub
   
   public AnnotatedType api()
   {
-    return _apiType;
+    return _annType;
   }
   
   protected ServicesAmp ampManager()
   {
-    return _ampManager;
+    return _services;
   }
 
   public boolean isImplemented(Class<?> type)
@@ -326,6 +284,10 @@ public class ClassStub
         continue;
       }
       
+      if (! isMethodApi(method)) {
+        continue;
+      }
+      
       if (ResultStreamBuilder.class.isAssignableFrom(method.getReturnType())) {
         //continue;
       }
@@ -361,6 +323,24 @@ public class ClassStub
         _rampMethodMap.put(methodName, rampMethod);
       }
     }
+  }
+  
+  /**
+   * Only API methods are exposed.
+   */
+  private boolean isMethodApi(Method method)
+  {
+    if (_type == _api) {
+      return true;
+    }
+    
+    for (Method methodApi : _api.getMethods()) {
+      if (methodApi.getName().equals(method.getName())) {
+        return true;
+      }
+    }
+    
+    return false;
   }
   
   public MethodAmp []getMethods()
@@ -466,18 +446,18 @@ public class ClassStub
       */
       
       if (method.isVarArgs()) {
-        return new MethodStub_VarArgs(_ampManager, method);
+        return new MethodStub_VarArgs(_services, method);
       }
     
       switch (params.length) {
       case 0:
-        return new MethodStub_0(_ampManager, method);
+        return new MethodStub_0(_services, method);
         
       case 1:
-        return new MethodStub_1(_ampManager, method);
+        return new MethodStub_1(_services, method);
       
       default:
-        return new MethodStub_N(_ampManager, method);
+        return new MethodStub_N(_services, method);
       }
     } catch (RuntimeException e) {
       throw e;
@@ -492,7 +472,7 @@ public class ClassStub
     TypeRef resultRef = TypeRef.of(result.getParameterizedType());
     TypeRef transferRef = resultRef.to(Result.class).param(0);
     
-    TransferAsset<?,?> shim = new TransferAsset(_api, transferRef.rawClass());
+    TransferAsset<?,?> shim = new TransferAsset(_type, transferRef.rawClass());
     
     return new MethodStubResultCopy(delegate, shim);
   }
@@ -644,15 +624,19 @@ public class ClassStub
     }
   }
 
+  /*
   public boolean isJournal()
   {
     return _isJournal;
   }
+  */
 
+  /*
   public long getJournalDelay()
   {
     return _journalDelay;
   }
+  */
   
   /*
   public JournalAmp getJournal()
@@ -721,6 +705,7 @@ public class ClassStub
     }
   }
 
+  /*
   public void consume(StubAmp bean, ServiceRef serviceRef)
   {
     MethodAmp consume = _consume;
@@ -753,7 +738,9 @@ public class ClassStub
       unsubscribe.send(HeadersNull.NULL, bean, arg);
     }
   }
+  */
   
+  /*
   private Object toSubscribeArg(Class<?> api, ServiceRef serviceRef)
   {
     if (api.isAssignableFrom(serviceRef.getClass())) {
@@ -763,6 +750,7 @@ public class ClassStub
       return serviceRef.as(api);
     }
   }
+  */
   
   public void shutdown(StubAmp actor,
                        ShutdownModeAmp mode)
@@ -782,7 +770,7 @@ public class ClassStub
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _api.getName() + "]";
+    return getClass().getSimpleName() + "[" + _type.getName() + "]";
   }
   
   private static class Method_0_Base {

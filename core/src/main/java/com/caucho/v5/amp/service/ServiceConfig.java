@@ -37,6 +37,8 @@ public interface ServiceConfig
   
   String name();
   
+  Class<?> api();
+  
   int queueSizeMax();
   
   int queueSize();

@@ -51,14 +51,14 @@ import io.baratine.service.ServiceRef;
 public class StubAmpBeanBase extends StubAmpStateBase
   implements StubAmp
 {
-  private final ClassStub _stubClass;
+  private final StubClass _stubClass;
   private final String _name;
   
   private final ActorContainerAmp _container;
   
   private JournalAmp _journal;
   
-  StubAmpBeanBase(ClassStub skel,
+  StubAmpBeanBase(StubClass skel,
                    String name,
                    ActorContainerAmp container)
   {
@@ -67,13 +67,16 @@ public class StubAmpBeanBase extends StubAmpStateBase
     _stubClass = skel;
     _name = name;
     
+    boolean isJournal = false; // config.isJournal();
+    long journalDelay = 0; // config.getJournalDelay();
+    
     if (container != null) {
     }
     else if (_stubClass.isImplemented(OnLookup.class)
              || _stubClass.isImplemented(OnSave.class)
-             || _stubClass.isJournal()) {
-      if (_stubClass.isJournal()) {
-        container = new StubContainerJournal(name, _stubClass.getJournalDelay());
+             || isJournal) {
+      if (isJournal) {
+        container = new StubContainerJournal(name, journalDelay);
       }
       else {
         container = new StubContainerBase(name);
@@ -92,7 +95,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
     return _container;
   }
   
-  protected final ClassStub stubClass()
+  protected final StubClass stubClass()
   {
     return _stubClass;
   }
@@ -273,18 +276,18 @@ public class StubAmpBeanBase extends StubAmpStateBase
       
       ServiceConfig config = null;
       
-      StubClassFactoryAmp proxyFactory = manager.stubFactory();
+      StubClassFactoryAmp stubFactory = manager.stubFactory();
       
-      StubAmp actor;
+      StubAmp stub;
       
       if (value instanceof StubAmp) {
-        actor = (StubAmp) value;
+        stub = (StubAmp) value;
       }
       else {
-        actor = proxyFactory.stub(value, address, path, container, config);
+        stub = stubFactory.stub(value, address, path, container, config);
       }
       
-      serviceRef = parentRef.pin(actor, address);
+      serviceRef = parentRef.pin(stub, address);
       
       return container.addService(path, serviceRef);
     }

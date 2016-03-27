@@ -33,21 +33,19 @@ import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.service.ServiceConfig;
 
 /**
  * Baratine actor skeleton for a @ServiceChannel
  */
-public class ClassStubSession extends ClassStub
+public class ClassStubSession extends StubClass
 {
   private LoadField[] _loadFields;
   //private String _createMethod;
 
-  public ClassStubSession(ServicesAmp rampManager,
-                              Class<?> type,
-                              ServiceConfig config)
+  public ClassStubSession(ServicesAmp services,
+                              Class<?> type)
   {
-    super(rampManager, type, config);
+    super(services, type, type);
     
     ArrayList<LoadField> loadFields = new ArrayList<>();
     

@@ -35,13 +35,13 @@ import com.caucho.v5.amp.service.ServiceConfig;
 /**
  * Baratine actor skeleton
  */
-public class ClassStubForeign extends ClassStub
+public class ClassStubForeign extends StubClass
 {
-  public ClassStubForeign(ServicesAmp rampManager,
-                              Class<?> api,
+  public ClassStubForeign(ServicesAmp services,
+                              Class<?> type,
                               ServiceConfig config)
   {
-    super(rampManager, api, config);
+    super(services, type, type);
   }
   
   @Override

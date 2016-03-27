@@ -41,7 +41,7 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 
 import io.baratine.service.OnLoad;
@@ -52,7 +52,7 @@ import io.baratine.vault.Id;
 /**
  * Actor skeleton for a resource entity.
  */
-public class StubAssetItem extends ClassStub
+public class StubAssetItem extends StubClass
 {
   private static final Logger log
     = Logger.getLogger(StubAssetItem.class.getName());
@@ -60,11 +60,11 @@ public class StubAssetItem extends ClassStub
   private VaultConfig<?,?> _configResource;
 
   public StubAssetItem(ServicesAmp ampManager, 
-                        Class<?> api,
+                        Class<?> type,
                         ServiceConfig configService,
                         VaultConfig<?,?> configResource)
   {
-    super(ampManager, api, configService);
+    super(ampManager, type, type);
     
     _configResource = configResource;
   }

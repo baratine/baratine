@@ -38,7 +38,7 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
-import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.StubAmpBean;
 import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.config.Priority;
@@ -126,7 +126,7 @@ public class StubGeneratorVault implements StubGenerator
       beanData.store((VaultStore) driver);
     }
         
-    ClassStub skeleton;
+    StubClass skeleton;
 
     skeleton = new StubAssetStore(ampManager,
                                     serviceClass,
@@ -165,7 +165,7 @@ public class StubGeneratorVault implements StubGenerator
     configResource.driver(driver);
     //}
         
-    ClassStub skeleton;
+    StubClass skeleton;
 
     skeleton = new StubAssetSolo(ampManager,
                                       serviceClass,

@@ -37,7 +37,7 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 
 import io.baratine.service.OnLoad;
@@ -47,7 +47,7 @@ import io.baratine.service.Result;
 /**
  * Actor skeleton for a resource entity.
  */
-public class StubAssetSolo extends ClassStub
+public class StubAssetSolo extends StubClass
 {
   private static final Logger log
     = Logger.getLogger(StubAssetSolo.class.getName());
@@ -55,11 +55,11 @@ public class StubAssetSolo extends ClassStub
   private VaultDriver<?, ?> _driver;
 
   public StubAssetSolo(ServicesAmp ampManager, 
-                            Class<?> api,
+                            Class<?> type,
                             ServiceConfig configService,
                             VaultDriver<?,?> driver)
   {
-    super(ampManager, api, configService);
+    super(ampManager, type, type);
     
     _driver = driver;
   }

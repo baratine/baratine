@@ -47,7 +47,7 @@ public class StubAmpBean extends StubAmpBeanBase
   private Object _bean;
   private String _name;
   
-  public StubAmpBean(ClassStub skel,
+  public StubAmpBean(StubClass skel,
                          Object bean,
                          String name,
                          ActorContainerAmp container)
@@ -69,7 +69,7 @@ public class StubAmpBean extends StubAmpBeanBase
     _name = name;
   }
   
-  public StubAmpBean(ClassStub skeleton,
+  public StubAmpBean(StubClass skeleton,
                       Object bean,
                       ServiceConfig config)
   {

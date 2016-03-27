@@ -29,12 +29,10 @@
 
 package com.caucho.v5.amp.stub;
 
-import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.proxy.MessageFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ActorSkeletonSession;
 import com.caucho.v5.amp.session.ContextSession;
@@ -43,7 +41,7 @@ import com.caucho.v5.amp.spi.ActorContainerAmp;
 /**
  * Creates service stubs for service implementation beans..
  */
-public class StubFactoryAmpImpl implements StubClassFactoryAmp
+public class StubClassFactoryAmpImpl implements StubClassFactoryAmp
 {
   /*
   private static WeakHashMap<ClassLoader,SoftReference<AmpProxyCache>> _cacheMap
@@ -54,79 +52,87 @@ public class StubFactoryAmpImpl implements StubClassFactoryAmp
   
   //private AmpProxyCache _proxyCache;
   
-  private ConcurrentHashMap<Class<?>,ClassStub> _skeletonMap
+  private StubClassFactory _stubClassFactory;
+
+  /*
+  private ConcurrentHashMap<Class<?>,StubClass> _stubMap
     = new ConcurrentHashMap<>();
+    */
   
   private ConcurrentHashMap<Class<?>,ClassStubSession> _skeletonChannelMap
     = new ConcurrentHashMap<>();
-  
-  private MessageFactoryAmp _messageFactory;
       
-  public StubFactoryAmpImpl(ServicesAmp ampManager)
+  public StubClassFactoryAmpImpl(ServicesAmp services)
   {
-    Objects.requireNonNull(ampManager);
+    Objects.requireNonNull(services);
     
-    _ampManager = ampManager;
+    _ampManager = services;
+    
+    _stubClassFactory = new StubClassFactory(services);
+  }
+  
+  @Override
+  public StubClass stubClass(Class<?> type,
+                        Class<?> api)
+  {
+    Objects.requireNonNull(type);
+    
+    if (api == null) {
+      api = type;
+    }
+    
+    return _stubClassFactory.stubClass(type, api);
   }
 
-  @Override
   public StubAmp stub(Object bean,
-                                 String path,
-                                 String childPath,
-                                 ActorContainerAmp container,
-                                 ServiceConfig config)
+                      String path,
+                      String childPath,
+                      ActorContainerAmp container,
+                      ServiceConfig config)
   {
-    ClassStub skel;
+    StubClass stubClass;
     
+    /*
     if (path != null && (path.startsWith("pod://") || path.startsWith("public://"))) {
-      skel = createPodSkeleton(bean.getClass(), path, config);
+      stubClass = createPodSkeleton(bean.getClass(), path, config);
     }
     else {
-      skel = createSkeleton(bean.getClass(), path, config);
+      stubClass = stubClass(bean.getClass(), config);
+    }
+    */
+    
+    Class<?> api = null;
+    
+    if (config != null) {
+      config.api();
     }
     
+    if (api == null) {
+      api = bean.getClass();
+    }
+    
+    stubClass = _stubClassFactory.stubClass(bean.getClass(), api);
+    
     if (container != null) {
-      return new StubAmpBeanChild(skel, bean, path, childPath, container);
+      return new StubAmpBeanChild(stubClass, bean, path, childPath, container);
     }
     else {
       if (path == null && config != null) {
         path = config.name(); 
       }
       
-      return new StubAmpBean(skel, bean, path, container);
+      return new StubAmpBean(stubClass, bean, path, container);
     }
   }
-  
-  protected ClassStub createPodSkeleton(Class<?> beanClass, 
+
+  /*
+  protected StubClass createPodSkeleton(Class<?> beanClass, 
                                             String path,
                                             ServiceConfig config)
   {
-    return createSkeleton(beanClass, path, config);
-    
-    // XXX: 
-    /*
-    String localPath = getLocalPath(path);
-    
-    PodApp podApp = PodApp.getCurrent();
-
-    if (podApp == null) {
-      return createSkeleton(beanClass, path, config);
-    }
-    
-    NodePodAmp currentNode = podApp.getPodNode();
-
-    int hash = HashPod.hash(localPath);
-    NodePodAmp serviceNode = currentNode.getPod().getNode(hash);
-    
-    if (currentNode.getIndex() >= 0 
-        && currentNode.nodeIndex() == serviceNode.nodeIndex()) {
-      return createSkeleton(beanClass, path, config);
-    }
-    else {
-      return new SkeletonClassForeign(_ampManager, beanClass, config);
-    }
-    */
+    return stubClass(beanClass, config);
   }
+  */
   
   private String getLocalPath(String path)
   {
@@ -146,22 +152,23 @@ public class StubFactoryAmpImpl implements StubClassFactoryAmp
     }
   }
   
-  protected ClassStub createSkeleton(Class<?> beanClass, 
-                                         String path,
-                                         ServiceConfig config)
+  /*
+  private StubClass stubClass(Class<?> type,
+                                ServiceConfig config)
   {
-    ClassStub skel = _skeletonMap.get(beanClass);
+    StubClass skel = _stubMap.get(type);
     
     if (skel == null) {
-      skel = new ClassStub(_ampManager, beanClass, config);
+      skel = new StubClass(_ampManager, type, type);
       skel.introspect();
-      _skeletonMap.putIfAbsent(beanClass, skel);
-      skel = _skeletonMap.get(beanClass);
+      _stubMap.putIfAbsent(type, skel);
+      skel = _stubMap.get(type);
     }
     
     return skel;
     
   }
+  */
 
   @Override
   public StubAmp createSkeletonSession(Object bean,
@@ -174,7 +181,7 @@ public class StubFactoryAmpImpl implements StubClassFactoryAmp
     ClassStubSession skel = _skeletonChannelMap.get(beanClass);
     
     if (skel == null) {
-      skel = new ClassStubSession(_ampManager, beanClass, config);
+      skel = new ClassStubSession(_ampManager, beanClass);
       skel.introspect();
       _skeletonChannelMap.putIfAbsent(beanClass, skel);
       skel = _skeletonChannelMap.get(beanClass);
@@ -183,6 +190,7 @@ public class StubFactoryAmpImpl implements StubClassFactoryAmp
     return new ActorSkeletonSession(skel, bean, key, context); 
   }
 
+  /*
   @Override
   public StubAmp createSkeletonMain(Class<?> api,
                                      String path,
@@ -194,6 +202,7 @@ public class StubFactoryAmpImpl implements StubClassFactoryAmp
     // XXX: need different actor
     return new StubAmpBeanBase(skel, path, null);
   }
+  */
   
   /*
   @Override

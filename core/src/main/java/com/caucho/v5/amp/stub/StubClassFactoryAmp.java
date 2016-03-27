@@ -40,19 +40,31 @@ public interface StubClassFactoryAmp
 {
   default StubAmp stub(Object bean, ServiceConfig config)
   {
-    return stub(bean, null, null, null, config);
+    String path = null;
+    Class<?> api = null;
+    
+    if (config != null) {
+      path = config.name();
+      api = config.api();
+    }
+    
+    StubClass stubClass = stubClass(bean.getClass(), api);
+    
+    return new StubAmpBean(stubClass, bean, path, null);
   }
+  
+  StubClass stubClass(Class<?> type, Class<?> api);
   
   StubAmp stub(Object bean,
                           String path,
                           String childPath,
                           ActorContainerAmp container,
                           ServiceConfig config);
-  
+/*  
   StubAmp createSkeletonMain(Class<?> api,
                               String path,
                               ServiceConfig config);
-  
+                              */
   StubAmp createSkeletonSession(Object bean,
                                  String key,
                                  ContextSession context,

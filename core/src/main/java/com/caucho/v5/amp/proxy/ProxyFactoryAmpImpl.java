@@ -42,7 +42,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.ClassStubSession;
 
 import io.baratine.service.ServiceException;
@@ -60,7 +60,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   
   private AmpProxyCache _proxyCache;
   
-  private ConcurrentHashMap<Class<?>,ClassStub> _skeletonMap
+  private ConcurrentHashMap<Class<?>,StubClass> _skeletonMap
     = new ConcurrentHashMap<>();
   
   private ConcurrentHashMap<Class<?>,ClassStubSession> _skeletonChannelMap
@@ -113,37 +113,15 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     }
   }
   */
-  
+
+  /*
   protected ClassStub createPodSkeleton(Class<?> beanClass, 
                                             String path,
                                             ServiceConfig config)
   {
     return createSkeleton(beanClass, path, config);
-    
-    // XXX: 
-    /*
-    String localPath = getLocalPath(path);
-    
-    PodApp podApp = PodApp.getCurrent();
-
-    if (podApp == null) {
-      return createSkeleton(beanClass, path, config);
-    }
-    
-    NodePodAmp currentNode = podApp.getPodNode();
-
-    int hash = HashPod.hash(localPath);
-    NodePodAmp serviceNode = currentNode.getPod().getNode(hash);
-    
-    if (currentNode.getIndex() >= 0 
-        && currentNode.nodeIndex() == serviceNode.nodeIndex()) {
-      return createSkeleton(beanClass, path, config);
-    }
-    else {
-      return new SkeletonClassForeign(_ampManager, beanClass, config);
-    }
-    */
   }
+  */
   
   private String getLocalPath(String path)
   {
@@ -163,6 +141,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     }
   }
   
+  /*
   protected ClassStub createSkeleton(Class<?> beanClass, 
                                          String path,
                                          ServiceConfig config)
@@ -170,7 +149,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     ClassStub skel = _skeletonMap.get(beanClass);
     
     if (skel == null) {
-      skel = new ClassStub(_ampManager, beanClass, config);
+      skel = new ClassStub(_ampManager, beanClass);
       skel.introspect();
       _skeletonMap.putIfAbsent(beanClass, skel);
       skel = _skeletonMap.get(beanClass);
@@ -179,6 +158,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     return skel;
     
   }
+  */
 
   /*
   @Override

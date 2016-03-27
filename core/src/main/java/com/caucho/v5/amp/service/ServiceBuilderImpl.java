@@ -51,7 +51,7 @@ import com.caucho.v5.amp.session.SessionServiceManagerImpl;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpJournal;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
@@ -95,6 +95,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   // private ServiceConfig.Builder _builderConfig;
   
   private Class<?> _api;
+  private Class<?> _apiDefault;
 
   private boolean _isForeign;
 
@@ -355,6 +356,12 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       }
     }
     
+    Api api = serviceClass.getAnnotation(Api.class);
+    
+    if (api != null) {
+      _apiDefault = api.value();
+    }
+    
     Workers workers = serviceClass.getAnnotation(Workers.class);
     
     if (workers != null) {
@@ -478,8 +485,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   {
     String address;
    
-    if (_api != null) {
-      address = _services.address(_api);
+    if (api() != null) {
+      address = _services.address(api());
     }
     else if (_type != null) {
       address = address(_type);
@@ -603,9 +610,15 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return this;
   }
 
+  @Override
   public Class<?> api()
   {
-    return _api;
+    if (_api != null) {
+      return _api;
+    }
+    else {
+      return _apiDefault;
+    }
   }
   
   //@Override
@@ -726,7 +739,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       return (StubAmp) bean;
     }
     else {
-      return stubFactory().stub(bean, path, path, null, config);
+      return stubFactory().stub(bean, config);
     }
   }
   
@@ -1071,7 +1084,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     Class<?> api = (Class<?>) stubMain.api().getType();
 
-    ClassStub skel = new ClassStub(_services, api, config);
+    //ClassStub skel = _services.stubFactory().stub(api, config());
+    StubClass skel = new StubClass(_services, api, api);
     skel.introspect();
     
     // XXX: 

@@ -42,12 +42,12 @@ import com.caucho.v5.amp.spi.MessageAmp;
  */
 public class StubAmpJournal extends StubAmpBase
 {
-  private final ClassStub _stubClass;
+  private final StubClass _stubClass;
   private final JournalAmp _journal;
   private final StubAmp _stubMain;
   private final String _path;
   
-  public StubAmpJournal(ClassStub stubClass,
+  public StubAmpJournal(StubClass stubClass,
                  JournalAmp journal,
                  StubAmp actorMain,
                  String path)

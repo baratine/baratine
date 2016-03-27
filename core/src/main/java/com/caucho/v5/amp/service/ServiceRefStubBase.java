@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.service;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
@@ -46,10 +45,7 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
-import io.baratine.service.Cancel;
 import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionClosed;
-import io.baratine.service.ServiceRef;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -243,6 +239,7 @@ abstract class ServiceRefStubBase extends ServiceRefBase
     return bindRef;
   }
   
+  /*
   protected ServiceRefAmp toSubscriber(Object listener)
   {
     if (listener instanceof ServiceRefAmp) {
@@ -259,6 +256,7 @@ abstract class ServiceRefStubBase extends ServiceRefBase
       }
     }
   }
+  */
   
   @Override
   public ServiceRefAmp start()

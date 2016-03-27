@@ -44,7 +44,7 @@ import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.ActorContainerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.ClassStub;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.StubAmpBean;
@@ -62,7 +62,7 @@ import io.baratine.vault.IdAsset;
 /**
  * Actor skeleton for a resource.
  */
-public class StubAssetStore extends ClassStub
+public class StubAssetStore extends StubClass
 {
   private static final L10N L = new L10N(StubAssetStore.class);
   
@@ -74,11 +74,11 @@ public class StubAssetStore extends ClassStub
   private String _address;
 
   public StubAssetStore(ServicesAmp ampManager,
-                          Class<?> api,
+                          Class<?> type,
                           ServiceConfig configService,
                           VaultConfig configResource)
   {
-    super(ampManager, api, configService);
+    super(ampManager, type, type);
 
     _configResource = configResource;
 
@@ -222,14 +222,14 @@ public class StubAssetStore extends ClassStub
   private static class MethodFindOne extends MethodAmpBase
   {
     private ServicesAmp _ampManager;
-    private ClassStub _stubAsset;
+    private StubClass _stubAsset;
 
     private VaultDriver _driver;
     private String _address;
     private String[] _fields;
 
     MethodFindOne(ServicesAmp ampManager,
-                  ClassStub skel,
+                  StubClass skel,
                   VaultDriver driver,
                   String address,
                   String[] fields)
@@ -270,12 +270,12 @@ public class StubAssetStore extends ClassStub
 
   private static class MethodOnLookup extends MethodAmpBase
   {
-    private ClassStub _skelEntity;
+    private StubClass _skelEntity;
     private Provider<Object> _provider;
     private MethodHandle _fieldSetter;
     private Convert<String,?> _converter;
 
-    MethodOnLookup(ClassStub skel,
+    MethodOnLookup(StubClass skel,
                    Provider<Object> provider,
                    Convert<String,?> converter,
                    MethodHandle fieldSetter)

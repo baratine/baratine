@@ -41,7 +41,7 @@ public class StubAmpBeanChild extends StubAmpBean
 {
   private String _childPath;
   
-  protected StubAmpBeanChild(ClassStub skel,
+  protected StubAmpBeanChild(StubClass skel,
                               Object bean,
                               String path,
                               String childPath,
