@@ -47,13 +47,12 @@ import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.journal.StubJournal;
 import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
-import com.caucho.v5.amp.session.SessionServiceManagerImpl;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpJournal;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
 import com.caucho.v5.amp.stub.StubGenerator;
@@ -116,13 +115,34 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
 
   private String _name;
   
-  public ServiceBuilderImpl(ServicesAmpImpl manager)
+  public ServiceBuilderImpl(ServicesAmpImpl manager,
+                            T worker)
   {
+    Objects.requireNonNull(manager);
+    _services = manager;
+    
+    Objects.requireNonNull(worker);
+    
+    _worker = worker;
+    _type = (Class<T>) worker.getClass();
+    
+    initDefaults();
+    
+    //validateServiceClass(serviceClass);
+    
+    //_serviceClass = _type;
+    
+    introspectAnnotations(_type);
+
+    /*
     Objects.requireNonNull(manager);
     
     _services = manager;
     
     initDefaults();
+    System.out.println("SBZ:");
+    Thread.dumpStack();
+    */
   }
 
   public ServiceBuilderImpl(ServicesAmpImpl manager,
@@ -155,12 +175,35 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     _services = manager;
     
     initDefaults();
-    
+
     //validateServiceClass(serviceClass);
     
     _type = serviceClass;
     //_serviceClass = serviceClass;
     _serviceSupplier = supplier;
+    
+    introspectAnnotations(serviceClass);
+  }
+
+  public ServiceBuilderImpl(ServicesAmpImpl manager,
+                            Class<T> serviceClass,
+                            Key<? extends T> key)
+  {
+    Objects.requireNonNull(manager);
+    Objects.requireNonNull(serviceClass);
+    Objects.requireNonNull(key);
+    
+    _services = manager;
+    
+    initDefaults();
+    
+    //validateServiceClass(serviceClass);
+    
+    _type = serviceClass;
+    //_serviceClass = serviceClass;
+    //_serviceSupplier = supplier;
+
+    _serviceSupplier = (Supplier) newSupplierKey((Key) key);
     
     introspectAnnotations(serviceClass);
   }
@@ -298,7 +341,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     introspectAnnotations(apiClass);
 
-    _serviceSupplier = (Supplier) newSupplier(key);
+    _serviceSupplier = (Supplier) newSupplierKey((Key) key);
 
     return this;
   }
@@ -520,7 +563,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     Service service = serviceClass.getAnnotation(Service.class);
     
     if (service != null && ! service.value().isEmpty()) {
-      return service.value();
+      return _services.address(serviceClass); // service.value();
     }
     
     Api apiAnn = serviceClass.getAnnotation(Api.class);
@@ -686,9 +729,11 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       return null;
     }
 
+    /*
     if (_address != null && _address.startsWith("session://")) {
       return buildSession();
     }
+    */
     
     /*
     if (_serviceSupplier != null) {
@@ -777,6 +822,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return _journalDelay;
   }
   
+  /*
   private ServiceRefAmp buildSession()
   {
     Thread thread = Thread.currentThread();
@@ -790,7 +836,9 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       thread.setContextClassLoader(oldLoader);
     }
   }
+  */
   
+  /*
   private ServiceRefAmp buildSessionImpl()
   {
     Supplier<?> supplier = newSupplier(_serviceClass);
@@ -799,9 +847,9 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     ServiceConfig config = config();
     
-    SessionServiceManagerImpl context;
+    SessionVaultImpl context;
     
-    context = new SessionServiceManagerImpl(address,
+    context = new SessionVaultImpl(address,
                                             _services,
                                             _serviceClass,
                                             supplier,
@@ -820,13 +868,17 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
 
     return (ServiceRefAmp) serviceRef;
   }
+  */
   
   private ServiceRefAmp buildService()
   {
     ServiceConfig config = config();
     
-    StubFactoryAmp factory = pluginFactory(_serviceClass, config);
+    //StubFactoryAmp factory = pluginFactory(_serviceClass, config);
+    StubFactoryAmp factory = null;;
     
+    factory = pluginFactory(_type, _serviceSupplier, config);
+
     if (factory != null) {
       return service(factory);
     }
@@ -878,7 +930,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   }
   
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private <T> Supplier<T> newSupplier(Class<T> serviceClass)
+  private Supplier<T> newSupplier(Class<T> serviceClass)
   {
     if (_serviceSupplier != null) {
       return (Supplier) _serviceSupplier;
@@ -896,8 +948,9 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     }
   }
   
-  private StubFactoryAmp pluginFactory(Class<?> serviceClass,
-                                         ServiceConfig config)
+  private <T> StubFactoryAmp pluginFactory(Class<T> serviceClass,
+                                           Supplier<? extends T> serviceSupplier,
+                                       ServiceConfig config)
   {
     if (serviceClass == null) {
       return null;
@@ -905,8 +958,9 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     for (StubGenerator generator : _services.stubGenerators()) {
       StubFactoryAmp factory = generator.factory(serviceClass,
-                                                   _services,
-                                                   config);
+                                                 _services,
+                                                 serviceSupplier,
+                                                 config);
       
       if (factory != null) {
         return factory;
@@ -916,9 +970,9 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return null;
   }
   
-  private <T> Supplier<T> newSupplier(Key<T> key)
+  private Supplier<T> newSupplierKey(Key<T> key)
   {
-    InjectorAmp injector = InjectorAmp.current(classLoader());
+    InjectorAmp injector = _services.injector();
     
     Objects.requireNonNull(injector);
     

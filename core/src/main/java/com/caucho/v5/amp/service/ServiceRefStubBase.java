@@ -209,16 +209,16 @@ abstract class ServiceRefStubBase extends ServiceRefBase
   
   protected Object onLookupImpl(String path)
   {
-    return getLookupActor().onLookup(path, this);
+    return stubLookup().onLookup(path, this);
   }
   
-  protected StubAmp getLookupActor()
+  protected StubAmp stubLookup()
   {
     // baratine/1618
     // ActorAmp actor = getInbox().getDirectActor();
-    StubAmp actor = _stub;
+    StubAmp stub = _stub;
     
-    return actor;
+    return stub;
   }
   
   @Override

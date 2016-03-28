@@ -32,7 +32,7 @@ package com.caucho.v5.amp.stub;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 
 /**
  * Baratine actor skeleton
@@ -45,7 +45,7 @@ public class StubAmpBeanChild extends StubAmpBean
                               Object bean,
                               String path,
                               String childPath,
-                              ActorContainerAmp container)
+                              StubContainerAmp container)
   {
     super(skel, bean, path, container);
     
@@ -74,7 +74,7 @@ public class StubAmpBeanChild extends StubAmpBean
   @Override
   public void onLru(ServiceRefAmp serviceRef)
   {
-    ActorContainerAmp container = getContainer();
+    StubContainerAmp container = getContainer();
     
     if (loadState().isModified()) {
       container.onLruModified(serviceRef);

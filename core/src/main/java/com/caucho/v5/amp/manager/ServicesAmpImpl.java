@@ -566,7 +566,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     
     Objects.requireNonNull(serviceImpl);
     
-    return newService().service(serviceImpl).ref();
+    return new ServiceBuilderImpl<>(this, serviceImpl).ref();
   }
 
   /**
@@ -577,7 +577,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   {
     Objects.requireNonNull(worker);
     
-    return newService().service(worker);
+    return new ServiceBuilderImpl<>(this, worker);
   }
 
   /**
@@ -612,16 +612,20 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   {
     Objects.requireNonNull(api);
     
-    return newService().service(key, api);
+    //return newService().service(key, api);
+    //throw new UnsupportedOperationException();
+    return new ServiceBuilderImpl(this, api, key);
   }
 
   /**
    * newService() creates a new service using a builder.
    */
+  /*
   private <T> ServiceBuilderImpl<T> newService()
   {
     return new ServiceBuilderImpl<>(this);
   }
+  */
 
   /**
    * Publish, reusing the mailbox for an existing service.

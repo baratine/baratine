@@ -54,6 +54,8 @@ public class ServiceRefDuplicateBinding extends ServiceRefBase
     _manager = manager;
     _address = address;
     _exn = exn;
+    
+    exn.printStackTrace();
   }
   
   @Override

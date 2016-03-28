@@ -174,7 +174,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     return invocation().webApp();
   }
 
-  private ServicesAmp serviceManager()
+  private ServicesAmp services()
   {
     return webApp().serviceManager();
   }
@@ -245,25 +245,25 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public ServiceRefAmp service(String address)
   {
-    return serviceManager().service(address);
+    return services().service(address);
   }
 
   @Override
   public <X> X service(Class<X> type)
   {
-    return serviceManager().service(type);
+    return services().service(type);
   }
 
   @Override
   public <X> X service(Class<X> type, String id)
   {
-    return serviceManager().service(type, id);
+    return services().service(type, id);
   }
 
   @Override
   public ServiceRefAmp session(String name)
   {
-    ServicesAmp manager = serviceManager();
+    ServicesAmp services = services();
 
     if (name.indexOf('/') >= 0) {
       throw new IllegalArgumentException(name);
@@ -276,14 +276,16 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
       cookie("JSESSIONID", sessionId);
     }
+    
+    System.out.println("SELP: " + services.service("session:///" + name));
 
-    return manager.service("session:///" + name + "/" + sessionId);
+    return services.service("session:///" + name + "/" + sessionId);
   }
 
   @Override
   public <X> X session(Class<X> type)
   {
-    String address = serviceManager().address(type);
+    String address = services().address(type);
 
     return sessionImpl(address + "/").as(type);
   }
@@ -302,7 +304,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       cookie("JSESSIONID", sessionId);
     }
 
-    return serviceManager().service(address + sessionId);
+    return services().service(address + sessionId);
   }
 
   private String generateSessionId()

@@ -34,7 +34,7 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
-import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
+import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.inject.InjectorAmp;
@@ -50,7 +50,7 @@ public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
 {
   public static ServiceManagerBuilderAmp newManager()
   {
-    return new ServiceManagerBuilderImpl();
+    return new ServicesBuilderImpl();
   }
   
   /**

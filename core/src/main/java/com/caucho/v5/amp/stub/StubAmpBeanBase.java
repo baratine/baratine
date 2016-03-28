@@ -37,7 +37,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 import io.baratine.service.OnLookup;
@@ -46,7 +46,7 @@ import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
 
 /**
- * Baratine actor skeleton
+ * Baratine stub for a bean
  */
 public class StubAmpBeanBase extends StubAmpStateBase
   implements StubAmp
@@ -54,13 +54,13 @@ public class StubAmpBeanBase extends StubAmpStateBase
   private final StubClass _stubClass;
   private final String _name;
   
-  private final ActorContainerAmp _container;
+  private final StubContainerAmp _container;
   
   private JournalAmp _journal;
   
   StubAmpBeanBase(StubClass skel,
                    String name,
-                   ActorContainerAmp container)
+                   StubContainerAmp container)
   {
     Objects.requireNonNull(skel);
     
@@ -90,7 +90,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
     }
   }
   
-  public ActorContainerAmp getContainer()
+  public StubContainerAmp getContainer()
   {
     return _container;
   }
@@ -154,7 +154,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
   
   public void afterBatchChildren()
   {
-    ActorContainerAmp childContainer = _container;
+    StubContainerAmp childContainer = _container;
     
     if (childContainer != null) {
       childContainer.afterBatch(this);
@@ -234,7 +234,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
   @Override
   public void onSaveChildren(SaveResult saveResult)
   {
-    ActorContainerAmp container = _container;
+    StubContainerAmp container = _container;
     
     if (container != null) {
       container.onSave(saveResult);
@@ -244,13 +244,14 @@ public class StubAmpBeanBase extends StubAmpStateBase
   @Override
   public Object onLookup(String path, ServiceRefAmp parentRef)
   {
-    ActorContainerAmp container = getChildContainer();
+    StubContainerAmp container = childContainer();
     
     if (container == null) {
       return null;
     }
     
     ServiceRef serviceRef = container.getService(path);
+    
     
     if (serviceRef != null) {
       return serviceRef;
@@ -293,7 +294,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
     }
   }
   
-  private ActorContainerAmp getChildContainer()
+  private StubContainerAmp childContainer()
   {
     return _container;
   }
@@ -314,7 +315,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
   @Override
   protected void addModifiedChild(StubAmp actor)
   {
-    ActorContainerAmp container = _container;
+    StubContainerAmp container = _container;
     
     if (container != null) {
       container.addModifiedChild(actor);
@@ -324,7 +325,7 @@ public class StubAmpBeanBase extends StubAmpStateBase
   @Override
   protected boolean isModifiedChild(StubAmp actor)
   {
-    ActorContainerAmp container = _container;
+    StubContainerAmp container = _container;
     
     if (container != null) {
       return container.isModifiedChild(actor);

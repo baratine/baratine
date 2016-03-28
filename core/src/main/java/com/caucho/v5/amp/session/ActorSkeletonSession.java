@@ -52,7 +52,8 @@ public class ActorSkeletonSession extends StubAmpBean
                                String key,
                                ContextSession context)
   {
-    super(skel, bean, key, null);
+    //super(skel, bean, key, null);
+    super(skel, bean, null, null);
 
     Objects.requireNonNull(context);
 

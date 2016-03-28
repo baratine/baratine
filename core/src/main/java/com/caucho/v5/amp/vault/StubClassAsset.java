@@ -50,16 +50,16 @@ import io.baratine.service.Result;
 import io.baratine.vault.Id;
 
 /**
- * Actor skeleton for a resource entity.
+ * Stub class for a vault asset
  */
-public class StubAssetItem extends StubClass
+public class StubClassAsset extends StubClass
 {
   private static final Logger log
-    = Logger.getLogger(StubAssetItem.class.getName());
+    = Logger.getLogger(StubClassAsset.class.getName());
   
   private VaultConfig<?,?> _configResource;
 
-  public StubAssetItem(ServicesAmp ampManager, 
+  public StubClassAsset(ServicesAmp ampManager, 
                         Class<?> type,
                         ServiceConfig configService,
                         VaultConfig<?,?> configResource)

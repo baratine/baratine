@@ -39,14 +39,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.util.LruCache;
 import com.caucho.v5.util.LruCache.Entry;
 
 /**
  * Baratine actor container for children.
  */
-public class StubContainerBase implements ActorContainerAmp
+public class StubContainerBase implements StubContainerAmp
 {
   private static final Logger log
     = Logger.getLogger(StubContainerBase.class.getName());

@@ -68,7 +68,7 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
   @Override
   public Services.ServicesBuilder newManager()
   {
-    return new ServiceManagerBuilderImpl();
+    return new ServicesBuilderImpl();
   }
   
   @Override

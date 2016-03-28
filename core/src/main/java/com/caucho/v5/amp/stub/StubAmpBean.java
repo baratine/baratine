@@ -33,11 +33,10 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
 
 /**
  * Stub instance for a bean calls bean methods based on the ClassStub.
@@ -48,9 +47,9 @@ public class StubAmpBean extends StubAmpBeanBase
   private String _name;
   
   public StubAmpBean(StubClass skel,
-                         Object bean,
-                         String name,
-                         ActorContainerAmp container)
+                     Object bean,
+                     String name,
+                     StubContainerAmp container)
   {
     super(skel, name, container);
     

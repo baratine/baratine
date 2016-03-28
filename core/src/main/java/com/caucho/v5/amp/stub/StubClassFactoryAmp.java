@@ -31,7 +31,7 @@ package com.caucho.v5.amp.stub;
 
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ContextSession;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 
 /**
  * Creates MPC skeletons and stubs.
@@ -58,7 +58,7 @@ public interface StubClassFactoryAmp
   StubAmp stub(Object bean,
                           String path,
                           String childPath,
-                          ActorContainerAmp container,
+                          StubContainerAmp container,
                           ServiceConfig config);
 /*  
   StubAmp createSkeletonMain(Class<?> api,

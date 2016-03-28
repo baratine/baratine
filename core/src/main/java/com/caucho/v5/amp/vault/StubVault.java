@@ -41,7 +41,7 @@ import javax.inject.Provider;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubClass;
@@ -60,20 +60,20 @@ import io.baratine.vault.Id;
 import io.baratine.vault.IdAsset;
 
 /**
- * Actor skeleton for a resource.
+ * Stub for a vault.
  */
-public class StubAssetStore extends StubClass
+public class StubVault extends StubClass
 {
-  private static final L10N L = new L10N(StubAssetStore.class);
+  private static final L10N L = new L10N(StubVault.class);
   
   private static final Map<Class<?>,Convert<String,?>> _convertMap
     = new HashMap<>();
   
   private VaultConfig _configResource;
-  private StubAssetItem _skelEntity;
+  private StubClassAsset _stubAsset;
   private String _address;
 
-  public StubAssetStore(ServicesAmp ampManager,
+  public StubVault(ServicesAmp ampManager,
                           Class<?> type,
                           ServiceConfig configService,
                           VaultConfig configResource)
@@ -86,11 +86,11 @@ public class StubAssetStore extends StubClass
 
     Class<?> entityClass = _configResource.entityType();
 
-    _skelEntity = new StubAssetItem(ampManager,
+    _stubAsset = new StubClassAsset(ampManager,
                                      entityClass,
                                      configService,
                                      configResource);
-    _skelEntity.introspect();
+    _stubAsset.introspect();
   }
 
   @Override
@@ -114,7 +114,7 @@ public class StubAssetStore extends StubClass
     MethodHandle setter = findIdSetter();
     Convert<String,?> converter = findConverter();
     
-    MethodAmp onLookup = new MethodOnLookup(_skelEntity, provider, converter, setter);
+    MethodAmp onLookup = new MethodOnLookup(_stubAsset, provider, converter, setter);
 
     onLookup(onLookup);
   }
@@ -176,7 +176,7 @@ public class StubAssetStore extends StubClass
     field = field.toLowerCase();
 
     MethodFindOne ampMethod = new MethodFindOne(ampManager(),
-                                                _skelEntity,
+                                                _stubAsset,
                                                 _configResource.driver(),
                                                 _address,
                                                 new String[]{field});
@@ -310,7 +310,7 @@ public class StubAssetStore extends StubClass
       }
 
       StubAmpBeanBase actorBean = (StubAmpBeanBase) actor;
-      ActorContainerAmp container = actorBean.getContainer();
+      StubContainerAmp container = actorBean.getContainer();
 
       StubAmp actorChild = new StubAmpBean(_skelEntity,
                                              entity,

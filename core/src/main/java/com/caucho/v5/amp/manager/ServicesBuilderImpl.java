@@ -40,12 +40,13 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.journal.JournalFactoryBase;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
+import com.caucho.v5.amp.session.StubGeneratorSession;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.amp.stub.StubGeneratorService;
@@ -61,10 +62,10 @@ import com.caucho.v5.util.L10N;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.Services;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
+import io.baratine.service.Services;
 
 /**
  * Builder for a ServiceManager.
@@ -73,11 +74,11 @@ import io.baratine.service.ServiceRef.ServiceBuilder;
  * ServiceManager manager = ServiceManager.newManager().start();
  * </code></pre>
  */
-public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
+public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
 {
-  private static final L10N L = new L10N(ServiceManagerBuilderImpl.class);
+  private static final L10N L = new L10N(ServicesBuilderImpl.class);
   private static final Logger log
-    = Logger.getLogger(ServiceManagerBuilderImpl.class.getName());
+    = Logger.getLogger(ServicesBuilderImpl.class.getName());
   
   
   private String _name;
@@ -111,7 +112,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   private ConcurrentArrayList<StubGenerator> _stubGenerators
     = new ConcurrentArrayList<>(StubGenerator.class);
   
-  public ServiceManagerBuilderImpl()
+  public ServicesBuilderImpl()
   {
     journalFactory(new JournalFactoryBase());
     name("system");
@@ -121,13 +122,14 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
     }
     
     stubGenerator(new StubGeneratorService());
+    stubGenerator(new StubGeneratorSession());
     stubGenerator(new StubGeneratorVault());
     
     _holder = new Holder<>(()->getRaw());
   }
   
   @Override
-  public ServiceManagerBuilderImpl name(String name)
+  public ServicesBuilderImpl name(String name)
   {
     _name = name;
     
@@ -141,7 +143,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override 
-  public ServiceManagerBuilderImpl classLoader(ClassLoader loader)
+  public ServicesBuilderImpl classLoader(ClassLoader loader)
   {
     _loader = loader;
     
@@ -207,7 +209,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceManagerBuilderImpl podNode(ServiceNode podNode)
+  public ServicesBuilderImpl podNode(ServiceNode podNode)
   {
     _podNode = podNode;
     
@@ -287,7 +289,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceManagerBuilderImpl autoStart(boolean isAutoStart)
+  public ServicesBuilderImpl autoStart(boolean isAutoStart)
   {
     _isAutoStart = isAutoStart;
     
@@ -304,7 +306,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
    * Auto services scans META-INF/services for built-in services.
    */
   @Override
-  public ServiceManagerBuilderImpl autoServices(boolean isAutoServices)
+  public ServicesBuilderImpl autoServices(boolean isAutoServices)
   {
     _isAutoServices = isAutoServices;
     
@@ -324,7 +326,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceManagerBuilderImpl debug(boolean isDebug)
+  public ServicesBuilderImpl debug(boolean isDebug)
   {
     _isDebug = isDebug;
     
@@ -338,7 +340,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceManagerBuilderImpl debugQueryTimeout(long timeout)
+  public ServicesBuilderImpl debugQueryTimeout(long timeout)
   {
     _debugQueryTimeout = timeout;
     
@@ -346,7 +348,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
 
   @Override
-  public ServiceManagerBuilderImpl systemExecutor(Supplier<Executor> supplier)
+  public ServicesBuilderImpl systemExecutor(Supplier<Executor> supplier)
   {
     Objects.requireNonNull(supplier);
     
@@ -362,7 +364,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServiceManagerBuilderImpl stubGenerator(StubGenerator factory)
+  public ServicesBuilderImpl stubGenerator(StubGenerator factory)
   {
     Objects.requireNonNull(factory);
     _stubGenerators.add(factory);
@@ -482,11 +484,7 @@ public class ServiceManagerBuilderImpl implements ServiceManagerBuilderAmp
   {
     Key<?> key = Key.of(type, ServiceImpl.class);
     
-    ServiceBuilderStart service = new ServiceBuilderStart(key, type);
-    
-    _services.add(service);
-    
-    return service;
+    return service(key, type);
   }
 
   @Override

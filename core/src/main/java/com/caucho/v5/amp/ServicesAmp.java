@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.manager.ServiceManagerBuilderImpl;
+import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
@@ -199,7 +199,7 @@ public interface ServicesAmp extends Services, LookupAmp
   
   static ServiceManagerBuilderAmp newManager()
   {
-    return new ServiceManagerBuilderImpl();
+    return new ServicesBuilderImpl();
   }
   
   interface Trace extends AutoCloseable {

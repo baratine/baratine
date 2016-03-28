@@ -130,15 +130,17 @@ class IncludeWebClass implements IncludeWeb
       return;
     }
     else if (_type.isAnnotationPresent(Service.class)) {
-      beanSupplier = new SupplierService(builder, _type);
-      beanFactory = req->beanSupplier.get();
-      
       Service service = _type.getAnnotation(Service.class);
       String address = service.value();
       
       if (address.startsWith("session:")) {
         builder.service(_type);
+        beanSupplier = null;
         beanFactory = req->req.session(_type);
+      }
+      else {
+        beanSupplier = new SupplierService(builder, _type);
+        beanFactory = req->beanSupplier.get();
       }
       
       if (Vault.class.isAssignableFrom(_type)) {

@@ -30,10 +30,12 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.reflect.Modifier;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
+import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.L10N;
@@ -49,27 +51,37 @@ public class StubGeneratorService implements StubGenerator
   private static final L10N L = new L10N(StubGeneratorService.class);
   
   @Override
-  public StubFactoryAmp factory(Class<?> serviceClass,
+  public <T> StubFactoryAmp factory(Class<T> serviceClass,
                                  ServicesAmp ampManager,
+                                 Supplier<? extends T> supplier,
                                  ServiceConfig config)
   {
     if (Modifier.isAbstract(serviceClass.getModifiers())) {
+      return null;
+      /*
       throw new IllegalArgumentException(L.l("'{0}' is an invalid service because it's abstract",
                                              serviceClass.getSimpleName()));
+                                             */
     }
       
-    return createFactory(ampManager, serviceClass, config);
+    return createFactory(ampManager, serviceClass, supplier, config);
   }
   
   private <T> StubFactoryAmp createFactory(ServicesAmp ampManager,
                                             Class<T> serviceClass,
+                                            Supplier<? extends T> supplier,
                                             ServiceConfig config)
   {
+    if (supplier != null) {
+      return new StubFactoryImpl(()->createStub(ampManager, supplier, config),
+                                 config);
+      
+    }
     // XXX: clean up
     Key<T> key = Key.of(serviceClass, ServiceImpl.class);
     
     return new StubFactoryImpl(()->createStub(ampManager, key, config),
-                                config);
+                               config);
   }
   
   private static <T> StubAmp createStub(ServicesAmp ampManager,
@@ -77,6 +89,19 @@ public class StubGeneratorService implements StubGenerator
                                          ServiceConfig config)
   {
     T bean = ampManager.injector().instance(key);
+    
+    Objects.requireNonNull(bean);
+    
+    return ampManager.stubFactory().stub(bean, config);
+  }
+  
+  private static <T> StubAmp createStub(ServicesAmp ampManager,
+                                         Supplier<? extends T> supplier,
+                                         ServiceConfig config)
+  {
+    T bean = supplier.get();
+    
+    Objects.requireNonNull(bean);
     
     return ampManager.stubFactory().stub(bean, config);
   }

@@ -27,21 +27,22 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.stub;
-
-import java.util.function.Supplier;
-
-import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.service.StubFactoryAmp;
+package com.caucho.v5.amp.session;
 
 /**
- * Creates an actor supplier based on a custom plugin.
+ * Vault for sessions.
  */
-public interface StubGenerator
+public class SessionVaultImpl
 {
-  <T> StubFactoryAmp factory(Class<T> serviceClass,
-                           ServicesAmp ampManager,
-                           Supplier<? extends T> supplier,
-                           ServiceConfig config);
+  private Class<?> _type;
+  
+  public SessionVaultImpl(Class<?> type)
+  {
+    _type = type;
+  }
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _type.getSimpleName() + "]";
+  }
 }

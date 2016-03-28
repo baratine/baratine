@@ -36,7 +36,7 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.session.ActorSkeletonSession;
 import com.caucho.v5.amp.session.ContextSession;
-import com.caucho.v5.amp.spi.ActorContainerAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 
 /**
  * Creates service stubs for service implementation beans..
@@ -87,7 +87,7 @@ public class StubClassFactoryAmpImpl implements StubClassFactoryAmp
   public StubAmp stub(Object bean,
                       String path,
                       String childPath,
-                      ActorContainerAmp container,
+                      StubContainerAmp container,
                       ServiceConfig config)
   {
     StubClass stubClass;

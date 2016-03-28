@@ -33,13 +33,14 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.stub.StubFactoryImpl;
-import com.caucho.v5.amp.stub.StubClass;
+import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.stub.StubAmpBean;
+import com.caucho.v5.amp.stub.StubClass;
+import com.caucho.v5.amp.stub.StubFactoryImpl;
 import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.inject.impl.ServiceImpl;
@@ -58,8 +59,9 @@ public class StubGeneratorVault implements StubGenerator
   private ArrayList<VaultDriver<?,?>> _drivers = new ArrayList<>();
   
   @Override
-  public StubFactoryAmp factory(Class<?> serviceClass,
+  public <T> StubFactoryAmp factory(Class<T> serviceClass,
                                  ServicesAmp ampManager,
+                                 Supplier<? extends T> supplier,
                                  ServiceConfig configService)
   {
     if (Vault.class.isAssignableFrom(serviceClass)) {
@@ -128,7 +130,7 @@ public class StubGeneratorVault implements StubGenerator
         
     StubClass skeleton;
 
-    skeleton = new StubAssetStore(ampManager,
+    skeleton = new StubVault(ampManager,
                                     serviceClass,
                                     configService,
                                     configResource);

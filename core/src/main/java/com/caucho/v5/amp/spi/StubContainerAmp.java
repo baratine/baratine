@@ -38,7 +38,7 @@ import com.caucho.v5.amp.stub.SaveResult;
 /**
  * Lifecycle container for actors.
  */
-public interface ActorContainerAmp
+public interface StubContainerAmp
 {
   ServiceRef addService(String path, ServiceRef serviceRef);
 
