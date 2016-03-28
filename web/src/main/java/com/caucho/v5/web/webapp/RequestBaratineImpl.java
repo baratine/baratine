@@ -311,8 +311,8 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     StringBuilder sb = new StringBuilder();
 
-    Base64Util.encode(sb, webApp().nextId());
-    Base64Util.encode(sb, RandomUtil.getRandomLong());
+    Base64Util.encodeUrl(sb, webApp().nextId());
+    Base64Util.encodeUrl(sb, RandomUtil.getRandomLong());
 
     return sb.toString();
   }

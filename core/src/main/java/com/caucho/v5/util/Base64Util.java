@@ -76,6 +76,15 @@ public class Base64Util {
     sb.append(encode(data << 2));
   }
 
+  public static void encodeUrl(StringBuilder sb, long data)
+  {
+    for (int i = 58; i > 0; i -= 6) {
+      sb.append(encodeUrl(data >> i));
+    }
+
+    sb.append(encode(data << 2));
+  }
+
   public static void encode24(StringBuilder cb, int data)
   {
     cb.append(Base64Util.encode(data >> 18));
@@ -457,7 +466,7 @@ public class Base64Util {
     return _decode[d];
   }
 
-  public static char encodeUrlDigit(long d)
+  public static char encodeUrl(long d)
   {
     return _encodeUrl[(int) (d & 0x3f)];
   }
