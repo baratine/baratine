@@ -42,15 +42,15 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.PipeIn;
-import io.baratine.pipe.PipeOut;
+import io.baratine.pipe.Pipe;
+import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.ResultPipeIn;
 
 /**
  * Register a publisher to a pipe.
  */
 public class PipeInMessage<T>
-  extends QueryMessageBase<Void>
+  extends QueryMessageBase<FlowOut<T>>
   implements ResultPipeIn<T>
 {
   private static final L10N L = new L10N(PipeInMessage.class);
@@ -144,7 +144,7 @@ public class PipeInMessage<T>
   */
 
   @Override
-  public PipeIn<T> pipe()
+  public Pipe<T> pipe()
   {
     throw new IllegalStateException();
   }
@@ -158,14 +158,14 @@ public class PipeInMessage<T>
   */
 
   @Override
-  public void ok(PipeOut.Flow<T> outFlow)
+  public void ok(FlowOut<T> outFlow)
   {
     Objects.requireNonNull(outFlow);
     
     super.ok(null);
     
     ServiceRefAmp inRef = inboxCaller().serviceRef();
-    PipeIn<T> inPipe = _result.pipe();
+    Pipe<T> inPipe = _result.pipe();
     
     ServiceRefAmp outRef = serviceRef();
     

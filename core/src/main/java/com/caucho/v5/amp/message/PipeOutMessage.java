@@ -42,16 +42,15 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.PipeIn;
-import io.baratine.pipe.PipeOut;
-import io.baratine.pipe.PipeOut.Flow;
+import io.baratine.pipe.Pipe;
+import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.ResultPipeOut;
 
 /**
  * Register a publisher to a pipe.
  */
 public class PipeOutMessage<T>
-  extends QueryMessageBase<PipeIn<T>>
+  extends QueryMessageBase<Pipe<T>>
   implements ResultPipeOut<T>
 {
   private static final L10N L = new L10N(PipeOutMessage.class);
@@ -121,13 +120,7 @@ public class PipeOutMessage<T>
   }
 
   @Override
-  public void ok(PipeOut<T> value)
-  {
-    throw new IllegalStateException(getClass().getSimpleName());
-  }
-
-  @Override
-  public void ok(PipeIn<T> inPipe)
+  public void ok(Pipe<T> inPipe)
   {
     if (inPipe == null) {
       _result.fail(new NullPointerException(L.l("NPE from service {0}", getMethod())));
@@ -137,13 +130,13 @@ public class PipeOutMessage<T>
     ServiceRefAmp inRef = inboxTarget().serviceRef();
     
     ServiceRefAmp outRef = inboxCaller().serviceRef();
-    PipeOut.Flow<T> outFlow = _result.flow();
+    FlowOut<T> outFlow = _result.flow();
     
     PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
     
     _pipe = pipe;
     
-    super.ok((PipeIn<T>) null);
+    super.ok((Pipe<T>) null);
   }
 
   @Override
@@ -151,7 +144,7 @@ public class PipeOutMessage<T>
   {
     _result.ok(_pipe);
 
-    Flow<T> flow = _result.flow();
+    FlowOut<T> flow = _result.flow();
     
     if (flow != null) {
       flow.ready(_pipe);
@@ -189,11 +182,5 @@ public class PipeOutMessage<T>
         + ",result=" + callbackName
         + "]");
     
-  }
-
-  @Override
-  public void handle(PipeOut<T> pipe, Throwable exn)
-  {
-    throw new UnsupportedOperationException();
   }
 }

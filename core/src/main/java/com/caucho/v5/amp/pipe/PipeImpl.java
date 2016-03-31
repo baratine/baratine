@@ -44,18 +44,17 @@ import com.caucho.v5.amp.queue.QueueRingSingleWriter;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.PipeIn;
-import io.baratine.pipe.PipeOut;
+import io.baratine.pipe.Pipe;
 
 /**
  * pipe implementation
  */
-public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
+public class PipeImpl<T> implements Pipe<T>, Deliver<T>
 {
   private static final L10N L = new L10N(PipeImpl.class);
   private static final Logger log = Logger.getLogger(PipeImpl.class.getName());
   
-  private PipeIn<T> _inPipe;
+  private Pipe<T> _inPipe;
   private QueueRingSingleWriter<T> _queue;
   
   private volatile boolean _isOk;
@@ -76,12 +75,12 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
 
   private ServiceRefAmp _outRef;
 
-  private PipeOut.Flow<T> _outFlow;
+  private FlowOut<T> _outFlow;
   
   public PipeImpl(ServiceRefAmp inRef, 
-                  PipeIn<T> inPipe,
+                  Pipe<T> inPipe,
                   ServiceRefAmp outRef,
-                  PipeOut.Flow<T> outFlow)
+                  FlowOut<T> outFlow)
   {
     Objects.requireNonNull(inRef);
     Objects.requireNonNull(inPipe);
@@ -93,7 +92,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     _outFlow = outFlow;
     
     int prefetch = _inPipe.prefetch();
-    int credits = _inPipe.credits();
+    int credits = _inPipe.creditsInitial();
     int capacity = _inPipe.capacity();
     
     if (capacity > 0) {
@@ -185,7 +184,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
   
   private void outFull()
   {
-    PipeOut.Flow<T> outFlow = _outFlow;
+    FlowOut<T> outFlow = _outFlow;
     
     if (outFlow == null) {
       return;
@@ -246,7 +245,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     
   public void readPipe()
   {
-    PipeIn<T> inPipe = _inPipe;
+    Pipe<T> inPipe = _inPipe;
     
     Outbox outbox = null;
     
@@ -327,7 +326,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
    */
   private void wakeOut()
   {
-    PipeOut.Flow<T> outFlow = _outFlow;
+    FlowOut<T> outFlow = _outFlow;
     
     if (outFlow == null) {
       return;
@@ -358,7 +357,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     outbox.offer(msg);
   }
   
-  private class PipeInFlowImpl implements PipeIn.Flow
+  private class PipeInFlowImpl implements FlowIn
   {
     void init()
     {
@@ -367,7 +366,7 @@ public class PipeImpl<T> implements PipeOut<T>, Deliver<T>
     @Override
     public long credits()
     {
-      return PipeImpl.this.credits();
+      return PipeImpl.this.creditsInitial();
     }
 
     @Override

@@ -29,6 +29,7 @@
 
 package io.baratine.pipe;
 
+import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.Pipes.PipeOutFlowImpl;
 import io.baratine.service.Result;
 
@@ -39,7 +40,7 @@ import io.baratine.service.Result;
  * </code></pre>
  */
 @FunctionalInterface
-public interface ResultPipeOut<T> extends Result<PipeIn<T>>
+public interface ResultPipeOut<T> extends Result<Pipe<T>>
 {
   //
   // client/publisher side
@@ -48,47 +49,8 @@ public interface ResultPipeOut<T> extends Result<PipeIn<T>>
   /**
    * Returns the publisher's flow callback.
    */
-  default PipeOut.Flow<T> flow()
+  default FlowOut<T> flow()
   {
     return new PipeOutFlowImpl<>(this);
-  }
-  
-  default void ok(PipeOut<T> pipe)
-  {
-    handle(pipe, null);
-  }
-  
-  /**
-   * Lambda for an inline publisher.
-   */
-  void handle(PipeOut<T> pipe, Throwable exn);
-  
-  //
-  // service/consumer side
-  //
-
-  /**
-   * Service accepts the request.
-   */
-  @Override
-  default void ok(PipeIn<T> pipe)
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  
-  /**
-   * Service rejects the request.
-   */
-  @Override
-  default void fail(Throwable exn)
-  {
-    handle((PipeOut<T>) null, exn);
-  }
-  
-  
-  @Override
-  default void handle(PipeIn<T> pipe, Throwable exn)
-  {
-    throw new IllegalStateException(getClass().getName());
   }
 }

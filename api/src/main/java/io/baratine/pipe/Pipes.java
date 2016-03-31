@@ -32,8 +32,11 @@ package io.baratine.pipe;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import io.baratine.pipe.Pipe.FlowOut;
+import io.baratine.pipe.Pipe.InHandler;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
+import io.baratine.service.ServiceException;
 import io.baratine.vault.Vault;
 
 
@@ -43,12 +46,12 @@ import io.baratine.vault.Vault;
 @Service("pipe://")
 public class Pipes implements Vault<String,BrokerPipe<?>>
 {
-  public static <T> PipeOutBuilder<T> flow(PipeOut.Flow<T> flow)
+  public static <T> PipeOutBuilder<T> flow(FlowOut<T> flow)
   {
     return new PipeOutResultImpl<>(flow);
   }
   
-  public static <T> PipeOutBuilder<T> out(Result<PipeOut<T>> result)
+  public static <T> PipeOutBuilder<T> out(Result<Pipe<T>> result)
   {
     return new PipeOutResultImpl<>(result);
   }
@@ -60,12 +63,12 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
   }
   */
   
-  public static <T> ResultPipeIn<T> in(PipeIn<T> pipe)
+  public static <T> ResultPipeIn<T> in(Pipe<T> pipe)
   {
     return new ResultPipeInImpl<>(pipe);
   }
   
-  public static <T> PipeIn<T> in(PipeIn.InHandler<T> handler)
+  public static <T> Pipe<T> in(InHandler<T> handler)
   {
     return new ResultPipeInHandlerImpl<>(handler);
   }
@@ -87,11 +90,11 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
   }
   
   private static class ResultPipeInHandlerImpl<T>
-    implements ResultPipeIn<T>, PipeIn<T>
+    implements ResultPipeIn<T>, Pipe<T>
   {
-    private PipeIn.InHandler<T> _handler;
+    private Pipe.InHandler<T> _handler;
     
-    ResultPipeInHandlerImpl(PipeIn.InHandler<T> handler)
+    ResultPipeInHandlerImpl(Pipe.InHandler<T> handler)
     {
       Objects.requireNonNull(handler);
       
@@ -99,7 +102,7 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
     }
     
     @Override
-    public PipeIn<T> pipe()
+    public Pipe<T> pipe()
     {
       return this;
     }
@@ -130,7 +133,7 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
     
   }
   
-  static class PipeInResultImpl<T> implements PipeIn<T>
+  static class PipeInResultImpl<T> implements Pipe<T>
   {
     private ResultPipeIn<T> _pipeIn;
     
@@ -160,7 +163,7 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
     }
   }
   
-  static class PipeOutFlowImpl<T> implements PipeOut.Flow<T>
+  static class PipeOutFlowImpl<T> implements FlowOut<T>
   {
     private ResultPipeOut<T> _result;
     
@@ -172,31 +175,39 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
     }
 
     @Override
-    public void ready(PipeOut<T> pipe)
+    public void ready(Pipe<T> pipe)
     {
-      _result.handle(pipe, null);
+      try {
+        _result.handle(pipe, null);
+      } catch (Exception e) {
+        throw ServiceException.createAndRethrow(e);
+      }
     }
 
     @Override
     public void fail(Throwable exn)
     {
-      _result.handle((PipeOut<T>) null, exn);
+      try {
+        _result.handle((Pipe<T>) null, exn);
+      } catch (Exception e) {
+        throw ServiceException.createAndRethrow(e);
+      }
     }
   }
   
   static class PipeOutResultImpl<T> implements PipeOutBuilder<T>
   {
-    private Result<PipeOut<T>> _result;
-    private PipeOut.Flow<T> _flow;
+    private Result<Pipe<T>> _result;
+    private FlowOut<T> _flow;
     
-    PipeOutResultImpl(PipeOut.Flow<T> flow)
+    PipeOutResultImpl(FlowOut<T> flow)
     {
       Objects.requireNonNull(flow);
       
       _flow = flow;
     }
     
-    PipeOutResultImpl(Result<PipeOut<T>> result)
+    PipeOutResultImpl(Result<Pipe<T>> result)
     {
       Objects.requireNonNull(result);
       
@@ -204,13 +215,13 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
     }
 
     @Override
-    public PipeOut.Flow<T> flow()
+    public FlowOut<T> flow()
     {
       return _flow;
     }
     
     @Override
-    public void ok(PipeOut<T> pipe)
+    public void ok(Pipe<T> pipe)
     {
       if (_result != null) {
         _result.ok(pipe);
@@ -225,7 +236,7 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
       }
     }
     
-    public void handle(PipeOut<T> pipe, Throwable exn)
+    public void handle(Pipe<T> pipe, Throwable exn)
     {
       throw new IllegalStateException();
     }
@@ -239,9 +250,9 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
   
   static class ResultPipeInImpl<T> implements ResultPipeIn<T>
   {
-    private PipeIn<T> _pipe;
+    private Pipe<T> _pipe;
     
-    ResultPipeInImpl(PipeIn<T> pipe)
+    ResultPipeInImpl(Pipe<T> pipe)
     {
       Objects.requireNonNull(pipe);
       
@@ -253,7 +264,7 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
      * the pipe consumer.
      */
     @Override
-    public PipeIn<T> pipe()
+    public Pipe<T> pipe()
     {
       return _pipe;
     }

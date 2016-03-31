@@ -29,11 +29,18 @@
 
 package io.baratine.pipe;
 
+import io.baratine.service.Cancel;
+
 /**
  * {@code Pipe} sends a sequence of values from a source to a sink.
  */
 public interface Pipe<T>
 {
+  public static final int PREFETCH_DEFAULT = 0;
+  public static final int PREFETCH_DISABLE = -1;
+  
+  public static final int CREDIT_DISABLE = -1;
+  
   /**
    * Supplies the next value.
    * 
@@ -52,4 +59,118 @@ public interface Pipe<T>
    * @param exn
    */
   void fail(Throwable exn);
+  
+  /**
+   * Returns the available credits in the queue.
+   */
+  default int available()
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
+  
+  /**
+   * Returns the credit sequence for the queue.
+   */
+  default long credits()
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
+  
+  /**
+   * True if the stream has been cancelled by the reader.
+   *
+   * @return true if cancelled
+   */
+  default boolean isClosed()
+  {
+    return false;
+  }
+  
+  /**
+   * Accept the {@code Flow} object for finer flow control.
+   * 
+   * The {@code Flow} object can pause the prefetch, or add credits
+   * manually when the credit system is used. 
+   */
+  default void flow(FlowIn flow)
+  {
+  }
+  
+  /**
+   * The prefetch size.
+   * 
+   * Prefetch automatically manages the credits available to the sender.
+   * 
+   * If {@code PREFETCH_DISABLE} is returned, use the credits instead. 
+   */
+  default int prefetch()
+  {
+    return PREFETCH_DEFAULT;
+  }
+
+  /**
+   * The initial number of credits. Can be zero if no initial credits.
+   * 
+   * To enable credits and disable the prefetch queue, return a non-negative
+   * value.
+   * 
+   * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
+   * is the default behavior. 
+   */
+  default int creditsInitial()
+  {
+    return CREDIT_DISABLE;
+  }
+  
+  default int capacity()
+  {
+    return 0;
+  }
+  
+  
+  /**
+   * {@code FlowIn} controls the pipe credits from the subscriber
+   */
+  public interface FlowIn extends Cancel
+  {
+    /**
+     * Returns the current credit sequence.
+     */
+    long credits();
+    
+    /**
+     * Sets the new credit sequence when prefetch is disabled. Used by 
+     * applications that need finer control.
+     * 
+     * Applications using credit need to continually add credits.
+     * 
+     * @param creditSequence next credit in the sequence
+     * 
+     * @throws IllegalStateException if prefetch is used
+     */
+    void credits(long creditSequence);
+  }
+  /**
+   * {@code FlowOut} is a callback to wake the publisher when credits are
+   * available for the pipe.
+   * 
+   * Called after the publisher would block, calculated as when the number
+   * of {@code OutPipe.next()} calls match a previous {@code OutPipe.credits()}.
+   */
+  public interface FlowOut<T>
+  {
+    void ready(Pipe<T> pipe);
+    
+    default void fail(Throwable exn)
+    {
+    }
+    
+    default void cancel()
+    {
+    }
+  }
+  
+  public interface InHandler<T> {
+    void handle(T next, Throwable exn, boolean isCancel);
+  }
 }

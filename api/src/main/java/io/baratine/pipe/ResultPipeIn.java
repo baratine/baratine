@@ -29,23 +29,25 @@
 
 package io.baratine.pipe;
 
+import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.Pipes.PipeInResultImpl;
+import io.baratine.service.Result;
 
 /**
  * {@code ResultInPipe} returns a pipe subscription.
  */
 @FunctionalInterface
-public interface ResultPipeIn<T>
+public interface ResultPipeIn<T> extends Result<FlowOut<T>>
 {
   //
   // caller/subscriber side
   //
   
   /**
-   * The subscriber's {@code PipeIn} handler will be registered as
+   * The subscriber's {@code Pipe} handler will be registered as
    * the pipe consumer.
    */
-  default PipeIn<T> pipe()
+  default Pipe<T> pipe()
   {
     return new PipeInResultImpl<>(this);
   }
@@ -57,20 +59,11 @@ public interface ResultPipeIn<T>
    */
   void handle(T next, Throwable fail, boolean ok);
   
-  //
-  // receiver/publisher side
-  //
-
-  /**
-   * Publisher accepts the subscription with flow control callback.
-   */
-  default void ok(PipeOut.Flow<T> flow)
+  @Override
+  default void handle(FlowOut<T> ok, Throwable fail)
   {
-    throw new IllegalStateException(getClass().getName());
-  }
-  
-  default void fail(Throwable exn)
-  {
-    throw new IllegalStateException(getClass().getName());
+    if (fail != null) {
+      handle(null, fail, false);
+    }
   }
 }

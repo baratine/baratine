@@ -34,9 +34,9 @@ import java.util.Objects;
 
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.PipeIn;
-import io.baratine.pipe.PipeOut;
 import io.baratine.pipe.BrokerPipe;
+import io.baratine.pipe.Pipe;
+import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 
@@ -100,7 +100,7 @@ class PipeNode<T> implements BrokerPipe<T>
     return getClass().getSimpleName() + "[" + _address + "]";
   }
   
-  private class PublisherNode implements PipeIn<T>
+  private class PublisherNode implements Pipe<T>
   {
     @Override
     public void next(T value)
@@ -131,12 +131,12 @@ class PipeNode<T> implements BrokerPipe<T>
     }
   }
   
-  private class SubscriberNode implements PipeOut.Flow<T>
+  private class SubscriberNode implements FlowOut<T>
   {
-    private PipeOut<T> _pipe;
+    private Pipe<T> _pipe;
 
     @Override
-    public void ready(PipeOut<T> pipe)
+    public void ready(Pipe<T> pipe)
     {
       _pipe = pipe;
     }
@@ -149,7 +149,7 @@ class PipeNode<T> implements BrokerPipe<T>
     
     public void next(T value)
     {
-      PipeOut<T> pipe = _pipe;
+      Pipe<T> pipe = _pipe;
       
       if (pipe != null && pipe.available() > 0) {
         pipe.next(value);
