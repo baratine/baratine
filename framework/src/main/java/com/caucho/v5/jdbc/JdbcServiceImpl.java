@@ -46,7 +46,7 @@ import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 
 @Service
-public class JdbcServiceImpl implements JdbcConnection, JdbcService
+public class JdbcServiceImpl implements JdbcService
 {
   private Logger _logger = Logger.getLogger(JdbcServiceImpl.class.toString());
 
@@ -56,7 +56,7 @@ public class JdbcServiceImpl implements JdbcConnection, JdbcService
   @Inject
   private Config _config;
 
-  private JdbcConnection _conn;
+  private JdbcConnectionImpl _conn;
 
   @OnInit
   public void onInit(Result<Void> result)
@@ -80,7 +80,7 @@ public class JdbcServiceImpl implements JdbcConnection, JdbcService
 
     ServiceRef ref = builder.start();
 
-    _conn = ref.as(JdbcConnection.class);
+    _conn = ref.as(JdbcConnectionImpl.class);
 
     result.ok(null);
   }
