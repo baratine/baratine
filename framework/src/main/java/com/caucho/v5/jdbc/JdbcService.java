@@ -29,18 +29,25 @@
 
 package com.caucho.v5.jdbc;
 
-import java.sql.SQLException;
-import java.util.Properties;
+import java.util.List;
 
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 
 @Service
-public interface JdbcService extends JdbcConnection
+public interface JdbcService
 {
   public static String CONFIG_URL = "JDBC_URL";
   public static String CONFIG_POOL_SIZE = "JDBC_POOL_SIZE";
 
   public static String CONFIG_TEST_QUERY_BEFORE = "JDBC_TEST_QUERY_BEFORE";
   public static String CONFIG_TEST_QUERY_AFTER = "JDBC_TEST_QUERY_AFTER";
+
+  void execute(Result<Integer> result, String sql, Object ... params);
+
+  void query(Result<JdbcResultSet> result, String sql, Object ... params);
+
+  void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params);
+  void queryBatch(Result<List<JdbcResultSet>> result, String sql, List<Object> ... paramsList);
+  void queryBatch(Result<List<JdbcResultSet>> result, List<String> sqlList, List<Object> ... paramsList);
 }

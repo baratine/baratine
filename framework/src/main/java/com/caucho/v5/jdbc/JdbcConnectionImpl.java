@@ -50,15 +50,12 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 
 @Service
-public class JdbcConnectionImpl implements JdbcConnection
+public class JdbcConnectionImpl implements JdbcService
 {
   private Logger _logger = Logger.getLogger(JdbcConnectionImpl.class.toString());
 
   private String _url;
   private Properties _props;
-
-  private JdbcConnection _self;
-  private JdbcConnectionSync _selfSync;
 
   private Connection _conn;
 
@@ -87,9 +84,6 @@ public class JdbcConnectionImpl implements JdbcConnection
     if (_logger.isLoggable(Level.FINE)) {
       _logger.log(Level.FINE, "onInit: id=" + _id + ", url=" + toDebugSafe(_url));
     }
-
-    _self = ServiceRef.current().as(JdbcConnection.class);
-    _selfSync = ServiceRef.current().as(JdbcConnectionSync.class);
 
     try {
       connect();

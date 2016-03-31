@@ -30,16 +30,14 @@
 package com.caucho.v5.jdbc;
 
 import java.util.List;
-import java.util.Properties;
 
-import io.baratine.service.Result;
-
-public interface JdbcConnection
+public interface JdbcServiceSync extends JdbcService
 {
-  void execute(Result<Integer> result, String sql, Object ... params);
-  void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params);
+  Integer execute(String sql, Object ... params);
 
-  void query(Result<JdbcResultSet> result, String sql, Object ... params);
-  void queryBatch(Result<List<JdbcResultSet>> result, String sql, List<Object> ... paramsList);
-  void queryBatch(Result<List<JdbcResultSet>> result, List<String> sqlList, List<Object> ... paramsList);
+  JdbcResultSet query(String sql, Object ... params);
+
+  Integer[] executeBatch(List<String> sqlList, List<Object> ... paramsList);
+  List<JdbcResultSet> queryBatch(String sql, List<Object> ... paramsList);
+  List<JdbcResultSet> queryBatch(List<String> sqlList, List<Object> ... paramsList);
 }
