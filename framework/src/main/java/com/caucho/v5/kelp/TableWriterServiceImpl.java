@@ -505,7 +505,7 @@ public class TableWriterServiceImpl
     
     long sequence = ++_sequence;
     
-    return openWriter(sequence);
+    return openWriterSeq(sequence);
   }
   
   /**
@@ -514,7 +514,7 @@ public class TableWriterServiceImpl
    * 
    * @param sequence the sequence id for the new segment.
    */
-  public OutSegment openWriter(long sequence)
+  public OutSegment openWriterSeq(long sequence)
   {
     int segmentSize = _segmentSizeNew;
 

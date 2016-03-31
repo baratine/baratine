@@ -31,6 +31,7 @@ package io.baratine.timer;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.LongUnaryOperator;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Pin;
@@ -139,7 +140,7 @@ public interface TimersSync extends Timers
    * @param scheduler
    */
   Cancel schedule(@Pin Consumer<? super Cancel> task, 
-                        TimerScheduler scheduler);
+                        LongUnaryOperator nextTime);
 
   /**
    * Schedule a <code>Runnable</code> that is controlled by a cron scheduler.

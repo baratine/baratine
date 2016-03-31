@@ -80,7 +80,7 @@ public interface ChannelAmp extends LookupAmp
    */
   default MethodRefAmp method(String address, String methodName)
   {
-    return service(address).getMethod(methodName);
+    return service(address).methodByName(methodName);
   }
   
   /**

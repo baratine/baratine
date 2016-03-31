@@ -32,8 +32,8 @@ package com.caucho.v5.ramp.events;
 import java.util.HashMap;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
@@ -47,7 +47,6 @@ import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceException;
-import io.baratine.service.ServiceRef;
 
 /**
  * Implementation of the event bus.
@@ -159,79 +158,79 @@ public class EventServiceRamp
   /**
    * Subscribe a callback to a location.
    */
-  public void subscriber(Object location, 
-                        @Pin ServiceRef serviceRef,
+  public void subscriber(String path,
+                        @Pin ServiceRefAmp serviceRef,
                         Result<? super Cancel> result)
   {
-    if (location instanceof String) {
-      String path = (String) location;
-      
-      if (path.isEmpty()) {
-        result.fail(new ServiceException(L.l("Invalid event location '{0}'", location)));
-        return;
-      }
-      
-      String address = address(path);
-      
-      EventNodeAsset node = lookupPubSubNode(address);
-      
-      Cancel cancel = node.subscribeImpl(serviceRef);
-      
-      result.ok(cancel);
+    if (path.isEmpty()) {
+      result.fail(new ServiceException(L.l("Invalid event location '{0}'", path)));
+      return;
     }
-    else if (location instanceof Class<?>) {
-      String path = ((Class<?>) location).getName();
-      
-      String address = address(path);
-      
-      EventNodeAsset node = lookupPubSubNode(address);
-      
-      Cancel cancel = node.subscribeImpl(serviceRef);
-      
-      result.ok(cancel);
-    }
-    else { 
-      result.fail(new ServiceException(L.l("Invalid event location {0}", location)));
-    }   
+
+    String address = address(path);
+
+    EventNodeAsset node = lookupPubSubNode(address);
+
+    Cancel cancel = node.subscribeImpl(serviceRef);
+
+    result.ok(cancel);
+  }
+
+  /**
+   * Subscribe a callback to a location.
+   */
+  public void subscriber(Class<?> api,
+                        @Pin ServiceRefAmp serviceRef,
+                        Result<? super Cancel> result)
+  {
+    String path = api.getName();
+    
+    String address = address(path);
+    
+    EventNodeAsset node = lookupPubSubNode(address);
+    
+    Cancel cancel = node.subscribeImpl(serviceRef);
+    
+    result.ok(cancel);
   }
   
   /**
    * Consume a callback to a location.
    */
-  public void consumer(Object location, 
-                        @Pin ServiceRef serviceRef,
+  public void consumer(String path,
+                        @Pin ServiceRefAmp serviceRef,
                         Result<? super Cancel> result)
   {
-    if (location instanceof String) {
-      String path = (String) location;
-      
-      if (path.isEmpty()) {
-        result.fail(new ServiceException(L.l("Invalid event location '{0}'", location)));
-        return;
-      }
-      
-      String address = address(path);
-      
-      EventNodeAsset node = lookupPubSubNode(address);
-      
-      Cancel cancel = node.consumeImpl(serviceRef);
-      
-      result.ok(cancel);
+    if (path.isEmpty()) {
+      result.fail(new ServiceException(L.l("Invalid event location '{0}'", path)));
+      return;
     }
-    else if (location instanceof Class<?>) {
-      String path = ((Class<?>) location).getName();
       
-      String address = address(path);
+    String address = address(path);
       
-      EventNodeAsset node = lookupPubSubNode(address);
+    EventNodeAsset node = lookupPubSubNode(address);
       
-      Cancel cancel = node.consumeImpl(serviceRef);
+    Cancel cancel = node.consumeImpl(serviceRef);
       
-      result.ok(cancel);
-    }
-    else { 
-      result.fail(new ServiceException(L.l("Invalid event location {0}", location)));
-    }   
+    result.ok(cancel);
+  }
+  
+  /**
+   * Consume a callback to a location.
+   */
+  public void consumer(Class<?> api,
+                        @Pin ServiceRefAmp serviceRef,
+                        Result<? super Cancel> result)
+  {
+    String path = api.getName();
+      
+    String address = address(path);
+      
+    EventNodeAsset node = lookupPubSubNode(address);
+      
+    Cancel cancel = node.consumeImpl(serviceRef);
+      
+    result.ok(cancel);
   }
   
   private String address(String path)
@@ -250,7 +249,7 @@ public class EventServiceRamp
     }
   }
 
-  public void subscribeImpl(String address, ServiceRef serviceRef)
+  public void subscribeImpl(String address, ServiceRefAmp serviceRef)
   {
     EventNodeAsset node = lookupPubSubNode(address);
     node.subscribe(serviceRef);

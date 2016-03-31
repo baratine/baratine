@@ -43,13 +43,19 @@ public final class MethodAmpNull extends MethodAmpBase
 {
   private static final L10N L = new L10N(MethodAmpNull.class);
   
-  private final StubAmp _actor;
+  private final StubAmp _stub;
   private final String _methodName;
   
-  public MethodAmpNull(StubAmp actor, String methodName)
+  public MethodAmpNull(StubAmp stub, String methodName)
   {
-    _actor = actor;
+    _stub = stub;
     _methodName = methodName;
+  }
+  
+  @Override
+  public boolean isValid()
+  {
+    return false;
   }
 
   @Override
@@ -65,14 +71,14 @@ public final class MethodAmpNull extends MethodAmpBase
                     StubAmp actor,
                     Object[] args)
   {
-    if (! _actor.isClosed()) {
+    if (! _stub.isClosed()) {
       String msg = L.l("{0} is an unknown method in {1}", 
-                       _methodName, _actor.name());
+                       _methodName, _stub.name());
       
       result.fail(new ServiceExceptionMethodNotFound(msg));
     }
     else {
-      String msg = L.l("{0} is an unknown service", _actor);
+      String msg = L.l("{0} is an unknown service", _stub);
       
       result.fail(new ServiceExceptionNotFound(msg));
     }
@@ -81,6 +87,6 @@ public final class MethodAmpNull extends MethodAmpBase
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _methodName + "," + _actor + "]";
+    return getClass().getSimpleName() + "[" + _methodName + "," + _stub + "]";
   }
 }

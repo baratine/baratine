@@ -29,11 +29,12 @@
 
 package com.caucho.v5.ramp.hamp;
 
-import io.baratine.service.MethodRef;
-import io.baratine.service.ResultFuture;
-import io.baratine.service.ServiceRef;
-
 import java.util.concurrent.TimeUnit;
+
+import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.spi.MethodRefAmp;
+
+import io.baratine.service.ResultFuture;
 
 /**
  * Test class for hamp.
@@ -60,7 +61,7 @@ public class BaratineClientMain
     try (BaratineClient client = new BaratineClient(url)) {
       client.connect();
       
-      ServiceRef serviceRef = client.service(serviceName);
+      ServiceRefAmp serviceRef = client.service(serviceName);
       
       if (isHello) {
         // test for bytecode
@@ -71,7 +72,7 @@ public class BaratineClientMain
       }
       else {
         String methodName = argv[2];
-        MethodRef methodRef = serviceRef.getMethod(methodName);
+        MethodRefAmp methodRef = serviceRef.methodByName(methodName);
       
         ResultFuture<Object> future = new ResultFuture<>();
       

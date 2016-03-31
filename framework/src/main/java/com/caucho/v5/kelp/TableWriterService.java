@@ -90,7 +90,7 @@ public interface TableWriterService
   
   boolean close();
 
-  OutSegment openWriter(long gcSequence);
+  OutSegment openWriterSeq(long gcSequence);
   
   Iterable<SegmentKelp> getSegments();
   

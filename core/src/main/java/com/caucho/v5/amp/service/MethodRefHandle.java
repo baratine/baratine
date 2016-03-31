@@ -67,7 +67,7 @@ public class MethodRefHandle implements Serializable
     //ServiceRefAmp serviceRef = (ServiceRefAmp) Services.getCurrentManager().lookup(_address);
     ServiceRefAmp serviceRef = new ServiceRefLazyContext(Amp.getContextManager(), _address);
     
-    return serviceRef.getMethod(_name);
+    return serviceRef.methodByName(_name);
   }
     
   @Override

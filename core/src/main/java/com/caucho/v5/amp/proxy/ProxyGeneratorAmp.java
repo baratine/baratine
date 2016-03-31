@@ -39,6 +39,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,7 +87,8 @@ import io.baratine.stream.ResultStreamBuilder;
  * target service's inbox.
  */
 @ModulePrivate
-public class ProxyGeneratorAmp<T> {
+public class ProxyGeneratorAmp<T>
+{
   private static final L10N L = new L10N(ProxyGeneratorAmp.class);
   private static final Logger log 
     = Logger.getLogger(ProxyGeneratorAmp.class.getName());
@@ -94,16 +97,23 @@ public class ProxyGeneratorAmp<T> {
   //private static final long QUERY_TIMEOUT = 10 * 1000L;
   
   // private static long _defaultTimeout = 10L * 1000L;
+
   private static long _defaultTimeout = 60L * 1000L;
+  
+  private static HashMap<Class<?>,String> _prim
+  = new HashMap<Class<?>,String>();
   
   private final Class<T> _api;
   private final ClassLoader _classLoader;
   private final ArrayList<Class<?>> _apiList;
   
   private Class<T> _proxyClass;
-  private Constructor<?> _proxyCtor;
   
-  private HashMap<String,Method> _methodMap = new HashMap<>();
+  private ArrayList<Method> _methods = new ArrayList<>();
+  
+  private HashMap<Method,String> _methodFieldMap = new HashMap<>();
+  private int _sequence;
+  
   private JavaClass _jClass;
   
   private ProxyGeneratorAmp(Class<T> api,
@@ -156,18 +166,8 @@ public class ProxyGeneratorAmp<T> {
     _api = api;
   }
   
-  static Constructor<?> create(Class<?> cl,
-                               ClassLoader loader)
-  {
-    return createImpl(cl, loader);
-  }
-  
-  /**
-   * Must return Constructor, not MethodHandle because MethodHandles
-   * cache the type in the permgen.
-   */
-  private static Constructor<?> createImpl(Class<?> cl,
-                                           ClassLoader loader)
+  static <T> ProxyGeneratorFactoryAmp<T> create(Class<T> cl,
+                                                ClassLoader loader)
   {
     /**
     if (! Modifier.isAbstract(cl.getModifiers())) {
@@ -175,12 +175,12 @@ public class ProxyGeneratorAmp<T> {
     }
     */
     
-    ProxyGeneratorAmp<?> adapter
-      = new ProxyGeneratorAmp(cl, loader);
+    ProxyGeneratorAmp<T> adapter
+      = new ProxyGeneratorAmp<>(cl, loader);
     
-    Class<?> proxyClass = adapter.generate();
+    Class<T> proxyClass = adapter.generate();
     
-    return proxyClass.getConstructors()[0];
+    return new ProxyGeneratorFactoryAmp<>(proxyClass);
   }
   
   private Class<T> generate()
@@ -328,6 +328,12 @@ public class ProxyGeneratorAmp<T> {
         if (method.getDeclaringClass().equals(Object.class)) {
           continue;
         }
+        
+        /*
+        if (method.isDefault()) {
+          continue;
+        }
+        */
         
         if (method.getName().equals("toString")
             && paramLen == 0) {
@@ -559,7 +565,7 @@ public class ProxyGeneratorAmp<T> {
 
     CodeWriterAttribute code = ctor.createCodeWriter();
     code.setMaxLocals(4);
-    code.setMaxStack(5);
+    code.setMaxStack(10);
     
     code.pushObjectVar(0);
     
@@ -588,10 +594,10 @@ public class ProxyGeneratorAmp<T> {
                   "_messageFactory",
                   MessageFactoryAmp.class);
     
-    for (Method method : _methodMap.values()) {
+    for (Method method : _methods) {
       String methodName = method.getName();
       
-      jClass.createField(getMethodFieldName(methodName),
+      jClass.createField(methodFieldName(method),
                          MethodAmp.class)
             .setAccessFlags(Modifier.PRIVATE);
       
@@ -600,26 +606,56 @@ public class ProxyGeneratorAmp<T> {
       code.pushObjectVar(1);
       code.pushConstant(methodName);
       
-      Class<?> retType = getBoxedClass(method.getReturnType());
+      Class<?> retType = boxedClass(method.getReturnType());
       code.pushConstantClass(retType);
+      
+      ArrayList<Class<?>> paramTypes = methodParams(method);
+      
+      code.pushInt(paramTypes.size());
+      code.newObjectArray(Class.class);
+      
+      for (int i = 0; i < paramTypes.size(); i++) {
+        code.dup();
+        code.pushInt(i);
+        code.pushConstantClass(boxedClass(paramTypes.get(i)));
+        code.setArrayObject();
+      }
       
       code.invokestatic(ProxyUtilsAmp.class,
                         "__caucho_getMethod",
                         MethodAmp.class,
                         ServiceRefAmp.class,
                         String.class,
-                        Class.class);
+                        Class.class,
+                        Class[].class);
+      
       code.putField(jClass.getThisClass(),
-                    getMethodFieldName(methodName),
+                    methodFieldName(method),
                     MethodAmp.class);
     }
     
     code.addReturn();
     code.close();
-    
   }
   
-  private Class<?> getBoxedClass(Class<?> cl)
+  private ArrayList<Class<?>> methodParams(Method method)
+  {
+    ArrayList<Class<?>> params = new ArrayList<>();
+    
+    for (Class<?> paramType : method.getParameterTypes()) {
+      if (paramType.equals(Result.class)
+          || paramType.equals(ResultPipeIn.class)
+          || paramType.equals(ResultPipeOut.class)) {
+        continue;
+      }
+      
+      params.add(paramType);
+    }
+    
+    return params;
+  }
+  
+  private Class<?> boxedClass(Class<?> cl)
   {
     if (! cl.isPrimitive()) {
       return cl;
@@ -694,7 +730,7 @@ public class ProxyGeneratorAmp<T> {
 
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  getMethodFieldName(methodName),
+                  methodFieldName(method),
                   MethodAmp.class);
  
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -788,7 +824,7 @@ public class ProxyGeneratorAmp<T> {
 
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  getMethodFieldName(methodName),
+                  methodFieldName(method),
                   MethodAmp.class);
  
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -867,7 +903,7 @@ public class ProxyGeneratorAmp<T> {
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  getMethodFieldName(methodName),
+                  methodFieldName(method),
                   MethodAmp.class);
  
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -888,8 +924,8 @@ public class ProxyGeneratorAmp<T> {
   
   private void addMethod(Method method)
   {
-    if (_methodMap.get(method.getName()) == null) {
-      _methodMap.put(method.getName(), method);
+    if (! _methods.contains(method)) {
+      _methods.add(method);
     }
   }
   
@@ -906,7 +942,6 @@ public class ProxyGeneratorAmp<T> {
   private void createQueryFutureMethod(JavaClass jClass,
                                        Method method)
   {
-    String methodName = method.getName();
     Class<?> []parameterTypes = method.getParameterTypes();
     Annotation [][]parameterAnns = method.getParameterAnnotations();
 
@@ -941,7 +976,7 @@ public class ProxyGeneratorAmp<T> {
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  getMethodFieldName(methodName),
+                  methodFieldName(method),
                   MethodAmp.class);
     
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -1056,7 +1091,7 @@ public class ProxyGeneratorAmp<T> {
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  getMethodFieldName(methodName),
+                  methodFieldName(method),
                   MethodAmp.class);
     
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -1203,7 +1238,7 @@ public class ProxyGeneratorAmp<T> {
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  getMethodFieldName(methodName),
+                  methodFieldName(method),
                   MethodAmp.class);
     
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -1252,7 +1287,6 @@ public class ProxyGeneratorAmp<T> {
                                          Class<?> resultType,
                                          String messageMethod)
   {
-    String methodName = method.getName();
     Class<?> []parameterTypes = method.getParameterTypes();
     Annotation [][]parameterAnns = method.getParameterAnnotations();
 
@@ -1283,7 +1317,7 @@ public class ProxyGeneratorAmp<T> {
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  getMethodFieldName(methodName),
+                  methodFieldName(method),
                   MethodAmp.class);
     
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -1827,9 +1861,17 @@ public class ProxyGeneratorAmp<T> {
     }
   }
   
-  private String getMethodFieldName(String methodName)
+  private String methodFieldName(Method method)
   {
-    return "__caucho_ampMethod_" + methodName;
+    String fieldName = _methodFieldMap.get(method);
+    
+    if (fieldName == null) {
+      fieldName = "__caucho_ampMethod_" + method.getName() + "_" + _sequence++;
+      
+      _methodFieldMap.put(method, fieldName);
+    }
+    
+    return fieldName;
   }
 
   private String createDescriptor(Method method)
@@ -1867,9 +1909,37 @@ public class ProxyGeneratorAmp<T> {
 
     return "L" + cl.getName().replace('.', '/') + ";";
   }
+  
+  static class ProxyGeneratorFactoryAmp<T>
+  {
+    private final Class<T> _proxyClass;
+    private final Constructor<T> _ctor;
+    private final AtomicBoolean _isValidated = new AtomicBoolean();
+    
+    ProxyGeneratorFactoryAmp(Class<T> proxyClass)
+    {
+      Objects.requireNonNull(proxyClass);
+      
+      _proxyClass = proxyClass;
+      
+      _ctor = (Constructor<T>) proxyClass.getConstructors()[0];
+      
+      Objects.requireNonNull(_ctor);
+    }
 
-  private static HashMap<Class<?>,String> _prim
-    = new HashMap<Class<?>,String>();
+    public T newInstance(ServiceRefAmp serviceRef, 
+                         InboxAmp inboxSystem,
+                         MessageFactoryAmp messageFactory)
+      throws Exception
+    {
+      if (_isValidated.compareAndSet(false, true)) {
+        ValidateProxy.validate(serviceRef, _proxyClass);
+      }
+
+      return _ctor.newInstance(serviceRef, inboxSystem, messageFactory);
+    }
+    
+  }
 
   static {
     _prim.put(boolean.class, "Z");

@@ -76,7 +76,15 @@ public interface StubAmp
    * 
    * @param methodName the name of the method
    */
-  MethodAmp getMethod(String methodName);
+  default MethodAmp method(String methodName, Class<?> []param)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
+  default MethodAmp methodByName(String methodName)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
   
   MethodAmp []getMethods();
 

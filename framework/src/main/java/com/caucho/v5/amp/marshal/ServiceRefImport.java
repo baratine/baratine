@@ -123,9 +123,9 @@ public class ServiceRefImport extends ServiceRefWrapper implements ImportAware
   }
   
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
-    MethodRefAmp methodRef = delegate().getMethod(methodName);
+    MethodRefAmp methodRef = delegate().methodByName(methodName);
     
     if (methodRef != null) {
       return new MethodRefImport(this, methodRef, methodName, Object.class);
@@ -136,9 +136,9 @@ public class ServiceRefImport extends ServiceRefWrapper implements ImportAware
   }
   
   @Override
-  public MethodRefAmp getMethod(String methodName, Type retType)
+  public MethodRefAmp methodByName(String methodName, Type retType)
   {
-    MethodRefAmp methodRef = delegate().getMethod(methodName);
+    MethodRefAmp methodRef = delegate().methodByName(methodName);
     
     if (methodRef != null) {
       return new MethodRefImport(this, methodRef, methodName, (Class<?>) retType);

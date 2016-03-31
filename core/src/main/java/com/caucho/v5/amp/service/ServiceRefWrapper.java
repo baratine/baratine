@@ -111,9 +111,9 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public ClassLoader getDelegateClassLoader()
+  public ClassLoader classLoader()
   {
-    return delegate().getDelegateClassLoader();
+    return delegate().classLoader();
   }
   
   /*
@@ -151,19 +151,27 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   */
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
     try {
-      return delegate().getMethod(methodName);
+      return delegate().methodByName(methodName);
     } catch (Exception e) {
       return new MethodRefException(this, methodName, e);
     }
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName, Type returnType)
+  public MethodRefAmp method(String methodName, 
+                             Type returnType, 
+                             Class<?> ...param)
   {
-    return delegate().getMethod(methodName, returnType);
+    return delegate().method(methodName, returnType, param);
+  }
+  
+  @Override
+  public MethodRefAmp methodByName(String methodName, Type returnType)
+  {
+    return delegate().methodByName(methodName, returnType);
   }
   
   public Iterable<? extends MethodRefAmp> getMethods()
@@ -213,7 +221,7 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public ServiceRefAmp lookup(String path)
+  public ServiceRefAmp service(String path)
   {
     return manager().service(address() + path);
   }
@@ -260,9 +268,9 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   */
 
   @Override
-  public <T> T as(Class<T> api, Class<?>... apis)
+  public <T> T as(Class<T> api)
   {
-    return manager().newProxy(this, api, apis);
+    return manager().newProxy(this, api);
   }
 
   @Override

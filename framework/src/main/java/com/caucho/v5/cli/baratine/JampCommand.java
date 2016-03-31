@@ -33,6 +33,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.baratine.client.BaratineClient;
 import com.caucho.v5.cli.server.BootArgumentException;
 import com.caucho.v5.cli.server.ServerCommandBase;
@@ -41,9 +43,7 @@ import com.caucho.v5.health.shutdown.ExitCode;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.MethodRef;
 import io.baratine.service.ResultFuture;
-import io.baratine.service.ServiceRef;
 
 /**
  * Command to query a jamp command.
@@ -124,9 +124,9 @@ public class JampCommand extends ServerCommandBase<ArgsCli>
         address = "remote://" + address;
       }
 
-      ServiceRef service = client.service(address);
+      ServiceRefAmp service = client.service(address);
 
-      MethodRef methodRef = service.getMethod(methodName);
+      MethodRefAmp methodRef = service.methodByName(methodName);
 
       ResultFuture<Object> future = new ResultFuture<>();
       Object []argsMethod = new Object[argList.size()];

@@ -36,7 +36,10 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -45,7 +48,6 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.AmpException;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
-import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.inject.type.AnnotatedTypeClass;
 import com.caucho.v5.inject.type.TypeRef;
@@ -82,11 +84,13 @@ public class StubClass
   private static final Logger log
     = Logger.getLogger(StubClass.class.getName());
   
+  private static final HashMap<Class<?>,Class<?>> _boxMap = new HashMap<>();
+  
   private static long _defaultTimeout = 10;
   
-  private HashMap<String,Method> _methodMap = new HashMap<>();
+  //private HashMap<String,Method> _methodMap = new HashMap<>();
   
-  private HashMap<String,MethodAmp> _rampMethodMap = new HashMap<>();
+  private HashMap<String,List<MethodAmp>> _stubMethodMap = new HashMap<>();
   
   private final ServicesAmp _services;
 
@@ -110,7 +114,7 @@ public class StubClass
   private Method_0_Base _beforeBatch = Method_0_Base.NULL;
   private Method_0_Base _afterBatch = Method_0_Base.NULL;
   
-  private MethodHandle _getMethod;
+  // private MethodHandle _getMethod;
   
   private boolean _isLifecycleAware;
   
@@ -171,7 +175,7 @@ public class StubClass
     return _annType;
   }
   
-  protected ServicesAmp ampManager()
+  protected ServicesAmp services()
   {
     return _services;
   }
@@ -222,6 +226,10 @@ public class StubClass
     }
     
     addMethods(cl.getSuperclass());
+    
+    for (Class<?> api : cl.getInterfaces()) {
+      addMethods(api);
+    }
     
     for (Method method : cl.getDeclaredMethods()) {
       if (Modifier.isStatic(method.getModifiers())) {
@@ -296,6 +304,7 @@ public class StubClass
           && method.isAnnotationPresent(Service.class)
           && method.getParameterTypes().length == 1
           && String.class.equals(method.getParameterTypes()[0])) {
+        if (true) throw new UnsupportedOperationException();
         method.setAccessible(true);
         
         MethodHandle getMethod = MethodHandles.lookup().unreflect(method);
@@ -306,22 +315,26 @@ public class StubClass
         
         getMethod = getMethod.asType(mt);
         
-        _getMethod = getMethod;
+        //_getMethod = getMethod;
         
         continue;
       }
       
-      String methodName = method.getName();
-      
-      if (_methodMap.get(methodName) == null) {
-        _methodMap.put(methodName, method);
-
-        MethodAmp rampMethod;
-        
-        rampMethod = createPlainMethod(method);
-        
-        _rampMethodMap.put(methodName, rampMethod);
-      }
+      addMethod(method.getName(), createPlainMethod(method));
+    }
+  }
+  
+  private void addMethod(String methodName, MethodAmp stubMethod)
+  {
+    List<MethodAmp> methods = _stubMethodMap.get(methodName);
+    
+    if (methods == null) {
+      methods = new ArrayList<>();
+      _stubMethodMap.put(methodName, methods);
+    }
+    
+    if (! methods.contains(stubMethod)) {
+      methods.add(stubMethod);
     }
   }
   
@@ -345,30 +358,91 @@ public class StubClass
   
   public MethodAmp []getMethods()
   {
-    MethodAmp []methods = new MethodAmp[_rampMethodMap.size()];
+    MethodAmp []methods = new MethodAmp[_stubMethodMap.size()];
     
-    _rampMethodMap.values().toArray(methods);
+    _stubMethodMap.values().toArray(methods);
     
     return methods;
   }
 
-  public MethodAmp getMethod(StubAmp actor, String methodName)
+  public MethodAmp methodByName(StubAmp stub, String methodName)
   {
-    MethodAmp rampMethod = _rampMethodMap.get(methodName);
+    List<MethodAmp> rampMethods = _stubMethodMap.get(methodName);
     
-    if (rampMethod != null) {
-      return rampMethod;
+    if (rampMethods == null) {
+      return new MethodAmpNull(stub, methodName);
     }
     
+    if (rampMethods.size() == 1) {
+      return rampMethods.get(0);
+    }
+    
+    throw new IllegalStateException(L.l("{0} has multiple methods named {1}",
+                                        stub, methodName));
+    
+    /*
     if (_getMethod != null) {
-      return getActorMethod(actor, methodName);
+      return getDynamicMethod(actor, methodName);
     }
+    */
 
     /*
     throw new ServiceExceptionMethodNotFound(L.l("{0} is an unknown method in {1}",
                                                methodName, _api.getName()));
                                                */
-    return new MethodAmpNull(actor, methodName);
+  }
+
+  public MethodAmp method(StubAmp stub,
+                          String methodName,
+                          Class<?> []param)
+  {
+    List<MethodAmp> methods = _stubMethodMap.get(methodName);
+    
+    if (methods == null) {
+      return new MethodAmpNull(stub, methodName);
+    }
+    
+    for (MethodAmp methodStub : methods) {
+      if (isMatch(methodStub.parameters(), param)) {
+        return methodStub;
+      }
+    }
+    
+    return new MethodAmpNull(stub, methodName);
+    
+    /*
+    if (_getMethod != null) {
+      return getDynamicMethod(stub, methodName);
+    }
+    */
+
+    /*
+    throw new ServiceExceptionMethodNotFound(L.l("{0} is an unknown method in {1}",
+                                               methodName, _api.getName()));
+                                               */
+  }
+  
+  private boolean isMatch(ParameterAmp []parameters, Class<?> []paramTypes)
+  {
+    if (parameters == null) {
+      return false;
+    }
+    
+    if (parameters.length != paramTypes.length) {
+      return false;
+    }
+    
+    for (int i = 0; i < parameters.length; i++) {
+      if (parameters[i].getAnnotation(Pin.class) != null) {
+        continue;
+      }
+      
+      if (! box(parameters[i].rawClass()).equals(box(paramTypes[i]))) {
+        return false;
+      }
+    }
+    
+    return true;
   }
   
   protected MethodAmp createPlainMethod(Method method)
@@ -405,10 +479,10 @@ public class StubClass
         MethodAmp methodStub;
         
         if (method.isVarArgs()) {
-          methodStub = new MethodStubResult_VarArgs(ampManager(), method);
+          methodStub = new MethodStubResult_VarArgs(services(), method);
         }
         else {
-          methodStub = new MethodStubResult_N(ampManager(), method);
+          methodStub = new MethodStubResult_N(services(), method);
         }
         
         if (result.isAnnotationPresent(Shim.class)) {
@@ -424,19 +498,19 @@ public class StubClass
       
       if (isResult(params, ResultStream.class)) {
         if (false && method.isVarArgs()) {
-          return new MethodStubResult_VarArgs(ampManager(), method);
+          return new MethodStubResult_VarArgs(services(), method);
         }
         else {
-          return new MethodStubResultStream_N(ampManager(), method);
+          return new MethodStubResultStream_N(services(), method);
         }
       }
       
       if (isResult(params, ResultPipeOut.class)) {
-        return new MethodStubResultOutPipe_N(ampManager(), method);
+        return new MethodStubResultOutPipe_N(services(), method);
       }
       
       if (isResult(params, ResultPipeIn.class)) {
-        return new MethodStubResultInPipe_N(ampManager(), method);
+        return new MethodStubResultInPipe_N(services(), method);
       }
       
       /*
@@ -488,7 +562,8 @@ public class StubClass
     return new MethodStubResultPin(delegate, api);
   }
   
-  private MethodAmp getActorMethod(StubAmp actor,
+  /*
+  private MethodAmp getDynamicMethod(StubAmp actor,
                                          String methodName)
   {
     try {
@@ -507,6 +582,7 @@ public class StubClass
       throw new AmpException(e);
     }
   }
+  */
   
   protected Method_0_Base createMethodZero(Method method)
   {
@@ -766,6 +842,13 @@ public class StubClass
       log.log(Level.FINE, e.toString(), e);
     }
   }
+  
+  static Class<?> box(Class<?> type)
+  {
+    Class<?> boxType = _boxMap.get(type);
+    
+    return boxType != null ? boxType : type;
+  }
 
   @Override
   public String toString()
@@ -809,5 +892,15 @@ public class StubClass
     } catch (Throwable e) {
       
     }
+    
+    _boxMap.put(void.class, Void.class);
+    _boxMap.put(boolean.class, Boolean.class);
+    _boxMap.put(char.class, Character.class);
+    _boxMap.put(byte.class, Byte.class);
+    _boxMap.put(short.class, Short.class);
+    _boxMap.put(int.class, Integer.class);
+    _boxMap.put(long.class, Long.class);
+    _boxMap.put(float.class, Float.class);
+    _boxMap.put(double.class, Double.class);
   }
 }

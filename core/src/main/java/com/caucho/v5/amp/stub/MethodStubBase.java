@@ -36,6 +36,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
 
 import com.caucho.v5.amp.Direct;
 import com.caucho.v5.amp.ServicesAmp;
@@ -198,6 +199,47 @@ abstract class MethodStubBase extends MethodAmpBase
     sb.append(")");
     
     return sb;
+  }
+  
+  @Override
+  public int hashCode()
+  {
+    int hash = _method.getName().hashCode();
+    
+    for (ParameterAmp param : _parameters) {
+      hash = 65521 * hash + param.hashCode();
+    }
+    
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof MethodStubBase)) {
+      return false;
+    }
+    
+    MethodStubBase method = (MethodStubBase) obj;
+    
+    if (! _method.getName().equals(method._method.getName())) {
+      return false;
+    }
+    
+    ParameterAmp []paramA = parameters(); 
+    ParameterAmp []paramB = method.parameters();
+    
+    if (paramA.length != paramB.length) {
+      return false;
+    }
+    
+    for (int i = 0; i < paramA.length; i++) {
+      if (! paramA[i].rawClass().equals(paramB[i].rawClass())) {
+        return false;
+      }
+    }
+    
+    return true;
   }
 
   static {

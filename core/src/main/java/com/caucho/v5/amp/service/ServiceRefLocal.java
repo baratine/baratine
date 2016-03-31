@@ -37,7 +37,7 @@ import com.caucho.v5.amp.stub.StubAmp;
 /**
  * {@link ServiceRef} for a local service.
  */
-public class ServiceRefLocal extends ServiceRefStubBase
+public class ServiceRefLocal extends ServiceRefStub
 {
   public ServiceRefLocal(StubAmp stub,
                         InboxAmp inbox)

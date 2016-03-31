@@ -91,7 +91,7 @@ class EventNodeServer {
       ServicesAmp manager = ServicesAmp.current();
 
       _eventServer = manager.service(eventsPath)
-          .node(_nodeIndex)
+          .pinNode(_nodeIndex)
           .as(EventServer.class);
     }
 

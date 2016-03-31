@@ -213,10 +213,10 @@ public class MethodRefPod extends MethodRefBase
     }
 
     if (_type != null) {
-      methodRef = serviceRefLocal.getMethod(_name, _type);
+      methodRef = serviceRefLocal.methodByName(_name, _type);
     }
     else {
-      methodRef = serviceRefLocal.getMethod(_name);
+      methodRef = serviceRefLocal.methodByName(_name);
     }
     
     _methodRefLocal = new MethodRefActive(serviceRefLocal, methodRef);
@@ -235,10 +235,10 @@ public class MethodRefPod extends MethodRefBase
     ServiceRefAmp serviceRefActive = _serviceRef.getActiveService(hash);
 
     if (_type != null) {
-      return serviceRefActive.getMethod(_name, _type);
+      return serviceRefActive.methodByName(_name, _type);
     }
     else {
-      return serviceRefActive.getMethod(_name);
+      return serviceRefActive.methodByName(_name);
     }
   }
   
@@ -263,10 +263,10 @@ public class MethodRefPod extends MethodRefBase
     }
     
     if (_type != null) {
-      methodRef = serviceRefActive.getMethod(_name, _type);
+      methodRef = serviceRefActive.methodByName(_name, _type);
     }
     else {
-      methodRef = serviceRefActive.getMethod(_name);
+      methodRef = serviceRefActive.methodByName(_name);
     }
     
     _methodRefActive = new MethodRefActive(serviceRefActive, methodRef);

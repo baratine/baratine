@@ -282,10 +282,10 @@ public class MethodPod implements MethodAmp
     }
 
     if (_type != null) {
-      return serviceRefLocal.getMethod(_name, _type);
+      return serviceRefLocal.methodByName(_name, _type);
     }
     else {
-      return serviceRefLocal.getMethod(_name);
+      return serviceRefLocal.methodByName(_name);
     }
   }
   
@@ -355,15 +355,15 @@ public class MethodPod implements MethodAmp
     MethodRefAmp methodRef;
     
     if (_type != null) {
-      methodRef = serviceRef.getMethod(_name, _type);
+      methodRef = serviceRef.methodByName(_name, _type);
     }
     else {
-      methodRef = serviceRef.getMethod(_name);
+      methodRef = serviceRef.methodByName(_name);
     }
     
     MethodShim methodShim;
     
-    ClassLoader methodLoader = methodRef.serviceRef().getDelegateClassLoader();
+    ClassLoader methodLoader = methodRef.serviceRef().classLoader();
     
     //System.out.println("SR: " + serviceRef + " " + serviceRef.getActor());
     

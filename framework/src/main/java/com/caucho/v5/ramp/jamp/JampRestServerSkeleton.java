@@ -83,7 +83,7 @@ public class JampRestServerSkeleton
     JampMethodRest method = _methodMap.get(methodName);
     
     if (method == null || method.isClosed()) {
-      MethodRefAmp methodRef = _serviceRef.getMethod(methodName);
+      MethodRefAmp methodRef = _serviceRef.methodByName(methodName);
       
       if (methodRef == null) {
         return null;

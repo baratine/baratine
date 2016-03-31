@@ -98,7 +98,7 @@ public class MethodRefHamp
                                                _channelIn, _address);
       }
 
-      delegate = serviceRef.getMethod(_methodName);
+      delegate = serviceRef.methodByName(_methodName);
       
       introspect(delegate);
     } catch (Throwable e) {
@@ -106,7 +106,7 @@ public class MethodRefHamp
 
       serviceRef = new ServiceRefLazyInvalid(_channelIn.getManager(),
                                              _channelIn, _address);
-      delegate = serviceRef.getMethod(_methodName);
+      delegate = serviceRef.methodByName(_methodName);
       
       introspect(delegate);
     }

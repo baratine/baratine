@@ -80,12 +80,12 @@ public class StubAmpLazyProxy extends StubAmpBase implements ActorAmpState
   }
 
   @Override
-  public MethodAmp getMethod(String methodName)
+  public MethodAmp methodByName(String methodName)
   {
     StubAmp delegate = getDelegate();
     
     if (delegate != null) {
-      return delegate.getMethod(methodName);
+      return delegate.methodByName(methodName);
     }
     else {
       System.out.println("EEP: " + methodName);

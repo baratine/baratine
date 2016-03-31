@@ -72,10 +72,10 @@ public class MethodRefDynamic extends MethodRefWrapper
       _serviceRef = serviceRef;
       
       if (_type != null) {
-        _methodRef = serviceRef.getMethod(_methodName, _type);
+        _methodRef = serviceRef.methodByName(_methodName, _type);
       }
       else {
-        _methodRef = serviceRef.getMethod(_methodName);
+        _methodRef = serviceRef.methodByName(_methodName);
       }
     }
 

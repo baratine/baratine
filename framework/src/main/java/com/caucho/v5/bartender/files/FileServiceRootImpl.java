@@ -813,14 +813,14 @@ public class FileServiceRootImpl
     ServiceRef fileRef;
     
     if (path.isEmpty() || path.equals("/")) {
-      fileRef = getServiceRef().lookup("");
+      fileRef = getServiceRef().service("");
     }
     else if (path.startsWith("/")) {
       // XXX:
-      fileRef = getServiceRef().lookup(path);
+      fileRef = getServiceRef().service(path);
     }
     else {
-      fileRef = getServiceRef().lookup("/" + path);
+      fileRef = getServiceRef().service("/" + path);
     }
     
     return fileRef.as(BfsFileSync.class);

@@ -31,15 +31,12 @@ package com.caucho.v5.amp.session;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.inject.Provider;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -51,7 +48,6 @@ import com.caucho.v5.convert.bean.FieldString;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.convert.Convert;
 import io.baratine.inject.Key;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
@@ -63,9 +59,6 @@ import io.baratine.vault.Id;
 public class StubClassSessionVault<T> extends StubClass
 {
   private static final L10N L = new L10N(StubClassSessionVault.class);
-  
-  private static final Map<Class<?>,Convert<String,?>> _convertMap
-    = new HashMap<>();
   
   private StubClass _stubClassSession;
 
@@ -103,7 +96,8 @@ public class StubClassSessionVault<T> extends StubClass
 
     Key<T> key = Key.of(_type, ServiceImpl.class);
 
-    Provider<T> provider = ampManager().injector().provider(key);
+    // XXX: provider should be passed in? Non-injector session provider?
+    Provider<T> provider = services().injector().provider(key);
     FieldBean<T> setter = findIdSetter();
     
     MethodAmp onLookup = new MethodOnLookup(_stubClassSession, provider, setter);

@@ -586,7 +586,7 @@ public class ServerBuilder
     throws IOException
   {
     _dataDirectory = calculateDataDirectory();
-System.out.println("ZOP: " + _dataDirectory + " " + getRootDirectory());
+
     RootDirectorySystem.createAndAddSystem(getRootDirectory(), _dataDirectory);
   }
 

@@ -124,7 +124,7 @@ public class ServiceRefPodRoot extends ServiceRefWrapper
   }
   
   @Override
-  public ServiceRefAmp node(int hash)
+  public ServiceRefAmp pinNode(int hash)
   {
     return new ServiceRefPodRootNode(_podScheme, _manager, _pod, _address,
                                      hash);
@@ -141,13 +141,13 @@ public class ServiceRefPodRoot extends ServiceRefWrapper
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName, Type type)
+  public MethodRefAmp methodByName(String methodName, Type type)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

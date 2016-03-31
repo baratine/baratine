@@ -132,7 +132,7 @@ public class PodHeartbeatImpl
     _clusterRoot = getPodProxy(CLUSTER_ROOT + "." + serverSelf.getClusterId());
   }
   
-  public UpdatePodSystem getUpdate()
+  public UpdatePodSystem getUpdate(long seq, long crc)
   {
     return _updatePodSystem;
   }

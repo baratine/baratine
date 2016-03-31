@@ -65,7 +65,7 @@ public interface ServiceRefAmp extends ServiceRef
   
   StubAmp stub();
 
-  default ClassLoader getDelegateClassLoader()
+  default ClassLoader classLoader()
   {
     return manager().classLoader();
   }
@@ -74,10 +74,11 @@ public interface ServiceRefAmp extends ServiceRef
   
   boolean isPublic();
   
-  @Override
-  MethodRefAmp getMethod(String methodName);
+  MethodRefAmp method(String methodName, Type returnType, Class<?> ...params);
   
-  MethodRefAmp getMethod(String methodName, Type returnType);
+  MethodRefAmp methodByName(String methodName);
+  
+  MethodRefAmp methodByName(String methodName, Type returnType);
   
   AnnotatedType api();
   
@@ -105,7 +106,7 @@ public interface ServiceRefAmp extends ServiceRef
   ServiceRefAmp start();
   
   @Override
-  default ServiceRefAmp node(int hash)
+  default ServiceRefAmp pinNode(int hash)
   {
     return this;
   }
@@ -115,7 +116,7 @@ public interface ServiceRefAmp extends ServiceRef
   void shutdown(ShutdownModeAmp mode);
   void close();
   
-  static ServiceRefAmp toServiceRef(Object proxy)
+  static ServiceRefAmp toRef(Object proxy)
   {
     return (ServiceRefAmp) ServiceRef.toRef(proxy);
   }

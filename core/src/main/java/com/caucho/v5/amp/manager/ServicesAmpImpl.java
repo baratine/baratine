@@ -40,8 +40,8 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.inbox.OutboxAmpDirect;
 import com.caucho.v5.amp.inbox.OutboxAmpExecutorFactory;
 import com.caucho.v5.amp.inbox.OutboxAmpImpl;
@@ -59,8 +59,6 @@ import com.caucho.v5.amp.service.ServiceBuilderImpl;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.ServiceRefChild;
 import com.caucho.v5.amp.service.ServiceRefPin;
-import com.caucho.v5.amp.session.ContextSession;
-import com.caucho.v5.amp.session.ContextSessionFactory;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -78,7 +76,6 @@ import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.Key;
-import io.baratine.service.Journal;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
@@ -109,7 +106,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   private final ProxyFactoryAmp _proxyFactory;
   private final StubClassFactoryAmp _stubFactory;
   private final JournalFactoryAmp _journalFactory;
-  private final ContextSessionFactory _channelFactory;
+  // private final ContextSessionFactory _channelFactory;
   
   private final StubGenerator []_stubGenerators;
   
@@ -176,7 +173,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     _journalFactory = builder.journalFactory();
     _journalDelay = builder.getJournalDelay();
     
-    _channelFactory = new ContextSessionFactory(this);
+    //_channelFactory = new ContextSessionFactory(this);
     
     _stubGenerators = builder.stubGenerators();
     
@@ -467,6 +464,27 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     }
     
     return address;
+  }
+  
+  @Override
+  public String address(Class<?> type, Class<?> api)
+  {
+    Objects.requireNonNull(type);
+    
+    if (api == null) {
+      api = type;
+    }
+    
+    String address = null;
+    
+    Service service = type.getAnnotation(Service.class);
+    
+    if (service != null && ! service.value().isEmpty()) {
+      return address(api, service.value());
+    }
+    else {
+      return address(api);
+    }
   }
   
   @Override
@@ -933,6 +951,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     return _remoteMessageReadCount.get();
   }
 
+  /*
   @Override
   public ContextSession createContextServiceSession(String path, Class<?> beanClass)
   {
@@ -940,6 +959,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     
     return _channelFactory.create(path, beanClass, isJournal);
   }
+  */
   
   public void setConfigException(Throwable exn)
   {

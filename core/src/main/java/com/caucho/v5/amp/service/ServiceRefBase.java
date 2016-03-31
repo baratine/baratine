@@ -142,15 +142,23 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   */
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
+  {
+    return new MethodRefNull(this, methodName);
+  }
+
+  @Override
+  public MethodRefAmp method(String methodName, 
+                             Type returnType, 
+                             Class<?> ...param)
   {
     return new MethodRefNull(this, methodName);
   }
   
   @Override
-  public MethodRefAmp getMethod(String methodName, Type returnType)
+  public MethodRefAmp methodByName(String methodName, Type returnType)
   {
-    return getMethod(methodName);
+    return methodByName(methodName);
   }
   
   @Override
@@ -190,7 +198,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public ServiceRefAmp lookup(String path)
+  public ServiceRefAmp service(String path)
   {
     return manager().service(address() + path);
   }
@@ -238,9 +246,9 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   */
 
   @Override
-  public <T> T as(Class<T> api, Class<?>... apis)
+  public <T> T as(Class<T> api)
   {
-    return manager().newProxy(this, api, apis);
+    return manager().newProxy(this, api);
   }
 
   @Override

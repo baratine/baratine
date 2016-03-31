@@ -60,6 +60,6 @@ public class ServiceRefPodRootNode extends ServiceRefPodRoot
   @Override
   public ServiceRefAmp onLookup(String path)
   {
-    return super.onLookup(path).node(_hash);
+    return super.onLookup(path).pinNode(_hash);
   }
 }

@@ -66,7 +66,7 @@ public class ReplayQueryMessage<V> extends MessageAmpResult<V>
     if (_keyPath != null) {
       ServiceRef parentRef = inbox.serviceRef();
       
-      Object childLookup = parentRef.lookup(_keyPath);
+      Object childLookup = parentRef.service(_keyPath);
       
       if (childLookup instanceof ServiceRefAmp) {
         ServiceRefAmp childServiceRef = (ServiceRefAmp) childLookup;
@@ -75,7 +75,7 @@ public class ReplayQueryMessage<V> extends MessageAmpResult<V>
       }
     }
     
-    MethodAmp method = actor.getMethod(_methodName);
+    MethodAmp method = actor.methodByName(_methodName);
     
     if (method != null) {
       actor = actor.worker(actor);

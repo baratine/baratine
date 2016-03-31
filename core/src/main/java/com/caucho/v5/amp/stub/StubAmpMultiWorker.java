@@ -101,9 +101,9 @@ public class StubAmpMultiWorker extends StubAmpStateBase
   }
   
   @Override
-  public MethodAmp getMethod(String name)
+  public MethodAmp methodByName(String name)
   {
-    return delegate().getMethod(name);
+    return delegate().methodByName(name);
   }
   
   @Override

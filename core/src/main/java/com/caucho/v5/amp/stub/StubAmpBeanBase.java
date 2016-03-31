@@ -125,9 +125,17 @@ public class StubAmpBeanBase extends StubAmpStateBase
   }
 
   @Override
-  public MethodAmp getMethod(String methodName)
+  public MethodAmp methodByName(String methodName)
   {
-    MethodAmp method = _stubClass.getMethod(this, methodName);
+    MethodAmp method = _stubClass.methodByName(this, methodName);
+    
+    return method;
+  }
+
+  @Override
+  public MethodAmp method(String methodName, Class<?> []param)
+  {
+    MethodAmp method = _stubClass.method(this, methodName, param);
     
     return method;
   }

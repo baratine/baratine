@@ -49,23 +49,54 @@ public class ParameterAmpImpl implements ParameterAmp
     _param = parameter;
   }
   
+  @Override
   public String name()
   {
     return _param.getName();
   }
   
+  @Override
   public Type type()
   {
     return _param.getParameterizedType();
   }
   
+  @Override
   public Class<?> rawClass()
   {
     return _param.getType();
   }
   
+  @Override
   public Annotation[] annotations()
   {
     return _param.getAnnotations();
+  }
+  
+  @Override
+  public int hashCode()
+  {
+    return _param.hashCode();
+  }
+  
+  @Override
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof ParameterAmpImpl)) {
+      return false;
+    }
+    
+    ParameterAmpImpl param = (ParameterAmpImpl) obj;
+    
+    return _param.equals(param._param);
+  }
+  
+  @Override
+  public String toString()
+  {
+    return (getClass().getSimpleName()
+            + "[" + name()
+            + "," + rawClass().getSimpleName()
+            + "]");
   }
 }

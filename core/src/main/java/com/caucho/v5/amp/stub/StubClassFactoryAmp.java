@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.stub;
 
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.StubContainerAmp;
 
 /**
@@ -65,8 +64,10 @@ public interface StubClassFactoryAmp
                               String path,
                               ServiceConfig config);
                               */
+  /*
   StubAmp createSkeletonSession(Object bean,
                                  String key,
                                  ContextSession context,
                                  ServiceConfig config);
+                                 */
 }

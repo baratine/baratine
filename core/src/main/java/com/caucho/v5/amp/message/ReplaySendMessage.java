@@ -73,7 +73,7 @@ public class ReplaySendMessage<V> extends MessageAmpResult<V>
     if (_keyPath != null) {
       ServiceRef parentRef = inbox.serviceRef();
       
-      Object childLookup = parentRef.lookup(_keyPath);
+      Object childLookup = parentRef.service(_keyPath);
       
       if (childLookup instanceof ServiceRefAmp) {
         ServiceRefAmp childServiceRef = (ServiceRefAmp) childLookup;
@@ -85,7 +85,7 @@ public class ReplaySendMessage<V> extends MessageAmpResult<V>
     MethodAmp method;
     
     try {
-      method = actor.getMethod(_methodName);
+      method = actor.methodByName(_methodName);
     } catch (Exception e) {
       log.log(Level.FINE, e.toString(), e);
       return;

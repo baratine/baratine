@@ -61,7 +61,7 @@ public class StubAmpNull extends StubAmpBase implements ActorAmpState
   }
 
   @Override
-  public MethodAmp getMethod(String methodName)
+  public MethodAmp methodByName(String methodName)
   {
     return null;
   }

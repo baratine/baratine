@@ -73,7 +73,7 @@ class EventNodeActorClient extends EventNodeAsset
     String eventsPath = "pod://" + podName + EventServerImpl.PATH;
 
     ServicesAmp  manager = ServicesAmp.current();
-    _podServiceRef = manager.service(eventsPath).node(0);
+    _podServiceRef = manager.service(eventsPath).pinNode(0);
     
     _podServer = _podServiceRef.as(EventServer.class);
   }

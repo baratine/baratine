@@ -37,7 +37,7 @@ import com.caucho.v5.amp.stub.StubAmp;
  * Handles the context for an actor, primarily including its
  * query map.
  */
-public class ServiceRefClient extends ServiceRefStubBase
+public class ServiceRefClient extends ServiceRefStub
 {
   private String _address;
 

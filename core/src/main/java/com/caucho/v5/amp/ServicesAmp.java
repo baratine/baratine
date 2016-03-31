@@ -37,15 +37,12 @@ import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
-import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LookupAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
-import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 
 import io.baratine.inject.Injector;
@@ -82,6 +79,8 @@ public interface ServicesAmp extends Services, LookupAmp
                     Class<?> ...apis);
 
   String address(Class<?> type);
+  
+  String address(Class<?> type, Class<?> api);
   
   String address(Class<?> type, String address);
 
@@ -191,7 +190,7 @@ public interface ServicesAmp extends Services, LookupAmp
   
   long getRemoteMessageReadCount();
 
-  ContextSession createContextServiceSession(String path, Class<?> beanClass);
+  //ContextSession createContextServiceSession(String path, Class<?> beanClass);
   
   ClassLoader classLoader();
   

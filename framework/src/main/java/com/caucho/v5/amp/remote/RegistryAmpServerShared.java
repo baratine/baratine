@@ -73,7 +73,7 @@ public class RegistryAmpServerShared implements RegistryAmp
     if (methodRef == null || methodRef.isClosed()) {
       ServiceRefAmp serviceRef = lookupImpl(address);
       
-      methodRef = serviceRef.getMethod(methodName);
+      methodRef = serviceRef.methodByName(methodName);
       
       _methodCache.put(key, methodRef);
     }

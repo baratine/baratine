@@ -104,7 +104,7 @@ public class StoreRootRamp
   
   StoreSync<?> lookup(String path)
   {
-    return _self.lookup(_scheme + "://" + _podName + path).as(StoreSync.class);
+    return _self.service(_scheme + "://" + _podName + path).as(StoreSync.class);
   }
   
   @OnLoad

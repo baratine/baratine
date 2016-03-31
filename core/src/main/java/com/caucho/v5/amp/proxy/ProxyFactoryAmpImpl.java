@@ -37,13 +37,13 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.manager.ServicesAmpImpl;
-import com.caucho.v5.amp.service.ServiceConfig;
+import com.caucho.v5.amp.proxy.ProxyGeneratorAmp.ProxyGeneratorFactoryAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.ClassStubSession;
+import com.caucho.v5.amp.stub.StubClass;
 
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
@@ -83,45 +83,6 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
       _messageFactory = new MessageFactoryBase(ampManager);
     }
   }
-
-  /*
-  @Override
-  public ActorAmp createSkeleton(Object bean,
-                                 String path,
-                                 String childPath,
-                                 ActorContainerAmp container,
-                                 ServiceConfig config)
-  {
-    ClassStub skel;
-    
-    if (path != null && (path.startsWith("pod://") || path.startsWith("public://"))) {
-      skel = createPodSkeleton(bean.getClass(), path, config);
-    }
-    else {
-      skel = createSkeleton(bean.getClass(), path, config);
-    }
-    
-    if (container != null) {
-      return new StubAmpBeanChild(skel, bean, path, childPath, container);
-    }
-    else {
-      if (path == null && config != null) {
-        path = config.name(); 
-      }
-      
-      return new StubAmpBean(skel, bean, path, container);
-    }
-  }
-  */
-
-  /*
-  protected ClassStub createPodSkeleton(Class<?> beanClass, 
-                                            String path,
-                                            ServiceConfig config)
-  {
-    return createSkeleton(beanClass, path, config);
-  }
-  */
   
   private String getLocalPath(String path)
   {
@@ -141,59 +102,6 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     }
   }
   
-  /*
-  protected ClassStub createSkeleton(Class<?> beanClass, 
-                                         String path,
-                                         ServiceConfig config)
-  {
-    ClassStub skel = _skeletonMap.get(beanClass);
-    
-    if (skel == null) {
-      skel = new ClassStub(_ampManager, beanClass);
-      skel.introspect();
-      _skeletonMap.putIfAbsent(beanClass, skel);
-      skel = _skeletonMap.get(beanClass);
-    }
-    
-    return skel;
-    
-  }
-  */
-
-  /*
-  @Override
-  public ActorAmp createSkeletonSession(Object bean,
-                                        String key,
-                                        ContextSession context,
-                                        ServiceConfig config)
-  {
-    Class<?> beanClass = bean.getClass();
-    
-    ClassStubSession skel = _skeletonChannelMap.get(beanClass);
-    
-    if (skel == null) {
-      skel = new ClassStubSession(_ampManager, beanClass, config);
-      skel.introspect();
-      _skeletonChannelMap.putIfAbsent(beanClass, skel);
-      skel = _skeletonChannelMap.get(beanClass);
-    }
-    
-    return new ActorSkeletonSession(skel, bean, key, context); 
-  }
-
-  @Override
-  public ActorAmp createSkeletonMain(Class<?> api,
-                                     String path,
-                                     ServiceConfig config)
-  {
-    ClassStub skel = new ClassStub(_ampManager, api, config);
-    skel.introspect();
-    
-    // XXX: need different actor
-    return new StubAmpBeanBase(skel, path, null);
-  }
-  */
-  
   @Override
   public <T> T createProxy(ServiceRefAmp serviceRef,
                            Class<T> api)
@@ -205,7 +113,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
       throw new IllegalArgumentException(api.toString());
     }
     
-    Thread thread = Thread.currentThread();
+    // Thread thread = Thread.currentThread();
     // baratine/8098
     // ClassLoader loader = thread.getContextClassLoader();
     ClassLoader loader = serviceRef.manager().classLoader();
@@ -215,26 +123,26 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
       
       AmpProxyCache cache = getCache(loader);
 
-      Constructor<?> proxyCtor = null;
+      ProxyGeneratorFactoryAmp proxyFactory = null;
       
       synchronized (cache) {
-        proxyCtor = cache.getProxy(api.getName());
+        proxyFactory = cache.getProxy(api.getName());
       }
       
-      if (proxyCtor == null) {
-        proxyCtor = ProxyGeneratorAmp.create(api, loader);
+      if (proxyFactory == null) {
+        proxyFactory = ProxyGeneratorAmp.create(api, loader);
         
-        proxyCtor.setAccessible(true);
+        // proxyFactory.setAccessible(true);
         
         synchronized (cache) {
-          cache.putProxy(api.getName(), proxyCtor);
+          cache.putProxy(api.getName(), proxyFactory);
         }
       }
       
       InboxAmp systemInbox = serviceRef.manager().inboxSystem();
       MessageFactoryAmp messageFactory = _messageFactory;
-      
-      return (T) proxyCtor.newInstance(serviceRef, systemInbox, messageFactory);
+
+      return (T) proxyFactory.newInstance(serviceRef, systemInbox, messageFactory);
     } catch (InvocationTargetException e) {
       if (e.getCause() instanceof RuntimeException) {
         throw (RuntimeException) e.getCause();
@@ -269,27 +177,16 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
   }
 
   static class AmpProxyCache {
-    private HashMap<String,Constructor<?>> _proxyMap = new HashMap<>();
-    private HashMap<String,Constructor<?>> _reproxyMap = new HashMap<>();
+    private HashMap<String,ProxyGeneratorFactoryAmp> _proxyMap = new HashMap<>();
     
-    Constructor<?> getProxy(String name)
+    ProxyGeneratorFactoryAmp getProxy(String name)
     {
       return _proxyMap.get(name);
     }
     
-    void putProxy(String name, Constructor<?> ctor)
+    void putProxy(String name, ProxyGeneratorFactoryAmp proxyFactory)
     {
-      _proxyMap.put(name, ctor);
-    }
-
-    Constructor<?> getReproxy(String name)
-    {
-      return _reproxyMap.get(name);
-    }
-    
-    void putReproxy(String name, Constructor<?> ctor)
-    {
-      _reproxyMap.put(name, ctor);
+      _proxyMap.put(name, proxyFactory);
     }
   }
 }

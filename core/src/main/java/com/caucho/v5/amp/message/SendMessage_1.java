@@ -61,7 +61,7 @@ public final class SendMessage_1 extends MethodMessageBase
                        Object arg1)
   {
     super(outbox, serviceRef, method);
-    
+
     _arg1 = arg1;
   }
 

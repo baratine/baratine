@@ -47,7 +47,7 @@ import io.baratine.service.ServiceExceptionClosed;
 /**
  * Service ref for an object pinned to a parent inbox.
  */
-public class ServiceRefPin extends ServiceRefStubBase
+public class ServiceRefPin extends ServiceRefStub
 {
   private static final Logger log = Logger.getLogger(ServiceRefPin.class.getName());
   
@@ -80,9 +80,9 @@ public class ServiceRefPin extends ServiceRefStubBase
   }
   
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
-    MethodAmp methodBean = stub().getMethod(methodName);
+    MethodAmp methodBean = stub().methodByName(methodName);
     
     //MethodAmp methodCallback = new MethodAmpChild(methodBean, getActor());
     //return new MethodRefImpl(this, methodCallback, getInbox());
@@ -92,9 +92,9 @@ public class ServiceRefPin extends ServiceRefStubBase
   }
   
   @Override
-  public MethodRefAmp getMethod(String methodName, Type type)
+  public MethodRefAmp methodByName(String methodName, Type type)
   {
-    MethodAmp methodBean = stub().getMethod(methodName);
+    MethodAmp methodBean = stub().methodByName(methodName);
     //MethodAmp methodCallback = new MethodAmpChild(methodBean, getActor());
 
     //return new MethodRefImpl(this, methodCallback, getInbox());
@@ -122,10 +122,10 @@ public class ServiceRefPin extends ServiceRefStubBase
   }
 
   @Override
-  public <T> T as(Class<T> api, Class<?>... apis)
+  public <T> T as(Class<T> api)
   {
     //return getManager().createPinProxy(this, api, apis);
-    return manager().newProxy(this, api, apis);
+    return manager().newProxy(this, api);
   }
   
   @Override

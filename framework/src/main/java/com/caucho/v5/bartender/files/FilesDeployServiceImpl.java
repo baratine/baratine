@@ -309,7 +309,7 @@ public class FilesDeployServiceImpl
       path = "//" + path;
     }
 
-    return _rootServiceRef.lookup(path).as(BfsFileSync.class);
+    return _rootServiceRef.service(path).as(BfsFileSync.class);
   }
 
   @Override

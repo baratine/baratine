@@ -847,7 +847,7 @@ public class WebAppBuilder
         type = itemType(service.getClass());
         
         ServiceWebSocket<?,?> serviceWs;
-      
+
         serviceWs = serviceRef.pin(new WebSocketWrapper<>(service))
                              .as(ServiceWebSocket.class);
       
@@ -949,6 +949,7 @@ public class WebAppBuilder
     @Override
     public void open(WebSocket<S> webSocket)
     {
+      System.out.println("OPZ: " + _service);
       try {
         // XXX: convert to async
         _service.open(webSocket); 

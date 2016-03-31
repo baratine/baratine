@@ -142,7 +142,7 @@ public class SchemePod extends ServiceRefBase
     
     if (serviceRef != null) {
       if (hash >= 0) {
-        serviceRef = serviceRef.node(hash);
+        serviceRef = serviceRef.pinNode(hash);
       }
       
       return serviceRef;
@@ -166,7 +166,7 @@ public class SchemePod extends ServiceRefBase
     }
     
     if (hash >= 0) {
-      podRoot = podRoot.node(hash);
+      podRoot = podRoot.pinNode(hash);
     }
     
     return podRoot;
@@ -209,7 +209,7 @@ public class SchemePod extends ServiceRefBase
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
     return new MethodRefNull(this, methodName);
   }

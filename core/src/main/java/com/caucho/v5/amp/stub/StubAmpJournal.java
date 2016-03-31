@@ -154,9 +154,9 @@ public class StubAmpJournal extends StubAmpBase
   }
   
   @Override
-  public MethodAmp getMethod(String name)
+  public MethodAmp methodByName(String name)
   {
-    return _stubClass.getMethod(this, name);
+    return _stubClass.methodByName(this, name);
     
     /*
     MethodAmp method = _skel.getMethod(this, name);

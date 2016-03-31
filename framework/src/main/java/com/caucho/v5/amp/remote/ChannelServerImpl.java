@@ -271,7 +271,7 @@ public class ChannelServerImpl implements ChannelServer
   
   protected ServiceRefAmp lookupSession(ServiceRefAmp serviceRef)
   {
-    return (ServiceRefAmp) serviceRef.lookup("/" + _sessionId);
+    return (ServiceRefAmp) serviceRef.service("/" + _sessionId);
   }
   
   protected String toFullAddress(String address)

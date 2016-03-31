@@ -29,25 +29,27 @@
 
 package com.caucho.v5.ramp.events;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.MethodRef;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.StubAmpBase;
+import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
+import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 /**
  * actor to handle inbound calls.
@@ -62,10 +64,10 @@ class EventNodeAsset extends StubAmpBase
   
   private EventServiceRamp _root;
   
-  private final ArrayList<ServiceRef> _subscriberList
+  private final ArrayList<ServiceRefAmp> _subscriberList
     = new ArrayList<>();
     
-  private final ArrayList<ServiceRef> _consumerList
+  private final ArrayList<ServiceRefAmp> _consumerList
     = new ArrayList<>();
     
   private long _sequence;
@@ -93,12 +95,12 @@ class EventNodeAsset extends StubAmpBase
     return _root;
   }
   
-  void subscribe(ServiceRef subscriber)
+  void subscribe(ServiceRefAmp subscriber)
   {
     subscribeImpl(subscriber);
   }
     
-  public Cancel subscribeImpl(ServiceRef subscriber)
+  public Cancel subscribeImpl(ServiceRefAmp subscriber)
   {
     _subscriberList.add(subscriber);
 
@@ -114,7 +116,7 @@ class EventNodeAsset extends StubAmpBase
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  public Cancel consumeImpl(ServiceRef consumer)
+  public Cancel consumeImpl(ServiceRefAmp consumer)
   {
     _consumerList.add(consumer);
     
@@ -137,21 +139,16 @@ class EventNodeAsset extends StubAmpBase
   }
 
   @Override
-  public MethodAmp getMethod(String name)
+  public MethodAmp methodByName(String name)
   {
     return new RampPublishMethod(name);
-    
-    /*
-    switch (name) {
-    case "subscribe":
-      return new RampSubscribeMethod(name);
-      
-    case "consume":
-      return new RampConsumeMethod(name);
-      
-    default:
-    }
-    */
+  }
+
+  @Override
+  public MethodAmp method(String name, 
+                          Class<?> []paramTypes)
+  {
+    return new RampPublishMethod(name, paramTypes);
   }
   
   @Override
@@ -162,7 +159,12 @@ class EventNodeAsset extends StubAmpBase
   
   public void publish(String methodName, Object[] args)
   {
-    publishImpl(methodName, args);
+    try {
+      publishImpl(methodName, args);
+    } catch (Exception e) {
+      e.printStackTrace();
+      log.log(Level.FINER, e.toString(), e);
+    }
   }
 
   void publishFromRemote(String methodName, Object[] args)
@@ -177,10 +179,10 @@ class EventNodeAsset extends StubAmpBase
     int size = _subscriberList.size();
     
     for (int i = 0; i < size; i++) {
-      ServiceRef listener = _subscriberList.get(i);
+      ServiceRefAmp listener = _subscriberList.get(i);
       
       if (! listener.isClosed()) {
-        MethodRef methodRef = listener.getMethod(methodName);
+        MethodRefAmp methodRef = listener.methodByName(methodName);
 
         methodRef.send(args);
       }
@@ -192,9 +194,9 @@ class EventNodeAsset extends StubAmpBase
     
     size = _consumerList.size();
     if (size > 0) {
-      ServiceRef consumer = _consumerList.get((int) (sequence % size));
+      ServiceRefAmp consumer = _consumerList.get((int) (sequence % size));
       
-      MethodRef method = consumer.getMethod(methodName);
+      MethodRefAmp method = consumer.methodByName(methodName);
       
       method.send(args);
     }
@@ -221,15 +223,22 @@ class EventNodeAsset extends StubAmpBase
   
   class RampPublishMethod extends MethodAmpBase {
     private String _name;
+    private Class<?> []_paramTypes;
     
     RampPublishMethod(String name)
     {
       _name = name;
     }
+    
+    RampPublishMethod(String name, Class<?> []paramTypes)
+    {
+      _name = name;
+      _paramTypes = paramTypes;
+    }
 
     @Override
     public void send(HeadersAmp headers,
-                     StubAmp actor,
+                     StubAmp stub,
                      Object []args)
     {
       publish(_name, args);
@@ -238,10 +247,10 @@ class EventNodeAsset extends StubAmpBase
     @Override
     public void query(HeadersAmp headers,
                       Result<?> result,
-                      StubAmp actor,
+                      StubAmp stub,
                       Object []args)
     {
-      send(headers, actor, args);
+      send(headers, stub, args);
       
       result.ok(null);
       /*

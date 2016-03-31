@@ -574,7 +574,7 @@ public class RampImport
       
       ServiceRefAmp serviceRef = handle.__caucho_getServiceRef();
       
-      ClassLoader loader = serviceRef.getDelegateClassLoader();
+      ClassLoader loader = serviceRef.classLoader();
       
       if (loader == _targetLoader) {
       }
@@ -630,7 +630,7 @@ public class RampImport
       
       ServiceRefAmp serviceRef = (ServiceRefAmp) value;
       
-      ClassLoader loader = serviceRef.getDelegateClassLoader();
+      ClassLoader loader = serviceRef.classLoader();
       
       if (loader == _targetLoader) {
         

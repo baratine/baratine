@@ -527,18 +527,17 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   private ServiceBuilderImpl addressAuto(Class<?> serviceClass)
   {
     String address;
+    
+    Class<?> api = api();
    
-    if (api() != null) {
-      address = _services.address(api());
-    }
-    else if (_type != null) {
-      address = address(_type);
+    if (_type != null) {
+      address = address(_type, api);
     }
     else if (serviceClass != null) {
-      address = address(serviceClass);
+      address = address(serviceClass, api);
     }
     else if (_worker != null) {
-      address = address(_worker.getClass());
+      address = address(_worker.getClass(), api);
     }
     else {
       throw new IllegalStateException();
@@ -558,8 +557,10 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return this;
   }
   
-  private String address(Class<?> serviceClass)
+  private String address(Class<?> serviceClass, Class<?> apiClass)
   {
+    return _services.address(serviceClass, apiClass);
+    /*
     Service service = serviceClass.getAnnotation(Service.class);
     
     if (service != null && ! service.value().isEmpty()) {
@@ -578,7 +579,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       return _services.address(api);
     }
     
-    return _services.address(serviceClass); 
+    return _services.address(serviceClass);
+    */ 
   }
   
   private Class<?> findApi(Class<?> serviceClass)

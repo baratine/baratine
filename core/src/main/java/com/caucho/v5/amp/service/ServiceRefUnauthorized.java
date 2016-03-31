@@ -67,7 +67,7 @@ public final class ServiceRefUnauthorized extends ServiceRefBase
   }
   
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
     return new MethodRefNull(this, methodName);
   }

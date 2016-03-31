@@ -83,7 +83,7 @@ public class ServiceRefDuplicateBinding extends ServiceRefBase
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
     return new MethodRefException(this, methodName, _exn);
   }

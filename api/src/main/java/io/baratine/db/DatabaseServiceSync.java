@@ -89,5 +89,5 @@ public interface DatabaseServiceSync extends DatabaseService
    * @return true on success
    */
   boolean watch(@Service DatabaseWatch watch, String sql, Object ...param);
-  boolean unwatch(@Service DatabaseWatch watch, String sql, Object ...param);
+  //boolean unwatch(@Service DatabaseWatch watch, String sql, Object ...param);
 }

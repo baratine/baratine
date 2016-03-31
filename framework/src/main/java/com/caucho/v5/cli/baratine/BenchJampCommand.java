@@ -33,7 +33,9 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.remote.ServiceClientAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.cli.daemon.ArgsDaemon;
 import com.caucho.v5.cli.server.ServerCommandBase;
@@ -42,9 +44,7 @@ import com.caucho.v5.health.shutdown.ExitCode;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.client.ServiceClient;
-import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
 
 /**
  * Command to benchmark a jamp service.
@@ -252,12 +252,12 @@ public class BenchJampCommand extends ServerCommandBase<ArgsCli>
       int threadCount = Math.max(1, count / clients);
 
       for (int i = 0; i < conns; i++) {
-        ServiceClient client = ServiceClient.newClient(_url).build();
+        ServiceClientAmp client = ServiceClientAmp.newClient(_url).build();
 
         client.connect();
 
-        ServiceRef serviceRef = client.service(_address);
-        MethodRef methodRef = serviceRef.getMethod(_methodName);
+        ServiceRefAmp serviceRef = client.service(_address);
+        MethodRefAmp methodRef = serviceRef.methodByName(_methodName);
 
         for (int j = 0; j < threads; j++) {
           int index = i * threads + j;
@@ -293,12 +293,12 @@ public class BenchJampCommand extends ServerCommandBase<ArgsCli>
 
   private class ProfileTask implements Runnable {
     private ProfileContext _context;
-    private MethodRef _methodRef;
+    private MethodRefAmp _methodRef;
     private Object []_args;
     private int _count;
 
     ProfileTask(ProfileContext context,
-                MethodRef methodRef,
+                MethodRefAmp methodRef,
                 Object []args,
                 int count)
     {
@@ -346,7 +346,7 @@ public class BenchJampCommand extends ServerCommandBase<ArgsCli>
   public class ProfileAsync implements Result<Object>
   {
     private ProfileContext _context;
-    private MethodRef _methodRef;
+    private MethodRefAmp _methodRef;
     private Object []_args;
     private final int _count;
     private final int _batchCount;
@@ -358,7 +358,7 @@ public class BenchJampCommand extends ServerCommandBase<ArgsCli>
 
     ProfileAsync(ProfileContext context,
                  ServiceClient client,
-                 MethodRef methodRef,
+                 MethodRefAmp methodRef,
                  Object []args,
                  int count,
                  int batchCount)

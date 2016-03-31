@@ -165,7 +165,7 @@ public final class StubJournal extends StubAmpBase
    * Journal getMethod returns null because the replay bypasses the journal.
    */
   @Override
-  public MethodAmp getMethod(String methodName)
+  public MethodAmp methodByName(String methodName)
   {
     /*
     MethodAmp method = _actor.getMethod(methodName);
@@ -173,7 +173,7 @@ public final class StubJournal extends StubAmpBase
     return method;
     */
     
-    MethodAmp method = _actor.getMethod(methodName);
+    MethodAmp method = _actor.methodByName(methodName);
     
     return new MethodJournal(method, 
                              _journal,

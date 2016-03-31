@@ -48,6 +48,10 @@ public interface MethodAmp
   
   boolean isClosed();
   
+  default boolean isValid()
+  {
+    return true;
+  }
   
   default boolean isDirect()
   {

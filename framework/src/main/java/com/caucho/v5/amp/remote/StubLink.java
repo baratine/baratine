@@ -129,7 +129,7 @@ public class StubLink extends StubAmpBase
   }
 
   @Override
-  public MethodAmp getMethod(String methodName)
+  public MethodAmp methodByName(String methodName)
   {
     return new LinkMethod(methodName);
   }

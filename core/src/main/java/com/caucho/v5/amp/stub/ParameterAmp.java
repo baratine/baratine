@@ -49,6 +49,17 @@ public interface ParameterAmp
   
   Annotation[] annotations();
   
+  default Annotation getAnnotation(Class<? extends Annotation> annType)
+  {
+    for (Annotation ann : annotations()) {
+      if (ann.annotationType().equals(annType)) {
+        return ann;
+      }
+    }
+    
+    return null;
+  }
+  
   static ParameterAmp of(Parameter parameter)
   {
     return new ParameterAmpImpl(parameter);

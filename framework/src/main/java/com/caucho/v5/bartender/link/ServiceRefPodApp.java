@@ -157,13 +157,13 @@ public class ServiceRefPodApp extends ServiceRefWrapper
   }
   
   @Override
-  public MethodRefAmp getMethod(String name)
+  public MethodRefAmp methodByName(String name)
   {
     return new MethodRefDelegate(name);
   }
   
   @Override
-  public MethodRefAmp getMethod(String name, Type type)
+  public MethodRefAmp methodByName(String name, Type type)
   {
     return new MethodRefDelegateType(name, type);
   }
@@ -303,7 +303,7 @@ public class ServiceRefPodApp extends ServiceRefWrapper
       ServiceRefAmp delegate = ServiceRefPodApp.this.delegate();
       
       if (delegate != _delegate) {
-        _methodRef = delegate.getMethod(_name);
+        _methodRef = delegate.methodByName(_name);
         _delegate = delegate;
       }
       
@@ -336,7 +336,7 @@ public class ServiceRefPodApp extends ServiceRefWrapper
       ServiceRefAmp delegate = ServiceRefPodApp.this.delegate();
       
       if (delegate != _delegate) {
-        _methodRef = delegate.getMethod(_name, _type);
+        _methodRef = delegate.methodByName(_name, _type);
         _delegate = delegate;
       }
       

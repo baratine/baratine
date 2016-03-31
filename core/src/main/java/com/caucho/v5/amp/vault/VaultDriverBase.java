@@ -271,7 +271,7 @@ public class VaultDriverBase<ID,T>
     private MethodAmp method(ServiceRefAmp childRef)
     {
       if (_method == null) {
-        _method = childRef.getMethod(_methodName).method();
+        _method = childRef.methodByName(_methodName).method();
       }
       
       return _method;

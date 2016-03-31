@@ -679,9 +679,9 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       }
 
       @Override
-      public ServiceRefAmp node(int hash)
+      public ServiceRefAmp pinNode(int hash)
       {
-        return delegate().node(hash);
+        return delegate().pinNode(hash);
       }
 
       @Override

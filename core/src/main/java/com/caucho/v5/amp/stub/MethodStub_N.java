@@ -113,11 +113,11 @@ class MethodStub_N extends MethodStubBase
   @Override
   public void query(HeadersAmp headers,
                     Result<?> result,
-                    StubAmp actor,
+                    StubAmp stub,
                     Object []args)
   {
     try {
-      Object bean = actor.bean();
+      Object bean = stub.bean();
 
       if (log.isLoggable(Level.FINEST)) {
         log.finest("amp-query " + name() + "[" + bean + "] " + toList(args)
@@ -129,8 +129,9 @@ class MethodStub_N extends MethodStubBase
       ((Result) result).ok(value);
     } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
       if (args.length != parameters().length) {
-        throw new ServiceExceptionIllegalArgument(L.l("{0} in {1} called with invalid argument length ({2}).",
-                                   name(), actor, args.length));
+        throw new ServiceExceptionIllegalArgument(L.l("{0}.{1} called with invalid argument length ({2}).",
+                                   stub.bean().getClass().getSimpleName(), 
+                                   name(),  args.length));
                                          
       }
       

@@ -80,7 +80,7 @@ public class BfsPath extends FilesystemPath
       newPath = "//" + newPath;
     }
     
-    _file = rootServiceRef.lookup(newPath).as(BfsFileSync.class);
+    _file = rootServiceRef.service(newPath).as(BfsFileSync.class);
     
     Objects.requireNonNull(_file);
   }

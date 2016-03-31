@@ -68,11 +68,11 @@ public class StubAmpBean extends StubAmpBeanBase
     _name = name;
   }
   
-  public StubAmpBean(StubClass skeleton,
+  public StubAmpBean(StubClass stubClass,
                       Object bean,
                       ServiceConfig config)
   {
-    this(skeleton, bean, config.name(), null);
+    this(stubClass, bean, config.name(), null);
   }
 
   @Override

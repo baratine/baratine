@@ -91,7 +91,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   }
   
   @Override
-  public ServiceRefAmp node(int hash)
+  public ServiceRefAmp pinNode(int hash)
   {
     return new ServiceRefPod(_podRoot, _path, Math.abs(hash));
   }
@@ -113,13 +113,13 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
     return new MethodRefPod(this, methodName, null);
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName, Type type)
+  public MethodRefAmp methodByName(String methodName, Type type)
   {
     return new MethodRefPod(this, methodName, type);
   }
@@ -140,12 +140,12 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   }
   
   @Override
-  public ClassLoader getDelegateClassLoader()
+  public ClassLoader classLoader()
   {
     ServiceRefAmp serviceRef = getLocalService();
     
     if (serviceRef != null) {
-      return serviceRef.getDelegateClassLoader();
+      return serviceRef.classLoader();
     }
     else {
       return manager().classLoader();

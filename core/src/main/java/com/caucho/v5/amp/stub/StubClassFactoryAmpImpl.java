@@ -34,8 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.session.ActorSkeletonSession;
-import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.StubContainerAmp;
 
 /**
@@ -170,6 +168,7 @@ public class StubClassFactoryAmpImpl implements StubClassFactoryAmp
   }
   */
 
+  /*
   @Override
   public StubAmp createSkeletonSession(Object bean,
                                         String key,
@@ -189,6 +188,7 @@ public class StubClassFactoryAmpImpl implements StubClassFactoryAmp
     
     return new ActorSkeletonSession(skel, bean, key, context); 
   }
+  */
 
   /*
   @Override

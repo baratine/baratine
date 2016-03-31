@@ -45,7 +45,8 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 /**
  * Creates MPC skeletons and stubs.
  */
-class MethodStub_1 extends MethodStubBase {
+class MethodStub_1 extends MethodStubBase
+{
   private static final Logger log
   = Logger.getLogger(MethodStub_1.class.getName());
 

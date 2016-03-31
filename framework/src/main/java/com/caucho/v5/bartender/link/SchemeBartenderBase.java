@@ -110,7 +110,7 @@ public class SchemeBartenderBase extends ServiceRefBase
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
     return new MethodRefNull(this, address());
   }
@@ -151,7 +151,7 @@ public class SchemeBartenderBase extends ServiceRefBase
     
     if (hostname.equals(_selfServer.getId())) {
       if (! path.isEmpty()) {
-        return _selfProxyRef.lookup(path);
+        return _selfProxyRef.service(path);
       }
       else {
         return _selfProxyRef;

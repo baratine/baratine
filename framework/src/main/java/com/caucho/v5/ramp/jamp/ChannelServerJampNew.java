@@ -253,7 +253,7 @@ public class ChannelServerJampNew implements ChannelServer
     ServiceRefAmp linkService = getLink(address);
 
     if (linkService != null) {
-      return linkService.getMethod(methodName);
+      return linkService.methodByName(methodName);
     }
     
     MethodRefAmp methodRef = _registry.method(address, methodName);
@@ -276,7 +276,7 @@ public class ChannelServerJampNew implements ChannelServer
       
       putLink(address, sessionRef);
 
-      return sessionRef.getMethod(methodName);
+      return sessionRef.methodByName(methodName);
     }
     else if (serviceRef.isPublic() || addressService.startsWith("public:")) {
       return methodRef;
@@ -292,7 +292,7 @@ public class ChannelServerJampNew implements ChannelServer
       log.fine("unauthorized service " + address + " from " + this);
     }
       
-    return new ServiceRefUnauthorized(getManager(), address).getMethod(methodName);
+    return new ServiceRefUnauthorized(getManager(), address).methodByName(methodName);
   }
   
   @Override

@@ -94,7 +94,7 @@ public interface ServiceRef
    * @param name name of the method
    * @return
    */
-  MethodRef getMethod(String name);
+  //MethodRef getMethod(String name);
 
   /**
    * Pin an object to the service, creating a dependent service 
@@ -107,7 +107,7 @@ public interface ServiceRef
   /**
    * Create a proxy for the service with a given api.
    */
-  <T> T as(Class<T> api, Class<?> ... apis);
+  <T> T as(Class<T> api);
   
   /**
    * Lookup a child service in the ServiceManager with a relative path.
@@ -116,7 +116,7 @@ public interface ServiceRef
    * 
    * @param path a relative path to the service.
    */
-  default ServiceRef lookup(String path)
+  default ServiceRef service(String path)
   {
     if (! path.startsWith("/")) {
       throw new IllegalArgumentException(path + " must start with '/'");
@@ -128,11 +128,14 @@ public interface ServiceRef
   /**
    * Restrict the service to a specific node for a pod service.
    */
-  default ServiceRef node(int hash)
+  default ServiceRef pinNode(int hash)
   {
     return this;
   }
   
+  /**
+   * Count of nodes in the service's pod.
+   */
   default int nodeCount()
   {
     return 1;

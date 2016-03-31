@@ -83,7 +83,7 @@ public class WebSocketApply<T,S> implements RouteBaratine
     */
 
     ServiceWebSocket<T, S> service = _factory.apply(request);
-    
+
     WebSocketManager wsManager = request.webApp().wsManager();
     WebSocketBaratineImpl<T,S> ws
       = new WebSocketBaratineImpl<>(wsManager, service, _type);
@@ -96,7 +96,7 @@ public class WebSocketApply<T,S> implements RouteBaratine
         log.fine("WebSocket handshake failed for " + request);
         return false;
       }
-    } catch (Exception e) {
+    } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
       e.printStackTrace();
       

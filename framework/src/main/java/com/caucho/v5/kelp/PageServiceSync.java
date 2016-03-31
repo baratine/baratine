@@ -111,7 +111,7 @@ public interface PageServiceSync extends PageService
    * @param flushSequence the page write-count, which correlates save requests
    *   with completions.
    */
-  void afterDataFlush(ArrayList<PageFlush> pageList);
+  void afterDataFlush(Page page, int seq); //ArrayList<PageFlush> pageList);
 
   void freeSegment(SegmentKelp segment);
 

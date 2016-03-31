@@ -110,7 +110,7 @@ public class StubVault extends StubClass
     Class<?> entityClass = _configResource.entityType();
     Key<Object> key = (Key) Key.of(entityClass);
 
-    Provider<Object> provider = ampManager().injector().provider(key);
+    Provider<Object> provider = services().injector().provider(key);
     MethodHandle setter = findIdSetter();
     Convert<String,?> converter = findConverter();
     
@@ -175,7 +175,7 @@ public class StubVault extends StubClass
 
     field = field.toLowerCase();
 
-    MethodFindOne ampMethod = new MethodFindOne(ampManager(),
+    MethodFindOne ampMethod = new MethodFindOne(services(),
                                                 _stubAsset,
                                                 _configResource.driver(),
                                                 _address,

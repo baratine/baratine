@@ -95,7 +95,7 @@ public class SegmentStream
           sOut = rwServiceImpl.openWriterGc(_sequence);
         }
         else {
-          sOut = rwServiceImpl.openWriter(_sequence);
+          sOut = rwServiceImpl.openWriterSeq(_sequence);
         }
       }
       else {

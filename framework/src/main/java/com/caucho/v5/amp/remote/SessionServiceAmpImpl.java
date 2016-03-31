@@ -29,19 +29,19 @@
 
 package com.caucho.v5.amp.remote;
 
+import java.util.ArrayList;
+import java.util.Objects;
+
+import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.spi.MethodRefAmp;
+
 import io.baratine.service.Cancel;
-import io.baratine.service.MethodRef;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.spi.Headers;
-
-import java.util.ArrayList;
-import java.util.Objects;
-
-import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.ServiceRefAmp;
 
 /**
  * Local link for channel management.
@@ -137,11 +137,11 @@ public class SessionServiceAmpImpl
   {
     String channel = getChannelAddress() + listenerAddress;
     
-    ServiceRef service = _manager.service(serviceAddress);
-    ServiceRef listener = _manager.service(channel);
+    ServiceRefAmp service = _manager.service(serviceAddress);
+    ServiceRefAmp listener = _manager.service(channel);
     
-    MethodRef register = service.getMethod(registerMethod);
-    MethodRef unregister = service.getMethod(unregisterMethod);
+    MethodRefAmp register = service.methodByName(registerMethod);
+    MethodRefAmp unregister = service.methodByName(unregisterMethod);
     
     Headers headers = null;
     register.send(headers, listener);
@@ -206,10 +206,10 @@ public class SessionServiceAmpImpl
   }
   
   static class ServiceSubscription extends Subscription {
-    private MethodRef _unregister;
+    private MethodRefAmp _unregister;
     private ServiceRef _listener;
     
-    ServiceSubscription(MethodRef unregister,
+    ServiceSubscription(MethodRefAmp unregister,
                         ServiceRef listener)
     {
       _unregister = unregister;

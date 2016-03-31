@@ -94,9 +94,9 @@ public class ServiceRefLazy extends ServiceRefLazyBase
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
-    MethodRefAmp methodRef = delegate().getMethod(methodName);
+    MethodRefAmp methodRef = delegate().methodByName(methodName);
 
     if (! methodRef.isClosed()) {
       return methodRef;
@@ -108,9 +108,9 @@ public class ServiceRefLazy extends ServiceRefLazyBase
   
   
   @Override
-  public MethodRefAmp getMethod(String methodName, Type returnType)
+  public MethodRefAmp methodByName(String methodName, Type returnType)
   {
-    MethodRefAmp methodRef = delegate().getMethod(methodName, returnType);
+    MethodRefAmp methodRef = delegate().methodByName(methodName, returnType);
     
     if (! methodRef.isClosed()) {
       return methodRef;

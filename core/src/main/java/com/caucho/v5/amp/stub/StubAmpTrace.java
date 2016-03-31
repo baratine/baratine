@@ -143,9 +143,9 @@ public class StubAmpTrace implements ActorAmpState
   }
   
   @Override
-  public MethodAmp getMethod(String methodName)
+  public MethodAmp methodByName(String methodName)
   {
-    MethodAmp method = delegate().getMethod(methodName);
+    MethodAmp method = delegate().methodByName(methodName);
     
     return new MethodAmpTrace(method);
   }

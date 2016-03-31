@@ -94,9 +94,9 @@ public class ServiceRefAlias extends ServiceRefWrapper
   }
   
   @Override
-  public ServiceRefAmp lookup(String path)
+  public ServiceRefAmp service(String path)
   {
-    ServiceRefAmp delegate = (ServiceRefAmp) _serviceRef.lookup(path);
+    ServiceRefAmp delegate = (ServiceRefAmp) _serviceRef.service(path);
     
     if (delegate != null) {
       return new ServiceRefAlias(_address + path, delegate); 
@@ -107,9 +107,9 @@ public class ServiceRefAlias extends ServiceRefWrapper
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
-    return _serviceRef.getMethod(methodName);
+    return _serviceRef.methodByName(methodName);
   }
 
   @Override

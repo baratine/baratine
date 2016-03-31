@@ -51,7 +51,7 @@ public class MethodRefLazyProxy extends MethodRefLazy
   @Override
   protected MethodRefAmp createDelegate()
   {
-    MethodRefAmp methodRef = _serviceRef.getMethod(_methodName);
+    MethodRefAmp methodRef = _serviceRef.methodByName(_methodName);
 
     if (methodRef != null && ! methodRef.isClosed()) {
       return methodRef;

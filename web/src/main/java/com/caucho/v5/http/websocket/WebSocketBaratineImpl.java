@@ -272,7 +272,6 @@ public class WebSocketBaratineImpl<T,S>
     _outProxy = req.connHttp().outProxy();
     
     _outWriter = new OutWebSocketWriter();
-
     _service.open(this);
     
     ServiceRef.flushOutbox();

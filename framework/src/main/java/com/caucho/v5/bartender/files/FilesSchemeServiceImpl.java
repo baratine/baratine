@@ -100,7 +100,7 @@ public class FilesSchemeServiceImpl
     FileServiceRoot rootPod = _podMap.get(podId);
     
     if (rootPod != null) {
-      ServiceRefAmp rootPodRef = ServiceRefAmp.toServiceRef(rootPod);
+      ServiceRefAmp rootPodRef = ServiceRefAmp.toRef(rootPod);
 
       return rootPodRef.onLookup(tail); 
     }

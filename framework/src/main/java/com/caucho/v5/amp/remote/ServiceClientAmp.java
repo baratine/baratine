@@ -1,7 +1,7 @@
 /*
-- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,24 +27,29 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.session;
+package com.caucho.v5.amp.remote;
 
 import com.caucho.v5.amp.ServicesAmp;
 
+import io.baratine.client.ServiceClient;
+import io.baratine.spi.WebServerProvider;
+
 /**
- * Context for a service resource.
+ * Client interface to a remote Baratine service.
  */
-public class ContextSessionFactory
+public interface ServiceClientAmp extends ServiceClient, ServicesAmp
 {
-  private ServicesAmp _ampManager;
-  
-  public ContextSessionFactory(ServicesAmp ampManager)
+  static BuilderAmp newClient(String url)
   {
-    _ampManager = ampManager;
+    return (BuilderAmp) WebServerProvider.current().newClient(url);
   }
   
-  public ContextSession create(String path, Class<?> beanClass, boolean isJournal)
-  {
-    return new ContextSession(_ampManager, path, isJournal);
+  ServiceClientAmp connect();
+  
+  @Override
+  void close();
+  
+  interface BuilderAmp {
+    ServiceClientAmp build();
   }
 }

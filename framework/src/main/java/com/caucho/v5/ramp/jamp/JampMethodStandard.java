@@ -107,7 +107,7 @@ public class JampMethodStandard extends JampMethodRest
   }
   */
 
-  protected MethodRef getMethod()
+  protected MethodRefAmp getMethod()
   {
     return _methodRef;
   }
@@ -115,16 +115,9 @@ public class JampMethodStandard extends JampMethodRest
   @Override
   public boolean isClosed()
   {
-    MethodRef method = getMethod();
+    MethodRefAmp method = getMethod();
 
-    if (method instanceof MethodRefAmp) {
-      MethodRefAmp methodAmp = (MethodRefAmp) method;
-      
-      return methodAmp.isClosed();
-    }
-    else {
-      return true;
-    }
+    return method.isClosed();
   }
 
   @Override

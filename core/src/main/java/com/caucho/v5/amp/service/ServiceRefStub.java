@@ -29,6 +29,7 @@
 
 package com.caucho.v5.amp.service;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
@@ -51,15 +52,15 @@ import io.baratine.service.Result;
  * Handles the context for an actor, primarily including its
  * query map.
  */
-abstract class ServiceRefStubBase extends ServiceRefBase
+abstract class ServiceRefStub extends ServiceRefBase
 {
   private final static Logger log
-    = Logger.getLogger(ServiceRefStubBase.class.getName());
+    = Logger.getLogger(ServiceRefStub.class.getName());
   
   private final InboxAmp _inbox;
   private final StubAmp _stub;
 
-  public ServiceRefStubBase(StubAmp stub,
+  public ServiceRefStub(StubAmp stub,
                              InboxAmp inbox)
   {
     _stub = stub;
@@ -97,11 +98,23 @@ abstract class ServiceRefStubBase extends ServiceRefBase
   }
   
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp method(String methodName,
+                             Type returnType,
+                             Class<?> ...params)
   {
     // start();
     
-    MethodAmp method = _stub.getMethod(methodName);
+    MethodAmp method = _stub.method(methodName, params);
+
+    return createMethod(method);
+  }
+  
+  @Override
+  public MethodRefAmp methodByName(String methodName)
+  {
+    // start();
+    
+    MethodAmp method = _stub.methodByName(methodName);
 
     return createMethod(method);
   }
@@ -222,7 +235,7 @@ abstract class ServiceRefStubBase extends ServiceRefBase
   }
   
   @Override
-  public ServiceRefAmp lookup(String path)
+  public ServiceRefAmp service(String path)
   {
     return manager().service(address() + path);
   }

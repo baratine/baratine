@@ -146,12 +146,6 @@ public class StubAmpBase implements StubAmp
   }
   
   @Override
-  public MethodAmp getMethod(String methodName)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  
-  @Override
   public JournalAmp journal()
   {
     return null;

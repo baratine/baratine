@@ -53,13 +53,13 @@ abstract public class ServiceRefDynamic extends ServiceRefWrapper
   }
   
   @Override
-  public MethodRefAmp getMethod(String methodName)
+  public MethodRefAmp methodByName(String methodName)
   {
     return new MethodRefDynamic(this, methodName);
   }
 
   @Override
-  public MethodRefAmp getMethod(String methodName, Type returnType)
+  public MethodRefAmp methodByName(String methodName, Type returnType)
   {
     return new MethodRefDynamic(this, methodName, returnType);
   }
@@ -71,7 +71,7 @@ abstract public class ServiceRefDynamic extends ServiceRefWrapper
   }
 
   @Override
-  public ServiceRefAmp lookup(String path)
+  public ServiceRefAmp service(String path)
   {
     return new ServiceRefDynamicChild(path);
   }
@@ -86,7 +86,7 @@ abstract public class ServiceRefDynamic extends ServiceRefWrapper
     
     public ServiceRefAmp delegate()
     {
-      return (ServiceRefAmp) ServiceRefDynamic.this.delegate().lookup(_path);
+      return (ServiceRefAmp) ServiceRefDynamic.this.delegate().service(_path);
     }
   }
   

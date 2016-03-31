@@ -181,7 +181,7 @@ public class JFileSystem extends FileSystem
 
   protected BfsFileSync lookupFile(String fullPath)
   {
-    return _root.lookup(fullPath).as(BfsFileSync.class);
+    return _root.service(fullPath).as(BfsFileSync.class);
   }
 
   protected JPath getRoot()

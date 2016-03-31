@@ -31,6 +31,8 @@ package com.caucho.v5.amp.proxy;
 
 import io.baratine.service.ServiceRef;
 
+import java.util.Arrays;
+
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
@@ -48,7 +50,6 @@ abstract public class ProxyUtilsAmp implements ServiceRef
   protected ProxyUtilsAmp(ServiceRefAmp serviceRef,
                              InboxAmp systemMailbox)
   {
-    System.out.println("PUA: " + serviceRef + " " + this);
     _serviceRef = serviceRef;
     _systemMailbox = systemMailbox;
   }
@@ -67,20 +68,21 @@ abstract public class ProxyUtilsAmp implements ServiceRef
   
   protected final MethodAmp __caucho_getMethod(String methodName)
   {
-    return __caucho_getServiceRef().getMethod(methodName).method();
+    return __caucho_getServiceRef().methodByName(methodName).method();
   }
   
   public static final MethodAmp __caucho_getMethod(ServiceRefAmp serviceRef,
-                                                         String methodName)
+                                                   String methodName)
   {
-    return serviceRef.getMethod(methodName).method();
+    return serviceRef.methodByName(methodName).method();
   }
   
   public static final MethodAmp __caucho_getMethod(ServiceRefAmp serviceRef,
-                                                         String methodName,
-                                                         Class<?> retType)
+                                                   String methodName,
+                                                   Class<?> retType,
+                                                   Class<?> []paramTypes)
   {
-    return serviceRef.getMethod(methodName, retType).method();
+    return serviceRef.method(methodName, retType, paramTypes).method();
   }
   
   public static boolean __caucho_toBoolean(Object value)

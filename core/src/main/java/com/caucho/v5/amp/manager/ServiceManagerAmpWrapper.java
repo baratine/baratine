@@ -33,25 +33,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
-import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.session.ContextSession;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
-import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 
 import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
-import io.baratine.service.Service;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
 import io.baratine.spi.Message;
@@ -96,6 +92,12 @@ abstract public class ServiceManagerAmpWrapper implements ServicesAmp
   public String address(Class<?> api)
   {
     return delegate().address(api);
+  }
+
+  @Override
+  public String address(Class<?> type, Class<?> api)
+  {
+    return delegate().address(type, api);
   }
 
   @Override
@@ -494,12 +496,14 @@ abstract public class ServiceManagerAmpWrapper implements ServicesAmp
     return delegate().getRemoteMessageReadCount();
   }
 
+  /*
   // XXX: refactor
   @Override
   public ContextSession createContextServiceSession(String path, Class<?> beanClass)
   {
     return delegate().createContextServiceSession(path, beanClass);
   }
+  */
 
   /*
   @Override
