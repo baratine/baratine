@@ -30,7 +30,6 @@
 package com.caucho.v5.amp.vault;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -38,6 +37,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -47,6 +49,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.AmpException;
 import com.caucho.v5.amp.proxy.ProxyUtilsAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.bytecode.JavaClass;
 import com.caucho.v5.bytecode.JavaClassLoader;
 import com.caucho.v5.bytecode.JavaMethod;
@@ -74,8 +77,11 @@ public class ClassGeneratorVault<T>
   
   private Class<T> _proxyClass;
   
-  private HashMap<String,Method> _methodMap = new HashMap<>();
+  private ArrayList<Method> _methodList = new ArrayList<>();
   private JavaClass _jClass;
+  
+  private HashMap<Method,String> _methodFieldMap = new HashMap<>();
+  private int _sequence;
   
   ClassGeneratorVault(Class<T> type,
                            ClassLoader loader)
@@ -309,12 +315,13 @@ public class ClassGeneratorVault<T>
       if (isDebug) {
         try {
           String userName = System.getProperty("user.name");
+          
+          String dir = "/tmp/" + userName + "/qa";
+          
+          Path path = Paths.get(dir + "/" + thisClassName.replace('/', '_') + ".class");
+          Files.createDirectories(Paths.get(dir));
 
-          try (OutputStream out = new FileOutputStream("file:/tmp/"
-                           + userName
-                           + "/qa/"
-                           + thisClassName.replace('/', '_')
-                           + ".class")) {
+          try (OutputStream out = Files.newOutputStream(path)) {
             out.write(buffer, 0, buffer.length); 
           }
         } catch (Exception e) {
@@ -480,7 +487,7 @@ public class ClassGeneratorVault<T>
 
     CodeWriterAttribute code = ctor.createCodeWriter();
     code.setMaxLocals(4);
-    code.setMaxStack(5);
+    code.setMaxStack(10);
     
     code.pushObjectVar(0);
     
@@ -491,10 +498,10 @@ public class ClassGeneratorVault<T>
     //code.pushObjectVar(0);
     //code.pushObjectVar(1);
     
-    for (Method method : _methodMap.values()) {
+    for (Method method : _methodList) {
       String methodName = method.getName();
       
-      jClass.createField(getMethodFieldName(methodName),
+      jClass.createField(fieldName(method),
                          MethodVault.class)
             .setAccessFlags(Modifier.PRIVATE);
       
@@ -502,19 +509,35 @@ public class ClassGeneratorVault<T>
       
       code.pushObjectVar(1);
       
+      /*
       code.pushObjectVar(0);
       code.invoke(Object.class, "getClass", Class.class);
+      */
+      code.pushConstantClass(_type);
       
       code.pushConstant(methodName);
+      
+      Class<?> []paramTypes = MethodAmp.paramTypes(method);
+      
+      code.pushInt(paramTypes.length);
+      code.newObjectArray(Class.class);
+      
+      for (int i = 0; i < paramTypes.length; i++) {
+        code.dup();
+        code.pushInt(i);
+        code.pushConstantClass(paramTypes[i]);
+        code.setArrayObject();
+      }
       
       code.invokeInterface(VaultDriver.class,
                            "newMethod",
                            MethodVault.class,
                            Class.class,
-                           String.class);
+                           String.class,
+                           Class[].class);
 
       code.putField(jClass.getThisClass(),
-                    getMethodFieldName(methodName),
+                    fieldName(method),
                     MethodVault.class);
     }
     
@@ -565,13 +588,6 @@ public class ClassGeneratorVault<T>
   }
   */
   
-  private void addMethod(Method method)
-  {
-    if (_methodMap.get(method.getName()) == null) {
-      _methodMap.put(method.getName(), method);
-    }
-  }
-  
   /**
    * void foo(X a1, Y a2, Result<T> cont)
    * {
@@ -599,7 +615,7 @@ public class ClassGeneratorVault<T>
 
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  getMethodFieldName(methodName),
+                  fieldName(method),
                   MethodVault.class);
     
     code.pushObjectVar(getLength(parameterTypes, resultOffset) + 1);
@@ -621,6 +637,26 @@ public class ClassGeneratorVault<T>
     code.addReturn();
 
     code.close();
+  }
+  
+  private String fieldName(Method method)
+  {
+    String fieldName = _methodFieldMap.get(method);
+    
+    if (fieldName == null) {
+      fieldName = "__caucho_ampMethod_" + method.getName() + "_" + _sequence++;
+      
+      _methodFieldMap.put(method, fieldName);
+    }
+    
+    return fieldName;
+  }
+
+  private void addMethod(Method method)
+  {
+    if (! _methodList.contains(method)) {
+      _methodList.add(method);
+    }
   }
   
   private int getLength(Class<?> []types, int limit)
@@ -912,11 +948,6 @@ public class ClassGeneratorVault<T>
     }
   }
   */
-  
-  private String getMethodFieldName(String methodName)
-  {
-    return "__caucho_ampMethod_" + methodName;
-  }
 
   private String createDescriptor(Method method)
   {

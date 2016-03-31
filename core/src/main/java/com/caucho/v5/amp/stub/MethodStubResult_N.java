@@ -276,6 +276,16 @@ class MethodStubResult_N extends MethodStubBase
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _name + "]";
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append(getClass().getSimpleName())
+      .append("[").append(_name);
+    
+    for (ParameterAmp param : _paramTypes) {
+      sb.append(",").append(param.rawClass().getSimpleName());
+    }
+    sb.append("]");
+    
+    return sb.toString();
   }
 }

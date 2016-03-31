@@ -41,6 +41,7 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.thread.RunnableItem;
 import com.caucho.v5.amp.thread.RunnableItemScheduler;
 import com.caucho.v5.amp.thread.ThreadAmp;
+import com.caucho.v5.util.CurrentTime;
 
 import io.baratine.service.ResultFuture;
 
@@ -106,6 +107,11 @@ public abstract class WorkerDeliverBase<M> // extends MessageOutbox<M>>
   protected boolean isEmpty()
   {
     return false;
+  }
+  
+  private boolean isDebug()
+  {
+    return log.isLoggable(Level.FINER) || ! CurrentTime.isTest();
   }
   
   private static Launcher createLauncher(Executor executor,
@@ -238,7 +244,7 @@ public abstract class WorkerDeliverBase<M> // extends MessageOutbox<M>>
     
     try {
       thread.setContextClassLoader(classLoader);
-      isDebug = log.isLoggable(Level.FINER);
+      isDebug = isDebug();
       
       if (isDebug) {
         oldThreadName = thread.getName();
@@ -291,7 +297,7 @@ public abstract class WorkerDeliverBase<M> // extends MessageOutbox<M>>
   
     try {
       thread.setContextClassLoader(classLoader);
-      isDebug = log.isLoggable(Level.FINER);
+      isDebug = isDebug();
     
       if (isDebug) {
         oldThreadName = thread.getName();

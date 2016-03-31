@@ -37,15 +37,15 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryWithResultMessage_N;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.TransferAsset;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.convert.bean.FieldBean;
@@ -134,7 +134,10 @@ public class VaultDriverBase<ID,T>
   @Override
   public <S> MethodVault<S> newMethod(Method method)
   {
-    if (method.getName().startsWith("create")) {
+    if (! Modifier.isAbstract(method.getModifiers())) {
+      throw new IllegalStateException(String.valueOf(method));
+    }
+    else if (method.getName().startsWith("create")) {
       Method target = entityMethod(method);
 
       if (target != null) {
@@ -157,7 +160,7 @@ public class VaultDriverBase<ID,T>
       //targetMethod.setAccessible(true);
       //MethodHandle targetHandle = MethodHandles.lookup().unreflect(targetMethod);
     
-      return new MethodVaultCreate<S>(_ampManager, idGen, targetMethod.getName());
+      return new MethodVaultCreate<S>(_ampManager, idGen, targetMethod);
     } catch (Exception e) {
       e.printStackTrace();;
       throw new IllegalStateException(e);
@@ -191,7 +194,8 @@ public class VaultDriverBase<ID,T>
       }
     
       return new MethodVaultCreateDTO<S>(_ampManager, idGen, 
-          vaultMethod.getName(), methodAmp);
+                                        vaultMethod,
+                                        methodAmp);
     } catch (Exception e) {
       e.printStackTrace();;
       throw new IllegalStateException(e);
@@ -255,23 +259,29 @@ public class VaultDriverBase<ID,T>
     private Supplier<String> _idGen;
     private String _methodName;
     private MethodAmp _method;
+    private Class<?>[] _paramTypes;
     
     MethodVaultCreate(ServicesAmp ampManager,
-                         Supplier<String> idGen,
-                         String methodName)
+                      Supplier<String> idGen,
+                      Method method)
     {
       Objects.requireNonNull(ampManager);
       Objects.requireNonNull(idGen);
+      Objects.requireNonNull(method);
       
       _ampManager = ampManager;
       _idGen = idGen;
-      _methodName = methodName;
+      _methodName = method.getName();
+      _paramTypes = MethodAmp.paramTypes(method);
     }
     
     private MethodAmp method(ServiceRefAmp childRef)
     {
       if (_method == null) {
-        _method = childRef.methodByName(_methodName).method();
+        // XXX:
+        Class<?> returnType = void.class;
+        
+        _method = childRef.method(_methodName, returnType, _paramTypes).method();
       }
       
       return _method;
@@ -307,23 +317,23 @@ public class VaultDriverBase<ID,T>
   {
     private ServicesAmp _ampManager;
     private Supplier<String> _idGen;
-    private String _methodName;
+    //private String _methodName;
     private MethodAmp _method;
     
     MethodVaultCreateDTO(ServicesAmp ampManager,
                          Supplier<String> idGen,
-                         String methodName,
-                         MethodAmp method)
+                         Method method,
+                         MethodAmp methodAmp)
     {
       Objects.requireNonNull(ampManager);
       Objects.requireNonNull(idGen);
-      Objects.requireNonNull(methodName);
+      Objects.requireNonNull(method);
       Objects.requireNonNull(method);
       
       _ampManager = ampManager;
       _idGen = idGen;
-      _methodName = methodName;
-      _method = method;
+      //_methodName = methodName;
+      _method = methodAmp;
     }
     
     @Override
@@ -369,10 +379,10 @@ public class VaultDriverBase<ID,T>
     @Override
     public void query(HeadersAmp headers,
                       Result<?> result,
-                      StubAmp actor,
+                      StubAmp stub,
                       Object []args)
     {
-      T asset = (T) actor.bean();
+      T asset = (T) stub.bean();
       S transfer = (S) args[0];
       
       Objects.requireNonNull(asset);
@@ -380,7 +390,7 @@ public class VaultDriverBase<ID,T>
       
       _transfer.toAsset(asset, transfer);
       
-      actor.onModify();
+      stub.onModify();
       
       if (_idField != null) {
         ((Result) result).ok(_idField.getObject(asset));

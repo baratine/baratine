@@ -92,6 +92,11 @@ public class StubVault extends StubClass
                                      configResource);
     _stubAsset.introspect();
   }
+  
+  public static String test()
+  {
+    return int.class.toString();
+  }
 
   @Override
   public void introspect()

@@ -437,7 +437,12 @@ public class StubClass
         continue;
       }
       
+      /*
       if (! box(parameters[i].rawClass()).equals(box(paramTypes[i]))) {
+        return false;
+      }
+      */
+      if (! parameters[i].rawClass().equals(paramTypes[i])) {
         return false;
       }
     }

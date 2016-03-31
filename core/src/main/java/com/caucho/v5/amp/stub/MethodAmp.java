@@ -30,6 +30,8 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 
@@ -185,4 +187,25 @@ public interface MethodAmp
                   ResultPipeIn<T> result,
                   StubAmp actor,
                   Object []args);
+
+  static Class<?>[] paramTypes(Method targetMethod)
+  {
+    ArrayList<Class<?>> paramList = new ArrayList<>();
+    
+    for (Class<?> param : targetMethod.getParameterTypes()) {
+      if (Result.class.equals(param)
+          || ResultStream.class.equals(param)
+          || ResultPipeIn.class.equals(param)
+          || ResultPipeOut.class.equals(param)) {
+        continue;
+      }
+      
+      paramList.add(param);
+    }
+    
+    Class<?> []paramArray = new Class<?>[paramList.size()];
+    paramList.toArray(paramArray);
+    
+    return paramArray;
+  }
 }

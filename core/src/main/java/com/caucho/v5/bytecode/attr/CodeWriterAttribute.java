@@ -57,6 +57,9 @@ public class CodeWriterAttribute extends CodeAttribute {
   private static HashMap<Class<?>,String> _prim
     = new HashMap<Class<?>,String>();
 
+  private static HashMap<Class<?>,Class<?>> _primClass
+    = new HashMap<Class<?>,Class<?>>();
+
   public CodeWriterAttribute(JavaClass jClass)
   {
     setJavaClass(jClass);
@@ -111,6 +114,17 @@ public class CodeWriterAttribute extends CodeAttribute {
   public void getStatic(String className, String fieldName, String sig)
   {
     int index = addFieldRef(className, fieldName, sig);
+
+    write(CodeVisitor.GETSTATIC);
+    write(index >> 8);
+    write(index);
+  }
+
+  public void getStatic(Class<?> classType, 
+                        String fieldName, 
+                        Class<?> retType)
+  {
+    int index = addFieldRef(classType, fieldName, retType);
 
     write(CodeVisitor.GETSTATIC);
     write(index >> 8);
@@ -226,7 +240,19 @@ public class CodeWriterAttribute extends CodeAttribute {
 
   public void pushConstantClass(Class<?> cl)
   {
+    Class<?> boxClass = _primClass.get(cl);
+
+    if (boxClass != null) {
+      pushPrimClass(cl, boxClass);
+      return;
+    }
+    
     pushConstantClass(cl.getName());
+  }
+  
+  private void pushPrimClass(Class<?> cl, Class<?> boxClass)
+  {
+    getStatic(boxClass, "TYPE", Class.class);
   }
 
   public void pushConstantClass(String className)
@@ -511,6 +537,15 @@ public class CodeWriterAttribute extends CodeAttribute {
     write(CodeVisitor.ARETURN);
   }
 
+  public int addFieldRef(Class<?> declType, 
+                         String fieldName, 
+                         Class<?> retType)
+  {
+    return addFieldRef(declType.getCanonicalName().replace('.', '/'),
+                       fieldName,
+                       createDescriptor(retType));
+  }
+
   public int addFieldRef(String className, String fieldName, String sig)
   {
     FieldRefConstant ref
@@ -676,6 +711,16 @@ public class CodeWriterAttribute extends CodeAttribute {
     _prim.put(float.class, "F");
     _prim.put(double.class, "D");
     _prim.put(void.class, "V");
+    
+    _primClass.put(void.class, Void.class);
+    _primClass.put(boolean.class, Boolean.class);
+    _primClass.put(char.class, Character.class);
+    _primClass.put(byte.class, Byte.class);
+    _primClass.put(short.class, Short.class);
+    _primClass.put(int.class, Integer.class);
+    _primClass.put(long.class, Long.class);
+    _primClass.put(float.class, Float.class);
+    _primClass.put(double.class, Double.class);
   }
 
 }

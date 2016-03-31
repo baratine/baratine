@@ -597,7 +597,7 @@ public class ProxyGeneratorAmp<T>
     for (Method method : _methods) {
       String methodName = method.getName();
       
-      jClass.createField(methodFieldName(method),
+      jClass.createField(fieldName(method),
                          MethodAmp.class)
             .setAccessFlags(Modifier.PRIVATE);
       
@@ -617,7 +617,7 @@ public class ProxyGeneratorAmp<T>
       for (int i = 0; i < paramTypes.size(); i++) {
         code.dup();
         code.pushInt(i);
-        code.pushConstantClass(boxedClass(paramTypes.get(i)));
+        code.pushConstantClass(paramTypes.get(i));
         code.setArrayObject();
       }
       
@@ -630,7 +630,7 @@ public class ProxyGeneratorAmp<T>
                         Class[].class);
       
       code.putField(jClass.getThisClass(),
-                    methodFieldName(method),
+                    fieldName(method),
                     MethodAmp.class);
     }
     
@@ -730,7 +730,7 @@ public class ProxyGeneratorAmp<T>
 
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  methodFieldName(method),
+                  fieldName(method),
                   MethodAmp.class);
  
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -824,7 +824,7 @@ public class ProxyGeneratorAmp<T>
 
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  methodFieldName(method),
+                  fieldName(method),
                   MethodAmp.class);
  
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -903,7 +903,7 @@ public class ProxyGeneratorAmp<T>
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  methodFieldName(method),
+                  fieldName(method),
                   MethodAmp.class);
  
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -976,7 +976,7 @@ public class ProxyGeneratorAmp<T>
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  methodFieldName(method),
+                  fieldName(method),
                   MethodAmp.class);
     
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -1091,7 +1091,7 @@ public class ProxyGeneratorAmp<T>
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  methodFieldName(method),
+                  fieldName(method),
                   MethodAmp.class);
     
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -1238,7 +1238,7 @@ public class ProxyGeneratorAmp<T>
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  methodFieldName(method),
+                  fieldName(method),
                   MethodAmp.class);
     
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -1317,7 +1317,7 @@ public class ProxyGeneratorAmp<T>
     
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
-                  methodFieldName(method),
+                  fieldName(method),
                   MethodAmp.class);
     
     partitionMethod(code, parameterTypes, parameterAnns);
@@ -1861,7 +1861,7 @@ public class ProxyGeneratorAmp<T>
     }
   }
   
-  private String methodFieldName(Method method)
+  private String fieldName(Method method)
   {
     String fieldName = _methodFieldMap.get(method);
     

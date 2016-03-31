@@ -31,10 +31,12 @@ package com.caucho.v5.amp.vault;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 import io.baratine.db.Cursor;
 import io.baratine.service.Result;
@@ -102,23 +104,38 @@ public interface VaultDriver<ID,T>
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }
 
-  default <V> MethodVault<V> newMethod(Class<?> type, String methodName)
+  default <V> MethodVault<V> newMethod(Class<?> type, 
+                                       String methodName,
+                                       Class<?> []paramTypes)
   {
-    for (Method method : type.getSuperclass().getDeclaredMethods()) {
-      if (method.getName().equals(methodName)) {
+    if (type == null) {
+      return null;
+    }
+    
+    for (Method method : type.getMethods()) {
+      if (method.getName().equals(methodName)
+          && Arrays.equals(MethodAmp.paramTypes(method),
+                           paramTypes)) {
         return newMethod(method);
       }
     }
+    
+    MethodVault<V> methodVault
+      = newMethod(type.getSuperclass(), methodName, paramTypes);
+    
+    if (methodVault != null) {
+      return methodVault;
+    }
 
     for (Class<?> typeIface : type.getInterfaces()) {
-      for (Method method : typeIface.getMethods()) {
-        if (method.getName().equals(methodName)) {
-          return newMethod(method);
-        }
+      methodVault = newMethod(typeIface, methodName, paramTypes);
+      
+      if (methodVault != null) {
+        return methodVault;
       }
     }
 
-    throw new UnsupportedOperationException(type.getName() + " " + methodName);
+    return null;
   }
 
   default <V> MethodVault<V> newMethod(Method method)
