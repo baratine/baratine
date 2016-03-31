@@ -18,7 +18,7 @@ import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 
 @Service
-public class JdbcConnectionPoolImpl implements JdbcConnection
+public class JdbcConnectionPoolImpl //implements JdbcConnection
 {
   private Logger _logger = Logger.getLogger(JdbcConnectionPoolImpl.class.toString());
 
@@ -53,27 +53,7 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
     _selfSync = ServiceRef.current().as(JdbcConnectionSync.class);
   }
 
-  @Override
-  public void connect(String url, Properties props, Result<JdbcConnection> result)
-  {
-    _url = url;
-    _props = props;
-
-    checkPool();
-
-    result.ok(_self);
-  }
-
-  public JdbcConnectionSync connectSync(String url, Properties props)
-  {
-    _url = url;
-    _props = props;
-
-    checkPool();
-
-    return _selfSync;
-  }
-
+  /*
   @Override
   public void execute(String sql, Result<Integer> result)
   {
@@ -165,6 +145,7 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
       r.fail(new SQLException("database pool is closing"));
     }
   }
+  */
 
   private void checkPool()
   {
@@ -221,6 +202,7 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
       }
     }
 
+    /*
     for (int i = 0; i < newCount; i++) {
       ServiceRef ref = _manager.newService(JdbcConnectionImpl.class).start();
 
@@ -243,6 +225,7 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
         }
       });
     }
+    */
   }
 
   private void addIdle(JdbcConnection conn)

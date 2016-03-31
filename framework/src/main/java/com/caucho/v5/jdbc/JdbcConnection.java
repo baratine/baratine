@@ -36,16 +36,10 @@ import io.baratine.service.Result;
 
 public interface JdbcConnection
 {
-  void connect(String url, Properties props, Result<JdbcConnection> result);
+  void execute(Result<Integer> result, String sql, Object ... params);
+  void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params);
 
-  void execute(String sql, Result<Integer> result);
-  void executeBatch(String[] sql, Result<Integer[]> result);
-
-  void query(String sql, Result<JdbcResultSet> result);
-  void queryParam(String sql, Object[] params, Result<JdbcResultSet> result);
-
-  void queryBatch(String sql, Object[][] paramsList, Result<List<JdbcResultSet>> result);
-  void queryBatch(String[] sql, Object[][] paramsList, Result<List<JdbcResultSet>> result);
-
-  void close(Result<Void> result);
+  void query(Result<JdbcResultSet> result, String sql, Object ... params);
+  void queryBatch(Result<List<JdbcResultSet>> result, String sql, List<Object> ... paramsList);
+  void queryBatch(Result<List<JdbcResultSet>> result, List<String> sqlList, List<Object> ... paramsList);
 }

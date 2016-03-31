@@ -33,14 +33,14 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import io.baratine.service.Result;
+import io.baratine.service.Service;
 
-public interface JdbcService
+@Service
+public interface JdbcService extends JdbcConnection
 {
-  void connect(String url, Properties props, Result<JdbcConnection> result);
+  public static String CONFIG_URL = "JDBC_URL";
+  public static String CONFIG_POOL_SIZE = "JDBC_POOL_SIZE";
 
-  JdbcConnectionSync connectSync(String url, Properties props) throws SQLException;
-
-  void autoCreatePool(String url, Properties props, Result<JdbcConnection> result);
-
-  JdbcConnectionSync autoCreatePoolSync(String url, Properties props) throws SQLException;
+  public static String CONFIG_TEST_QUERY_BEFORE = "JDBC_TEST_QUERY_BEFORE";
+  public static String CONFIG_TEST_QUERY_AFTER = "JDBC_TEST_QUERY_AFTER";
 }

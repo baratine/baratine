@@ -29,124 +29,142 @@
 
 package com.caucho.v5.jdbc;
 
-import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import io.baratine.config.Config;
+import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
+import io.baratine.service.ServiceRef.ServiceBuilder;
 
 @Service
-public class JdbcServiceImpl implements JdbcService
+public class JdbcServiceImpl implements JdbcConnection, JdbcService
 {
   private Logger _logger = Logger.getLogger(JdbcServiceImpl.class.toString());
-
-  private HashMap<UrlAndProps,ServiceRef> _poolMap = new HashMap<>();
 
   @Inject
   private Services _manager;
 
-  @Override
-  public void connect(String url, Properties props, Result<JdbcConnection> result)
-  {
-    ServiceRef ref = _manager.newService(JdbcConnectionImpl.class).start();
+  @Inject
+  private Config _config;
 
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.finer("connect: " + url + "," + ref);
+  private JdbcConnection _conn;
+
+  @OnInit
+  public void onInit(Result<Void> result)
+  {
+    String url = _config.get(JdbcService.CONFIG_URL);
+    int poolSize = _config.get(JdbcService.CONFIG_POOL_SIZE, Integer.class, 32);
+
+    String testQueryBefore = _config.get(JdbcService.CONFIG_TEST_QUERY_BEFORE);
+    String testQueryAfter= _config.get(JdbcService.CONFIG_TEST_QUERY_AFTER);
+
+    Properties props = new Properties();
+
+    if (_logger.isLoggable(Level.FINE)) {
+      _logger.log(Level.FINE, "onInit: size=" + poolSize + ", url=" + toDebugSafe(url));
     }
 
-    JdbcConnection conn = ref.as(JdbcConnection.class);
+    Supplier<JdbcConnectionImpl> supplier = new ConnectionSupplier(url, props, testQueryBefore, testQueryAfter);
 
-    conn.connect(url, props, result);
+    ServiceBuilder builder = _manager.newService(JdbcConnectionImpl.class, supplier);
+    builder.workers(poolSize);
+
+    ServiceRef ref = builder.start();
+
+    _conn = ref.as(JdbcConnection.class);
+
+    result.ok(null);
   }
 
   @Override
-  public JdbcConnectionSync connectSync(String url, Properties props)
-    throws SQLException
+  public void execute(Result<Integer> result, String sql, Object... params)
   {
-    ServiceRef ref = _manager.newService(JdbcConnectionImpl.class).start();
-
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.finer("connectSync: " + url + "," + ref);
+      _logger.log(Level.FINER, "execute: " + toDebugSafe(sql));
     }
 
-    JdbcConnectionSync conn = ref.as(JdbcConnectionSync.class);
-
-    return conn.connectSync(url, props);
+    _conn.execute(result , sql, params);
   }
 
   @Override
-  public void autoCreatePool(String url, Properties props, Result<JdbcConnection> result)
+  public void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object>... params)
   {
-    ServiceRef ref = getPool(url, props);
-
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.finer("createPool: " + url + "," + ref);
+      _logger.log(Level.FINER, "executeBatch: " + sqlList.size());
     }
 
-    JdbcConnection conn = ref.as(JdbcConnection.class);
-
-    conn.connect(url, props, result);
+    _conn.executeBatch(result, sqlList, params);
   }
 
   @Override
-  public JdbcConnectionSync autoCreatePoolSync(String url, Properties props)
-    throws SQLException
+  public void query(Result<JdbcResultSet> result, String sql, Object... params)
   {
-    ServiceRef ref = getPool(url, props);
-
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.finer("createPoolSync: " + url + "," + ref);
+      _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
     }
 
-    JdbcConnectionSync conn = ref.as(JdbcConnectionSync.class);
-
-    return conn.connectSync(url, props);
+    _conn.query(result, sql, params);
   }
 
-  private ServiceRef getPool(String url, Properties props)
+  @Override
+  public void queryBatch(Result<List<JdbcResultSet>> result, String sql, List<Object>... paramsList)
   {
-    UrlAndProps id = new UrlAndProps(url, props);
-
-    ServiceRef ref = _poolMap.get(id);
-
-    if (ref == null) {
-      ref = _manager.newService(JdbcConnectionPoolImpl.class).start();
-
-      _poolMap.put(id, ref);
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "queryBatch: " + toDebugSafe(sql));
     }
 
-    return ref;
+    _conn.queryBatch(result, sql, paramsList);
   }
 
-  static class UrlAndProps {
+  @Override
+  public void queryBatch(Result<List<JdbcResultSet>> result, List<String> sqlList, List<Object>... paramsList)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "queryBatch: " + sqlList.size());
+    }
+
+    _conn.queryBatch(result, sqlList, paramsList);
+  }
+
+  private String toDebugSafe(String str)
+  {
+    int len = Math.min(32, str.length());
+
+    return str.substring(0, len);
+  }
+
+  static class ConnectionSupplier implements Supplier<JdbcConnectionImpl> {
     private String _url;
     private Properties _props;
 
-    public UrlAndProps(String url, Properties props)
+    private String _testQueryBefore;
+    private String _testQueryAfter;
+
+    private int _count;
+
+    public ConnectionSupplier(String url, Properties props,
+                              String testQueryBefore, String testQueryAfter)
     {
       _url = url;
       _props = props;
+
+      _testQueryBefore = testQueryBefore;
+      _testQueryAfter = testQueryAfter;
     }
 
-    @Override
-    public int hashCode()
+    public JdbcConnectionImpl get()
     {
-      return _url.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-      UrlAndProps entry = (UrlAndProps) obj;
-
-      return _url.equals(entry._url) && _props.equals(entry._props);
+      return new JdbcConnectionImpl(_count++, _url, _props,
+                                    _testQueryBefore, _testQueryAfter);
     }
   }
 }
