@@ -43,91 +43,127 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.io.IoUtil;
 
+import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 
 @Service
-public class JdbcConnectionImpl implements JdbcConnection
+public class JdbcConnectionImpl implements JdbcService
 {
   private Logger _logger = Logger.getLogger(JdbcConnectionImpl.class.toString());
 
-  private JdbcConnection _self;
-  private JdbcConnectionSync _selfSync;
+  private String _url;
+  private Properties _props;
 
   private Connection _conn;
 
-  @OnInit
-  public void onInit()
+  private int _id;
+  private String _testQueryBefore;
+  private String _testQueryAfter;
+
+  public JdbcConnectionImpl(int id, String url, Properties props,
+                            String testQueryBefore, String testQueryAfter)
   {
-    _self = ServiceRef.current().as(JdbcConnection.class);
-    _selfSync = ServiceRef.current().as(JdbcConnectionSync.class);
+    if (_logger.isLoggable(Level.FINE)) {
+      _logger.log(Level.FINE, "constructor: id=" + id + ", url=" + toDebugSafe(url));
+    }
+
+    _id = id;
+    _url = url;
+    _props = props;
+
+    _testQueryBefore = testQueryBefore;
+    _testQueryBefore = testQueryAfter;
   }
 
-  public void connect(String url, Properties props, Result<JdbcConnection> result)
+  @OnInit
+  public void onInit(Result<Void> result)
   {
-    try {
-      _conn = DriverManager.getConnection(url, props);
+    if (_logger.isLoggable(Level.FINE)) {
+      _logger.log(Level.FINE, "onInit: id=" + _id + ", url=" + toDebugSafe(_url));
+    }
 
-      result.ok(_self);
+    try {
+      connect();
+
+      result.ok(null);
     }
     catch (SQLException e) {
-      e.printStackTrace();
-
       result.fail(e);
     }
   }
 
-  public JdbcConnectionSync connectSync(String url, Properties props)
+  private void reconnect()
+  {
+    _logger.log(Level.FINE, "reconnect: id=" + _id);
+
+    try {
+      IoUtil.close(_conn);
+
+      connect();
+    }
+    catch (SQLException e) {
+      _logger.log(Level.FINE, "failed to reconnect: id=" + _id + ", url=" + toDebugSafe(_url), e);
+    }
+  }
+
+  private void connect()
     throws SQLException
   {
-    _conn = DriverManager.getConnection(url, props);
+    _logger.log(Level.FINE, "connect: id=" + _id + ", url=" + toDebugSafe(_url));
 
-    return _selfSync;
+    _conn = DriverManager.getConnection(_url, _props);
   }
 
   @Override
-  public void execute(String sql, Result<Integer> result)
+  public void execute(Result<Integer> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "execute: " + sql.substring(0, 16) + "...");
+      _logger.log(Level.FINER, "execute: id=" + _id + ", sql=" + toDebugSafe(sql));
     }
+
+    testQueryBefore();
 
     try {
       int updateCount = execute(sql);
 
       result.ok(updateCount);
+
+      testQueryAfter();
     }
     catch (SQLException e) {
-      e.printStackTrace();
+      reconnect();
 
       result.fail(e);
     }
   }
 
   @Override
-  public void executeBatch(String[] sqls, Result<Integer[]> result)
+  public void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "executeBatch: " + sqls.length);
+      _logger.log(Level.FINER, "executeBatch: id=" + _id);
     }
 
-    Integer[] updateCounts = new Integer[sqls.length];
+    testQueryBefore();
+
+    ArrayList<Integer> updateCountList = new ArrayList<>();
 
     try {
-      for (int i = 0; i < sqls.length; i++) {
-        String sql = sqls[i];
-
+      for (String sql : sqlList) {
         int updateCount = execute(sql);
 
-        updateCounts[i] = updateCount;
+        updateCountList.add(updateCount);
       }
 
-      result.ok(updateCounts);
+      result.ok(updateCountList);
+
+      testQueryAfter();
     }
     catch (SQLException e) {
-      e.printStackTrace();
+      reconnect();
 
       result.fail(e);
     }
@@ -151,18 +187,24 @@ public class JdbcConnectionImpl implements JdbcConnection
   }
 
   @Override
-  public void query(String sql, Result<JdbcResultSet> result)
+  public void query(Result<JdbcResultSet> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "query: " + sql.substring(0, 16) + "...");
+      _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
     }
 
-    Statement stmt = null;
+    testQueryBefore();
+
+    PreparedStatement stmt = null;
 
     try {
-      stmt = _conn.createStatement();
+      stmt = _conn.prepareStatement(sql);
 
-      boolean isResultSet = stmt.execute(sql);
+      for (int i = 0; i < params.length; i++) {
+        stmt.setObject(i + 1, params[i]);
+      }
+
+      boolean isResultSet = stmt.execute();
 
       if (isResultSet) {
         JdbcResultSet rs = new JdbcResultSet(stmt.getResultSet());
@@ -172,9 +214,11 @@ public class JdbcConnectionImpl implements JdbcConnection
       else {
         result.ok(null);
       }
+
+      testQueryAfter();
     }
     catch (SQLException e) {
-      e.printStackTrace();
+      reconnect();
 
       result.fail(e);
     }
@@ -184,37 +228,13 @@ public class JdbcConnectionImpl implements JdbcConnection
   }
 
   @Override
-  public void queryParam(String sql, Object[] params, Result<JdbcResultSet> result)
+  public void queryBatch(Result<List<JdbcResultSet>> result, String sql, List<Object> ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryParam: " + sql);
+      _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + toDebugSafe(sql));
     }
 
-    PreparedStatement stmt = null;
-
-    try {
-      stmt = _conn.prepareStatement(sql);
-
-      JdbcResultSet rs = query(stmt, params);
-
-      result.ok(rs);
-    }
-    catch (SQLException e) {
-      e.printStackTrace();
-
-      result.fail(e);
-    }
-    finally {
-      IoUtil.close(stmt);
-    }
-  }
-
-  @Override
-  public void queryBatch(String sql, Object[][] paramsList, Result<List<JdbcResultSet>> result)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryBatch: " + sql);
-    }
+    testQueryBefore();
 
     PreparedStatement stmt = null;
     ArrayList<JdbcResultSet> list = new ArrayList<>();
@@ -222,16 +242,18 @@ public class JdbcConnectionImpl implements JdbcConnection
     try {
       stmt = _conn.prepareStatement(sql);
 
-      for (Object[] params : paramsList) {
+      for (List<Object> params : paramsList) {
         JdbcResultSet rs = query(stmt, params);
 
         list.add(rs);
       }
 
       result.ok(list);
+
+      testQueryAfter();
     }
     catch (SQLException e) {
-      e.printStackTrace();
+      reconnect();
 
       result.fail(e);
     }
@@ -241,19 +263,22 @@ public class JdbcConnectionImpl implements JdbcConnection
   }
 
   @Override
-  public void queryBatch(String[] sqls, Object[][] paramsList, Result<List<JdbcResultSet>> result)
+  public void queryBatch(Result<List<JdbcResultSet>> result, List<String> sqlList, List<Object> ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryBatch: " + sqls.length);
+      _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + sqlList.size());
     }
+
+    testQueryBefore();
 
     PreparedStatement stmt = null;
     ArrayList<JdbcResultSet> list = new ArrayList<>();
 
     try {
-      for (int i = 0; i < sqls.length; i++) {
-        String sql = sqls[i];
-        Object[] params = paramsList[i];
+      int i = 0;
+
+      for (String sql : sqlList) {
+        List<Object> params = paramsList[i++];
 
         stmt = _conn.prepareStatement(sql);
 
@@ -263,9 +288,11 @@ public class JdbcConnectionImpl implements JdbcConnection
 
         list.add(rs);
       }
+
+      testQueryAfter();
     }
     catch (SQLException e) {
-      e.printStackTrace();
+      reconnect();
 
       result.fail(e);
     }
@@ -276,11 +303,13 @@ public class JdbcConnectionImpl implements JdbcConnection
     result.ok(list);
   }
 
-  private JdbcResultSet query(PreparedStatement stmt, Object[] params)
+  private JdbcResultSet query(PreparedStatement stmt, List<Object> params)
     throws SQLException
   {
-    for (int i = 0; i < params.length; i++) {
-      stmt.setObject(i + 1, params[i]);
+    int i = 0;
+
+    for (Object param : params) {
+      stmt.setObject(++i, param);
     }
 
     boolean isResultSet = stmt.execute();
@@ -295,8 +324,59 @@ public class JdbcConnectionImpl implements JdbcConnection
     }
   }
 
-  @Override
-  public void close(Result<Void> result)
+  private void testQueryBefore()
+  {
+    if (_testQueryBefore == null) {
+      return;
+    }
+
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "testQueryBefore: id=" + _id + ", sql=" + toDebugSafe(_testQueryBefore));
+    }
+
+    try {
+      execute(_testQueryBefore);
+    }
+    catch (SQLException e) {
+      if (_logger.isLoggable(Level.FINER)) {
+        _logger.log(Level.FINER, "testQueryBefore failed: id=" + _id + ", " + e.getMessage(), e);
+      }
+
+      reconnect();
+    }
+  }
+
+  private void testQueryAfter()
+  {
+    if (_testQueryAfter == null) {
+      return;
+    }
+
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "testQueryAfter: id=" + _id + ", sql=" + toDebugSafe(_testQueryAfter));
+    }
+
+    try {
+      execute(_testQueryAfter);
+    }
+    catch (SQLException e) {
+      if (_logger.isLoggable(Level.FINER)) {
+        _logger.log(Level.FINER, "testQueryAfter failed: id=" + _id + ", " + e.getMessage(), e);
+      }
+
+      reconnect();
+    }
+  }
+
+  private String toDebugSafe(String str)
+  {
+    int len = Math.min(32, str.length());
+
+    return str.substring(0, len);
+  }
+
+  @OnDestroy
+  public void onDestroy(Result<Void> result)
   {
     try {
       _conn.close();

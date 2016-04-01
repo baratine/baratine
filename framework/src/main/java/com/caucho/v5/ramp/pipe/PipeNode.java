@@ -34,16 +34,16 @@ import java.util.Objects;
 
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.BrokerPipe;
 import io.baratine.pipe.Pipe;
 import io.baratine.pipe.Pipe.FlowOut;
+import io.baratine.pipe.Pipes;
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 
 /**
  * Implementation of the pipes
  */
-class PipeNode<T> implements BrokerPipe<T>
+class PipeNode<T> implements Pipes<T>
 {
   private static final L10N L = new L10N(PipeNode.class);
     
@@ -120,7 +120,7 @@ class PipeNode<T> implements BrokerPipe<T>
     }
 
     @Override
-    public void ok()
+    public void close()
     {
     }
 

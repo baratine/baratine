@@ -27,41 +27,45 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.message;
+package com.caucho.v5.amp.pipe;
 
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.pipe.PipeImpl;
+import com.caucho.v5.amp.message.MessageOutboxBase;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.pipe.Pipe.FlowOut;
 
 /**
  * Handles the context for an actor, primarily including its
  * query map.
  */
-public class PipeWakeInMessage<T>
+public class PipeWakeOutMessage<T>
   extends MessageOutboxBase
 {
-  private final ServiceRefAmp _serviceRef;
   private final PipeImpl<T> _pipe;
+  private final FlowOut<T> _flow;
 
-  public PipeWakeInMessage(OutboxAmp outbox,
+  public PipeWakeOutMessage(OutboxAmp outbox,
                          ServiceRefAmp serviceRef,
-                         PipeImpl<T> pipe)
+                         PipeImpl<T> pipe,
+                         FlowOut<T> flow)
   {
     super(outbox, serviceRef.inbox());
     
     Objects.requireNonNull(pipe);
-    
-    _serviceRef = serviceRef;
     _pipe = pipe;
+    
+    Objects.requireNonNull(flow);
+    _flow = flow;
   }
 
   @Override
   public void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
-    _pipe.read();
+    _flow.ready(_pipe);
   }
 }

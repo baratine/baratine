@@ -27,13 +27,13 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.message;
+package com.caucho.v5.amp.pipe;
 
 import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.pipe.PipeImpl;
+import com.caucho.v5.amp.message.QueryMessageBase;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
@@ -44,32 +44,31 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.Pipe;
 import io.baratine.pipe.Pipe.FlowOut;
-import io.baratine.pipe.ResultPipeIn;
+import io.baratine.pipe.ResultPipeOut;
 
 /**
  * Register a publisher to a pipe.
  */
-public class PipeInMessage<T>
-  extends QueryMessageBase<FlowOut<T>>
-  implements ResultPipeIn<T>
+public class PipeOutMessage<T>
+  extends QueryMessageBase<Pipe<T>>
+  implements ResultPipeOut<T>
 {
-  private static final L10N L = new L10N(PipeInMessage.class);
+  private static final L10N L = new L10N(PipeOutMessage.class);
   private static final Logger log 
-    = Logger.getLogger(PipeInMessage.class.getName());
+    = Logger.getLogger(PipeOutMessage.class.getName());
   
-  private final ResultPipeIn<T> _result;
+  private final ResultPipeOut<T> _result;
 
   private Object[] _args;
-
-  private InboxAmp _callerInbox;
-  private PipeImpl<T> _pipe;
   
-  public PipeInMessage(OutboxAmp outbox,
-                        InboxAmp callerInbox,
+  private PipeImpl<T> _pipe;
+  private FlowOut<T> _flowOut;
+  
+  public PipeOutMessage(OutboxAmp outbox,
                         HeadersAmp headers,
                         ServiceRefAmp serviceRef,
                         MethodAmp method,
-                        ResultPipeIn<T> result,
+                        ResultPipeOut<T> result,
                         long expires,
                         Object []args)
   {
@@ -79,33 +78,26 @@ public class PipeInMessage<T>
     Objects.requireNonNull(result);
     
     _result = result;
+    _flowOut = _result.flow();
+    
     _args = args;
-    
-    Objects.requireNonNull(callerInbox);
-    
-    _callerInbox = callerInbox;
-  }
-  
-  private InboxAmp getCallerInbox()
-  {
-    return _callerInbox;
   }
 
   @Override
-  public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
+  public final void invokeQuery(InboxAmp inbox, StubAmp stubDeliver)
   {
     try {
       MethodAmp method = getMethod();
     
-      StubAmp actorMessage = serviceRef().stub();
+      StubAmp stubMessage = serviceRef().stub();
 
-      LoadState load = actorDeliver.load(actorMessage, this);
+      LoadState load = stubDeliver.load(stubMessage, this);
       
-      load.inPipe(actorDeliver, actorMessage,
-                  method,
-                  getHeaders(),
-                  this,
-                  _args);
+      load.outPipe(stubDeliver, stubMessage,
+                   method,
+                   getHeaders(),
+                   this,
+                   _args);
       
     } catch (Throwable e) {
       fail(e);
@@ -119,9 +111,35 @@ public class PipeInMessage<T>
   }
 
   @Override
-  protected boolean invokeOk(StubAmp actorDeliver)
+  public void ok(Pipe<T> pipeIn)
   {
-    //_result.ok((Void) null);
+    if (pipeIn == null) {
+      _result.fail(new NullPointerException(L.l("NPE from service {0}", getMethod())));
+      Objects.requireNonNull(pipeIn);
+    }
+    
+    ServiceRefAmp inRef = inboxTarget().serviceRef();
+    
+    ServiceRefAmp outRef = inboxCaller().serviceRef();
+    FlowOut<T> flowOut = _result.flow();
+    
+    PipeImpl<T> pipe = new PipeImpl<>(inRef, pipeIn, outRef, flowOut);
+    
+    _pipe = pipe;
+    
+    super.ok(pipe);
+  }
+
+  @Override
+  protected boolean invokeOk(StubAmp stubDeliver)
+  {
+    _result.ok(_pipe);
+
+    FlowOut<T> flow = _result.flow();
+    
+    if (flow != null) {
+      flow.ready(_pipe);
+    }
     
     return true;
   }
@@ -129,55 +147,9 @@ public class PipeInMessage<T>
   @Override
   protected boolean invokeFail(StubAmp actorDeliver)
   {
-    //System.out.println("Missing Fail:" + this);
     _result.fail(getException());
 
     return true;
-  }
-
-  /*
-  @Override
-  public void handle(OutPipe<T> pipe, Throwable exn) throws Exception
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  */
-
-  @Override
-  public Pipe<T> pipe()
-  {
-    throw new IllegalStateException();
-  }
-
-  /*
-  @Override
-  public PipeOut<T> ok()
-  {
-    return ok((OutFlow) null);
-  }
-  */
-
-  @Override
-  public void ok(FlowOut<T> outFlow)
-  {
-    Objects.requireNonNull(outFlow);
-    
-    super.ok(null);
-    
-    ServiceRefAmp inRef = inboxCaller().serviceRef();
-    Pipe<T> inPipe = _result.pipe();
-    
-    ServiceRefAmp outRef = serviceRef();
-    
-    PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
-    
-    outFlow.ready(pipe);
-  }
-
-  @Override
-  public void handle(T next, Throwable fail, boolean ok)
-  {
-    throw new IllegalStateException(getClass().getName());
   }
 
   @Override

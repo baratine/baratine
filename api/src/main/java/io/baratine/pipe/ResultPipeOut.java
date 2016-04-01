@@ -30,7 +30,7 @@
 package io.baratine.pipe;
 
 import io.baratine.pipe.Pipe.FlowOut;
-import io.baratine.pipe.Pipes.PipeOutFlowImpl;
+import io.baratine.pipe.PipesImpl.PipeOutFlowImpl;
 import io.baratine.service.Result;
 
 /**
@@ -51,6 +51,6 @@ public interface ResultPipeOut<T> extends Result<Pipe<T>>
    */
   default FlowOut<T> flow()
   {
-    return new PipeOutFlowImpl<>(this);
+    return null;
   }
 }

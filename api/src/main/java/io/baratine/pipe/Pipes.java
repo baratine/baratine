@@ -29,24 +29,30 @@
 
 package io.baratine.pipe;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.Pipe.InHandler;
+import io.baratine.pipe.PipesImpl.PipeOutResultImpl;
+import io.baratine.pipe.PipesImpl.ResultPipeInHandlerImpl;
+import io.baratine.pipe.PipesImpl.ResultPipeInImpl;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceException;
-import io.baratine.vault.Vault;
 
 
 /**
  * {@code OutPipe} sends a sequence of values from a source to a sink.
  */
-@Service("pipe://")
-public class Pipes implements Vault<String,BrokerPipe<?>>
+@Service("pipe:///{param[0]}")
+public interface Pipes<T>
 {
-  public static <T> PipeOutBuilder<T> flow(FlowOut<T> flow)
+  void consume(ResultPipeIn<T> result);
+  
+  void subscribe(ResultPipeIn<T> result);
+  
+  void publish(ResultPipeOut<T> result);
+  
+  public static <T> PipeOutBuilder<T> out(FlowOut<T> flow)
   {
     return new PipeOutResultImpl<>(flow);
   }
@@ -55,13 +61,6 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
   {
     return new PipeOutResultImpl<>(result);
   }
-  
-  /*
-  public static <T> PipeOutBuilder<T> out(Consumer<PipeOut<T>> ready)
-  {
-    throw new UnsupportedOperationException();
-  }
-  */
   
   public static <T> ResultPipeIn<T> in(Pipe<T> pipe)
   {
@@ -87,196 +86,5 @@ public class Pipes implements Vault<String,BrokerPipe<?>>
     PipeInBuilder<T> capacity(int size);
     
     PipeInBuilder<T> pause();
-  }
-  
-  private static class ResultPipeInHandlerImpl<T>
-    implements ResultPipeIn<T>, Pipe<T>
-  {
-    private Pipe.InHandler<T> _handler;
-    
-    ResultPipeInHandlerImpl(Pipe.InHandler<T> handler)
-    {
-      Objects.requireNonNull(handler);
-      
-      _handler = handler;
-    }
-    
-    @Override
-    public Pipe<T> pipe()
-    {
-      return this;
-    }
-
-    @Override
-    public void next(T value)
-    {
-      _handler.handle(value, null, false);
-    }
-
-    @Override
-    public void ok()
-    {
-      _handler.handle(null, null, true);
-    }
-
-    @Override
-    public void fail(Throwable exn)
-    {
-      _handler.handle(null, exn, false);
-    }
-
-    @Override
-    public void handle(T next, Throwable fail, boolean ok)
-    {
-      throw new IllegalStateException(getClass().getName());
-    }
-    
-  }
-  
-  static class PipeInResultImpl<T> implements Pipe<T>
-  {
-    private ResultPipeIn<T> _pipeIn;
-    
-    PipeInResultImpl(ResultPipeIn<T> pipeIn)
-    {
-      Objects.requireNonNull(pipeIn);
-      
-      _pipeIn = pipeIn;
-    }
-
-    @Override
-    public void next(T value)
-    {
-      _pipeIn.handle(value, null, false);
-    }
-
-    @Override
-    public void ok()
-    {
-      _pipeIn.handle(null, null, true);
-    }
-
-    @Override
-    public void fail(Throwable exn)
-    {
-      _pipeIn.handle(null, exn, false);
-    }
-  }
-  
-  static class PipeOutFlowImpl<T> implements FlowOut<T>
-  {
-    private ResultPipeOut<T> _result;
-    
-    PipeOutFlowImpl(ResultPipeOut<T> result)
-    {
-      Objects.requireNonNull(result);
-      
-      _result = result;
-    }
-
-    @Override
-    public void ready(Pipe<T> pipe)
-    {
-      try {
-        _result.handle(pipe, null);
-      } catch (Exception e) {
-        throw ServiceException.createAndRethrow(e);
-      }
-    }
-
-    @Override
-    public void fail(Throwable exn)
-    {
-      try {
-        _result.handle((Pipe<T>) null, exn);
-      } catch (Exception e) {
-        throw ServiceException.createAndRethrow(e);
-      }
-    }
-  }
-  
-  static class PipeOutResultImpl<T> implements PipeOutBuilder<T>
-  {
-    private Result<Pipe<T>> _result;
-    private FlowOut<T> _flow;
-    
-    PipeOutResultImpl(FlowOut<T> flow)
-    {
-      Objects.requireNonNull(flow);
-      
-      _flow = flow;
-    }
-    
-    PipeOutResultImpl(Result<Pipe<T>> result)
-    {
-      Objects.requireNonNull(result);
-      
-      _result = result;
-    }
-
-    @Override
-    public FlowOut<T> flow()
-    {
-      return _flow;
-    }
-    
-    @Override
-    public void ok(Pipe<T> pipe)
-    {
-      if (_result != null) {
-        _result.ok(pipe);
-      }
-    }
-    
-    @Override
-    public void fail(Throwable exn)
-    {
-      if (_result != null) {
-        _result.fail(exn);
-      }
-    }
-    
-    public void handle(Pipe<T> pipe, Throwable exn)
-    {
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public PipeOutBuilder<T> fail(Consumer<Throwable> exn)
-    {
-      return this;
-    }
-  }
-  
-  static class ResultPipeInImpl<T> implements ResultPipeIn<T>
-  {
-    private Pipe<T> _pipe;
-    
-    ResultPipeInImpl(Pipe<T> pipe)
-    {
-      Objects.requireNonNull(pipe);
-      
-      _pipe = pipe;
-    }
-    
-    /**
-     * The subscriber's {@code PipeIn} handler will be registered as
-     * the pipe consumer.
-     */
-    @Override
-    public Pipe<T> pipe()
-    {
-      return _pipe;
-    }
-
-    /**
-     * Subscription lambda for basic clients.
-     * 
-     * Clients that need more control over the flow should use the pipe().
-     */
-    public void handle(T next, Throwable fail, boolean ok)
-    {
-      throw new IllegalStateException(getClass().getName());
-    }
   }
 }

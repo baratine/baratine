@@ -27,13 +27,13 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.message;
+package com.caucho.v5.amp.pipe;
 
 import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.pipe.PipeImpl;
+import com.caucho.v5.amp.message.QueryMessageBase;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
@@ -44,33 +44,32 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.Pipe;
 import io.baratine.pipe.Pipe.FlowOut;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.ResultPipeIn;
 
 /**
  * Register a publisher to a pipe.
  */
-public class PipeOutMessage<T>
-  extends QueryMessageBase<Pipe<T>>
-  implements ResultPipeOut<T>
+public class PipeInMessage<T>
+  extends QueryMessageBase<FlowOut<T>>
+  implements ResultPipeIn<T>
 {
-  private static final L10N L = new L10N(PipeOutMessage.class);
+  private static final L10N L = new L10N(PipeInMessage.class);
   private static final Logger log 
-    = Logger.getLogger(PipeOutMessage.class.getName());
+    = Logger.getLogger(PipeInMessage.class.getName());
   
-  private final ResultPipeOut<T> _result;
+  private final ResultPipeIn<T> _result;
 
   private Object[] _args;
 
   private InboxAmp _callerInbox;
-  
   private PipeImpl<T> _pipe;
   
-  public PipeOutMessage(OutboxAmp outbox,
+  public PipeInMessage(OutboxAmp outbox,
                         InboxAmp callerInbox,
                         HeadersAmp headers,
                         ServiceRefAmp serviceRef,
                         MethodAmp method,
-                        ResultPipeOut<T> result,
+                        ResultPipeIn<T> result,
                         long expires,
                         Object []args)
   {
@@ -102,7 +101,7 @@ public class PipeOutMessage<T>
 
       LoadState load = actorDeliver.load(actorMessage, this);
       
-      load.outPipe(actorDeliver, actorMessage,
+      load.inPipe(actorDeliver, actorMessage,
                   method,
                   getHeaders(),
                   this,
@@ -120,35 +119,9 @@ public class PipeOutMessage<T>
   }
 
   @Override
-  public void ok(Pipe<T> inPipe)
-  {
-    if (inPipe == null) {
-      _result.fail(new NullPointerException(L.l("NPE from service {0}", getMethod())));
-      Objects.requireNonNull(inPipe);
-    }
-    
-    ServiceRefAmp inRef = inboxTarget().serviceRef();
-    
-    ServiceRefAmp outRef = inboxCaller().serviceRef();
-    FlowOut<T> outFlow = _result.flow();
-    
-    PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
-    
-    _pipe = pipe;
-    
-    super.ok((Pipe<T>) null);
-  }
-
-  @Override
   protected boolean invokeOk(StubAmp actorDeliver)
   {
-    _result.ok(_pipe);
-
-    FlowOut<T> flow = _result.flow();
-    
-    if (flow != null) {
-      flow.ready(_pipe);
-    }
+    //_result.ok((Void) null);
     
     return true;
   }
@@ -156,9 +129,55 @@ public class PipeOutMessage<T>
   @Override
   protected boolean invokeFail(StubAmp actorDeliver)
   {
+    //System.out.println("Missing Fail:" + this);
     _result.fail(getException());
 
     return true;
+  }
+
+  /*
+  @Override
+  public void handle(OutPipe<T> pipe, Throwable exn) throws Exception
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
+  */
+
+  @Override
+  public Pipe<T> pipe()
+  {
+    throw new IllegalStateException();
+  }
+
+  /*
+  @Override
+  public PipeOut<T> ok()
+  {
+    return ok((OutFlow) null);
+  }
+  */
+
+  @Override
+  public void ok(FlowOut<T> outFlow)
+  {
+    Objects.requireNonNull(outFlow);
+    
+    super.ok(null);
+    
+    ServiceRefAmp inRef = inboxCaller().serviceRef();
+    Pipe<T> inPipe = _result.pipe();
+    
+    ServiceRefAmp outRef = serviceRef();
+    
+    PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
+    
+    outFlow.ready(pipe);
+  }
+
+  @Override
+  public void handle(T next, Throwable fail, boolean ok)
+  {
+    throw new IllegalStateException(getClass().getName());
   }
 
   @Override

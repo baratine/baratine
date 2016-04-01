@@ -37,12 +37,12 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServicesAmpImpl;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.HeadersNull;
-import com.caucho.v5.amp.message.PipeInMessage;
-import com.caucho.v5.amp.message.PipeOutMessage;
 import com.caucho.v5.amp.message.QueryMessageDebug_N;
 import com.caucho.v5.amp.message.SendMessage_0;
 import com.caucho.v5.amp.message.SendMessage_1;
 import com.caucho.v5.amp.message.SendMessage_N;
+import com.caucho.v5.amp.pipe.PipeInMessage;
+import com.caucho.v5.amp.pipe.PipeOutMessage;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -303,7 +303,7 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
   }
   
   @Override
-  public <V> void resultOutPipe(ResultPipeOut<V> result, 
+  public <V> void resultPipeOut(ResultPipeOut<V> result, 
                               long timeout,
                               ServiceRefAmp serviceRef,
                               MethodAmp method,
@@ -314,7 +314,6 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
     
       PipeOutMessage<V> msg
         = new PipeOutMessage<V>(outbox,
-                          outbox.inbox(),
                           headers,
                           serviceRef, 
                           method,
@@ -327,7 +326,7 @@ public final class MessageFactoryDebug implements MessageFactoryAmp
   }
   
   @Override
-  public <V> void resultInPipe(ResultPipeIn<V> result, 
+  public <V> void resultPipeIn(ResultPipeIn<V> result, 
                               long timeout,
                               ServiceRefAmp serviceRef,
                               MethodAmp method,

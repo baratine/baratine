@@ -30,7 +30,7 @@
 package io.baratine.pipe;
 
 import io.baratine.pipe.Pipe.FlowOut;
-import io.baratine.pipe.Pipes.PipeInResultImpl;
+import io.baratine.pipe.PipesImpl.PipeInResultImpl;
 import io.baratine.service.Result;
 
 /**

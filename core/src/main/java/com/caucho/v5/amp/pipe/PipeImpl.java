@@ -38,8 +38,6 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
-import com.caucho.v5.amp.message.PipeWakeInMessage;
-import com.caucho.v5.amp.message.PipeWakeOutMessage;
 import com.caucho.v5.amp.queue.QueueRingSingleWriter;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
@@ -135,7 +133,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   }
 
   @Override
-  public void ok()
+  public void close()
   {
     _isOk = true;
     wakeIn();
@@ -268,7 +266,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
       inPipe.fail(_fail);
     }
     else if (_isOk) {
-      inPipe.ok();
+      inPipe.close();
       
       _stateInRef.set(StateInPipe.CLOSE);
     }
@@ -315,7 +313,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     }
   }
   
-  private void close()
+  private void cancel()
   {
     _stateInRef.set(_stateInRef.get().toClose());
   }
@@ -324,7 +322,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
    * Notify the reader of available space in the pipe. If the writer is asleep,
    * wake it.
    */
-  private void wakeOut()
+  void wakeOut()
   {
     FlowOut<T> outFlow = _outFlow;
     
@@ -366,7 +364,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     @Override
     public long credits()
     {
-      return PipeImpl.this.creditsInitial();
+      return PipeImpl.this.credits();
     }
 
     @Override
@@ -382,7 +380,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     @Override
     public void cancel()
     {
-      PipeImpl.this.close();
+      PipeImpl.this.cancel();
     }
   }
   

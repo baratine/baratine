@@ -1,9 +1,7 @@
 package com.caucho.v5.jdbc;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -18,7 +16,7 @@ import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
 
 @Service
-public class JdbcConnectionPoolImpl implements JdbcConnection
+public class JdbcConnectionPoolImpl //implements JdbcService
 {
   private Logger _logger = Logger.getLogger(JdbcConnectionPoolImpl.class.toString());
 
@@ -31,15 +29,15 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
   private TreeSet<Entry> _idleList = new TreeSet<>();
   private int _busyCount = 0;
 
-  private LinkedList<Result<JdbcConnection>> _waitingList = new LinkedList<>();
+  private LinkedList<Result<JdbcService>> _waitingList = new LinkedList<>();
 
   private int _minCapacity = 4;
   private int _maxCapacity = 128;
 
   private long _timeoutMs = 1000 * 60 * 5;
 
-  private JdbcConnection _self;
-  private JdbcConnectionSync _selfSync;
+  private JdbcService _self;
+  private JdbcServiceSync _selfSync;
 
   private String _url;
   private Properties _props;
@@ -49,31 +47,11 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
   @OnInit
   public void onInit()
   {
-    _self = ServiceRef.current().as(JdbcConnection.class);
-    _selfSync = ServiceRef.current().as(JdbcConnectionSync.class);
+    _self = ServiceRef.current().as(JdbcService.class);
+    _selfSync = ServiceRef.current().as(JdbcServiceSync.class);
   }
 
-  @Override
-  public void connect(String url, Properties props, Result<JdbcConnection> result)
-  {
-    _url = url;
-    _props = props;
-
-    checkPool();
-
-    result.ok(_self);
-  }
-
-  public JdbcConnectionSync connectSync(String url, Properties props)
-  {
-    _url = url;
-    _props = props;
-
-    checkPool();
-
-    return _selfSync;
-  }
-
+  /*
   @Override
   public void execute(String sql, Result<Integer> result)
   {
@@ -156,15 +134,16 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
     _isClosing = true;
 
     for (Entry e : _idleList) {
-      JdbcConnection conn = e.getConnection();
+      JdbcService conn = e.getConnection();
 
       ServiceRef.toRef(conn).close();
     }
 
-    for (Result<JdbcConnection> r : _waitingList) {
+    for (Result<JdbcService> r : _waitingList) {
       r.fail(new SQLException("database pool is closing"));
     }
   }
+  */
 
   private void checkPool()
   {
@@ -184,7 +163,7 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
       if (entry.isExpired(_timeoutMs)) {
         iter.remove();
 
-        JdbcConnection conn = entry.getConnection();
+        JdbcService conn = entry.getConnection();
 
         if (_logger.isLoggable(Level.FINE)) {
           _logger.log(Level.FINE, "closing expired connection service: " + conn);
@@ -221,14 +200,15 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
       }
     }
 
+    /*
     for (int i = 0; i < newCount; i++) {
-      ServiceRef ref = _manager.newService(JdbcConnectionImpl.class).start();
+      ServiceRef ref = _manager.newService(JdbcServiceImpl.class).start();
 
       if (_logger.isLoggable(Level.FINE)) {
         _logger.log(Level.FINE, "creating new connection service: " + ref);
       }
 
-      JdbcConnection conn = ref.as(JdbcConnection.class);
+      JdbcService conn = ref.as(JdbcService.class);
 
       conn.connect(_url, _props, (c, e) -> {
         if (_logger.isLoggable(Level.FINER)) {
@@ -243,9 +223,10 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
         }
       });
     }
+    */
   }
 
-  private void addIdle(JdbcConnection conn)
+  private void addIdle(JdbcService conn)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "adding idle connection service: idle=" + _idleList.size() + ",busy=" + _busyCount);
@@ -260,7 +241,7 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
     }
   }
 
-  private void failIdle(Throwable e, JdbcConnection conn)
+  private void failIdle(Throwable e, JdbcService conn)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "fail idle connection service: idle=" + _idleList.size() + ",busy=" + _busyCount);
@@ -278,7 +259,7 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
       return;
     }
 
-    Result<JdbcConnection> result = _waitingList.pollFirst();
+    Result<JdbcService> result = _waitingList.pollFirst();
 
     if (result != null) {
       Entry entry = _idleList.pollFirst();
@@ -294,7 +275,7 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
     }
   }
 
-  private void getConnection(Result<JdbcConnection> result)
+  private void getConnection(Result<JdbcService> result)
   {
     _waitingList.add(result);
 
@@ -302,10 +283,10 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
   }
 
   class ConnResult<T> implements Result<T> {
-    private JdbcConnection _conn;
+    private JdbcService _conn;
     private Result<T> _result;
 
-    public ConnResult(JdbcConnection conn, Result<T> result)
+    public ConnResult(JdbcService conn, Result<T> result)
     {
       _conn = conn;
       _result = result;
@@ -330,16 +311,16 @@ public class JdbcConnectionPoolImpl implements JdbcConnection
   }
 
   static class Entry implements Comparable<Entry> {
-    private JdbcConnection _conn;
+    private JdbcService _conn;
     private long _lastActivityTime;
 
-    public Entry(JdbcConnection conn)
+    public Entry(JdbcService conn)
     {
       _conn = conn;
       _lastActivityTime = System.currentTimeMillis();
     }
 
-    public JdbcConnection getConnection()
+    public JdbcService getConnection()
     {
       return _conn;
     }

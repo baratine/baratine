@@ -52,7 +52,7 @@ public interface Pipe<T>
    * Completes sending the values to the client and signals to the client
    * that no more values are expected.
    */
-  void ok();
+  void close();
 
   /**
    * Signals a failure to the client passing exception.

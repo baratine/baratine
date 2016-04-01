@@ -388,8 +388,8 @@ public class ProxyGeneratorAmp<T>
         
         int ampResult = findAmpResult(paramTypes, Result.class);
         int ampResultStream = findAmpResult(paramTypes, ResultStream.class);
-        int ampResultOutPipe = findAmpResult(paramTypes, ResultPipeOut.class);
-        int ampResultInPipe = findAmpResult(paramTypes, ResultPipeIn.class);
+        int ampResultPipeOut = findAmpResult(paramTypes, ResultPipeOut.class);
+        int ampResultPipeIn = findAmpResult(paramTypes, ResultPipeIn.class);
         
         if (ResultStreamBuilder.class.isAssignableFrom(method.getReturnType())) {
           if (ampResult >= 0 || ampResultStream >= 0) {
@@ -420,21 +420,21 @@ public class ProxyGeneratorAmp<T>
      
           createAmpResultStreamMethod(jClass, method, ampResultStream);
         }
-        else if (ampResultOutPipe >= 0) {
+        else if (ampResultPipeOut >= 0) {
           if (! void.class.equals(method.getReturnType())) {
             throw new IllegalArgumentException(L.l("Method '{0}' must return void with Result or ResultOutPipe argument",
                                                    method.getName(), String.valueOf(method)));
           }
      
-          createAmpResultOutPipeMethod(jClass, method, ampResultOutPipe);
+          createAmpResultPipeOutMethod(jClass, method, ampResultPipeOut);
         }
-        else if (ampResultInPipe >= 0) {
+        else if (ampResultPipeIn >= 0) {
           if (! void.class.equals(method.getReturnType())) {
             throw new IllegalArgumentException(L.l("Method '{0}' must return void with Result or ResultOutPipe argument",
                                                    method.getName(), String.valueOf(method)));
           }
      
-          createAmpResultInPipeMethod(jClass, method, ampResultInPipe);
+          createAmpResultPipeInMethod(jClass, method, ampResultPipeIn);
         }
         else if (! void.class.equals(method.getReturnType())) {
           createQueryFutureMethod(jClass, method);
@@ -1263,22 +1263,22 @@ public class ProxyGeneratorAmp<T>
     code.close();
   }
   
-  private void createAmpResultOutPipeMethod(JavaClass jClass,
+  private void createAmpResultPipeOutMethod(JavaClass jClass,
                                             Method method,
                                             int resultOffset)
   {
     createAmpResultPipeMethod(jClass, method, resultOffset,
                               ResultPipeOut.class,
-                              "resultOutPipe");
+                              "resultPipeOut");
   }
   
-  private void createAmpResultInPipeMethod(JavaClass jClass,
+  private void createAmpResultPipeInMethod(JavaClass jClass,
                                             Method method,
                                             int resultOffset)
   {
     createAmpResultPipeMethod(jClass, method, resultOffset,
                               ResultPipeIn.class,
-                              "resultInPipe");
+                              "resultPipeIn");
   }
   
   private void createAmpResultPipeMethod(JavaClass jClass,

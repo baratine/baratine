@@ -29,22 +29,15 @@
 
 package com.caucho.v5.jdbc;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Properties;
 
-public interface JdbcConnectionSync extends JdbcConnection
+public interface JdbcServiceSync extends JdbcService
 {
-  JdbcConnectionSync connectSync(String url, Properties props) throws SQLException;
+  Integer execute(String sql, Object ... params);
 
-  Integer execute(String sql);
-  Integer[] executeBatch(String[] sql);
+  JdbcResultSet query(String sql, Object ... params);
 
-  JdbcResultSet query(String sql);
-  JdbcResultSet queryParam(String sql, Object[] params);
-
-  List<JdbcResultSet> queryBatch(String sql, Object[][] paramsList);
-  List<JdbcResultSet> queryBatch(String[] sql, Object[][] paramsList);
-
-  void close();
+  Integer[] executeBatch(List<String> sqlList, List<Object> ... paramsList);
+  List<JdbcResultSet> queryBatch(String sql, List<Object> ... paramsList);
+  List<JdbcResultSet> queryBatch(List<String> sqlList, List<Object> ... paramsList);
 }

@@ -85,13 +85,13 @@ public interface MessageFactoryAmp
                     MethodAmp method,
                     Object []args);
 
-  <V> void resultOutPipe(ResultPipeOut<V> result,
+  <V> void resultPipeOut(ResultPipeOut<V> result,
                        long timeout,
                        ServiceRefAmp serviceRef,
                        MethodAmp method,
                        Object []args);
 
-  <V> void resultInPipe(ResultPipeIn<V> result,
+  <V> void resultPipeIn(ResultPipeIn<V> result,
                        long timeout,
                        ServiceRefAmp serviceRef,
                        MethodAmp method,
