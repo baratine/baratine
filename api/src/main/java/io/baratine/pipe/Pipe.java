@@ -149,6 +149,17 @@ public interface Pipe<T>
      * @throws IllegalStateException if prefetch is used
      */
     void credits(long creditSequence);
+    
+    /**
+     * Adds credits.
+     * 
+     * Convenience method based on the {@code credits} methods.
+     */
+    
+    default void addCredits(int newCredits)
+    {
+      credits(credits() + credits());
+    }
   }
   /**
    * {@code FlowOut} is a callback to wake the publisher when credits are

@@ -41,7 +41,8 @@ import io.baratine.service.Service;
 
 
 /**
- * {@code OutPipe} sends a sequence of values from a source to a sink.
+ * The Pipes service is a broker between publishers and subscribers, available
+ * at the "pipe:" scheme.
  */
 @Service("pipe:///{param[0]}")
 public interface Pipes<T>
@@ -74,17 +75,18 @@ public interface Pipes<T>
   
   public interface PipeOutBuilder<T> extends ResultPipeOut<T>
   {
-    PipeOutBuilder<T> fail(Consumer<Throwable> exn);
+    PipeOutBuilder<T> fail(Consumer<Throwable> onFail);
   }
   
   public interface PipeInBuilder<T> extends ResultPipeIn<T>
   {
-    PipeInBuilder<T> credit(int initialCredit);
+    PipeInBuilder<T> fail(Consumer<Throwable> onFail);
+    PipeInBuilder<T> close(Runnable onClose);
+    
+    PipeInBuilder<T> credits(long initialCredit);
     
     PipeInBuilder<T> prefetch(int prefetch);
     
     PipeInBuilder<T> capacity(int size);
-    
-    PipeInBuilder<T> pause();
   }
 }
