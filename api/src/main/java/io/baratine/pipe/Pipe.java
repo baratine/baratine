@@ -60,6 +60,17 @@ public interface Pipe<T>
    */
   void fail(Throwable exn);
   
+  //
+  // publisher methods
+  //
+  
+  /**
+   * Set the {@code FlowOut} callback for publisher flow control.
+   */
+  default void flow(FlowOut<T> flow)
+  {
+  }
+  
   /**
    * Returns the available credits in the queue.
    */
@@ -85,6 +96,10 @@ public interface Pipe<T>
   {
     return false;
   }
+  
+  //
+  // subscriber methods
+  //
   
   /**
    * Accept the {@code Flow} object for finer flow control.
@@ -161,6 +176,7 @@ public interface Pipe<T>
       credits(credits() + credits());
     }
   }
+  
   /**
    * {@code FlowOut} is a callback to wake the publisher when credits are
    * available for the pipe.

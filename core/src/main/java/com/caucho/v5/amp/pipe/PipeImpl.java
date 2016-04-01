@@ -52,6 +52,8 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   private static final L10N L = new L10N(PipeImpl.class);
   private static final Logger log = Logger.getLogger(PipeImpl.class.getName());
   
+  private static final long OFFER_TIMEOUT_DEFAULT = 10000L;
+  
   private Pipe<T> _inPipe;
   private QueueRingSingleWriter<T> _queue;
   
@@ -74,6 +76,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   private ServiceRefAmp _outRef;
 
   private FlowOut<T> _outFlow;
+  private long _offerTimeout = OFFER_TIMEOUT_DEFAULT;
   
   public PipeImpl(ServiceRefAmp inRef, 
                   Pipe<T> inPipe,
@@ -116,6 +119,15 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     
     updatePrefetchCredits();
   }
+  
+  @SuppressWarnings("unchecked")
+  public void flow(FlowOut<T> flow)
+  {
+    Objects.requireNonNull(flow);
+    
+    _outFlow = _outRef.pin(flow).as(FlowOut.class);
+    _offerTimeout = 0;
+  }
 
   @Override
   public void next(T value)
@@ -123,7 +135,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     Objects.requireNonNull(value);
     
     if (_stateInRef.get() != StateInPipe.CLOSE) {
-      if (! _queue.offer(value, 0, TimeUnit.MILLISECONDS)) {
+      if (! _queue.offer(value, _offerTimeout, TimeUnit.MILLISECONDS)) {
         throw new PipeExceptionFull(L.l("full pipe for pipe.next() size={0}",
                                         _queue.size()));
       }
