@@ -29,7 +29,14 @@
 
 package io.baratine.pipe;
 
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+import io.baratine.pipe.PipeStatic.PipeOutResultImpl;
+import io.baratine.pipe.PipeStatic.ResultPipeInHandlerImpl;
+import io.baratine.pipe.PipeStatic.ResultPipeInImpl;
 import io.baratine.service.Cancel;
+import io.baratine.service.Result;
 
 /**
  * {@code Pipe} sends a sequence of values from a source to a sink.
@@ -59,6 +66,28 @@ public interface Pipe<T>
    * @param exn
    */
   void fail(Throwable exn);
+  
+  /**
+   * Publishers the {@code FlowOut} callback when credits may be available
+   * for the pipe.
+   */
+  default void flow(FlowOut<Pipe<T>> flow)
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
+  
+  /**
+   * Publisher timeout when not using {@code FlowOut}.
+   */
+  default void flowTimeout(long time, TimeUnit unit)
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
+  
+  default FlowIn<Pipe<T>> flow()
+  {
+    throw new IllegalStateException(getClass().getName());
+  }
   
   /**
    * Returns the available credits in the queue.
@@ -92,7 +121,7 @@ public interface Pipe<T>
    * The {@code Flow} object can pause the prefetch, or add credits
    * manually when the credit system is used. 
    */
-  default void flow(FlowIn flow)
+  default void flow(FlowIn<Pipe<T>> flow)
   {
   }
   
@@ -117,7 +146,7 @@ public interface Pipe<T>
    * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
    * is the default behavior. 
    */
-  default int creditsInitial()
+  default long creditsInitial()
   {
     return CREDIT_DISABLE;
   }
@@ -127,11 +156,63 @@ public interface Pipe<T>
     return 0;
   }
   
+  public static <T> PipeOutBuilder<T> out(Result<Pipe<T>> result)
+  {
+    return new PipeOutResultImpl<>(result);
+  }
+  
+  public static <T> PipeOutBuilder<T> out(Consumer<Pipe<T>> onOk)
+  {
+    return new PipeOutResultImpl<>(onOk);
+  }
+  
+  public static <T> PipeOutBuilder<T> out(FlowOut<Pipe<T>> flow)
+  {
+    return new PipeOutResultImpl<>(flow);
+  }
+  
+  public static <T> PipeInBuilder<T> in(Pipe<T> pipe)
+  {
+    return new ResultPipeInImpl<>(pipe);
+  }
+  
+  public static <T> Pipe<T> in(InHandler<T> handler)
+  {
+    return new ResultPipeInHandlerImpl<T>(handler);
+  }
+  
+  public interface InHandler<T>
+  {
+    void handle(T next, Throwable exn, boolean isCancel);
+  }
+  
+  public interface PipeOutBuilder<T> extends ResultPipeOut<T>
+  {
+    PipeOutBuilder<T> flow(FlowOut<Pipe<T>> flow);
+    PipeOutBuilder<T> fail(Consumer<Throwable> onFail);
+  }
+  
+  public interface PipeInBuilder<T> extends ResultPipeIn<T>
+  {
+    PipeInBuilder<T> ok(Consumer<Void> onOkSubscription);
+    
+    PipeInBuilder<T> fail(Consumer<Throwable> onFail);
+    PipeInBuilder<T> close(Runnable onClose);
+    
+    PipeInBuilder<T> credits(long initialCredit);
+    
+    PipeInBuilder<T> prefetch(int prefetch);
+    
+    PipeInBuilder<T> capacity(int size);
+    
+    ResultPipeIn<T> chain(FlowIn<Pipe<T>> flowNext);
+  }
+  
   
   /**
    * {@code FlowIn} controls the pipe credits from the subscriber
    */
-  public interface FlowIn extends Cancel
+  public interface FlowIn<T> extends Cancel
   {
     /**
      * Returns the current credit sequence.
@@ -158,9 +239,14 @@ public interface Pipe<T>
     
     default void addCredits(int newCredits)
     {
-      credits(credits() + credits());
+      credits(credits() + newCredits);
     }
+    
+    int available();
+    
+    void flow(FlowOut<T> flow);
   }
+  
   /**
    * {@code FlowOut} is a callback to wake the publisher when credits are
    * available for the pipe.
@@ -170,7 +256,7 @@ public interface Pipe<T>
    */
   public interface FlowOut<T>
   {
-    void ready(Pipe<T> pipe);
+    void ready(T pipe);
     
     default void fail(Throwable exn)
     {
@@ -179,9 +265,5 @@ public interface Pipe<T>
     default void cancel()
     {
     }
-  }
-  
-  public interface InHandler<T> {
-    void handle(T next, Throwable exn, boolean isCancel);
   }
 }

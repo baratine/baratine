@@ -62,7 +62,6 @@ public class PipeOutMessage<T>
   private Object[] _args;
   
   private PipeImpl<T> _pipe;
-  private FlowOut<T> _flowOut;
   
   public PipeOutMessage(OutboxAmp outbox,
                         HeadersAmp headers,
@@ -78,7 +77,6 @@ public class PipeOutMessage<T>
     Objects.requireNonNull(result);
     
     _result = result;
-    _flowOut = _result.flow();
     
     _args = args;
   }
@@ -121,9 +119,8 @@ public class PipeOutMessage<T>
     ServiceRefAmp inRef = inboxTarget().serviceRef();
     
     ServiceRefAmp outRef = inboxCaller().serviceRef();
-    FlowOut<T> flowOut = _result.flow();
     
-    PipeImpl<T> pipe = new PipeImpl<>(inRef, pipeIn, outRef, flowOut);
+    PipeImpl<T> pipe = new PipeImpl<>(inRef, pipeIn, outRef);
     
     _pipe = pipe;
     
@@ -134,12 +131,6 @@ public class PipeOutMessage<T>
   protected boolean invokeOk(StubAmp stubDeliver)
   {
     _result.ok(_pipe);
-
-    FlowOut<T> flow = _result.flow();
-    
-    if (flow != null) {
-      flow.ready(_pipe);
-    }
     
     return true;
   }

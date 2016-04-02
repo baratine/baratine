@@ -68,8 +68,9 @@ class PipeNode<T> implements Pipes<T>
     SubscriberNode sub = new SubscriberNode();
     
     _subscribers.add(sub);
-    
-    result.ok(sub);
+
+    result.pipe().flow(sub);
+    result.ok(null);
   }
 
   @Override
@@ -79,7 +80,8 @@ class PipeNode<T> implements Pipes<T>
     
     _consumers.add(sub);
     
-    result.ok(sub);
+    result.pipe().flow(sub);
+    result.ok(null);
   }
   
   private void unsubscribe(SubscriberNode node)
@@ -131,7 +133,7 @@ class PipeNode<T> implements Pipes<T>
     }
   }
   
-  private class SubscriberNode implements FlowOut<T>
+  private class SubscriberNode implements FlowOut<Pipe<T>>
   {
     private Pipe<T> _pipe;
 

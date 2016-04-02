@@ -30,7 +30,7 @@
 package io.baratine.pipe;
 
 import io.baratine.pipe.Pipe.FlowOut;
-import io.baratine.pipe.PipesImpl.PipeOutFlowImpl;
+import io.baratine.pipe.PipeStatic.PipeOutFlowImpl;
 import io.baratine.service.Result;
 
 /**
@@ -42,15 +42,4 @@ import io.baratine.service.Result;
 @FunctionalInterface
 public interface ResultPipeOut<T> extends Result<Pipe<T>>
 {
-  //
-  // client/publisher side
-  //
-  
-  /**
-   * Returns the publisher's flow callback.
-   */
-  default FlowOut<T> flow()
-  {
-    return null;
-  }
 }

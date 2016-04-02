@@ -50,7 +50,7 @@ import io.baratine.pipe.ResultPipeIn;
  * Register a publisher to a pipe.
  */
 public class PipeInMessage<T>
-  extends QueryMessageBase<FlowOut<T>>
+  extends QueryMessageBase<Void>
   implements ResultPipeIn<T>
 {
   private static final L10N L = new L10N(PipeInMessage.class);
@@ -146,7 +146,16 @@ public class PipeInMessage<T>
   @Override
   public Pipe<T> pipe()
   {
-    throw new IllegalStateException();
+    if (_pipe == null) {
+      ServiceRefAmp inRef = inboxCaller().serviceRef();
+      Pipe<T> inPipe = _result.pipe();
+    
+      ServiceRefAmp outRef = serviceRef();
+    
+      _pipe = new PipeImpl<>(inRef, inPipe, outRef);
+    }
+    
+    return _pipe;
   }
 
   /*
@@ -158,20 +167,9 @@ public class PipeInMessage<T>
   */
 
   @Override
-  public void ok(FlowOut<T> outFlow)
+  public void ok(Void onOk)
   {
-    Objects.requireNonNull(outFlow);
-    
     super.ok(null);
-    
-    ServiceRefAmp inRef = inboxCaller().serviceRef();
-    Pipe<T> inPipe = _result.pipe();
-    
-    ServiceRefAmp outRef = serviceRef();
-    
-    PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
-    
-    outFlow.ready(pipe);
   }
 
   @Override

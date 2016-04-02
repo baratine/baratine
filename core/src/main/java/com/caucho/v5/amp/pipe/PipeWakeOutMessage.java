@@ -37,6 +37,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
+import io.baratine.pipe.Pipe;
 import io.baratine.pipe.Pipe.FlowOut;
 
 /**
@@ -47,12 +48,12 @@ public class PipeWakeOutMessage<T>
   extends MessageOutboxBase
 {
   private final PipeImpl<T> _pipe;
-  private final FlowOut<T> _flow;
+  private final FlowOut<Pipe<T>> _flow;
 
   public PipeWakeOutMessage(OutboxAmp outbox,
                          ServiceRefAmp serviceRef,
                          PipeImpl<T> pipe,
-                         FlowOut<T> flow)
+                         FlowOut<Pipe<T>> flow)
   {
     super(outbox, serviceRef.inbox());
     

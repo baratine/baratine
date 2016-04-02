@@ -29,15 +29,14 @@
 
 package io.baratine.pipe;
 
-import io.baratine.pipe.Pipe.FlowOut;
-import io.baratine.pipe.PipesImpl.PipeInResultImpl;
+import io.baratine.pipe.PipeStatic.PipeInResultImpl;
 import io.baratine.service.Result;
 
 /**
  * {@code ResultInPipe} returns a pipe subscription.
  */
 @FunctionalInterface
-public interface ResultPipeIn<T> extends Result<FlowOut<T>>
+public interface ResultPipeIn<T> extends Result<Void>
 {
   //
   // caller/subscriber side
@@ -60,7 +59,7 @@ public interface ResultPipeIn<T> extends Result<FlowOut<T>>
   void handle(T next, Throwable fail, boolean ok);
   
   @Override
-  default void handle(FlowOut<T> ok, Throwable fail)
+  default void handle(Void ok, Throwable fail)
   {
     if (fail != null) {
       handle(null, fail, false);

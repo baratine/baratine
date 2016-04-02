@@ -32,6 +32,7 @@ package com.caucho.v5.amp.pipe;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +41,7 @@ import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.queue.QueueRingSingleWriter;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.Pipe;
@@ -73,12 +75,12 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
 
   private ServiceRefAmp _outRef;
 
-  private FlowOut<T> _outFlow;
+  private FlowOut<Pipe<T>> _outFlow;
+  private FlowOutBlock<T> _outBlock;
   
   public PipeImpl(ServiceRefAmp inRef, 
                   Pipe<T> inPipe,
-                  ServiceRefAmp outRef,
-                  FlowOut<T> outFlow)
+                  ServiceRefAmp outRef)
   {
     Objects.requireNonNull(inRef);
     Objects.requireNonNull(inPipe);
@@ -87,16 +89,19 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     _inPipe = inPipe;
     
     _outRef = outRef;
-    _outFlow = outFlow;
     
     int prefetch = _inPipe.prefetch();
-    int credits = _inPipe.creditsInitial();
+    long credits = _inPipe.creditsInitial();
     int capacity = _inPipe.capacity();
-    
+
     if (capacity > 0) {
     }
     else if (credits >= 0) {
-      capacity = Math.max(32, 2 * Integer.highestOneBit(credits));
+      // XXX: illegal argument exception for too-long credits
+      capacity = (int) Math.max(32, 2 * Long.highestOneBit(credits));
+      
+      _creditsIn = credits;
+      prefetch = 0;
     }
     else {
       if (prefetch <= 0) {
@@ -108,13 +113,15 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     
     _prefetch = prefetch;
     
-    _inPipe.flow(_inFlow);
-    
     _inFlow.init();
-
+    
+    long offerTimeout = 10000L;
+    _outBlock = new FlowOutBlock<>(offerTimeout);
     _queue = new QueueRingSingleWriter<>(capacity);
     
     updatePrefetchCredits();
+    
+    _inPipe.flow(_inFlow);
   }
 
   @Override
@@ -122,13 +129,36 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   {
     Objects.requireNonNull(value);
     
-    if (_stateInRef.get() != StateInPipe.CLOSE) {
-      if (! _queue.offer(value, 0, TimeUnit.MILLISECONDS)) {
-        throw new PipeExceptionFull(L.l("full pipe for pipe.next() size={0}",
-                                        _queue.size()));
+    if (_stateInRef.get() == StateInPipe.CLOSE) {
+      return;
+    }
+    
+    validateCredits();
+    
+    if (! _queue.offer(value, 0, TimeUnit.MILLISECONDS)) {
+      throw new PipeExceptionFull(L.l("full pipe for pipe.next() size={0}",
+                                      _queue.size()));
+    }
+      
+    wakeIn();
+  }
+  
+  private void validateCredits()
+  {
+    if (_creditsIn <= sent()) {
+      FlowOutBlock<T> outBlock = _outBlock;
+
+      if (outBlock != null) {
+        long seq = outBlock.blockSequence();
+        
+        if (available() <= 0) {
+          outBlock.block(seq);
+        }
       }
       
-      wakeIn();
+      if (_creditsIn <= sent()) {
+        throw new IllegalStateException(L.l("Pipe.next called with no available credits"));
+      }
     }
   }
 
@@ -152,9 +182,52 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   }
 
   @Override
+  public void flowTimeout(long timeout, TimeUnit unit)
+  {
+    if (sent() > 0) {
+      throw new IllegalStateException();
+    }
+
+    if (_outFlow != null) {
+      throw new IllegalStateException();
+    }
+
+    _outBlock = new FlowOutBlock<>(unit.toMillis(timeout));
+  }
+  
+  @Override
+  public void flow(FlowOut<Pipe<T>> flowOut)
+  {
+    Objects.requireNonNull(flowOut);
+    
+    if (sent() > 0) {
+      throw new IllegalStateException();
+    }
+
+    if (_outFlow != null) {
+      throw new IllegalStateException();
+    }
+    
+    if (isClosed()) {
+      throw new IllegalStateException();
+    }
+    
+    _outFlow = flowOut;
+    _outBlock = null;
+
+    outFull();
+  }
+
+  @Override
+  public FlowIn flow()
+  {
+    return _inFlow;
+  }
+  
+  @Override
   public int available()
   {
-    long sent = _queue.head();
+    long sent = sent();
     
     int available = Math.max(0, (int) (_creditsIn - sent));
     
@@ -165,6 +238,11 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     }
 
     return available;
+  }
+  
+  private long sent()
+  {
+    return _queue.head();
   }
   
   @Override
@@ -182,12 +260,12 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   
   private void outFull()
   {
-    FlowOut<T> outFlow = _outFlow;
+    FlowOut<Pipe<T>> outFlow = _outFlow;
     
     if (outFlow == null) {
       return;
     }
-    
+
     StateOutPipe stateOld;
     StateOutPipe stateNew;
     
@@ -324,7 +402,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
    */
   void wakeOut()
   {
-    FlowOut<T> outFlow = _outFlow;
+    FlowOut<Pipe<T>> outFlow = _outFlow;
     
     if (outFlow == null) {
       return;
@@ -347,15 +425,16 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
       stateNew = stateOld.toWake();
     } while (! _stateOutRef.compareAndSet(stateOld, stateNew));
       
-    OutboxAmp outbox = OutboxAmp.current();
-    Objects.requireNonNull(outbox);
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_outRef.manager())) {
+      Objects.requireNonNull(outbox);
     
-    PipeWakeOutMessage<T> msg = new PipeWakeOutMessage<>(outbox, _outRef, this, outFlow);
+      PipeWakeOutMessage<T> msg = new PipeWakeOutMessage<>(outbox, _outRef, this, outFlow);
     
-    outbox.offer(msg);
+      outbox.offer(msg);
+    }
   }
   
-  private class PipeInFlowImpl implements FlowIn
+  private class PipeInFlowImpl implements FlowIn<Pipe<T>>
   {
     void init()
     {
@@ -375,6 +454,18 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
       }
       
       PipeImpl.this.credits(credits);
+    }
+
+    @Override
+    public int available()
+    {
+      return PipeImpl.this.available();
+    }
+
+    @Override
+    public void flow(FlowOut<Pipe<T>> flow)
+    {
+      PipeImpl.this.flow(flow);
     }
 
     @Override
@@ -482,6 +573,55 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     public StateOutPipe toFull()
     {
       return this;
+    }
+  }
+  
+  private static class FlowOutBlock<T> implements FlowOut<Pipe<T>>
+  {
+    private long _timeout;
+    
+    private volatile Thread _thread;
+    private volatile long _blockSequence;
+    private volatile long _readySequence;
+    
+    FlowOutBlock(long timeout)
+    {
+      _timeout = timeout;
+    }
+    
+    public long blockSequence()
+    {
+      return ++_blockSequence;
+    }
+    
+    public void block(long blockSequence)
+    {
+      long expire = System.currentTimeMillis() + _timeout;
+      
+      Thread thread = Thread.currentThread();
+      _thread = thread;
+      
+      try {
+        while (_readySequence < blockSequence
+               && (System.currentTimeMillis() < expire)) {
+          LockSupport.parkUntil(expire);
+        }
+      } catch (Exception e) {
+        log.log(Level.FINER, e.toString(), e);
+      } finally {
+        _thread = null;
+      }
+    }
+    
+    @Override
+    public void ready(Pipe<T> pipe)
+    {
+      _readySequence = _blockSequence;
+      Thread thread = _thread;
+      
+      if (thread != null) {
+        LockSupport.unpark(thread);
+      }
     }
   }
 }
