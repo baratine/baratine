@@ -31,8 +31,9 @@ package io.baratine.pipe;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-import io.baratine.pipe.Pipe.FlowIn;
+import io.baratine.pipe.Credits.OnAvailable;
 import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.Pipe.PipeInBuilder;
 import io.baratine.pipe.Pipe.PipeOutBuilder;
@@ -155,19 +156,20 @@ class PipeStatic<T>
   {
     private Result<Pipe<T>> _result;
     
-    private Consumer<Pipe<T>> _onOk;
+    private Function<Pipe<T>,OnAvailable> _onOk;
+    
     private Consumer<Throwable> _onFail;
     
-    private FlowOut<Pipe<T>> _flow;
+    private OnAvailable _flow;
     
-    PipeOutResultImpl(FlowOut<Pipe<T>> flow)
+    PipeOutResultImpl(OnAvailable flow)
     {
       Objects.requireNonNull(flow);
       
       _flow = flow;
     }
     
-    PipeOutResultImpl(Consumer<Pipe<T>> onOk)
+    PipeOutResultImpl(Function<Pipe<T>,OnAvailable> onOk)
     {
       Objects.requireNonNull(onOk);
       
@@ -182,7 +184,7 @@ class PipeStatic<T>
     }
 
     @Override
-    public PipeOutResultImpl<T> flow(FlowOut<Pipe<T>> flow)
+    public PipeOutResultImpl<T> flow(OnAvailable flow)
     {
       Objects.requireNonNull(flow);
       
@@ -205,14 +207,15 @@ class PipeStatic<T>
     public void ok(Pipe<T> pipe)
     {
       if (_onOk != null) {
-        _onOk.accept(pipe);;
+        OnAvailable flow = _onOk.apply(pipe);
+        pipe.credits().onAvailable(flow);
       }
       else if (_result != null) {
         _result.ok(pipe);
       }
 
       if (_flow != null) {
-        pipe.flow(_flow);
+        pipe.credits().onAvailable(_flow);
       }
 
       /*
@@ -245,14 +248,14 @@ class PipeStatic<T>
   }
   
   static class ResultPipeInImpl<T>
-  implements ResultPipeIn<T>, PipeInBuilder<T>, Pipe<T>, FlowOut<Pipe<T>>
+  implements ResultPipeIn<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
   {
     private Pipe<T> _pipe;
     private Pipe<T> _builtPipe;
     
-    private FlowIn _flowIn;
+    private Credits _flowIn;
     
-    private FlowIn _flowNext;
+    private Credits _flowNext;
     
     private Long _credits;
     private Integer _prefetch;
@@ -312,12 +315,12 @@ class PipeStatic<T>
     //
     
     @Override
-    public void flow(FlowIn flow)
+    public void credits(Credits flow)
     {
       _flowIn = flow;
       
       if (_flowNext != null) {
-        _flowIn.credits(_flowNext.credits());
+        _flowIn.set(_flowNext.get());
       }
     }
     
@@ -339,7 +342,7 @@ class PipeStatic<T>
     public long creditsInitial()
     {
       if (_flowNext != null) {
-        return _flowNext.credits();
+        return _flowNext.get();
       }
       else if (_credits != null) {
         return _credits;
@@ -374,19 +377,19 @@ class PipeStatic<T>
     }
 
     @Override
-    public ResultPipeIn<T> chain(FlowIn flowNext)
+    public ResultPipeIn<T> chain(Credits flowNext)
     {
       _flowNext = flowNext;
       
       _builtPipe = this;
       
-      _flowNext.flow(this);
+      _flowNext.onAvailable(this);
       
       return this;
     }
 
     @Override
-    public void ready(Pipe<T> pipe)
+    public void available()
     {
       updateCredits();
     }
@@ -397,7 +400,7 @@ class PipeStatic<T>
         int available = _flowNext.available();
       
         if (_flowIn != null) {
-          _flowIn.credits(_sequenceIn + available);
+          _flowIn.set(_sequenceIn + available);
         }
       }
     }

@@ -29,9 +29,10 @@
 
 package io.baratine.pipe;
 
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import io.baratine.pipe.Credits.OnAvailable;
 import io.baratine.pipe.PipeStatic.PipeOutResultImpl;
 import io.baratine.pipe.PipeStatic.ResultPipeInHandlerImpl;
 import io.baratine.pipe.PipeStatic.ResultPipeInImpl;
@@ -68,17 +69,20 @@ public interface Pipe<T>
   void fail(Throwable exn);
   
   /**
-   * Publishers the {@code FlowOut} callback when credits may be available
+   * Registers the publishers {@code FlowOut} to be called when credits may be available
    * for the pipe.
    */
+  /*
   default void flow(FlowOut<Pipe<T>> flow)
   {
     throw new IllegalStateException(getClass().getName());
   }
+  */
   
   /**
    * Publisher timeout when not using {@code FlowOut}.
    */
+  /*
   default void flowTimeout(long time, TimeUnit unit)
   {
     throw new IllegalStateException(getClass().getName());
@@ -88,21 +92,28 @@ public interface Pipe<T>
   {
     throw new IllegalStateException(getClass().getName());
   }
+  */
   
   /**
    * Returns the available credits in the queue.
    */
+  /*
   default int available()
   {
     throw new IllegalStateException(getClass().getName());
   }
+  */
   
   /**
    * Returns the credit sequence for the queue.
    */
-  default long credits()
+  default Credits credits()
   {
     throw new IllegalStateException(getClass().getName());
+  }
+  
+  default void credits(Credits credits)
+  {
   }
   
   /**
@@ -121,9 +132,10 @@ public interface Pipe<T>
    * The {@code Flow} object can pause the prefetch, or add credits
    * manually when the credit system is used. 
    */
-  default void flow(FlowIn<Pipe<T>> flow)
+  /*default void flow(FlowIn<Pipe<T>> flow)
   {
   }
+  */
   
   /**
    * The prefetch size.
@@ -161,12 +173,12 @@ public interface Pipe<T>
     return new PipeOutResultImpl<>(result);
   }
   
-  public static <T> PipeOutBuilder<T> out(Consumer<Pipe<T>> onOk)
+  public static <T> PipeOutBuilder<T> out(Function<Pipe<T>,OnAvailable> onOk)
   {
     return new PipeOutResultImpl<>(onOk);
   }
   
-  public static <T> PipeOutBuilder<T> out(FlowOut<Pipe<T>> flow)
+  public static <T> PipeOutBuilder<T> out(OnAvailable flow)
   {
     return new PipeOutResultImpl<>(flow);
   }
@@ -188,7 +200,7 @@ public interface Pipe<T>
   
   public interface PipeOutBuilder<T> extends ResultPipeOut<T>
   {
-    PipeOutBuilder<T> flow(FlowOut<Pipe<T>> flow);
+    PipeOutBuilder<T> flow(OnAvailable flow);
     PipeOutBuilder<T> fail(Consumer<Throwable> onFail);
   }
   
@@ -205,46 +217,15 @@ public interface Pipe<T>
     
     PipeInBuilder<T> capacity(int size);
     
-    ResultPipeIn<T> chain(FlowIn<Pipe<T>> flowNext);
+    ResultPipeIn<T> chain(Credits creditsNext);
   }
   
   
   /**
    * {@code FlowIn} controls the pipe credits from the subscriber
    */
-  public interface FlowIn<T> extends Cancel
+  public interface FlowIn<T> extends Credits, Cancel
   {
-    /**
-     * Returns the current credit sequence.
-     */
-    long credits();
-    
-    /**
-     * Sets the new credit sequence when prefetch is disabled. Used by 
-     * applications that need finer control.
-     * 
-     * Applications using credit need to continually add credits.
-     * 
-     * @param creditSequence next credit in the sequence
-     * 
-     * @throws IllegalStateException if prefetch is used
-     */
-    void credits(long creditSequence);
-    
-    /**
-     * Adds credits.
-     * 
-     * Convenience method based on the {@code credits} methods.
-     */
-    
-    default void addCredits(int newCredits)
-    {
-      credits(credits() + newCredits);
-    }
-    
-    int available();
-    
-    void flow(FlowOut<T> flow);
   }
   
   /**

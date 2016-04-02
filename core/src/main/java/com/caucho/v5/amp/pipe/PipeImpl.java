@@ -41,9 +41,10 @@ import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.queue.QueueRingSingleWriter;
 import com.caucho.v5.amp.spi.OutboxAmp;
-import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.pipe.Credits;
+import io.baratine.pipe.Credits.OnAvailable;
 import io.baratine.pipe.Pipe;
 
 /**
@@ -68,14 +69,16 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   
   private ServiceRefAmp _inRef;
   
-  private PipeInFlowImpl _inFlow = new PipeInFlowImpl();
+  private FlowInImpl _inFlow = new FlowInImpl();
 
   private int _prefetch;
   private volatile long _creditsIn;
+  
+  private final Credits _creditsOut = new CreditsOut();
 
   private ServiceRefAmp _outRef;
 
-  private FlowOut<Pipe<T>> _outFlow;
+  private OnAvailable _outFlow;
   private FlowOutBlock<T> _outBlock;
   
   public PipeImpl(ServiceRefAmp inRef, 
@@ -121,7 +124,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     
     updatePrefetchCredits();
     
-    _inPipe.flow(_inFlow);
+    _inPipe.credits(_inFlow);
   }
 
   @Override
@@ -181,8 +184,8 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     }
   }
 
-  @Override
-  public void flowTimeout(long timeout, TimeUnit unit)
+  //@Override
+  private void offerTimeout(long timeout, TimeUnit unit)
   {
     if (sent() > 0) {
       throw new IllegalStateException();
@@ -195,8 +198,8 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     _outBlock = new FlowOutBlock<>(unit.toMillis(timeout));
   }
   
-  @Override
-  public void flow(FlowOut<Pipe<T>> flowOut)
+  //@Override
+  public void onAvailable(OnAvailable flowOut)
   {
     Objects.requireNonNull(flowOut);
     
@@ -214,18 +217,46 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     
     _outFlow = flowOut;
     _outBlock = null;
+    //outFull();
+
+    if (credits().available() > 0) {
+      flowOut.available();
+    }
+  }
+  
+  /*
+  private void ready(Ready ready)
+  {
+    Objects.requireNonNull(ready);
+    
+    if (sent() > 0) {
+      throw new IllegalStateException();
+    }
+
+    if (_outFlow != null) {
+      throw new IllegalStateException();
+    }
+    
+    if (isClosed()) {
+      throw new IllegalStateException();
+    }
+    
+    //_outFlow = flowOut;
+    _outBlock = null;
 
     outFull();
   }
+  */
 
+  /*
   @Override
   public FlowIn flow()
   {
     return _inFlow;
   }
+  */
   
-  @Override
-  public int available()
+  private int available()
   {
     long sent = sent();
     
@@ -246,21 +277,26 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   }
   
   @Override
-  public long credits()
+  public Credits credits()
+  {
+    return _creditsOut;
+  }
+  
+  private final long creditSequence()
   {
     return _creditsIn;
   }
   
-  void credits(long credits)
+  void creditSequence(long credits)
   {
     _creditsIn = Math.max(credits, _creditsIn);
-    
+
     wakeOut();
   }
   
   private void outFull()
   {
-    FlowOut<Pipe<T>> outFlow = _outFlow;
+    OnAvailable outFlow = _outFlow;
     
     if (outFlow == null) {
       return;
@@ -282,7 +318,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
         stateNew = stateOld.toWake();
       } while (! _stateOutRef.compareAndSet(stateOld, stateNew));
       
-      outFlow.ready(this);
+      outFlow.available();
     }
   }
   
@@ -402,7 +438,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
    */
   void wakeOut()
   {
-    FlowOut<Pipe<T>> outFlow = _outFlow;
+    OnAvailable outFlow = _outFlow;
     
     if (outFlow == null) {
       return;
@@ -434,26 +470,26 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     }
   }
   
-  private class PipeInFlowImpl implements FlowIn<Pipe<T>>
+  private class FlowInImpl implements FlowIn<Pipe<T>>
   {
     void init()
     {
     }
     
     @Override
-    public long credits()
+    public long get()
     {
-      return PipeImpl.this.credits();
+      return PipeImpl.this.creditSequence();
     }
 
     @Override
-    public void credits(long credits)
+    public void set(long credits)
     {
       if (credits < _creditsIn) {
         throw new IllegalArgumentException(String.valueOf(credits));
       }
       
-      PipeImpl.this.credits(credits);
+      PipeImpl.this.creditSequence(credits);
     }
 
     @Override
@@ -463,15 +499,104 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     }
 
     @Override
-    public void flow(FlowOut<Pipe<T>> flow)
+    public void onAvailable(OnAvailable flow)
     {
-      PipeImpl.this.flow(flow);
+      PipeImpl.this.onAvailable(flow);
     }
 
     @Override
     public void cancel()
     {
       PipeImpl.this.cancel();
+    }
+  }
+  
+  private static class FlowOutBlock<T> implements FlowOut<Pipe<T>>
+  {
+    private long _timeout;
+    
+    private volatile Thread _thread;
+    private volatile long _blockSequence;
+    private volatile long _readySequence;
+    
+    FlowOutBlock(long timeout)
+    {
+      _timeout = timeout;
+    }
+    
+    public long blockSequence()
+    {
+      return ++_blockSequence;
+    }
+    
+    public void block(long blockSequence)
+    {
+      long expire = System.currentTimeMillis() + _timeout;
+      
+      Thread thread = Thread.currentThread();
+      _thread = thread;
+      
+      try {
+        while (_readySequence < blockSequence
+               && (System.currentTimeMillis() < expire)) {
+          LockSupport.parkUntil(expire);
+        }
+      } catch (Exception e) {
+        log.log(Level.FINER, e.toString(), e);
+      } finally {
+        _thread = null;
+      }
+    }
+    
+    @Override
+    public void ready(Pipe<T> pipe)
+    {
+      _readySequence = _blockSequence;
+      Thread thread = _thread;
+      
+      if (thread != null) {
+        LockSupport.unpark(thread);
+      }
+    }
+  }
+  
+  private class CreditsOut implements Credits
+  {
+    @Override
+    public long get()
+    {
+      return creditSequence();
+    }
+
+    @Override
+    public void set(long credits)
+    {
+      throw new UnsupportedOperationException(getClass().getName());
+      /*
+      if (credits < _creditsIn) {
+        throw new IllegalArgumentException(String.valueOf(credits));
+      }
+      
+      creditSequence(credits);
+      */
+    }
+
+    @Override
+    public int available()
+    {
+      return PipeImpl.this.available();
+    }
+
+    @Override
+    public void onAvailable(OnAvailable ready)
+    {
+      PipeImpl.this.onAvailable(ready);
+    }
+
+    @Override
+    public void offerTimeout(long timeout, TimeUnit unit)
+    {
+      PipeImpl.this.offerTimeout(timeout, unit);
     }
   }
   
@@ -573,55 +698,6 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     public StateOutPipe toFull()
     {
       return this;
-    }
-  }
-  
-  private static class FlowOutBlock<T> implements FlowOut<Pipe<T>>
-  {
-    private long _timeout;
-    
-    private volatile Thread _thread;
-    private volatile long _blockSequence;
-    private volatile long _readySequence;
-    
-    FlowOutBlock(long timeout)
-    {
-      _timeout = timeout;
-    }
-    
-    public long blockSequence()
-    {
-      return ++_blockSequence;
-    }
-    
-    public void block(long blockSequence)
-    {
-      long expire = System.currentTimeMillis() + _timeout;
-      
-      Thread thread = Thread.currentThread();
-      _thread = thread;
-      
-      try {
-        while (_readySequence < blockSequence
-               && (System.currentTimeMillis() < expire)) {
-          LockSupport.parkUntil(expire);
-        }
-      } catch (Exception e) {
-        log.log(Level.FINER, e.toString(), e);
-      } finally {
-        _thread = null;
-      }
-    }
-    
-    @Override
-    public void ready(Pipe<T> pipe)
-    {
-      _readySequence = _blockSequence;
-      Thread thread = _thread;
-      
-      if (thread != null) {
-        LockSupport.unpark(thread);
-      }
     }
   }
 }

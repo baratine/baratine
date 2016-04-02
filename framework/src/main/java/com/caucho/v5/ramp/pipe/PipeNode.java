@@ -34,8 +34,8 @@ import java.util.Objects;
 
 import com.caucho.v5.util.L10N;
 
+import io.baratine.pipe.Credits.OnAvailable;
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.Pipes;
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
@@ -65,22 +65,22 @@ class PipeNode<T> implements Pipes<T>
   @Override
   public void subscribe(ResultPipeIn<T> result)
   {
-    SubscriberNode sub = new SubscriberNode();
+    SubscriberNode sub = new SubscriberNode(result.pipe());
     
     _subscribers.add(sub);
 
-    result.pipe().flow(sub);
+    result.pipe().credits().onAvailable(sub);
     result.ok(null);
   }
 
   @Override
   public void consume(ResultPipeIn<T> result)
   {
-    SubscriberNode sub = new SubscriberNode();
+    SubscriberNode sub = new SubscriberNode(result.pipe());
     
     _consumers.add(sub);
     
-    result.pipe().flow(sub);
+    result.pipe().credits().onAvailable(sub);
     result.ok(null);
   }
   
@@ -133,14 +133,19 @@ class PipeNode<T> implements Pipes<T>
     }
   }
   
-  private class SubscriberNode implements FlowOut<Pipe<T>>
+  private class SubscriberNode implements OnAvailable
   {
     private Pipe<T> _pipe;
+    
+    SubscriberNode(Pipe<T> pipe)
+    {
+      Objects.requireNonNull(pipe);
+      _pipe = pipe;
+    }
 
     @Override
-    public void ready(Pipe<T> pipe)
+    public void available()
     {
-      _pipe = pipe;
     }
 
     @Override
@@ -153,7 +158,7 @@ class PipeNode<T> implements Pipes<T>
     {
       Pipe<T> pipe = _pipe;
       
-      if (pipe != null && pipe.available() > 0) {
+      if (pipe != null && pipe.credits().available() > 0) {
         pipe.next(value);
       }
     }
