@@ -29,45 +29,80 @@
 
 package io.baratine.pipe;
 
-import io.baratine.service.Result;
+import java.util.concurrent.TimeUnit;
+
+import io.baratine.service.Cancel;
 
 /**
- * {@code OutStream} is a source of a pipe to write.
- * <pre><code>
- *   service.publish(Pipes.out(new MyFlow()));
- * </code></pre>
+ * {@code Credits} measures the flow control.
  */
-@FunctionalInterface
-public interface ResultPipeOut<T> extends Result<Pipe<T>>
-{  
+public interface Credits extends Cancel
+{
   /**
-   * The prefetch size.
-   * 
-   * Prefetch automatically manages the credits available to the sender.
-   * 
-   * If {@code PREFETCH_DISABLE} is returned, use the credits instead. 
+   * Returns the current credit sequence.
    */
-  default ResultPipeOut<T> prefetch(int prefetch)
+  long get();
+
+  int available();
+  
+  /**
+   * Sets the new credit sequence when prefetch is disabled. Used by 
+   * applications that need finer control.
+   * 
+   * Applications using credit need to continually add credits.
+   * 
+   * @param creditSequence next credit in the sequence
+   * 
+   * @throws IllegalStateException if prefetch is used
+   */
+  default void set(long creditSequence)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
   /**
-   * The initial number of credits. Can be zero if no initial credits.
+   * Adds credits.
    * 
-   * To enable credits and disable the prefetch queue, return a non-negative
-   * value.
-   * 
-   * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
-   * is the default behavior. 
+   * Convenience method based on the {@code credits} methods.
    */
-  default ResultPipeOut<T> credits(long credits)
+
+  default void add(int newCredits)
+  {
+    set(get() + newCredits);
+  }
+
+  @Override
+  default void cancel()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  /**
+   * Publisher callback when more credits may be available.
+   */
+  default void onAvailable(OnAvailable ready)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  default void offerTimeout(long timeout, TimeUnit unit)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
   
-  default void capacity(int capacity)
+  /**
+   * Publisher callback when more credits may be available.
+   */
+  public interface OnAvailable
   {
-    throw new UnsupportedOperationException(getClass().getName());
+    void available();
+    
+    default void fail(Throwable exn)
+    {
+    }
+    
+    default void cancel()
+    {
+    }
   }
 }

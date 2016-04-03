@@ -62,6 +62,9 @@ public class PipeOutMessage<T>
   private Object[] _args;
   
   private PipeImpl<T> _pipe;
+  private int _capacity;
+  private int _prefetch = Pipe.PREFETCH_DEFAULT;
+  private long _credits = Pipe.CREDIT_DISABLE;
   
   public PipeOutMessage(OutboxAmp outbox,
                         HeadersAmp headers,
@@ -107,20 +110,60 @@ public class PipeOutMessage<T>
   {
     _result.fail(exn);
   }
+  
+  private int capacity()
+  {
+    return _capacity;
+  }
+  
+  @Override
+  public void capacity(int capacity)
+  {
+    _capacity = capacity;
+  }
+  
+  private int prefetch()
+  {
+    return _prefetch;
+  }
+  
+  @Override
+  public ResultPipeOut<T> prefetch(int prefetch)
+  {
+    _prefetch = prefetch;
+    
+    return this;
+  }
+  
+  private long credits()
+  {
+    return _credits;
+  }
+  
+  @Override
+  public ResultPipeOut<T> credits(long credits)
+  {
+    _credits = credits;
+    
+    return this;
+  }
 
   @Override
   public void ok(Pipe<T> pipeIn)
   {
-    if (pipeIn == null) {
-      _result.fail(new NullPointerException(L.l("NPE from service {0}", getMethod())));
-      Objects.requireNonNull(pipeIn);
-    }
+    Objects.requireNonNull(pipeIn);
+
+    PipeBuilder<T> builder = new PipeBuilder<>();
     
-    ServiceRefAmp inRef = inboxTarget().serviceRef();
+    builder.inPipe(pipeIn);
+    builder.inRef(inboxTarget().serviceRef());
+    builder.outRef(inboxCaller().serviceRef());
+
+    builder.capacity(capacity());
+    builder.credits(credits());
+    builder.prefetch(prefetch());
     
-    ServiceRefAmp outRef = inboxCaller().serviceRef();
-    
-    PipeImpl<T> pipe = new PipeImpl<>(inRef, pipeIn, outRef);
+    PipeImpl<T> pipe = builder.build();
     
     _pipe = pipe;
     

@@ -259,6 +259,7 @@ class PipeStatic<T>
     
     private Long _credits;
     private Integer _prefetch;
+    private Integer _capacity;
     
     private long _sequenceIn;
     
@@ -334,7 +335,7 @@ class PipeStatic<T>
         return _prefetch;
       }
       else {
-        return _pipe.prefetch();
+        return Pipe.PREFETCH_DEFAULT;
       }
     }
     
@@ -348,7 +349,7 @@ class PipeStatic<T>
         return _credits;
       }
       else {
-        return _pipe.creditsInitial();
+        return Pipe.CREDIT_DISABLE;
       }
     }
     
@@ -367,13 +368,28 @@ class PipeStatic<T>
     @Override
     public PipeInBuilder<T> prefetch(int prefetch)
     {
+      _prefetch = prefetch;
+      
       return this;
     }
 
     @Override
     public PipeInBuilder<T> capacity(int size)
     {
+      _capacity = size;
+      
       return this;
+    }
+
+    @Override
+    public int capacity()
+    {
+      if (_capacity != null) {
+        return _capacity;
+      }
+      else {
+        return 0;
+      }
     }
 
     @Override

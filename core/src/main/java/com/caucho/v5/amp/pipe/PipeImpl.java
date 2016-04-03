@@ -81,21 +81,19 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   private OnAvailable _outFlow;
   private FlowOutBlock<T> _outBlock;
   
-  public PipeImpl(ServiceRefAmp inRef, 
-                  Pipe<T> inPipe,
-                  ServiceRefAmp outRef)
+  public PipeImpl(PipeBuilder<T> builder)
   {
-    Objects.requireNonNull(inRef);
-    Objects.requireNonNull(inPipe);
+    _inRef = builder.inRef();
+    Objects.requireNonNull(_inRef);
     
-    _inRef = inRef;
-    _inPipe = inPipe;
+    _inPipe = builder.inPipe();
+    Objects.requireNonNull(_inPipe);
     
-    _outRef = outRef;
+    _outRef = builder.outRef();
     
-    int prefetch = _inPipe.prefetch();
-    long credits = _inPipe.creditsInitial();
-    int capacity = _inPipe.capacity();
+    int prefetch = builder.prefetch();
+    long credits = builder.credits();
+    int capacity = builder.capacity();
 
     if (capacity > 0) {
     }

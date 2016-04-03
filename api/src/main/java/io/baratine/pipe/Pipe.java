@@ -51,8 +51,6 @@ public interface Pipe<T>
   
   /**
    * Supplies the next value.
-   * 
-   * @param value
    */
   void next(T value);
 
@@ -63,46 +61,11 @@ public interface Pipe<T>
   void close();
 
   /**
-   * Signals a failure to the client passing exception.
-   * @param exn
+   * Signals a failure.
+   * 
+   * The pipe is closed on failure.
    */
   void fail(Throwable exn);
-  
-  /**
-   * Registers the publishers {@code FlowOut} to be called when credits may be available
-   * for the pipe.
-   */
-  /*
-  default void flow(FlowOut<Pipe<T>> flow)
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  */
-  
-  /**
-   * Publisher timeout when not using {@code FlowOut}.
-   */
-  /*
-  default void flowTimeout(long time, TimeUnit unit)
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  
-  default FlowIn<Pipe<T>> flow()
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  */
-  
-  /**
-   * Returns the available credits in the queue.
-   */
-  /*
-  default int available()
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  */
   
   /**
    * Returns the credit sequence for the queue.
@@ -111,63 +74,22 @@ public interface Pipe<T>
   {
     throw new IllegalStateException(getClass().getName());
   }
-  
+
+  /**
+   * Subscriber callback to get the Credits for the pipe.
+   */
   default void credits(Credits credits)
   {
   }
   
   /**
-   * True if the stream has been cancelled by the reader.
-   *
-   * @return true if cancelled
+   * True if the pipe has been closed or cancelled.
    */
   default boolean isClosed()
   {
     return false;
   }
-  
-  /**
-   * Accept the {@code Flow} object for finer flow control.
-   * 
-   * The {@code Flow} object can pause the prefetch, or add credits
-   * manually when the credit system is used. 
-   */
-  /*default void flow(FlowIn<Pipe<T>> flow)
-  {
-  }
-  */
-  
-  /**
-   * The prefetch size.
-   * 
-   * Prefetch automatically manages the credits available to the sender.
-   * 
-   * If {@code PREFETCH_DISABLE} is returned, use the credits instead. 
-   */
-  default int prefetch()
-  {
-    return PREFETCH_DEFAULT;
-  }
 
-  /**
-   * The initial number of credits. Can be zero if no initial credits.
-   * 
-   * To enable credits and disable the prefetch queue, return a non-negative
-   * value.
-   * 
-   * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
-   * is the default behavior. 
-   */
-  default long creditsInitial()
-  {
-    return CREDIT_DISABLE;
-  }
-  
-  default int capacity()
-  {
-    return 0;
-  }
-  
   public static <T> PipeOutBuilder<T> out(Result<Pipe<T>> result)
   {
     return new PipeOutResultImpl<>(result);

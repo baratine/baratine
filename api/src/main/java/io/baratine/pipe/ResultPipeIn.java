@@ -65,4 +65,35 @@ public interface ResultPipeIn<T> extends Result<Void>
       handle(null, fail, false);
     }
   }
+  
+  /**
+   * The prefetch size.
+   * 
+   * Prefetch automatically manages the credits available to the sender.
+   * 
+   * If {@code PREFETCH_DISABLE} is returned, use the credits instead. 
+   */
+  default int prefetch()
+  {
+    return Pipe.PREFETCH_DEFAULT;
+  }
+
+  /**
+   * The initial number of credits. Can be zero if no initial credits.
+   * 
+   * To enable credits and disable the prefetch queue, return a non-negative
+   * value.
+   * 
+   * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
+   * is the default behavior. 
+   */
+  default long creditsInitial()
+  {
+    return Pipe.CREDIT_DISABLE;
+  }
+  
+  default int capacity()
+  {
+    return 0;
+  }
 }
