@@ -37,7 +37,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
-import io.baratine.pipe.Pipe.FlowOut;
+import io.baratine.pipe.Credits.OnAvailable;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -47,12 +47,12 @@ public class PipeWakeOutMessage<T>
   extends MessageOutboxBase
 {
   private final PipeImpl<T> _pipe;
-  private final FlowOut<T> _flow;
+  private final OnAvailable _flow;
 
   public PipeWakeOutMessage(OutboxAmp outbox,
                          ServiceRefAmp serviceRef,
                          PipeImpl<T> pipe,
-                         FlowOut<T> flow)
+                         OnAvailable flow)
   {
     super(outbox, serviceRef.inbox());
     
@@ -64,8 +64,8 @@ public class PipeWakeOutMessage<T>
   }
 
   @Override
-  public void invoke(InboxAmp inbox, StubAmp actorDeliver)
+  public void invoke(InboxAmp inbox, StubAmp stubDeliver)
   {
-    _flow.ready(_pipe);
+    _flow.available();
   }
 }

@@ -43,25 +43,20 @@ import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.Pipe.FlowOut;
 import io.baratine.pipe.ResultPipeIn;
 
 /**
  * Register a publisher to a pipe.
  */
 public class PipeInMessage<T>
-  extends QueryMessageBase<FlowOut<T>>
+  extends QueryMessageBase<Void>
   implements ResultPipeIn<T>
 {
-  private static final L10N L = new L10N(PipeInMessage.class);
-  private static final Logger log 
-    = Logger.getLogger(PipeInMessage.class.getName());
-  
   private final ResultPipeIn<T> _result;
 
   private Object[] _args;
 
-  private InboxAmp _callerInbox;
+  //private InboxAmp _callerInbox;
   private PipeImpl<T> _pipe;
   
   public PipeInMessage(OutboxAmp outbox,
@@ -81,15 +76,19 @@ public class PipeInMessage<T>
     _result = result;
     _args = args;
     
+    /*
     Objects.requireNonNull(callerInbox);
     
     _callerInbox = callerInbox;
+    */
   }
-  
+
+  /*
   private InboxAmp getCallerInbox()
   {
     return _callerInbox;
   }
+  */
 
   @Override
   public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
@@ -146,7 +145,20 @@ public class PipeInMessage<T>
   @Override
   public Pipe<T> pipe()
   {
-    throw new IllegalStateException();
+    if (_pipe == null) {
+      PipeBuilder<T> builder = new PipeBuilder<>();
+      builder.inPipe(_result.pipe());
+      builder.inRef(inboxCaller().serviceRef());
+      builder.outRef(serviceRef());
+      
+      builder.capacity(_result.capacity());
+      builder.prefetch(_result.prefetch());
+      builder.credits(_result.creditsInitial());
+    
+      _pipe = builder.build();
+    }
+    
+    return _pipe;
   }
 
   /*
@@ -158,20 +170,9 @@ public class PipeInMessage<T>
   */
 
   @Override
-  public void ok(FlowOut<T> outFlow)
+  public void ok(Void onOk)
   {
-    Objects.requireNonNull(outFlow);
-    
     super.ok(null);
-    
-    ServiceRefAmp inRef = inboxCaller().serviceRef();
-    Pipe<T> inPipe = _result.pipe();
-    
-    ServiceRefAmp outRef = serviceRef();
-    
-    PipeImpl<T> pipe = new PipeImpl<>(inRef, inPipe, outRef, outFlow);
-    
-    outFlow.ready(pipe);
   }
 
   @Override

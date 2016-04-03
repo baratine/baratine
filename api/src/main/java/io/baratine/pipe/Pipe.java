@@ -29,7 +29,15 @@
 
 package io.baratine.pipe;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import io.baratine.pipe.Credits.OnAvailable;
+import io.baratine.pipe.PipeStatic.PipeOutResultImpl;
+import io.baratine.pipe.PipeStatic.ResultPipeInHandlerImpl;
+import io.baratine.pipe.PipeStatic.ResultPipeInImpl;
 import io.baratine.service.Cancel;
+import io.baratine.service.Result;
 
 /**
  * {@code Pipe} sends a sequence of values from a source to a sink.
@@ -43,8 +51,6 @@ public interface Pipe<T>
   
   /**
    * Supplies the next value.
-   * 
-   * @param value
    */
   void next(T value);
 
@@ -55,127 +61,96 @@ public interface Pipe<T>
   void close();
 
   /**
-   * Signals a failure to the client passing exception.
-   * @param exn
+   * Signals a failure.
+   * 
+   * The pipe is closed on failure.
    */
   void fail(Throwable exn);
-  
-  //
-  // publisher methods
-  //
-  
-  /**
-   * Set the {@code FlowOut} callback for publisher flow control.
-   */
-  default void flow(FlowOut<T> flow)
-  {
-  }
-  
-  /**
-   * Returns the available credits in the queue.
-   */
-  default int available()
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
   
   /**
    * Returns the credit sequence for the queue.
    */
-  default long credits()
+  default Credits credits()
   {
     throw new IllegalStateException(getClass().getName());
   }
+
+  /**
+   * Subscriber callback to get the Credits for the pipe.
+   */
+  default void credits(Credits credits)
+  {
+  }
   
   /**
-   * True if the stream has been cancelled by the reader.
-   *
-   * @return true if cancelled
+   * True if the pipe has been closed or cancelled.
    */
   default boolean isClosed()
   {
     return false;
   }
-  
-  //
-  // subscriber methods
-  //
-  
-  /**
-   * Accept the {@code Flow} object for finer flow control.
-   * 
-   * The {@code Flow} object can pause the prefetch, or add credits
-   * manually when the credit system is used. 
-   */
-  default void flow(FlowIn flow)
-  {
-  }
-  
-  /**
-   * The prefetch size.
-   * 
-   * Prefetch automatically manages the credits available to the sender.
-   * 
-   * If {@code PREFETCH_DISABLE} is returned, use the credits instead. 
-   */
-  default int prefetch()
-  {
-    return PREFETCH_DEFAULT;
-  }
 
-  /**
-   * The initial number of credits. Can be zero if no initial credits.
-   * 
-   * To enable credits and disable the prefetch queue, return a non-negative
-   * value.
-   * 
-   * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
-   * is the default behavior. 
-   */
-  default int creditsInitial()
+  public static <T> PipeOutBuilder<T> out(Result<Pipe<T>> result)
   {
-    return CREDIT_DISABLE;
+    return new PipeOutResultImpl<>(result);
   }
   
-  default int capacity()
+  public static <T> PipeOutBuilder<T> out(Function<Pipe<T>,OnAvailable> onOk)
   {
-    return 0;
+    return new PipeOutResultImpl<>(onOk);
+  }
+  
+  public static <T> PipeOutBuilder<T> out(OnAvailable flow)
+  {
+    return new PipeOutResultImpl<>(flow);
+  }
+  
+  public static <T> PipeInBuilder<T> in(Pipe<T> pipe)
+  {
+    return new ResultPipeInImpl<>(pipe);
+  }
+  
+  public static <T> Pipe<T> in(InHandler<T> handler)
+  {
+    return new ResultPipeInHandlerImpl<T>(handler);
+  }
+  
+  public interface InHandler<T>
+  {
+    void handle(T next, Throwable exn, boolean isCancel);
+  }
+  
+  public interface PipeOutBuilder<T> extends ResultPipeOut<T>
+  {
+    PipeOutBuilder<T> flow(OnAvailable flow);
+    PipeOutBuilder<T> fail(Consumer<Throwable> onFail);
+  }
+  
+  public interface PipeInBuilder<T> extends ResultPipeIn<T>
+  {
+    PipeInBuilder<T> ok(Consumer<Void> onOkSubscription);
+    
+    PipeInBuilder<T> fail(Consumer<Throwable> onFail);
+    PipeInBuilder<T> close(Runnable onClose);
+    
+    PipeInBuilder<T> credits(long initialCredit);
+    
+    PipeInBuilder<T> prefetch(int prefetch);
+    
+    PipeInBuilder<T> capacity(int size);
+    
+    ResultPipeIn<T> chain(Credits creditsNext);
   }
   
   
   /**
    * {@code FlowIn} controls the pipe credits from the subscriber
    */
-  public interface FlowIn extends Cancel
+  /*
+  public interface FlowIn<T> extends Credits, Cancel
   {
-    /**
-     * Returns the current credit sequence.
-     */
-    long credits();
-    
-    /**
-     * Sets the new credit sequence when prefetch is disabled. Used by 
-     * applications that need finer control.
-     * 
-     * Applications using credit need to continually add credits.
-     * 
-     * @param creditSequence next credit in the sequence
-     * 
-     * @throws IllegalStateException if prefetch is used
-     */
-    void credits(long creditSequence);
-    
-    /**
-     * Adds credits.
-     * 
-     * Convenience method based on the {@code credits} methods.
-     */
-    
-    default void addCredits(int newCredits)
-    {
-      credits(credits() + credits());
-    }
   }
+  */
   
   /**
    * {@code FlowOut} is a callback to wake the publisher when credits are
@@ -184,9 +159,10 @@ public interface Pipe<T>
    * Called after the publisher would block, calculated as when the number
    * of {@code OutPipe.next()} calls match a previous {@code OutPipe.credits()}.
    */
+  /*
   public interface FlowOut<T>
   {
-    void ready(Pipe<T> pipe);
+    void ready(T pipe);
     
     default void fail(Throwable exn)
     {
@@ -196,8 +172,5 @@ public interface Pipe<T>
     {
     }
   }
-  
-  public interface InHandler<T> {
-    void handle(T next, Throwable exn, boolean isCancel);
-  }
+  */
 }

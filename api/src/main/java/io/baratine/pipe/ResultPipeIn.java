@@ -29,15 +29,14 @@
 
 package io.baratine.pipe;
 
-import io.baratine.pipe.Pipe.FlowOut;
-import io.baratine.pipe.PipesImpl.PipeInResultImpl;
+import io.baratine.pipe.PipeStatic.PipeInResultImpl;
 import io.baratine.service.Result;
 
 /**
  * {@code ResultInPipe} returns a pipe subscription.
  */
 @FunctionalInterface
-public interface ResultPipeIn<T> extends Result<FlowOut<T>>
+public interface ResultPipeIn<T> extends Result<Void>
 {
   //
   // caller/subscriber side
@@ -60,10 +59,41 @@ public interface ResultPipeIn<T> extends Result<FlowOut<T>>
   void handle(T next, Throwable fail, boolean ok);
   
   @Override
-  default void handle(FlowOut<T> ok, Throwable fail)
+  default void handle(Void ok, Throwable fail)
   {
     if (fail != null) {
       handle(null, fail, false);
     }
+  }
+  
+  /**
+   * The prefetch size.
+   * 
+   * Prefetch automatically manages the credits available to the sender.
+   * 
+   * If {@code PREFETCH_DISABLE} is returned, use the credits instead. 
+   */
+  default int prefetch()
+  {
+    return Pipe.PREFETCH_DEFAULT;
+  }
+
+  /**
+   * The initial number of credits. Can be zero if no initial credits.
+   * 
+   * To enable credits and disable the prefetch queue, return a non-negative
+   * value.
+   * 
+   * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
+   * is the default behavior. 
+   */
+  default long creditsInitial()
+  {
+    return Pipe.CREDIT_DISABLE;
+  }
+  
+  default int capacity()
+  {
+    return 0;
   }
 }

@@ -29,14 +29,6 @@
 
 package io.baratine.pipe;
 
-import java.util.function.Consumer;
-
-import io.baratine.pipe.Pipe.FlowOut;
-import io.baratine.pipe.Pipe.InHandler;
-import io.baratine.pipe.PipesImpl.PipeOutResultImpl;
-import io.baratine.pipe.PipesImpl.ResultPipeInHandlerImpl;
-import io.baratine.pipe.PipesImpl.ResultPipeInImpl;
-import io.baratine.service.Result;
 import io.baratine.service.Service;
 
 
@@ -52,41 +44,4 @@ public interface Pipes<T>
   void subscribe(ResultPipeIn<T> result);
   
   void publish(ResultPipeOut<T> result);
-  
-  public static <T> PipeOutBuilder<T> out(FlowOut<T> flow)
-  {
-    return new PipeOutResultImpl<>(flow);
-  }
-  
-  public static <T> PipeOutBuilder<T> out(Result<Pipe<T>> result)
-  {
-    return new PipeOutResultImpl<>(result);
-  }
-  
-  public static <T> ResultPipeIn<T> in(Pipe<T> pipe)
-  {
-    return new ResultPipeInImpl<>(pipe);
-  }
-  
-  public static <T> Pipe<T> in(InHandler<T> handler)
-  {
-    return new ResultPipeInHandlerImpl<>(handler);
-  }
-  
-  public interface PipeOutBuilder<T> extends ResultPipeOut<T>
-  {
-    PipeOutBuilder<T> fail(Consumer<Throwable> onFail);
-  }
-  
-  public interface PipeInBuilder<T> extends ResultPipeIn<T>
-  {
-    PipeInBuilder<T> fail(Consumer<Throwable> onFail);
-    PipeInBuilder<T> close(Runnable onClose);
-    
-    PipeInBuilder<T> credits(long initialCredit);
-    
-    PipeInBuilder<T> prefetch(int prefetch);
-    
-    PipeInBuilder<T> capacity(int size);
-  }
 }
