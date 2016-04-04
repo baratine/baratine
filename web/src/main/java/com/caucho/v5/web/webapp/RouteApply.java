@@ -53,9 +53,11 @@ public class RouteApply implements RouteBaratine
   private ServiceWeb _service;
   private RequestProxy _proxy;
 
+  private ServiceWeb []_services;
   private ArrayList<ViewRef<?>> _views;
   
   RouteApply(ServiceWeb service,
+             ArrayList<ServiceWeb> filters,
              ServiceRefAmp serviceRef,
              Predicate<RequestWeb> predicate,
              ArrayList<ViewRef<?>> views)
@@ -67,8 +69,24 @@ public class RouteApply implements RouteBaratine
     _views = views;
     _predicate = predicate;
     
-    _service = serviceRef.pin(new WebServiceWrapper(service)).as(ServiceWeb.class);
+    //_service = serviceRef.pin(new WebServiceWrapper(service)).as(ServiceWeb.class);
+    _service = serviceRef.pin(service).as(ServiceWeb.class);
     _proxy = serviceRef.pin(new RequestProxyImpl()).as(RequestProxy.class);
+    
+    ArrayList<ServiceWeb> services = new ArrayList<ServiceWeb>();
+    
+    for (ServiceWeb filter : filters) {
+      // XXX: filter might be proxy
+      filter = serviceRef.pin(filter).as(ServiceWeb.class);
+      
+      services.add(filter);
+    }
+
+    // XXX: service might be proxy(?)
+    services.add(_service);
+    
+    _services = new ServiceWeb[services.size()];
+    services.toArray(_services);
   }
   
   /**
@@ -88,8 +106,16 @@ public class RouteApply implements RouteBaratine
       request.requestProxy(_proxy);
       
       request.views(_views);
-      
-      _service.handle((RequestWeb) request);
+
+      if (_services.length > 1) {
+        RequestFilter requestChain = new RequestFilter(request, _services);
+        requestChain.ok();
+        
+        return true;
+      }
+      else {
+        _service.handle((RequestWeb) request);
+      }
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
     }

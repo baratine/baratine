@@ -124,13 +124,11 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   // callback for waiting for a body
   private Class<?> _bodyType;
   private Result<Object> _bodyResult;
-  private String _bodyParamName;
+  private Object _bodyValue;
   private RequestProxy _requestProxy;
 
   private RequestBaratineImpl _next;
   private RequestBaratineImpl _prev;
-
-  private FormImpl _form;
 
   public RequestBaratineImpl(ConnectionHttp connHttp)
   {
@@ -332,7 +330,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   */
 
   @Override
-  public Injector inject()
+  public Injector injector()
   {
     WebApp webApp = invocation().webApp();
 
@@ -577,93 +575,19 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public <X> X body(Class<X> type, String paramName)
+  public <X> X body(Class<X> type)
   {
     Objects.requireNonNull(type);
-
-    if (! _isBodyComplete) {
-      throw new IllegalStateException(L.l("body cannot be called with incomplete body"));
-    }
-
-    if (true) {
-      return webApp().bodyResolver().body(this, type, paramName);
-    }
-
-    if (InputStream.class.equals(type)) {
-      TempInputStream is = new TempInputStream(_bodyHead);
-      _bodyHead = _bodyTail = null;
-
-      return (X) is;
-    }
-    else if (String.class.equals(type)) {
-      TempInputStream is = new TempInputStream(_bodyHead);
-      _bodyHead = _bodyTail = null;
-
-      try {
-        return (X) Utf8Util.readString(is);
-      } catch (IOException e) {
-        throw new BodyException(e);
-      }
-    }
-    else if (Reader.class.equals(type)) {
-      TempInputStream is = new TempInputStream(_bodyHead);
-
-      _bodyHead = _bodyTail = null;
-
-      try {
-        return (X) new InputStreamReader(is, "utf-8");
-      } catch (IOException e) {
-        throw new BodyException(e);
-      }
-    }
-    else if (Form.class.equals(type)) {
-      String contentType = header("content-type");
-
-      if (contentType == null || ! contentType.equals(FORM_TYPE)) {
-        throw new IllegalStateException(L.l("Form expects {0}", FORM_TYPE));
+    
+    if (_bodyValue == null) {
+      if (! _isBodyComplete) {
+        throw new IllegalStateException(L.l("body cannot be called with incomplete body"));
       }
 
-      TempInputStream is = new TempInputStream(_bodyHead);
-      _bodyHead = _bodyTail = null;
-
-      try {
-        FormImpl form = new FormImpl();
-
-        FormBaratine.parseQueryString(form, is, "utf-8");
-
-        return (X) form;
-      } catch (Exception e) {
-        throw new BodyException(e);
-      }
+      _bodyValue = webApp().bodyResolver().body(this, type);
     }
-    /*
-    else if (header("content-type").startsWith("application/json")) {
-      TempInputStream is = new TempInputStream(_bodyHead);
-      _bodyHead = _bodyTail = null;
-
-      try {
-        Reader reader = new InputStreamReader(is, "utf-8");
-
-        JsonReader isJson = new JsonReader(reader);
-        return (X) isJson.readObject(type);
-      } catch (IOException e) {
-        throw new BodyException(e);
-      }
-    }
-    */
-
-    throw new IllegalStateException(L.l("Unknown body type: " + type));
-  }
-
-  @Override
-  public FormImpl getForm()
-  {
-    return _form;
-  }
-
-  public void setForm(FormImpl form)
-  {
-    _form = form;
+    
+    return (X) _bodyValue;
   }
 
   @Override
@@ -674,18 +598,16 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
   @Override
   public <X> void body(Class<X> type,
-                       String paramName,
                        Result<X> result)
   {
     Objects.requireNonNull(type);
 
     if (_isBodyComplete) {
-      result.ok(body(type, paramName));
+      result.ok(body(type));
     }
     else {
       _bodyType = type;
       _bodyResult = (Result) result;
-      _bodyParamName = paramName;
     }
   }
 
@@ -1462,7 +1384,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     //connHttp().requestComplete();
 
     if (_bodyResult != null) {
-      _bodyResult.ok(body(_bodyType, _bodyParamName));
+      _bodyResult.ok(body(_bodyType));
     }
   }
 

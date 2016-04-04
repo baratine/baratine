@@ -35,12 +35,12 @@ import java.util.Objects;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.http.container.HttpContainerBuilder;
 import com.caucho.v5.subsystem.SystemManager;
+import com.caucho.v5.web.builder.IncludeWebAmp;
 import com.caucho.v5.web.builder.ServiceBuilderWebImpl;
 import com.caucho.v5.web.webapp.HttpBaratineBuilder;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector.IncludeInject;
-import io.baratine.web.IncludeWeb;
 
 /**
  * Builds a baratine server.
@@ -48,7 +48,7 @@ import io.baratine.web.IncludeWeb;
 public class ServerBuilderBaratine extends ServerBuilder
 {
   private final ArrayList<IncludeInject> _bindings = new ArrayList<>();
-  private final ArrayList<IncludeWeb> _includes = new ArrayList<>();
+  private final ArrayList<IncludeWebAmp> _includes = new ArrayList<>();
   
   /**
    * Creates a new baratine server.
@@ -71,7 +71,7 @@ public class ServerBuilderBaratine extends ServerBuilder
     HttpBaratineBuilder builder
       = new HttpBaratineBuilder(config(), selfServer, serverHeader);
     
-    for (IncludeWeb route : _includes) {
+    for (IncludeWebAmp route : _includes) {
       builder.include(route);
     }
     
@@ -97,14 +97,14 @@ public class ServerBuilderBaratine extends ServerBuilder
     throw new UnsupportedOperationException();
   }
 
-  public void include(IncludeWeb route)
+  public void include(IncludeWebAmp route)
   {
     Objects.requireNonNull(route);
     
     _includes.add(route);
   }
   
-  public Iterable<IncludeWeb> routes()
+  public Iterable<IncludeWebAmp> includes()
   {
     return _includes;
   }

@@ -247,10 +247,43 @@ class PipeStatic<T>
     }
   }
   
+  static class PipeInBuilderImpl<T> implements Pipe<T>
+  {
+    private final Consumer<T> _onNext;
+    
+    PipeInBuilderImpl(Consumer<T> onNext)
+    {
+      _onNext = onNext;
+    }
+
+    @Override
+    public void next(T value)
+    {
+      _onNext.accept(value);
+    }
+
+    @Override
+    public void close()
+    {
+      // TODO Auto-generated method stub
+      
+    }
+
+    @Override
+    public void fail(Throwable exn)
+    {
+      // TODO Auto-generated method stub
+      
+    }
+  }
+  
   static class ResultPipeInImpl<T>
   implements ResultPipeIn<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
   {
-    private Pipe<T> _pipe;
+    private final Pipe<T> _pipe;
+    
+    private PipeInBuilderImpl<T> _pipeBuilder;
+    
     private Pipe<T> _builtPipe;
     
     private Credits _flowIn;
@@ -268,6 +301,14 @@ class PipeStatic<T>
       Objects.requireNonNull(pipe);
       
       _pipe = pipe;
+    }
+    
+    ResultPipeInImpl(Consumer<T> onNext)
+    {
+      Objects.requireNonNull(onNext);
+      
+      _pipeBuilder = new PipeInBuilderImpl<>(onNext);
+      _pipe = _pipeBuilder;
     }
     
     /**

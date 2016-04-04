@@ -31,7 +31,6 @@ package com.caucho.v5.web.builder;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -107,7 +107,6 @@ import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.IncludeWeb;
 import io.baratine.web.ViewWeb;
-import io.baratine.web.WebBuilder;
 import io.baratine.web.WebServer;
 import io.baratine.web.WebServerBuilder;
 
@@ -124,7 +123,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   
   private Config.ConfigBuilder _configBuilder = Configs.config();
   
-  private ArrayList<IncludeWeb> _includes = new ArrayList<>();
+  private ArrayList<IncludeWebAmp> _includes = new ArrayList<>();
   
   private ArrayList<ServiceBuilderWebImpl> _services = new ArrayList<>();
   
@@ -414,22 +413,27 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public <T> BindingBuilder<T> provider(Provider<T> provider)
+  public <T> BindingBuilder<T> beanProvider(Provider<T> provider)
   {
     Objects.requireNonNull(provider);
     
     return _injectServer.provider(provider);
-    
-    /*
-    InjectBuilderBeanImpl<T> binding
-      = new InjectBuilderBeanImpl<>(_injectServer, bean);
-    
-    _includes.add(binding);
-    
-    return binding;
-    */
   }
 
+  @Override
+  public <T,X> BindingBuilder<T> beanFunction(Function<X,T> function)
+  {
+    Objects.requireNonNull(function);
+    
+    InjectBuilderWebImpl<T> binding
+      = new InjectBuilderWebImpl<>(_injectServer, function);
+  
+    _includes.add(binding);
+  
+    return binding;
+  }
+
+  /*
   @Override
   public <T,U> BindingBuilder<T> provider(Key<U> parent, Method m)
   {
@@ -437,16 +441,8 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     Objects.requireNonNull(m);
     
     return _injectServer.provider(parent, m);
-    
-    /*
-    InjectBuilderBeanImpl<T> binding
-      = new InjectBuilderBeanImpl<>(_injectServer, bean);
-    
-    _includes.add(binding);
-    
-    return binding;
-    */
   }
+  */
 
   @Override
   public <T> ServiceRef.ServiceBuilder service(Class<T> serviceClass)
@@ -544,12 +540,12 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     return this;
   }
 
-  void include(IncludeWeb routeGen)
+  void include(IncludeWebAmp routeGen)
   {
     _includes.add(routeGen);
   }
   
-  public ArrayList<IncludeWeb> includes()
+  public ArrayList<IncludeWebAmp> includes()
   {
     return _includes;
   }
@@ -663,11 +659,6 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     _includes.add(route);
   }
   */
-  
-  public Iterable<IncludeWeb> routes()
-  {
-    return _includes;
-  }
   
   /*
   @Override
@@ -1158,7 +1149,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     HttpBaratineBuilder builder
       = new HttpBaratineBuilder(config(), selfServer, serverHeader);
     
-    for (IncludeWeb include : _includes) {
+    for (IncludeWebAmp include : _includes) {
       builder.include(include);
     }
     
@@ -1790,7 +1781,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     }
   }
   
-  private static class ViewGen implements IncludeWeb
+  private static class ViewGen implements IncludeWebAmp
   {
     private ViewWeb<?> _view;
     
@@ -1802,13 +1793,13 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     }
 
     @Override
-    public void build(WebBuilder builder)
+    public void build(WebBuilderAmp builder)
     {
       builder.view(_view);
     }
   }
   
-  private static class ViewClass implements IncludeWeb
+  private static class ViewClass implements IncludeWebAmp
   {
     private Class<? extends ViewWeb<?>> _viewClass;
     
@@ -1820,7 +1811,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     }
 
     @Override
-    public void build(WebBuilder builder)
+    public void build(WebBuilderAmp builder)
     {
       builder.view((Class) _viewClass);
     }

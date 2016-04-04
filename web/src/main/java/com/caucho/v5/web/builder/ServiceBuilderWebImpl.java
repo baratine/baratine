@@ -38,10 +38,9 @@ import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
-import io.baratine.web.IncludeWeb;
-import io.baratine.web.WebBuilder;
 
-public class ServiceBuilderWebImpl implements ServiceRef.ServiceBuilder, IncludeWeb
+public class ServiceBuilderWebImpl 
+  implements ServiceRef.ServiceBuilder, IncludeWebAmp
 {
   private WebServerBuilderImpl _serverBuilder;
   
@@ -129,7 +128,7 @@ public class ServiceBuilderWebImpl implements ServiceRef.ServiceBuilder, Include
   }
 
   @Override
-  public void build(WebBuilder webBuilder)
+  public void build(WebBuilderAmp webBuilder)
   {
     ServiceRef.ServiceBuilder builder = null;
     

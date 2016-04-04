@@ -38,9 +38,9 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.deploy2.DeployFactory2;
 import com.caucho.v5.util.L10N;
+import com.caucho.v5.web.builder.IncludeWebAmp;
 
 import io.baratine.config.Config;
-import io.baratine.web.IncludeWeb;
 
 /**
  * Baratine's web-app instance builder
@@ -62,7 +62,7 @@ public class WebAppFactory implements DeployFactory2<WebApp>
   private final String _path;
 
   private ArrayList<String> _indexFileList = new ArrayList<>();
-  private ArrayList<IncludeWeb> _includes = new ArrayList<>();
+  private ArrayList<IncludeWebAmp> _includes = new ArrayList<>();
   
   private Throwable _configException;
   private Config _config;
@@ -87,7 +87,7 @@ public class WebAppFactory implements DeployFactory2<WebApp>
     
     _config = httpBuilder.config();
     
-    for (IncludeWeb webModule : httpBuilder.include()) {
+    for (IncludeWebAmp webModule : httpBuilder.include()) {
       _includes.add(webModule);
     }
   }
@@ -206,7 +206,7 @@ public class WebAppFactory implements DeployFactory2<WebApp>
   }
   */
 
-  public Iterable<IncludeWeb> includes()
+  public Iterable<IncludeWebAmp> includes()
   {
     return _includes;
   }

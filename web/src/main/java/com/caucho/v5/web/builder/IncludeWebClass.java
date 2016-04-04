@@ -35,6 +35,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -43,7 +44,6 @@ import java.util.logging.Logger;
 import javax.inject.Qualifier;
 import javax.inject.Qualifier;
 
-import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
@@ -59,6 +59,7 @@ import io.baratine.web.Body;
 import io.baratine.web.Cookie;
 import io.baratine.web.CrossOrigin;
 import io.baratine.web.Delete;
+import io.baratine.web.FilterBefore;
 import io.baratine.web.Get;
 import io.baratine.web.Header;
 import io.baratine.web.HttpMethod;
@@ -75,8 +76,9 @@ import io.baratine.web.ServiceWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Trace;
 import io.baratine.web.WebBuilder;
+import io.baratine.web.WebResourceBuilder;
 
-class IncludeWebClass implements IncludeWeb
+class IncludeWebClass implements IncludeWebAmp
 {
   private static final L10N L = new L10N(IncludeWebClass.class);
   private static final Logger log
@@ -93,7 +95,7 @@ class IncludeWebClass implements IncludeWeb
   }
 
   @Override
-  public void build(WebBuilder builder)
+  public void build(WebBuilderAmp builder)
   {
     Function<RequestWeb,Object> beanFactory;
     Supplier<Object> beanSupplier;
@@ -196,7 +198,7 @@ class IncludeWebClass implements IncludeWeb
     introspect(builder, path, beanSupplier, beanFactory);
   }
   
-  private void introspect(WebBuilder builder,
+  private void introspect(WebBuilderAmp builder,
                           String path,
                           Supplier<Object> beanSupplier,
                           Function<RequestWeb,Object> beanFactory)
@@ -204,7 +206,7 @@ class IncludeWebClass implements IncludeWeb
     introspect(builder, path, beanSupplier, beanFactory, _type);
   }
   
-  private void introspect(WebBuilder builder,
+  private void introspect(WebBuilderAmp builder,
                           String path,
                           Supplier<Object> beanSupplier,
                           Function<RequestWeb,Object> beanFactory,
@@ -216,14 +218,16 @@ class IncludeWebClass implements IncludeWeb
     Method []methods = type.getMethods();
     Arrays.sort(methods, IncludeWebClass::compareRoute);
 
-    for (Method m : methods) {
-      if (introspectRoute(builder, path, beanFactory, m)) {
+    for (Method method : methods) {
+      if (introspectRoute(builder, path, beanFactory, method)) {
       }
-      else if (m.isAnnotationPresent(Service.class)) {
-        introspectService(builder, m, beanSupplier);
+      else if (method.isAnnotationPresent(Service.class)) {
+        introspectService(builder, method, beanSupplier);
       }
-      else if (isProduces(m)) {
-        builder.provider(()->newInstance(beanSupplier,m)).to(Key.of(m));
+      else if (isProduces(method)) {
+        builder.bean(Key.of(_type), method);
+        
+        // builder.provider(()->newInstance(beanSupplier,m)).to(Key.of(m));
       }
     }
   }
@@ -407,9 +411,18 @@ class IncludeWebClass implements IncludeWeb
     }
     else if (param.isAnnotationPresent(Body.class)) {
       Body body = param.getAnnotation(Body.class);
-      String name = body.value().isEmpty() ? null : body.value();
       
-      return new WebParamBody(param.getType(), name);
+      if (body.value().isEmpty()) {
+        return new WebParamBody<>(param.getType());
+      }
+      else {
+        Convert<String,?> convert
+           = builder.converter(String.class, param.getType());
+        
+        return new WebParamBodyParam<>(body.value(), convert);
+        
+      }
+      
     }
     else if (param.getType().isAnnotationPresent(Service.class)) {
       Service service = param.getType().getAnnotation(Service.class);
@@ -532,12 +545,10 @@ class IncludeWebClass implements IncludeWeb
   private static class WebParamBody<T> implements WebParam
   {
     private final Class<T> _type;
-    private final String _paramName;
     
-    WebParamBody(Class<T> type, String paramName)
+    WebParamBody(Class<T> type)
     {
       _type = type;
-      _paramName = paramName;
     }
     
     @Override
@@ -556,7 +567,41 @@ class IncludeWebClass implements IncludeWeb
     @Override
     public void evalAsync(RequestWeb request, Result<Object> result)
     {
-      request.body(_type, _paramName, (Result<T>) result);
+      request.body(_type, (Result<T>) result);
+    }
+  }
+
+  private static class WebParamBodyParam<T> implements WebParam
+  {
+    private final String _paramName;
+    private final Convert<String,?> _convert;
+    
+    WebParamBodyParam(String paramName, Convert<String,?> convert)
+    {
+      _paramName = paramName;
+      _convert = convert;
+    }
+    
+    @Override
+    public boolean isAsync()
+    {
+      return true;
+    }
+    
+    
+    @Override
+    public Object eval(RequestWeb request)
+    {
+      throw new IllegalStateException();
+    }
+    
+    @Override
+    public void evalAsync(RequestWeb request, Result<Object> result)
+    {
+      // XXX: multimap?
+      request.body(Map.class, result.of((map,r)->{
+        _convert.convert((String) map.get(_paramName), (Result) r);
+      }));
     }
   }
 
@@ -631,12 +676,51 @@ class IncludeWebClass implements IncludeWeb
         path = path + pathTail;
       }
       
-      builder.route(httpMethod, path)
-             .to(buildWebService(builder, beanFactory, method));
+      WebResourceBuilder routeBuilder = builder.route(httpMethod, path);
+      
+      filterBefore(routeBuilder, method);
+      
+      routeBuilder.to(buildWebService(builder, beanFactory, method));
 
       log.config("@" + httpMethod + " " + path + " to " + method.getDeclaringClass().getSimpleName() + "." + method.getName());
     }
     
+    protected void filterBefore(WebResourceBuilder builder, Method method)
+    {
+      Class<?> type = method.getDeclaringClass();
+      
+      for (FilterBefore before : type.getAnnotationsByType(FilterBefore.class)) {
+        builder.before(before.value());
+      }
+      
+      for (Annotation ann : type.getAnnotations()) {
+        filterBefore(builder, ann);
+      }
+      
+      for (FilterBefore before : method.getAnnotationsByType(FilterBefore.class)) {
+        builder.before(before.value());
+      }
+    
+      for (Annotation ann : method.getAnnotations()) {
+        filterBefore(builder, ann);
+      }
+    }
+  
+    private void filterBefore(WebResourceBuilder builder, Annotation ann)
+    {
+      Class<?> annType = ann.annotationType();
+        
+      for (FilterBefore before : annType.getAnnotationsByType(FilterBefore.class)) {
+        Class<? extends ServiceWeb> typeBefore = before.value();
+
+        if (ServiceWeb.class.equals(typeBefore)) {
+          builder.before(ann);
+        }
+        else {
+          builder.before(typeBefore);
+        }
+      }
+    }
   }
   
   private static class WebScanGet extends WebScanHttp
@@ -926,7 +1010,7 @@ class IncludeWebClass implements IncludeWeb
         }
         
         Object bean = _method._beanFactory.apply(_request);
-
+        
         _method._m.invoke(bean, _args);
       } catch (InvocationTargetException e) {
         _request.fail(e.getCause());

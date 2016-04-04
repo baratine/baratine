@@ -32,37 +32,55 @@ package com.caucho.v5.amp.vault;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.Primes;
+import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.vault.IdAsset;
 
 public final class IdAssetGenerator
 {
+  private static final L10N L = new L10N(IdAssetGenerator.class);
+  
   private long _node;
     
   private int _timeOffset;
   private int _nodeBits = 10; 
   private int _sequenceBits;
-  private int _sequencePrime;
+  private int _sequenceIncrement;
   
   private long _sequenceMask;
   
   private AtomicLong _sequence = new AtomicLong();
+
+  private long _sequenceRandomMask;
   
-  public IdAssetGenerator(int nodeIndex, int nodeCount)
+  public IdAssetGenerator(int nodeIndex, 
+                          int nodeCount)
   {
+    this(nodeIndex, nodeCount, 1);
+  }
+  
+  public IdAssetGenerator(int nodeIndex, 
+                          int nodeCount,
+                          int sequenceIncrement)
+  {
+    if (sequenceIncrement < 0 || sequenceIncrement % 2 == 0) {
+      throw new IllegalArgumentException(L.l("'{0}' is an invalid sequence increment",
+                                             sequenceIncrement));
+    }
     _nodeBits = 32 - Integer.numberOfLeadingZeros(nodeCount);
     _node = nodeIndex;
     
     _timeOffset = 64 - IdAsset.TIME_BITS;
     _sequenceBits = 64 - IdAsset.TIME_BITS - _nodeBits;
     _sequenceMask = (1L << _sequenceBits) - 1;
+    _sequenceRandomMask = (1L << (_sequenceBits - 2)) - 1;
     
     //_sequencePrime = Math.max(1, Primes.getBiggestPrime(_sequenceMask >> 1));
-    _sequencePrime = 287093;
+    //_sequencePrime = 287093;
+    _sequenceIncrement = sequenceIncrement;
   }
-
+  
   public long get()
   {
     long now = CurrentTime.currentTime() / 1000;
@@ -77,11 +95,11 @@ public final class IdAssetGenerator
     
       if (oldTime != now) {
         newSequence = ((now << _timeOffset)
-                      + (RandomUtil.getRandomLong() & _sequenceMask));
+                      + (RandomUtil.getRandomLong() & _sequenceRandomMask));
       }
       else {
         // relatively prime increment will use the whole sequence space
-        newSequence = oldSequence + _sequencePrime;
+        newSequence = oldSequence + _sequenceIncrement;
       }
     } while (! _sequence.compareAndSet(oldSequence, newSequence));
       

@@ -33,18 +33,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.container.HttpSystem;
-import com.caucho.v5.io.ServerSocketBar;
 import com.caucho.v5.jni.JniServerSocketImpl;
 import com.caucho.v5.jni.OpenSSLFactory;
 import com.caucho.v5.jni.SelectManagerJni;
@@ -58,15 +52,10 @@ import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
+import com.caucho.v5.web.builder.IncludeWebAmp;
 import com.caucho.v5.web.builder.ServiceBuilderWebImpl;
 import com.caucho.v5.web.builder.WebServerBuilderImpl;
-import com.caucho.v5.web.server.ServerBaratine;
-import com.caucho.v5.web.server.ServerBase;
-import com.caucho.v5.web.server.ServerBuilder;
-import com.caucho.v5.web.server.ServerBuilderBaratine;
 
-import io.baratine.config.Config;
-import io.baratine.web.IncludeWeb;
 import io.baratine.web.WebServer;
 
 public class WebServerImpl implements WebServer, AutoCloseable
@@ -74,9 +63,6 @@ public class WebServerImpl implements WebServer, AutoCloseable
   private static final Logger log
     = Logger.getLogger(WebServerImpl.class.getName());
   private static final L10N L = new L10N(WebServerImpl.class);
-  
-  private String _id;
-  private int _port;
   
   //private final ServerBuilder _builder;
 
@@ -96,34 +82,9 @@ public class WebServerImpl implements WebServer, AutoCloseable
   
   private ArrayList<ServiceBuilderWebImpl> _services = new ArrayList<>();
   
-  private ArrayList<IncludeWeb> _includes = new ArrayList<>();
-
-  private Config _config;
-  
-  //private final Config _config;
-  
-  private ArrayList<Consumer<ServerBuilder>> _initList = new ArrayList<>();
-  
-  private boolean _isEmbedded;
-  private boolean _isWatchdog;
+  private ArrayList<IncludeWebAmp> _includes = new ArrayList<>();
   
   // private final StatProbeManager _statProbeManager;
-
-  //private HeapDump _heapDump;
-  private MBeanServer _mbeanServer;
-  private ObjectName _hotSpotName;
-  private String[]_heapDumpArgs;
-
-  private long _shutdownWaitTime = 60000L;
-  
-  private boolean _isSSL;
-  private int _portBartender = -1;
-  private int _dynamicDataIndex = -1;
-  private Path _dataDirectory;
-
-  private ServerSocketBar _ssBartender;
-  private int _serverPort;
-  private ServerBartender _serverSelf;
   
   public WebServerImpl(WebServerBuilderImpl builder)
   {
@@ -131,9 +92,9 @@ public class WebServerImpl implements WebServer, AutoCloseable
     
     EnvLoader.addCloseListener(this, _systemManager.getClassLoader());
     
-    _id = builder.name();
+    //_id = builder.name();
     
-    _config = builder.config();
+    //_config = builder.config();
     
     _services.addAll(builder.services());
     

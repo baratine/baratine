@@ -110,6 +110,11 @@ public interface Pipe<T>
     return new ResultPipeInImpl<>(pipe);
   }
   
+  public static <T> PipeInBuilder<T> in(Consumer<T> next)
+  {
+    return new ResultPipeInImpl<>(next);
+  }
+  
   public static <T> Pipe<T> in(InHandler<T> handler)
   {
     return new ResultPipeInHandlerImpl<T>(handler);

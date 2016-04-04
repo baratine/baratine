@@ -175,6 +175,31 @@ public class ConvertStringDefault extends ConvertBase<String>
     public Boolean convert(String source)
     {
       if (source == null) {
+        return null;
+      }
+      else if (source.isEmpty()) {
+        return Boolean.FALSE;
+      }
+      else if (source.equals("false")
+               || source.equals("no")
+               || source.equals("0")) {
+        return Boolean.FALSE;
+      }
+      else {
+        return Boolean.TRUE;
+      }
+    }
+  }
+  
+  /**
+   * String to boolean
+   */
+  private static class ConvertStringToBooleanPrim implements Convert<String,Boolean>
+  {
+    @Override
+    public Boolean convert(String source)
+    {
+      if (source == null) {
         return Boolean.FALSE;
       }
       else if (source.isEmpty()) {
@@ -192,9 +217,49 @@ public class ConvertStringDefault extends ConvertBase<String>
   }
   
   /**
+   * String to char
+   */
+  private static class ConvertStringToCharPrim implements Convert<String,Character>
+  {
+    @Override
+    public Character convert(String source)
+    {
+      if (source == null) {
+        return (char) 0;
+      }
+      else if (source.isEmpty()) {
+        return (char) 0;
+      }
+      else {
+        return source.charAt(0);
+      }
+    }
+  }
+  
+  /**
+   * String to char
+   */
+  private static class ConvertStringToChar implements Convert<String,Character>
+  {
+    @Override
+    public Character convert(String source)
+    {
+      if (source == null) {
+        return null;
+      }
+      else if (source.isEmpty()) {
+        return null;
+      }
+      else {
+        return source.charAt(0);
+      }
+    }
+  }
+  
+  /**
    * String to byte
    */
-  private static class ConvertStringToByte implements Convert<String,Byte>
+  private static class ConvertStringToBytePrim implements Convert<String,Byte>
   {
     @Override
     public Byte convert(String source)
@@ -209,6 +274,43 @@ public class ConvertStringDefault extends ConvertBase<String>
   }
   
   /**
+   * String to byte
+   */
+  private static class ConvertStringToByte implements Convert<String,Byte>
+  {
+    @Override
+    public Byte convert(String source)
+    {
+      if (source == null) {
+        return null;
+      }
+      else if (source.isEmpty()) {
+        return new Byte((byte) 0);
+      }
+      else {
+        return Byte.decode(source);
+      }
+    }
+  }
+  
+  /**
+   * String to short
+   */
+  private static class ConvertStringToShortPrim implements Convert<String,Short>
+  {
+    @Override
+    public Short convert(String source)
+    {
+      if (source == null || source.isEmpty()) {
+        return new Short((short) 0);
+      }
+      else {
+        return Short.decode(source);
+      }
+    }
+  }
+  
+  /**
    * String to short
    */
   private static class ConvertStringToShort implements Convert<String,Short>
@@ -216,8 +318,11 @@ public class ConvertStringDefault extends ConvertBase<String>
     @Override
     public Short convert(String source)
     {
-      if (source == null || source.isEmpty()) {
-        return new Short((byte) 0);
+      if (source == null) {
+        return null;
+      }
+      else if (source.isEmpty()) {
+        return new Short((short) 0);
       }
       else {
         return Short.decode(source);
@@ -228,7 +333,7 @@ public class ConvertStringDefault extends ConvertBase<String>
   /**
    * String to int
    */
-  private static class ConvertStringToInt implements Convert<String,Integer>
+  private static class ConvertStringToIntPrim implements Convert<String,Integer>
   {
     @Override
     public Integer convert(String source)
@@ -243,9 +348,29 @@ public class ConvertStringDefault extends ConvertBase<String>
   }
   
   /**
+   * String to int
+   */
+  private static class ConvertStringToInt implements Convert<String,Integer>
+  {
+    @Override
+    public Integer convert(String source)
+    {
+      if (source == null) {
+        return null;
+      }
+      else if (source.isEmpty()) {
+        return new Integer(0);
+      }
+      else {
+        return Integer.decode(source);
+      }
+    }
+  }
+  
+  /**
    * String to long
    */
-  private static class ConvertStringToLong implements Convert<String,Long>
+  private static class ConvertStringToLongPrim implements Convert<String,Long>
   {
     @Override
     public Long convert(String source)
@@ -258,6 +383,33 @@ public class ConvertStringDefault extends ConvertBase<String>
       }
     }
     
+    @Override
+    public String toString()
+    {
+      return getClass().getSimpleName() + "[]";
+    }
+  }
+    
+  /**
+   * String to long
+   */
+  private static class ConvertStringToLong implements Convert<String,Long>
+  {
+    @Override
+    public Long convert(String source)
+    {
+      if (source == null) {
+        return null;
+      }
+      else if (source.isEmpty()) {
+        return new Long(0);
+      }
+      else {
+        return Long.decode(source);
+      }
+    }
+
+    @Override
     public String toString()
     {
       return getClass().getSimpleName() + "[]";
@@ -267,7 +419,7 @@ public class ConvertStringDefault extends ConvertBase<String>
   /**
    * String to float
    */
-  private static class ConvertStringToFloat implements Convert<String,Float>
+  private static class ConvertStringToFloatPrim implements Convert<String,Float>
   {
     @Override
     public Float convert(String source)
@@ -285,11 +437,36 @@ public class ConvertStringDefault extends ConvertBase<String>
       return getClass().getSimpleName() + "[]";
     }
   }
+  
+  /**
+   * String to float
+   */
+  private static class ConvertStringToFloat implements Convert<String,Float>
+  {
+    @Override
+    public Float convert(String source)
+    {
+      if (source == null) {
+        return null;
+      }
+      else if (source.isEmpty()) {
+        return new Float(0);
+      }
+      else {
+        return Float.valueOf(source);
+      }
+    }
+    
+    public String toString()
+    {
+      return getClass().getSimpleName() + "[]";
+    }
+  }
     
   /**
    * String to double
    */
-  private static class ConvertStringToDouble implements Convert<String,Double>
+  private static class ConvertStringToDoublePrim implements Convert<String,Double>
   {
     @Override
     public Double convert(String source)
@@ -307,6 +484,31 @@ public class ConvertStringDefault extends ConvertBase<String>
       return getClass().getSimpleName() + "[]";
     }
   }
+  
+/**
+ * String to double
+ */
+private static class ConvertStringToDouble implements Convert<String,Double>
+{
+  @Override
+  public Double convert(String source)
+  {
+    if (source == null) {
+      return null;
+    }
+    else if (source.isEmpty()) {
+      return new Double(0);
+    }
+    else {
+      return Double.valueOf(source);
+    }
+  }
+    
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[]";
+  }
+}
   
   private static class ConvertStringToPath implements Convert<String,Path>
   {
@@ -385,25 +587,28 @@ public class ConvertStringDefault extends ConvertBase<String>
   
   static {
     _converterMap.put(Boolean.class, new ConvertStringToBoolean());
-    _converterMap.put(boolean.class, new ConvertStringToBoolean());
+    _converterMap.put(boolean.class, new ConvertStringToBooleanPrim());
+    
+    _converterMap.put(Character.class, new ConvertStringToChar());
+    _converterMap.put(char.class, new ConvertStringToCharPrim());
     
     _converterMap.put(Byte.class, new ConvertStringToByte());
-    _converterMap.put(byte.class, new ConvertStringToByte());
+    _converterMap.put(byte.class, new ConvertStringToBytePrim());
     
     _converterMap.put(Short.class, new ConvertStringToShort());
-    _converterMap.put(short.class, new ConvertStringToShort());
+    _converterMap.put(short.class, new ConvertStringToShortPrim());
     
     _converterMap.put(Integer.class, new ConvertStringToInt());
-    _converterMap.put(int.class, new ConvertStringToInt());
+    _converterMap.put(int.class, new ConvertStringToIntPrim());
     
     _converterMap.put(Long.class, new ConvertStringToLong());
-    _converterMap.put(long.class, new ConvertStringToLong());
+    _converterMap.put(long.class, new ConvertStringToLongPrim());
     
     _converterMap.put(Float.class, new ConvertStringToFloat());
-    _converterMap.put(float.class, new ConvertStringToFloat());
+    _converterMap.put(float.class, new ConvertStringToFloatPrim());
     
     _converterMap.put(Double.class, new ConvertStringToDouble());
-    _converterMap.put(double.class, new ConvertStringToDouble());
+    _converterMap.put(double.class, new ConvertStringToDoublePrim());
     
     _converterMap.put(Path.class, new ConvertStringToPath());
     

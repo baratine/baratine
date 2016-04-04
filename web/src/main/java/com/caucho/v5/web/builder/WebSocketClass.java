@@ -29,11 +29,9 @@
 
 package com.caucho.v5.web.builder;
 
-import io.baratine.web.IncludeWeb;
 import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.WebBuilder;
 
-class WebSocketClass<S,C> implements IncludeWeb
+class WebSocketClass<S,C> implements IncludeWebAmp
 {
   private String _path;
   
@@ -47,7 +45,7 @@ class WebSocketClass<S,C> implements IncludeWeb
   }
 
   @Override
-  public void build(WebBuilder builder)
+  public void build(WebBuilderAmp builder)
   {
     builder.websocket(_path).to(_type);
   }

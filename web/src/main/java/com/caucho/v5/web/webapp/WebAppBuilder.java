@@ -30,6 +30,7 @@
 package com.caucho.v5.web.webapp;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,8 +46,8 @@ import java.util.logging.Logger;
 import javax.inject.Provider;
 
 import com.caucho.v5.amp.Amp;
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.manager.InjectAutoBindService;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -62,6 +63,10 @@ import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
+import com.caucho.v5.web.builder.IncludeWebAmp;
+import com.caucho.v5.web.builder.WebBuilderAmp;
+import com.caucho.v5.web.webapp.BeanFactory.BeanFactoryAnn;
+import com.caucho.v5.web.webapp.BeanFactory.BeanFactoryClass;
 
 import io.baratine.config.Config;
 import io.baratine.config.Config.ConfigBuilder;
@@ -73,8 +78,8 @@ import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.Service;
-import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
+import io.baratine.service.Services;
 import io.baratine.vault.Vault;
 import io.baratine.web.CrossOrigin;
 import io.baratine.web.HttpMethod;
@@ -95,7 +100,7 @@ import io.baratine.web.WebSocketClose;
  * Baratine's web-app instance builder
  */
 public class WebAppBuilder
-  implements WebBuilder
+  implements WebBuilderAmp
 {
   private static final L10N L = new L10N(WebAppBuilder.class);
   private static final Logger log
@@ -348,7 +353,7 @@ public class WebAppBuilder
 
   private void generateFromFactory()
   {
-    for (IncludeWeb include : _factory.includes()) {
+    for (IncludeWebAmp include : _factory.includes()) {
       include.build(this);
     }
   }
@@ -434,16 +439,34 @@ public class WebAppBuilder
   }
 
   @Override
-  public <T> BindingBuilder<T> provider(Provider<T> provider)
+  public <U> WebBuilderAmp bean(Key<U> keyParent, Method method)
+  {
+    // XXX: should be key instead of supplier?
+    
+    _injectBuilder.include(keyParent, method);
+
+    return this;
+  }
+
+  @Override
+  public <T> BindingBuilder<T> beanProvider(Provider<T> provider)
   {
     return _injectBuilder.provider(provider);
   }
 
   @Override
+  public <T,X> BindingBuilder<T> beanFunction(Function<X,T> function)
+  {
+    return _injectBuilder.function(function);
+  }
+
+  /*
+  @Override
   public <T,U> BindingBuilder<T> provider(Key<U> parent, Method m)
   {
     return _injectBuilder.provider(parent, m);
   }
+  */
 
   /*
   @Override
@@ -669,13 +692,37 @@ public class WebAppBuilder
     private HttpMethod _method;
     private String _path;
     private ServiceWeb _service;
+    
+    private ArrayList<BeanFactory<ServiceWeb>> _filtersBefore
+      = new ArrayList<>();
     private Class<? extends ServiceWeb> _serviceClass;
+    
     private ViewRef<?> _viewRef;
 
     RoutePath(HttpMethod method, String path)
     {
       _method = method;
       _path = path;
+    }
+
+    @Override
+    public RoutePath before(Class<? extends ServiceWeb> filterClass)
+    {
+      Objects.requireNonNull(filterClass);
+
+      _filtersBefore.add(new BeanFactoryClass<>(filterClass));
+
+      return this;
+    }
+
+    @Override
+    public RoutePath before(Annotation ann)
+    {
+      Objects.requireNonNull(ann);
+
+      _filtersBefore.add(new BeanFactoryAnn<>(ServiceWeb.class, ann));
+
+      return this;
     }
 
     @Override
@@ -709,10 +756,29 @@ public class WebAppBuilder
     }
 
     @Override
-    public List<RouteMap> toMap(InjectorAmp inject,
+    public List<RouteMap> toMap(InjectorAmp injector,
                           ServiceRefAmp serviceRef)
     {
       ArrayList<ViewRef<?>> views = new ArrayList<>();
+
+      if (_viewRef != null) {
+        views.add(_viewRef);
+      }
+
+      views.addAll(views());
+      
+      ArrayList<ServiceWeb> filtersBefore = new ArrayList<>();
+      
+      for (BeanFactory<ServiceWeb> filterFactory : _filtersBefore) {
+        ServiceWeb filter = filterFactory.apply(injector);
+
+        if (filter != null) {
+          filtersBefore.add(filter);
+        }
+        else {
+          log.warning(L.l("{0} is an unknown filter", filterFactory));
+        }
+      }
 
       if (_viewRef != null) {
         views.add(_viewRef);
@@ -726,7 +792,7 @@ public class WebAppBuilder
         service = _service;
       }
       else if (_serviceClass != null) {
-        service = inject.instance(_serviceClass);
+        service = injector.instance(_serviceClass);
       }
       else {
         throw new IllegalStateException();
@@ -742,7 +808,7 @@ public class WebAppBuilder
 
       Predicate<RequestWeb> test = _methodMap.get(method);
 
-      routeApply = new RouteApply(service, serviceRef, test, views);
+      routeApply = new RouteApply(service, filtersBefore, serviceRef, test, views);
 
       List<RouteMap> list = new ArrayList<>();
       list.add(new RouteMap(_path, routeApply));
@@ -848,8 +914,11 @@ public class WebAppBuilder
         
         ServiceWebSocket<?,?> serviceWs;
 
+        /*
         serviceWs = serviceRef.pin(new WebSocketWrapper<>(service))
                              .as(ServiceWebSocket.class);
+                             */
+        serviceWs = serviceRef.pin(service).as(ServiceWebSocket.class);
       
         fun = req->serviceWs;
       }
@@ -939,17 +1008,18 @@ public class WebAppBuilder
   static final class WebSocketWrapper<T,S>
     implements ServiceWebSocket<T,S>
   {
-    private final ServiceWebSocket<T,S> _service;
+    private ServiceWebSocket<T,S> _service;
     
+    /*
     WebSocketWrapper(ServiceWebSocket<T,S> service)
     {
       _service = service;
     }
+    */
 
     @Override
     public void open(WebSocket<S> webSocket)
     {
-      System.out.println("OPZ: " + _service);
       try {
         // XXX: convert to async
         _service.open(webSocket); 

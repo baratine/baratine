@@ -27,40 +27,14 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package com.caucho.v5.web.builder;
 
-import java.io.IOException;
+import java.lang.reflect.Method;
 
-@FunctionalInterface
-public interface ServiceWebSocket<T,S>
+import io.baratine.inject.Key;
+import io.baratine.web.WebBuilder;
+
+public interface WebBuilderAmp extends WebBuilder
 {
-  default void open(WebSocket<S> webSocket)
-  {
-  }
-  
-  void next(T value, WebSocket<S> webSocket) throws IOException;
-  
-  default void ping(String value, WebSocket<S> webSocket)
-    throws IOException
-  {
-    webSocket.pong(value);
-  }
-  
-  default void pong(String value, WebSocket<S> webSocket)
-    throws IOException
-  {
-  }
-
-  default void close(WebSocketClose code,
-                     String msg,
-                     WebSocket<S> webSocket)
-    throws IOException
-  {
-    close(webSocket);
-  }
-  
-  default void close(WebSocket<S> webSocket)
-  {
-    webSocket.close();
-  }
+  <U> WebBuilderAmp bean(Key<U> keyParent, Method method);
 }

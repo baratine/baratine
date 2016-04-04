@@ -57,7 +57,7 @@ class ProviderMethodAtPoint<T,X> implements BindingAmp<T>
   private BindingAmp<X> _ownerBinding;
   private Provider<X> _ownerProvider;
 
-  ProviderMethodAtPoint(InjectManagerBuilderImpl manager,
+  ProviderMethodAtPoint(InjectorBuilderImpl manager,
                         BindingAmp<X> ownerBinding,
                               Method method)
   {

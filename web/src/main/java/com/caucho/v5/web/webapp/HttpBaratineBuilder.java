@@ -36,9 +36,9 @@ import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.deploy2.DeployHandle2;
 import com.caucho.v5.deploy2.DeploySystem2;
 import com.caucho.v5.http.container.HttpContainerBuilder;
+import com.caucho.v5.web.builder.IncludeWebAmp;
 
 import io.baratine.config.Config;
-import io.baratine.web.IncludeWeb;
 
 /**
  * Configuration for the <cluster> and <server> tags.
@@ -46,7 +46,7 @@ import io.baratine.web.IncludeWeb;
 //@Configurable
 public class HttpBaratineBuilder extends HttpContainerBuilder
 {
-  private ArrayList<IncludeWeb> _includes = new ArrayList<>();
+  private ArrayList<IncludeWebAmp> _includes = new ArrayList<>();
 
   private HttpBaratine _http;
   private Config _config;
@@ -70,12 +70,12 @@ public class HttpBaratineBuilder extends HttpContainerBuilder
     return _config;
   }
 
-  public void include(IncludeWeb include)
+  public void include(IncludeWebAmp include)
   {
     _includes.add(include);
   }
   
-  public Iterable<IncludeWeb> include()
+  public Iterable<IncludeWebAmp> include()
   {
     return _includes;
   }

@@ -32,13 +32,11 @@ package com.caucho.v5.web.builder;
 import java.util.Objects;
 
 import io.baratine.web.HttpMethod;
-import io.baratine.web.IncludeWeb;
 import io.baratine.web.OutBuilder;
 import io.baratine.web.ServiceWeb;
-import io.baratine.web.WebBuilder;
 import io.baratine.web.ViewWeb;
 
-class RouteGenServiceClass implements IncludeWeb, OutBuilder
+class RouteGenServiceClass implements IncludeWebAmp, OutBuilder
 {
   private String _path;
   private HttpMethod _method;
@@ -84,7 +82,7 @@ class RouteGenServiceClass implements IncludeWeb, OutBuilder
   }
 
   @Override
-  public void build(WebBuilder builder)
+  public void build(WebBuilderAmp builder)
   {
     OutBuilder out = builder.route(_method, _path).to(_serviceClass);
     

@@ -33,15 +33,20 @@ import java.io.OutputStream;
 import java.io.Writer;
 
 import io.baratine.io.Buffer;
+import io.baratine.pipe.Credits;
+import io.baratine.pipe.Pipe;
 import io.baratine.web.WebSocketClose.WebSocketCloses;
 
-public interface WebSocket<T> // extends InSource<Buffer> // , OutPipe<Buffer>
+public interface WebSocket<T> extends Pipe<T>
 {
   String uri();
   String path();
   String pathInfo();
   
+  @Override
   void next(T data);
+  @Override
+  Credits credits();
   
   void write(Buffer data);
   void writePart(Buffer data);
@@ -67,12 +72,15 @@ public interface WebSocket<T> // extends InSource<Buffer> // , OutPipe<Buffer>
   
   void flush();
   
+  @Override
   boolean isClosed();
   
+  @Override
   void fail(Throwable exn);
   
   void close(WebSocketClose code, String text);
   
+  @Override
   default void close()
   {
     close(WebSocketCloses.NORMAL_CLOSURE, "ok");

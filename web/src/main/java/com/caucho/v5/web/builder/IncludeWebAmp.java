@@ -27,40 +27,10 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package com.caucho.v5.web.builder;
 
-import java.io.IOException;
+import io.baratine.config.IncludeGenerator;
 
-@FunctionalInterface
-public interface ServiceWebSocket<T,S>
+public interface IncludeWebAmp extends IncludeGenerator<WebBuilderAmp>
 {
-  default void open(WebSocket<S> webSocket)
-  {
-  }
-  
-  void next(T value, WebSocket<S> webSocket) throws IOException;
-  
-  default void ping(String value, WebSocket<S> webSocket)
-    throws IOException
-  {
-    webSocket.pong(value);
-  }
-  
-  default void pong(String value, WebSocket<S> webSocket)
-    throws IOException
-  {
-  }
-
-  default void close(WebSocketClose code,
-                     String msg,
-                     WebSocket<S> webSocket)
-    throws IOException
-  {
-    close(webSocket);
-  }
-  
-  default void close(WebSocket<S> webSocket)
-  {
-    webSocket.close();
-  }
 }

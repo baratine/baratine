@@ -24,43 +24,21 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
 package io.baratine.web;
 
-import java.io.IOException;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@FunctionalInterface
-public interface ServiceWebSocket<T,S>
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+@Retention(RUNTIME)
+@Target({METHOD,TYPE})
+public @interface FiltersBefore
 {
-  default void open(WebSocket<S> webSocket)
-  {
-  }
-  
-  void next(T value, WebSocket<S> webSocket) throws IOException;
-  
-  default void ping(String value, WebSocket<S> webSocket)
-    throws IOException
-  {
-    webSocket.pong(value);
-  }
-  
-  default void pong(String value, WebSocket<S> webSocket)
-    throws IOException
-  {
-  }
-
-  default void close(WebSocketClose code,
-                     String msg,
-                     WebSocket<S> webSocket)
-    throws IOException
-  {
-    close(webSocket);
-  }
-  
-  default void close(WebSocket<S> webSocket)
-  {
-    webSocket.close();
-  }
+  FilterBefore []value();
 }

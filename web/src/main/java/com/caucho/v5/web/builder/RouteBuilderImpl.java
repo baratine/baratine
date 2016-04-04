@@ -29,6 +29,7 @@
 
 package com.caucho.v5.web.builder;
 
+import java.lang.annotation.Annotation;
 import java.util.Objects;
 
 import io.baratine.web.HttpMethod;
@@ -56,6 +57,24 @@ public class RouteBuilderImpl implements WebResourceBuilder
     _serverBuilder = serverBuilder;
     _method = method;
     _path = path;
+  }
+
+  @Override
+  public RouteBuilderImpl before(Class<? extends ServiceWeb> filter)
+  {
+    Objects.requireNonNull(filter);
+
+    System.out.println("FILTZ: " + filter);
+    return this;
+  }
+
+  @Override
+  public RouteBuilderImpl before(Annotation ann)
+  {
+    Objects.requireNonNull(ann);
+
+    System.out.println("ANNZ: " + ann);
+    return this;
   }
 
   @Override

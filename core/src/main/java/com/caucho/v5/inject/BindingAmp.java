@@ -29,6 +29,8 @@
 
 package com.caucho.v5.inject;
 
+import java.util.function.Function;
+
 import javax.inject.Provider;
 
 import io.baratine.inject.Binding;
@@ -57,6 +59,11 @@ public interface BindingAmp<T> extends Binding<T>
   default Provider<T> provider(InjectionPoint<T> ip)
   {
     return provider();
+  }
+
+  default <X> Function<X,T> function(Class<X> paramType)
+  {
+    return null;
   }
 }
 

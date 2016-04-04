@@ -27,16 +27,52 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.pipe;
+package com.caucho.v5.web.webapp;
+
+import io.baratine.web.RequestWeb;
+import io.baratine.web.ServiceWeb;
+
 
 /**
- * Message-based pipe service.
+ * Wrapper for filter requests.
  */
-public interface BrokerPipe<T>
+public class RequestFilter extends RequestWrapper
 {
-  void consume(ResultPipeIn<T> result);
+  private RequestWeb _delegate;
   
-  void subscribe(ResultPipeIn<T> result);
+  private ServiceWeb []_services;
+  private int _index;
   
-  void publish(ResultPipeOut<T> result);
+  RequestFilter(RequestWeb delegate, ServiceWeb []services)
+  {
+    _delegate = delegate;
+    _services = services;
+  }
+
+  @Override
+  protected RequestWeb delegate() 
+  { 
+    return _delegate;
+  }
+  
+  @Override
+  public void ok()
+  {
+    try {
+      if (_index < _services.length) {
+        _services[_index++].handle(this);
+      }
+      else {
+        delegate().ok();
+      }
+    } catch (Throwable e) {
+      _delegate.fail(e);
+    }
+  }
+  
+  @Override
+  public void ok(Object value)
+  {
+    delegate().ok(value);
+  }
 }

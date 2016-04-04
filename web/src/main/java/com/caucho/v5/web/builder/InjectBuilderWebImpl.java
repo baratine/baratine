@@ -31,18 +31,18 @@ package com.caucho.v5.web.builder;
 
 import java.lang.annotation.Annotation;
 import java.util.Objects;
+import java.util.function.Function;
 
 import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectBuilder;
 import io.baratine.inject.Key;
-import io.baratine.web.IncludeWeb;
-import io.baratine.web.WebBuilder;
 
 public class InjectBuilderWebImpl<T>
-  implements BindingBuilder<T>, IncludeWeb
+  implements BindingBuilder<T>, IncludeWebAmp
 {
   private T _bean;
   private Class<T> _type;
+  private Function<?,T> _function;
   
   private Class<? super T> _api;
   private Key<? super T> _key;
@@ -73,6 +73,17 @@ public class InjectBuilderWebImpl<T>
     _bean = bean;
     
     _builder = injectBuilder.bean(bean);
+  }
+  
+  InjectBuilderWebImpl(InjectBuilder injectBuilder, 
+                       Function<?,T> fun)
+  {
+    Objects.requireNonNull(injectBuilder);
+    Objects.requireNonNull(fun);
+    
+    _function = fun;
+    
+    _builder = injectBuilder.function(fun);
   }
   
   @Override
@@ -121,12 +132,15 @@ public class InjectBuilderWebImpl<T>
   }
 
   @Override
-  public void build(WebBuilder builderWeb)
+  public void build(WebBuilderAmp builderWeb)
   {
     BindingBuilder<T> builder;
     
     if (_bean != null) {
       builder = builderWeb.bean(_bean);
+    }
+    else if (_function != null) {
+      builder = builderWeb.beanFunction(_function);
     }
     else {
       builder = builderWeb.bean(_type);

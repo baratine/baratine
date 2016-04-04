@@ -56,6 +56,7 @@ import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
 import io.baratine.io.Buffer;
+import io.baratine.pipe.Credits;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.ServiceWebSocket;
@@ -99,6 +100,9 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   private int _frameLength;
 
   private int _opMessage;
+  
+  private long _sequenceOut;
+  private Credits _credits = new CreditsWebSocket();
   
   protected WebSocketBase(WebSocketManager manager)
   {
@@ -151,11 +155,18 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   @Override
   public void next(S data)
   {
+    _sequenceOut++;
+    
     try {
       _manager.serialize(this, data);
     } catch (IOException e) {
       throw new RuntimeException(e); 
     }
+  }
+  
+  public Credits credits()
+  {
+    return _credits;
   }
 
   @Override
@@ -1255,4 +1266,22 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     
   }
   */
+  
+  class CreditsWebSocket implements Credits
+  {
+    private int _prefetch = 64;
+    
+    @Override
+    public long get()
+    {
+      return _sequenceOut + _prefetch;
+    }
+
+    @Override
+    public int available()
+    {
+      return _prefetch;
+    }
+    
+  }
 }

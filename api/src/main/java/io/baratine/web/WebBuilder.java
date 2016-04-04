@@ -29,7 +29,7 @@
 
 package io.baratine.web;
 
-import java.lang.reflect.Method;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.inject.Provider;
@@ -54,8 +54,9 @@ public interface WebBuilder
   <T> BindingBuilder<T> bean(Class<T> impl);
   <T> BindingBuilder<T> bean(T instance);
   
-  <T> BindingBuilder<T> provider(Provider<T> provider);
-  <T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
+  <T> BindingBuilder<T> beanProvider(Provider<T> provider);
+  <T,X> BindingBuilder<T> beanFunction(Function<X,T> function);
+  //<T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
   
   InjectBuilder autoBind(InjectAutoBind autoBind);
 

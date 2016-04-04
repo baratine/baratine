@@ -34,11 +34,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Utf8Util;
+
 import io.baratine.web.Form;
 import io.baratine.web.RequestWeb;
 
@@ -52,14 +56,14 @@ public class BodyResolverBase implements BodyResolver
   public static final String FORM_TYPE = "application/x-www-form-urlencoded";
 
   @Override
-  public <T> T body(RequestWeb request, Class<T> type, String name)
+  public <T> T body(RequestWeb request, Class<T> type)
   {
     if (InputStream.class.equals(type)) {
       InputStream is = request.inputStream(); // new TempInputStream(_bodyHead);
 
       return (T) is;
     }
-    else if (String.class.equals(type) && name == null) {
+    else if (String.class.equals(type)) {
       InputStream is = request.inputStream();
 
       try {
@@ -103,10 +107,10 @@ public class BodyResolverBase implements BodyResolver
     }
     */
 
-    return bodyDefault(request, type, name);
+    return bodyDefault(request, type);
   }
 
-  public <T> T bodyDefault(RequestWeb request, Class<T> type, String name)
+  public <T> T bodyDefault(RequestWeb request, Class<T> type)
   {
     String contentType = request.header("content-type");
 
@@ -114,17 +118,20 @@ public class BodyResolverBase implements BodyResolver
     if (contentType.startsWith(FORM_TYPE)) {
       Form form = parseForm(request);
 
-      return (T) formToBody(form, type, name);
+      return (T) formToBody(form, type);
     }
 
     throw new IllegalStateException(L.l("Unknown body type: " + type));
   }
 
-  private <T> T formToBody(Form form, Class<T> type, String paramName)
+  private <T> T formToBody(Form form, Class<T> type)
   {
     try {
-      if (paramName != null) {
-        return formToParam(form, type, paramName);
+      if (Map.class.isAssignableFrom(type)) {
+        return formToMap(form, type);
+      }
+      if (type.isAssignableFrom(form.getClass())) {
+        return (T) form;
       }
 
       T bean = (T) type.newInstance();
@@ -150,9 +157,30 @@ public class BodyResolverBase implements BodyResolver
       }
 
       return bean;
+    } catch (RuntimeException e) {
+      throw e;
     } catch (Exception e) {
       throw new BodyException(e);
     }
+  }
+
+  private <T> T formToMap(Form form, Class<T> type)
+    throws InstantiationException, IllegalAccessException
+  {
+    Map<String,String> map;
+    
+    if (Modifier.isAbstract(type.getModifiers())) {
+      map = new HashMap<>();
+    }
+    else {
+      map = (Map) type.newInstance();
+    }
+    
+    for (Map.Entry<String,List<String>> entry : form.entrySet()) {
+      map.put(entry.getKey(), entry.getValue().get(0));
+    }
+    
+    return (T) map;
   }
 
   private <T> T formToParam(Form form, Class<T> type, String param)
@@ -165,7 +193,7 @@ public class BodyResolverBase implements BodyResolver
       result = str;
     }
     else if (type == boolean.class) {
-      result = transform(str, false, v -> Boolean.parseBoolean(v));
+      result = transform(str, false, Boolean::parseBoolean);
     }
     else if (type == Boolean.class) {
       result = transform(str, null, v -> Boolean.parseBoolean(v));
@@ -276,19 +304,21 @@ public class BodyResolverBase implements BodyResolver
 
   private Form parseForm(RequestWeb request)
   {
+    /*
     Form form = request.getForm();
 
     if (form != null)
       return form;
+      */
 
     InputStream is = request.inputStream();
 
     try {
-      form = new FormImpl();
+      FormImpl form = new FormImpl();
 
       FormBaratine.parseQueryString((FormImpl) form, is, "utf-8");
 
-      ((RequestBaratineImpl)request).setForm((FormImpl) form);
+      //((RequestBaratineImpl)request).setForm((FormImpl) form);
 
       return form;
     } catch (Exception e) {

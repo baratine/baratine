@@ -136,8 +136,10 @@ public class WebApp
     
     _ampManager = builder.serviceBuilder().start();
     
+    int prime = 287093;
     _idGenerator = new IdAssetGenerator(_ampManager.node().nodeIndex(),
-                                        _ampManager.node().nodeCount());
+                                        _ampManager.node().nodeCount(),
+                                        prime);
                                         
     _bodyResolver = builder.bodyResolver();
     

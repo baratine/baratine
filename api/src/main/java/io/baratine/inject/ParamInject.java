@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,40 +27,19 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package io.baratine.inject;
 
-import java.io.IOException;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@FunctionalInterface
-public interface ServiceWebSocket<T,S>
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+/**
+ * Parameter marker for functional bindings.
+ */
+@Retention(RUNTIME)
+@Target({PARAMETER})
+public @interface ParamInject
 {
-  default void open(WebSocket<S> webSocket)
-  {
-  }
-  
-  void next(T value, WebSocket<S> webSocket) throws IOException;
-  
-  default void ping(String value, WebSocket<S> webSocket)
-    throws IOException
-  {
-    webSocket.pong(value);
-  }
-  
-  default void pong(String value, WebSocket<S> webSocket)
-    throws IOException
-  {
-  }
-
-  default void close(WebSocketClose code,
-                     String msg,
-                     WebSocket<S> webSocket)
-    throws IOException
-  {
-    close(webSocket);
-  }
-  
-  default void close(WebSocket<S> webSocket)
-  {
-    webSocket.close();
-  }
 }

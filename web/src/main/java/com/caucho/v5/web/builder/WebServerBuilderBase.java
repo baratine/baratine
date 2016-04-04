@@ -29,7 +29,7 @@
 
 package com.caucho.v5.web.builder;
 
-import java.lang.reflect.Method;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.inject.Provider;
@@ -100,16 +100,24 @@ class WebServerBuilderBase implements WebServerBuilder
   }
 
   @Override
-  public <T> BindingBuilder<T> provider(Provider<T> provider)
+  public <T> BindingBuilder<T> beanProvider(Provider<T> provider)
   {
-    return delegate().provider(provider);
+    return delegate().beanProvider(provider);
   }
 
+  @Override
+  public <T,X> BindingBuilder<T> beanFunction(Function<X,T> function)
+  {
+    return delegate().beanFunction(function);
+  }
+
+  /*
   @Override
   public <T,U> BindingBuilder<T> provider(Key<U> parent, Method m)
   {
     return delegate().provider(parent, m);
   }
+  */
 
   @Override
   public InjectBuilder autoBind(InjectAutoBind autoBind)

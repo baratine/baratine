@@ -33,6 +33,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.inject.Provider;
 
@@ -73,6 +74,8 @@ public interface Injector
    */
   <T> T instance(InjectionPoint<T> ip);
   
+  <T,X> T instance(Class<T> type, X param);
+  
   /**
    * Consumer for injecting dependencies.
    */
@@ -112,6 +115,9 @@ public interface Injector
     <T> BindingBuilder<T> bean(T instance);
     
     <T> BindingBuilder<T> provider(Provider<T> provider);
+    
+    <T,X> BindingBuilder<T> function(Function<X,T> function);
+    
     <T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
     
     InjectBuilder autoBind(InjectAutoBind autoBind);

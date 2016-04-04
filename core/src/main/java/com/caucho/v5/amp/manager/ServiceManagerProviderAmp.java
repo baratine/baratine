@@ -40,7 +40,7 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
-import com.caucho.v5.inject.impl.InjectManagerImpl;
+import com.caucho.v5.inject.impl.InjectorImpl;
 import com.caucho.v5.loader.EnvLoader;
 
 import io.baratine.service.Services;
@@ -145,18 +145,18 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
   //@Override
   public InjectorAmp injectCurrent(ClassLoader classLoader)
   {
-    return InjectManagerImpl.current(classLoader);
+    return InjectorImpl.current(classLoader);
   }
 
   //@Override
   public InjectorAmp injectCreate(ClassLoader classLoader)
   {
-    return InjectManagerImpl.create(classLoader);
+    return InjectorImpl.create(classLoader);
   }
 
   @Override
   public InjectBuilderAmp injectManager(ClassLoader classLoader)
   {
-    return InjectManagerImpl.manager(classLoader);
+    return InjectorImpl.manager(classLoader);
   }
 }

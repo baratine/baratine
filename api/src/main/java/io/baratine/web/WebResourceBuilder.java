@@ -29,8 +29,13 @@
 
 package io.baratine.web;
 
+import java.lang.annotation.Annotation;
+
 public interface WebResourceBuilder
 {
+  WebResourceBuilder before(Class<? extends ServiceWeb> typeBefore);
+  WebResourceBuilder before(Annotation ann);
+  
   OutBuilder to(ServiceWeb service);
   OutBuilder to(Class<? extends ServiceWeb> service);
 }

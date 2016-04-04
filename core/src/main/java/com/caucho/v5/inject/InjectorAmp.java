@@ -29,18 +29,21 @@
 
 package com.caucho.v5.inject;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import javax.inject.Provider;
 
-import com.caucho.v5.inject.impl.InjectManagerImpl;
+import com.caucho.v5.inject.impl.InjectorImpl;
 
 import io.baratine.config.Config;
 import io.baratine.convert.Convert;
 import io.baratine.inject.Binding;
 import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.BindingBuilder;
+import io.baratine.inject.Key;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**
@@ -56,7 +59,7 @@ public interface InjectorAmp extends Injector
   public static InjectorAmp current(ClassLoader classLoader)
   {
     //return ServiceManagerProvider.current().injectCurrent(classLoader);
-    return InjectManagerImpl.current(classLoader);
+    return InjectorImpl.current(classLoader);
   }
 
   public static InjectBuilderAmp manager(ClassLoader classLoader)
@@ -80,9 +83,13 @@ public interface InjectorAmp extends Injector
   public interface InjectBuilderAmp extends InjectBuilder
   {
     InjectBuilderAmp context(boolean isContext);
+    
+    <U> void include(Key<U> keyParent, Method method);
 
     @Override
     InjectorAmp get();
+
+    <T,X> BindingBuilder<T> function(Function<X, T> function);
   }
  
   //
@@ -91,7 +98,7 @@ public interface InjectorAmp extends Injector
 
   public static InjectorAmp create(ClassLoader classLoader)
   {
-    return InjectManagerImpl.create(classLoader);
+    return InjectorImpl.create(classLoader);
   }
 
   public static InjectorAmp create()

@@ -47,12 +47,12 @@ public class BodyResolverFramework extends BodyResolverBase
   private static final L10N L = new L10N(BodyResolverFramework.class);
   
   @Override
-  public <T> T bodyDefault(RequestWeb request, Class<T> type, String name)
+  public <T> T bodyDefault(RequestWeb request, Class<T> type)
   {
     String contentType = request.header("content-type");
     
     if (contentType == null) {
-      return super.bodyDefault(request, type, name);
+      return super.bodyDefault(request, type);
     }
     else if (contentType.equals("application/json")) {
       InputStream is = request.inputStream();
@@ -68,6 +68,6 @@ public class BodyResolverFramework extends BodyResolverBase
       }
     }
     
-    return super.bodyDefault(request, type, name);
+    return super.bodyDefault(request, type);
   }
 }

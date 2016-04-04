@@ -31,7 +31,6 @@ package com.caucho.v5.inject.impl;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -46,6 +45,7 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,16 +53,12 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.inject.Qualifier;
-import javax.inject.Scope;
-import javax.inject.Singleton;
 
-import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.inject.BindingAmp;
 import com.caucho.v5.inject.BindingInject;
-import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.InjectProgram;
 import com.caucho.v5.inject.InjectProvider;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.loader.DynamicClassLoader;
 import com.caucho.v5.loader.EnvLoader;
@@ -73,22 +69,21 @@ import io.baratine.config.Config;
 import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertManager;
 import io.baratine.inject.Binding;
-import io.baratine.inject.Factory;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 
 /**
  * The injection manager for a given environment.
  */
-public class InjectManagerImpl implements InjectorAmp
+public class InjectorImpl implements InjectorAmp
 {
-  private static final L10N L = new L10N(InjectManagerImpl.class);
-  private static final Logger log = Logger.getLogger(InjectManagerImpl.class.getName());
+  private static final L10N L = new L10N(InjectorImpl.class);
+  private static final Logger log = Logger.getLogger(InjectorImpl.class.getName());
   
-  private static final EnvironmentLocal<InjectManagerImpl> _localManager
+  private static final EnvironmentLocal<InjectorImpl> _localManager
     = new EnvironmentLocal<>();
   
-  private static final WeakHashMap<ClassLoader,SoftReference<InjectManagerImpl>> _loaderManagerMap
+  private static final WeakHashMap<ClassLoader,SoftReference<InjectorImpl>> _loaderManagerMap
     = new WeakHashMap<>();
   
   private final HashMap<Class<?>,Supplier<InjectScope<?>>> _scopeMap;
@@ -98,6 +93,9 @@ public class InjectManagerImpl implements InjectorAmp
   private HashSet<Class<?>> _qualifierSet = new HashSet<>();
   
   private ConcurrentHashMap<Class<?>,BindingSet<?>> _bindingMap
+    = new ConcurrentHashMap<>();
+  
+  private ConcurrentHashMap<KeyFunction,Function<?,?>> _functionMap
     = new ConcurrentHashMap<>();
   
   private ClassLoader _loader;
@@ -111,7 +109,7 @@ public class InjectManagerImpl implements InjectorAmp
 
   private InjectAutoBind[] _autoBind;
   
-  InjectManagerImpl(InjectManagerBuilderImpl builder)
+  InjectorImpl(InjectorBuilderImpl builder)
   {
     _loader = builder.getClassLoader();
     
@@ -159,13 +157,13 @@ public class InjectManagerImpl implements InjectorAmp
   /**
    * Returns the current inject manager.
    */
-  public static InjectManagerImpl current(ClassLoader loader)
+  public static InjectorImpl current(ClassLoader loader)
   {
     if (loader instanceof DynamicClassLoader) {
       return _localManager.getLevel(loader);
     }
     else {
-      SoftReference<InjectManagerImpl> injectRef = _loaderManagerMap.get(loader);
+      SoftReference<InjectorImpl> injectRef = _loaderManagerMap.get(loader);
       
       if (injectRef != null) {
         return injectRef.get();
@@ -179,7 +177,7 @@ public class InjectManagerImpl implements InjectorAmp
   /**
    * Creates a new inject manager.
    */
-  public static InjectManagerImpl create()
+  public static InjectorImpl create()
   {
     return create(Thread.currentThread().getContextClassLoader());
   }
@@ -187,23 +185,23 @@ public class InjectManagerImpl implements InjectorAmp
   /**
    * Creates a new inject manager.
    */
-  public static InjectManagerImpl create(ClassLoader loader)
+  public static InjectorImpl create(ClassLoader loader)
   {
     synchronized (loader) {
       if (loader instanceof DynamicClassLoader) {
-        InjectManagerImpl inject = _localManager.getLevel(loader);
+        InjectorImpl inject = _localManager.getLevel(loader);
         
         if (inject == null) {
-          inject = (InjectManagerImpl) InjectorAmp.manager(loader).get();
+          inject = (InjectorImpl) InjectorAmp.manager(loader).get();
           _localManager.set(inject, loader);
         }
         
         return inject;
       }
       else {
-        SoftReference<InjectManagerImpl> injectRef = _loaderManagerMap.get(loader);
+        SoftReference<InjectorImpl> injectRef = _loaderManagerMap.get(loader);
       
-        InjectManagerImpl inject = null;
+        InjectorImpl inject = null;
       
         if (injectRef != null) {
           inject = injectRef.get();
@@ -213,7 +211,7 @@ public class InjectManagerImpl implements InjectorAmp
           }
         }
         
-        inject = (InjectManagerImpl) InjectorAmp.manager(loader).get();
+        inject = (InjectorImpl) InjectorAmp.manager(loader).get();
         
         _loaderManagerMap.put(loader, new SoftReference<>(inject));
         
@@ -225,7 +223,7 @@ public class InjectManagerImpl implements InjectorAmp
   /**
    * Creates a new inject manager.
    */
-  private static void current(ClassLoader loader, InjectManagerImpl manager)
+  private static void current(ClassLoader loader, InjectorImpl manager)
   {
     Objects.requireNonNull(manager);
     
@@ -242,9 +240,9 @@ public class InjectManagerImpl implements InjectorAmp
   /**
    * Creates a new inject manager.
    */
-  public static InjectManagerBuilderImpl manager(ClassLoader loader)
+  public static InjectorBuilderImpl manager(ClassLoader loader)
   {
-    return new InjectManagerBuilderImpl(loader);
+    return new InjectorBuilderImpl(loader);
   }
   
   /**
@@ -308,6 +306,28 @@ public class InjectManagerImpl implements InjectorAmp
     
     if (provider != null) {
       return provider.get();
+    }
+    else {
+      return null;
+    }
+  }
+
+  @Override
+  public <T,X> T instance(Class<T> type, X param)
+  {
+    Key<T> key = Key.of(type);
+
+    return instance(key, param);
+  }
+
+  public <T,X> T instance(Key<T> type, X param)
+  {
+    Class<X> paramType = (Class<X>) param.getClass();
+
+    Function<X,T> fun = function(type, paramType);
+
+    if (fun != null) {
+      return fun.apply(param);
     }
     else {
       return null;
@@ -424,6 +444,41 @@ public class InjectManagerImpl implements InjectorAmp
     }
     
     return createProvider(ip.key());
+  }
+
+  //@Override
+  public <T,X> Function<X,T> function(Key<T> key, Class<X> param)
+  {
+    Objects.requireNonNull(key);
+    
+    KeyFunction keyFun = new KeyFunction(key, param);
+    
+    Function<X,T> fun = (Function) _functionMap.get(keyFun);
+    
+    if (fun == null) {
+      fun = lookupFunction(key, param);
+      
+      if (fun == null) {
+        return null;
+      }
+      
+      _functionMap.putIfAbsent(keyFun, fun);
+      
+      fun = (Function) _functionMap.get(keyFun);
+    }
+    
+    return fun;
+  }
+
+  private <T,X> Function<X,T> lookupFunction(Key<T> key, Class<X> paramType)
+  {
+    BindingSet<T> set = (BindingSet) _bindingMap.get(key.rawClass());
+    
+    if (set != null) {
+      return set.findFunction(key, paramType);
+    }
+    
+    return null;
   }
 
   @Override
@@ -621,6 +676,18 @@ public class InjectManagerImpl implements InjectorAmp
   /**
    * Adds a new injection producer to the discovered producer list.
    */
+  <T> void addFunction(BindingAmp<T> binding)
+  {
+    // TypeRef typeRef = TypeRef.of(producer.key().type());
+    
+    Class<T> type = (Class) binding.key().rawClass();
+    
+    addBinding(type, binding);
+  }
+  
+  /**
+   * Adds a new injection producer to the discovered producer list.
+   */
   private <T> void addBinding(Class<T> type, BindingAmp<T> binding)
   {
     synchronized (_bindingMap) {
@@ -761,6 +828,21 @@ public class InjectManagerImpl implements InjectorAmp
       return null;
     }
 
+    public <X> Function<X,T> findFunction(Key<T> key, Class<X> paramType)
+    {
+      for (BindingAmp<T> binding : _list) {
+        if (key.isAssignableFrom(binding.key())) {
+          Function<X,T> fun = binding.function(paramType);
+          
+          if (fun != null) {
+            return fun;
+          }
+        }
+      }
+      
+      return null;
+    }
+
     public List<Binding<T>> bindings(Key<T> key)
     {
       List<Binding<T>> bindings = new ArrayList<>();
@@ -784,6 +866,18 @@ public class InjectManagerImpl implements InjectorAmp
     public String toString()
     {
       return getClass().getSimpleName() + "[" + _type.getName() + "]";
+    }
+  }
+  
+  private static class KeyFunction
+  {
+    private Key<?> _key;
+    private Class<?> _paramType;
+    
+    KeyFunction(Key<?> key, Class<?> paramType)
+    {
+      _key = key;
+      _paramType = paramType;
     }
   }
 }
