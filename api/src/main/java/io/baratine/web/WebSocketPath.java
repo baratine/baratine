@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -29,9 +29,21 @@
 
 package io.baratine.web;
 
-@FunctionalInterface
-public interface ServiceWeb
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+@Documented
+@Retention(RUNTIME)
+@Target({TYPE, METHOD})
+public @interface WebSocketPath
 {
-  void handle(RequestWeb request)
-    throws Exception;
+  /**
+   * Optional address of the service.
+   */
+  String value() default "";
 }

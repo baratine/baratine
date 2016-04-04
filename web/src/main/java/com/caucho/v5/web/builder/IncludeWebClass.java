@@ -52,12 +52,12 @@ import io.baratine.inject.Key;
 import io.baratine.service.Api;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
+import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.service.Workers;
 import io.baratine.vault.Vault;
 import io.baratine.web.Body;
 import io.baratine.web.Cookie;
-import io.baratine.web.CrossOrigin;
 import io.baratine.web.Delete;
 import io.baratine.web.FilterBefore;
 import io.baratine.web.Get;
@@ -77,6 +77,7 @@ import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Trace;
 import io.baratine.web.WebBuilder;
 import io.baratine.web.WebResourceBuilder;
+import io.baratine.web.WebSocketPath;
 
 class IncludeWebClass implements IncludeWebAmp
 {
@@ -506,6 +507,9 @@ class IncludeWebClass implements IncludeWebAmp
     }
   }
 
+  /**
+   * @Header
+   */
   private static class WebParamHeader implements WebParam
   {
     private final String _id;
@@ -524,6 +528,9 @@ class IncludeWebClass implements IncludeWebAmp
     }
   }
 
+  /**
+   * @Cookie
+   */
   private static class WebParamCookie implements WebParam
   {
     private final String _id;
@@ -571,6 +578,9 @@ class IncludeWebClass implements IncludeWebAmp
     }
   }
 
+  /**
+   * @Body
+   */
   private static class WebParamBodyParam<T> implements WebParam
   {
     private final String _paramName;
@@ -643,6 +653,21 @@ class IncludeWebClass implements IncludeWebAmp
                                String pathTail,
                                Method method)
     {
+      String path = buildPath(prefix, pathTail, method);
+      
+      WebResourceBuilder routeBuilder = builder.route(httpMethod, path);
+      
+      filterBefore(routeBuilder, method);
+      
+      routeBuilder.to(buildWebService(builder, beanFactory, method));
+
+      log.config("@" + httpMethod + " " + path + " to " + method.getDeclaringClass().getSimpleName() + "." + method.getName());
+    }
+    
+    protected String buildPath(String prefix,
+                               String pathTail,
+                               Method method)
+    {
       if (pathTail.isEmpty()) {
         pathTail = method.getName();
       }
@@ -676,13 +701,7 @@ class IncludeWebClass implements IncludeWebAmp
         path = path + pathTail;
       }
       
-      WebResourceBuilder routeBuilder = builder.route(httpMethod, path);
-      
-      filterBefore(routeBuilder, method);
-      
-      routeBuilder.to(buildWebService(builder, beanFactory, method));
-
-      log.config("@" + httpMethod + " " + path + " to " + method.getDeclaringClass().getSimpleName() + "." + method.getName());
+      return path;
     }
     
     protected void filterBefore(WebResourceBuilder builder, Method method)
@@ -788,6 +807,9 @@ class IncludeWebClass implements IncludeWebAmp
     }
   }
   
+  /**
+   * PATCH
+   */
   private static class WebScanPatch extends WebScanHttp
   {
     @Override
@@ -810,6 +832,9 @@ class IncludeWebClass implements IncludeWebAmp
     }
   }
   
+  /**
+   * POST
+   */
   private static class WebScanPost extends WebScanHttp
   {
     @Override
@@ -831,7 +856,10 @@ class IncludeWebClass implements IncludeWebAmp
       return true;
     }
   }
-  
+
+  /**
+   * PUT
+   */
   private static class WebScanPut extends WebScanHttp
   {
     @Override
@@ -853,7 +881,10 @@ class IncludeWebClass implements IncludeWebAmp
       return true;
     }
   }
-  
+
+  /**
+   * TRACE
+   */
   private static class WebScanTrace extends WebScanHttp
   {
     @Override
@@ -875,7 +906,10 @@ class IncludeWebClass implements IncludeWebAmp
       return true;
     }
   }
-  
+
+  /**
+   * @Route
+   */
   private static class WebScanRoute extends WebScanHttp
   {
     @Override
@@ -892,6 +926,32 @@ class IncludeWebClass implements IncludeWebAmp
       
       addWebRoute(builder, beanFactory, HttpMethod.UNKNOWN, 
                   pathPrefix, annMethod.value(), 
+                  method);
+      
+      return true;
+    }
+  }
+
+  /**
+   * WebSocket
+   *
+   */
+  private static class WebScanWebSocket extends WebScanHttp
+  {
+    @Override
+    public boolean scan(WebBuilder builder, 
+                        String pathPrefix,
+                        Function<RequestWeb,Object> beanFactory, 
+                        Method method)
+    {
+      WebSocketPath wsPath = method.getAnnotation(WebSocketPath.class);
+      
+      if (wsPath == null) {
+        return false;
+      }
+      
+      addWebRoute(builder, beanFactory, HttpMethod.GET, 
+                  pathPrefix, wsPath.value(), 
                   method);
       
       return true;
@@ -945,17 +1005,6 @@ class IncludeWebClass implements IncludeWebAmp
       } catch (Exception e) {
         request.fail(e);
       }
-    }
-
-    @Override
-    public CrossOrigin getCrossOrigin()
-    {
-      CrossOrigin crossOrigin = _m.getAnnotation(CrossOrigin.class);
-
-      if (crossOrigin == null)
-        crossOrigin = _m.getDeclaringClass().getAnnotation(CrossOrigin.class);
-
-      return crossOrigin;
     }
   }
   
@@ -1089,6 +1138,7 @@ class IncludeWebClass implements IncludeWebAmp
     webScanList.add(new WebScanPut());
     webScanList.add(new WebScanTrace());
     webScanList.add(new WebScanRoute());
+    webScanList.add(new WebScanWebSocket());
     
     _webScan = new WebScan[webScanList.size()];
     webScanList.toArray(_webScan);

@@ -29,6 +29,8 @@
 
 package com.caucho.v5.web.builder;
 
+import java.util.function.Function;
+
 import com.caucho.v5.bartender.BartenderBuilder;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.journal.JournalSystem;
@@ -37,8 +39,11 @@ import com.caucho.v5.kraken.KrakenSystem;
 import com.caucho.v5.web.WebServerImpl;
 import com.caucho.v5.web.cli.ArgsBaratine;
 import com.caucho.v5.web.view.ViewJsonDefault;
+import com.caucho.v5.web.webapp.ServiceCrossOrigin;
 
 import io.baratine.inject.Key;
+import io.baratine.web.CrossOrigin;
+import io.baratine.web.ServiceWeb;
 import io.baratine.web.ViewWeb;
 
 public class WebServerBuilderBaratine extends WebServerBuilderImpl
@@ -53,6 +58,12 @@ public class WebServerBuilderBaratine extends WebServerBuilderImpl
   public WebServerImpl build(WebServerBuilderImpl builder)
   {
     builder.bean(ViewJsonDefault.class).to(new Key<ViewWeb<Object>>() {});
+    
+    builder.beanFunction(new Function<CrossOrigin,ServiceWeb>() {
+      public ServiceWeb apply(CrossOrigin ann) { 
+        return new ServiceCrossOrigin(ann); 
+      }
+    });
 
     //ServerBuilderBaratine serverBuilder;
     //serverBuilder = new ServerBuilderBaratine(builder.config());

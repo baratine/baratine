@@ -813,11 +813,13 @@ public class WebAppBuilder
       List<RouteMap> list = new ArrayList<>();
       list.add(new RouteMap(_path, routeApply));
 
+      /*
       CrossOrigin crossOrigin = service.getCrossOrigin();
 
       if (crossOrigin != null) {
         list.add(crossOriginRouteMap(crossOrigin));
       }
+      */
 
       return list;
     }
@@ -846,6 +848,7 @@ public class WebAppBuilder
     WebSocketPath(String path)
     {
       _path = path;
+      Thread.dumpStack();
     }
 
     @Override

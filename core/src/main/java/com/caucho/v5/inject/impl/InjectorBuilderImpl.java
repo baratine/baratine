@@ -493,7 +493,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
       _builder = builder;
       
       Objects.requireNonNull(function);
-      
+
       Class<T> keyType = (Class) TypeRef.of(function.getClass())
                                         .to(Function.class)
                                         .param(1)
