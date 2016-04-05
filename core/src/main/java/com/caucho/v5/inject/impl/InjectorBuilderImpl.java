@@ -32,6 +32,7 @@ package com.caucho.v5.inject.impl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +64,7 @@ import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectAutoBind;
-import io.baratine.inject.Injector.InjectBuilder;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.inject.ParamInject;
 import io.baratine.service.Lookup;
@@ -178,6 +179,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     return binding;
   }
 
+  /*
   @Override
   public <T,X> BindingBuilder<T> function(Function<X,T> function)
   {
@@ -191,6 +193,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     
     return binding;
   }
+  */
 
   @Override
   public <T, U> BindingBuilder<T> provider(Key<U> parent, Method m)
@@ -205,7 +208,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
   }
   
   @Override
-  public InjectBuilder include(Class<?> beanType)
+  public InjectorBuilder include(Class<?> beanType)
   {
     clearManager();
     
@@ -240,7 +243,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
   }
 
   @Override
-  public InjectBuilder autoBind(InjectAutoBind autoBind)
+  public InjectorBuilder autoBind(InjectAutoBind autoBind)
   {
     clearManager();
     
@@ -437,7 +440,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
   private class BindingBuilderImpl<T>
     implements BindingBuilder<T>
   {
-    private InjectBuilder _builder;
+    private InjectorBuilder _builder;
     private Key<? super T> _key;
     
     private Class<? extends T> _impl;
@@ -447,7 +450,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     
     private Class<? extends Annotation> _scopeType = Singleton.class;
     
-    BindingBuilderImpl(InjectBuilder builder, 
+    BindingBuilderImpl(InjectorBuilder builder, 
                        Class<T> type)
     {
       Objects.requireNonNull(builder);
@@ -460,7 +463,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
       _impl = type;
     }
     
-    BindingBuilderImpl(InjectBuilder builder, 
+    BindingBuilderImpl(InjectorBuilder builder, 
                        T bean)
     {
       Objects.requireNonNull(builder);
@@ -469,11 +472,23 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
       
       Objects.requireNonNull(bean);
       
-      _key = (Key) Key.of(bean.getClass());
+      Class<?> beanClass = bean.getClass();
+      Type type = beanClass;
+      
+      if (beanClass.isAnonymousClass()) {
+        if (! Object.class.equals(beanClass.getSuperclass())) {
+          type = beanClass.getGenericSuperclass();
+        }
+        else {
+          type = beanClass.getGenericInterfaces()[0];
+        }
+      }
+      
+      _key = (Key) Key.of(type);
       _provider = ()->bean;
     }
     
-    BindingBuilderImpl(InjectBuilder builder, 
+    BindingBuilderImpl(InjectorBuilder builder, 
                        Provider<T> provider)
     {
       Objects.requireNonNull(builder);
@@ -485,7 +500,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
       _provider = provider;
     }
     
-    BindingBuilderImpl(InjectBuilder builder, 
+    BindingBuilderImpl(InjectorBuilder builder, 
                        Function<?,T> function)
     {
       Objects.requireNonNull(builder);

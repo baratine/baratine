@@ -29,55 +29,15 @@
 
 package io.baratine.web;
 
-import io.baratine.inject.Injector.InjectorBuilder;
+import java.lang.annotation.Annotation;
 
-public interface WebServerBuilder extends WebBuilder
+import io.baratine.inject.InjectionPoint;
+
+public interface RouteBuilder
 {
-  WebServerBuilder args(String []args);
+  RouteBuilder before(Class<? extends ServiceWeb> typeBefore);
+  <X extends Annotation> RouteBuilder before(X ann, InjectionPoint<?> ip);
   
-  WebServerBuilder port(int port);
-  
-  SslBuilder ssl();
-  
-  @Override
-  WebServerBuilder include(Class<?> type);
-
-  WebServerBuilder scan(Class<?> type);
-  
-  WebServerBuilder scanAutoconf();
-  
-  //@Override
-  WebServerBuilder property(String name, String value);
-
-  @Override
-  <T> WebServerBuilder view(ViewWeb<T> view);
-
-  @Override
-  <T> WebServerBuilder view(Class<? extends ViewWeb<T>> view);
-  
-  //
-  // injection
-  //
-  
-  
-  
-  //
-  // services
-  //
-  
-  //<U> ServiceBuilder<U> service(Supplier<?> supplier);
-  
-  //
-  // routes
-  //
-  
-  WebServer start(String ...args);
-  
-  //void join(String ...args);
-  
-  void go(String ...args);
-  
-  public interface SslBuilder {
-    
-  }
+  OutBuilder to(ServiceWeb service);
+  OutBuilder to(Class<? extends ServiceWeb> service);
 }

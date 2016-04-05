@@ -65,17 +65,18 @@ import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.web.builder.IncludeWebAmp;
 import com.caucho.v5.web.builder.WebBuilderAmp;
-import com.caucho.v5.web.webapp.BeanFactory.BeanFactoryAnn;
-import com.caucho.v5.web.webapp.BeanFactory.BeanFactoryClass;
+import com.caucho.v5.web.webapp.FilterFactory.BeanFactoryAnn;
+import com.caucho.v5.web.webapp.FilterFactory.BeanFactoryClass;
 
 import io.baratine.config.Config;
 import io.baratine.config.Config.ConfigBuilder;
 import io.baratine.convert.Convert;
 import io.baratine.inject.Binding;
+import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectAutoBind;
-import io.baratine.inject.Injector.InjectBuilder;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
@@ -87,11 +88,11 @@ import io.baratine.web.IncludeWeb;
 import io.baratine.web.InstanceBuilder;
 import io.baratine.web.OutBuilder;
 import io.baratine.web.RequestWeb;
+import io.baratine.web.RouteBuilder;
 import io.baratine.web.ServiceWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.ViewWeb;
 import io.baratine.web.WebBuilder;
-import io.baratine.web.WebResourceBuilder;
 import io.baratine.web.WebSocket;
 import io.baratine.web.WebSocketBuilder;
 import io.baratine.web.WebSocketClose;
@@ -384,9 +385,14 @@ public class WebAppBuilder
     ServicesAmp manager = webApp.serviceManager();
 
     ServiceRefAmp serviceRef = manager.newService(new RouteService()).ref();
+    
+    while (_routes.size() > 0) {
+      ArrayList<RouteWebApp> routes = new ArrayList<>(_routes);
+      _routes.clear();
 
-    for (RouteWebApp route : _routes) {
-      mapList.addAll(route.toMap(inject, serviceRef));
+      for (RouteWebApp route : routes) {
+        mapList.addAll(route.toMap(inject, serviceRef));
+      }
     }
 
     /*
@@ -415,7 +421,7 @@ public class WebAppBuilder
   public WebBuilder include(Class<?> type)
   {
     System.out.println("ROUTER: " + type);
-    IncludeWeb gen = (IncludeWeb) inject().instance(type);
+    IncludeWeb gen = (IncludeWeb) injector().instance(type);
 
     System.out.println("GEN: " + gen);
 
@@ -454,11 +460,13 @@ public class WebAppBuilder
     return _injectBuilder.provider(provider);
   }
 
+  /*
   @Override
   public <T,X> BindingBuilder<T> beanFunction(Function<X,T> function)
   {
     return _injectBuilder.function(function);
   }
+  */
 
   /*
   @Override
@@ -552,7 +560,7 @@ public class WebAppBuilder
   }
 
   @Override
-  public WebResourceBuilder route(HttpMethod method, String path)
+  public RouteBuilder route(HttpMethod method, String path)
   {
     RoutePath route = new RoutePath(method, path);
 
@@ -586,7 +594,7 @@ public class WebAppBuilder
   @Override
   public <T> WebBuilder view(Class<? extends ViewWeb<T>> viewType)
   {
-    ViewWeb<?> view = inject().instance(viewType);
+    ViewWeb<?> view = injector().instance(viewType);
 
     return view(view, Key.of(viewType));
   }
@@ -609,13 +617,13 @@ public class WebAppBuilder
   }
 
   @Override
-  public InjectorAmp inject()
+  public InjectorAmp injector()
   {
     return _injectBuilder.get();
   }
 
   @Override
-  public InjectBuilder autoBind(InjectAutoBind autoBind)
+  public InjectorBuilder autoBind(InjectAutoBind autoBind)
   {
     throw new UnsupportedOperationException();
   }
@@ -687,13 +695,13 @@ public class WebAppBuilder
   /**
    * RoutePath has a path pattern for a route.
    */
-  class RoutePath implements WebResourceBuilder, RouteWebApp, OutBuilder
+  class RoutePath implements RouteBuilderAmp, RouteWebApp, OutBuilder
   {
     private HttpMethod _method;
     private String _path;
     private ServiceWeb _service;
     
-    private ArrayList<BeanFactory<ServiceWeb>> _filtersBefore
+    private ArrayList<FilterFactory<ServiceWeb>> _filtersBefore
       = new ArrayList<>();
     private Class<? extends ServiceWeb> _serviceClass;
     
@@ -703,6 +711,24 @@ public class WebAppBuilder
     {
       _method = method;
       _path = path;
+    }
+    
+    @Override
+    public WebBuilderAmp webBuilder()
+    {
+      return WebAppBuilder.this;
+    }
+    
+    @Override
+    public String path()
+    {
+      return _path;
+    }
+    
+    @Override
+    public HttpMethod method()
+    {
+      return _method;
     }
 
     @Override
@@ -716,11 +742,13 @@ public class WebAppBuilder
     }
 
     @Override
-    public RoutePath before(Annotation ann)
+    public <X extends Annotation>
+    RoutePath before(X ann, InjectionPoint<?> ip)
     {
       Objects.requireNonNull(ann);
-
-      _filtersBefore.add(new BeanFactoryAnn<>(ServiceWeb.class, ann));
+      Objects.requireNonNull(ip);
+      
+      _filtersBefore.add(new BeanFactoryAnn<>(ServiceWeb.class, ann, ip));
 
       return this;
     }
@@ -769,8 +797,8 @@ public class WebAppBuilder
       
       ArrayList<ServiceWeb> filtersBefore = new ArrayList<>();
       
-      for (BeanFactory<ServiceWeb> filterFactory : _filtersBefore) {
-        ServiceWeb filter = filterFactory.apply(injector);
+      for (FilterFactory<ServiceWeb> filterFactory : _filtersBefore) {
+        ServiceWeb filter = filterFactory.apply(this);
 
         if (filter != null) {
           filtersBefore.add(filter);
@@ -824,6 +852,7 @@ public class WebAppBuilder
       return list;
     }
 
+    /*
     private RouteMap crossOriginRouteMap(CrossOrigin crossOrigin)
     {
       Predicate<RequestWeb> options = _methodMap.get(HttpMethod.OPTIONS);
@@ -833,6 +862,7 @@ public class WebAppBuilder
 
       return new RouteMap(_path, corsRoute);
     }
+  */
   }
 
   /**

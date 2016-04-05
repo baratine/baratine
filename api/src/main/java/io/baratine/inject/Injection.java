@@ -29,7 +29,7 @@
 
 package io.baratine.inject;
 
-import io.baratine.inject.Injector.InjectBuilder;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**
@@ -37,12 +37,12 @@ import io.baratine.spi.ServiceManagerProvider;
  */
 public interface Injection
 {
-  static InjectBuilder newManager(ClassLoader classLoader)
+  static InjectorBuilder newManager(ClassLoader classLoader)
   {
     return ServiceManagerProvider.current().injectManager(classLoader);
   }
 
-  static InjectBuilder newManager()
+  static InjectorBuilder newManager()
   {
     return newManager(Thread.currentThread().getContextClassLoader());
   }

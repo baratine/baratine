@@ -174,42 +174,42 @@ public interface Web
   // routes
   //
   
-  static WebResourceBuilder delete(String path)
+  static RouteBuilder delete(String path)
   {
     return builder().delete(path);
   }
   
-  static WebResourceBuilder get(String path)
+  static RouteBuilder get(String path)
   {
     return builder().get(path);
   }
   
-  static WebResourceBuilder options(String path)
+  static RouteBuilder options(String path)
   {
     return builder().options(path);
   }
   
-  static WebResourceBuilder patch(String path)
+  static RouteBuilder patch(String path)
   {
     return builder().patch(path);
   }
   
-  static WebResourceBuilder post(String path)
+  static RouteBuilder post(String path)
   {
     return builder().post(path);
   }
   
-  static WebResourceBuilder put(String path)
+  static RouteBuilder put(String path)
   {
     return builder().put(path);
   }
   
-  static WebResourceBuilder trace(String path)
+  static RouteBuilder trace(String path)
   {
     return builder().trace(path);
   }
   
-  static WebResourceBuilder route(String path)
+  static RouteBuilder route(String path)
   {
     return builder().route(path);
   }

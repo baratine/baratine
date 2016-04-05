@@ -37,7 +37,6 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 
 import javax.inject.Qualifier;
@@ -283,8 +282,53 @@ public class Key<T>
         return false;
       }
     }
+    
+    if (_type instanceof ParameterizedType) {
+      if (! (key._type instanceof ParameterizedType)) {
+        return false;
+      }
+      
+      if (! isAssignableFrom((ParameterizedType) _type,
+                             (ParameterizedType) key._type)) {
+        return false;
+      }
+    }
 
     return true;
+  }
+  
+  private boolean isAssignableFrom(ParameterizedType typeA,
+                                   ParameterizedType typeB)
+  {
+    Type []paramA = typeA.getActualTypeArguments();
+    Type []paramB = typeB.getActualTypeArguments();
+    
+    if (paramA.length != paramB.length) {
+      return false;
+    }
+    
+    for (int i = 0; i < paramA.length; i++) {
+      if (! rawClass(paramA[i]).equals(rawClass(paramB[i]))) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  private Class<?> rawClass(Type type)
+  {
+    if (type instanceof Class<?>) {
+      return (Class<?>) type;
+    }
+    else if (type instanceof ParameterizedType) {
+      ParameterizedType pType = (ParameterizedType) type;
+      
+      return (Class) pType.getRawType();
+    }
+    else {
+      throw new UnsupportedOperationException(String.valueOf(type));
+    }
   }
   
   private boolean containsType(Class<? extends Annotation> annType,
@@ -297,6 +341,45 @@ public class Key<T>
     }
     
     return false;
+  }
+  
+  @Override
+  public int hashCode()
+  {
+    int hash = _type.hashCode();
+    
+    for (Class<?> annType : _annTypes) {
+      hash = 65521 * hash + annType.hashCode();
+    }
+    
+    return hash;
+  }
+  
+  @Override
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof Key)) {
+      return false;
+    }
+    
+    Key<?> key = (Key) obj;
+    
+    if (! _type.equals(key._type)) {
+      return false;
+    }
+    
+    if (_annTypes.length != key._annTypes.length) {
+      return false;
+    }
+    
+    // XXX: sort issues
+    for (int i = 0; i < _annTypes.length; i++) {
+      if (! _annTypes[i].equals(key._annTypes[i])) {
+        return false;
+      }
+    }
+    
+    return true;
   }
   
   @Override

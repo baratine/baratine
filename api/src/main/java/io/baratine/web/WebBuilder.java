@@ -38,7 +38,7 @@ import io.baratine.convert.Convert;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectAutoBind;
-import io.baratine.inject.Injector.InjectBuilder;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 
@@ -55,53 +55,53 @@ public interface WebBuilder
   <T> BindingBuilder<T> bean(T instance);
   
   <T> BindingBuilder<T> beanProvider(Provider<T> provider);
-  <T,X> BindingBuilder<T> beanFunction(Function<X,T> function);
+  //<T,X> BindingBuilder<T> beanFunction(Function<X,T> function);
   //<T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
   
-  InjectBuilder autoBind(InjectAutoBind autoBind);
+  InjectorBuilder autoBind(InjectAutoBind autoBind);
 
   //
   // route methods
   //
   
-  WebResourceBuilder route(HttpMethod method, String path);
+  RouteBuilder route(HttpMethod method, String path);
 
-  default WebResourceBuilder delete(String path)
+  default RouteBuilder delete(String path)
   {
     return route(HttpMethod.DELETE, path);
   }
 
-  default WebResourceBuilder get(String path)
+  default RouteBuilder get(String path)
   {
     return route(HttpMethod.GET, path);
   }
   
-  default WebResourceBuilder options(String path)
+  default RouteBuilder options(String path)
   {
     return route(HttpMethod.OPTIONS, path);
   }
   
-  default WebResourceBuilder patch(String path)
+  default RouteBuilder patch(String path)
   {
     return route(HttpMethod.PATCH, path);
   }
   
-  default WebResourceBuilder post(String path)
+  default RouteBuilder post(String path)
   {
     return route(HttpMethod.POST, path);
   }
   
-  default WebResourceBuilder put(String path)
+  default RouteBuilder put(String path)
   {
     return route(HttpMethod.PUT, path);
   }
   
-  default WebResourceBuilder trace(String path)
+  default RouteBuilder trace(String path)
   {
     return route(HttpMethod.TRACE, path);
   }
   
-  default WebResourceBuilder route(String path)
+  default RouteBuilder route(String path)
   {
     return route(HttpMethod.UNKNOWN, path);
   }
@@ -117,7 +117,7 @@ public interface WebBuilder
   }
   
   
-  Injector inject();
+  Injector injector();
 
   <T> ServiceBuilder service(Class<T> serviceClass);
   
@@ -128,6 +128,6 @@ public interface WebBuilder
 
   default <S,T> Convert<S,T> converter(Class<S> source, Class<T> target)
   {
-    return inject().converter(source, target);
+    return injector().converter(source, target);
   }
 }

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,57 +27,12 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package com.caucho.v5.util;
 
-import io.baratine.inject.Injector.InjectorBuilder;
-
-public interface WebServerBuilder extends WebBuilder
+/**
+ * Three argument function.
+ */
+public interface TriFunction<X,Y,Z,V>
 {
-  WebServerBuilder args(String []args);
-  
-  WebServerBuilder port(int port);
-  
-  SslBuilder ssl();
-  
-  @Override
-  WebServerBuilder include(Class<?> type);
-
-  WebServerBuilder scan(Class<?> type);
-  
-  WebServerBuilder scanAutoconf();
-  
-  //@Override
-  WebServerBuilder property(String name, String value);
-
-  @Override
-  <T> WebServerBuilder view(ViewWeb<T> view);
-
-  @Override
-  <T> WebServerBuilder view(Class<? extends ViewWeb<T>> view);
-  
-  //
-  // injection
-  //
-  
-  
-  
-  //
-  // services
-  //
-  
-  //<U> ServiceBuilder<U> service(Supplier<?> supplier);
-  
-  //
-  // routes
-  //
-  
-  WebServer start(String ...args);
-  
-  //void join(String ...args);
-  
-  void go(String ...args);
-  
-  public interface SslBuilder {
-    
-  }
+  public V apply(X x, Y y, Z z);
 }

@@ -100,7 +100,7 @@ import io.baratine.convert.ConvertManagerType.ConvertTypeBuilder;
 import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.IncludeInject;
 import io.baratine.inject.Injector.InjectAutoBind;
-import io.baratine.inject.Injector.InjectBuilder;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
@@ -420,6 +420,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     return _injectServer.provider(provider);
   }
 
+  /*
   @Override
   public <T,X> BindingBuilder<T> beanFunction(Function<X,T> function)
   {
@@ -432,6 +433,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   
     return binding;
   }
+  */
 
   /*
   @Override
@@ -704,7 +706,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public InjectorAmp inject()
+  public InjectorAmp injector()
   {
     return _injectServer.get();
   }
@@ -1818,7 +1820,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public InjectBuilder autoBind(InjectAutoBind autoBind)
+  public InjectorBuilder autoBind(InjectAutoBind autoBind)
   {
     throw new UnsupportedOperationException();
   }

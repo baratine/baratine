@@ -29,22 +29,27 @@
 
 package com.caucho.v5.web.webapp;
 
+import java.lang.annotation.Annotation;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.baratine.inject.InjectionPoint;
 import io.baratine.web.CrossOrigin;
+import io.baratine.web.Get;
 import io.baratine.web.HttpMethod;
+import io.baratine.web.Post;
+import io.baratine.web.Put;
 import io.baratine.web.RequestWeb;
+import io.baratine.web.ServiceWeb;
 
 /**
- * Route resulting in a not-found message.
+ * Filter managing @CrossOrigin
  */
-public class RouteCrossOrigin implements RouteBaratine
+public class FilterCrossOrigin implements ServiceWeb
 {
   private static final Logger log
-    = Logger.getLogger(RouteCrossOrigin.class.getName());
+    = Logger.getLogger(FilterCrossOrigin.class.getName());
 
   public static final String ALLOW_CREDENTIALS
     = "Access-Control-Allow-Credentials";
@@ -55,21 +60,32 @@ public class RouteCrossOrigin implements RouteBaratine
   public static final String EXPOSE_HEADERS = "Access-Control-Expose-Headers";
   public static final String MAX_AGE = "Access-Control-Max-Age";
 
-  private Predicate<RequestWeb> _predicate;
-
   private CrossOrigin _crossOrigin;
-  private HttpMethod _method;
 
-  RouteCrossOrigin(Predicate<RequestWeb> predicate,
-                   HttpMethod method,
-                   CrossOrigin crossOrigin)
+  private HttpMethod _httpMethod;
+
+  public FilterCrossOrigin(CrossOrigin crossOrigin, 
+                            InjectionPoint<?> ip, 
+                            RouteBuilderAmp builder)
   {
-    Objects.requireNonNull(predicate);
     Objects.requireNonNull(crossOrigin);
-
-    _predicate = predicate;
-    _method = method;
+    
     _crossOrigin = crossOrigin;
+    
+    _httpMethod = builder.method(); 
+    
+    addOriginService(builder, ip);
+  }
+  
+  private void addOriginService(RouteBuilderAmp builder,
+                                InjectionPoint<?> ip)
+  {
+    if (builder.method() == HttpMethod.OPTIONS) {
+      return;
+    }
+
+    // register self as service. should be lower priority.
+    builder.webBuilder().options(builder.path()).to(this);
   }
 
   /**
@@ -78,13 +94,14 @@ public class RouteCrossOrigin implements RouteBaratine
    * @param request the http request facade
    */
   @Override
-  public boolean service(RequestBaratine request)
+  public void handle(RequestWeb request)
   {
     try {
-      if (!_predicate.test(request)) {
-        return false;
+      if (! request.method().equals("OPTIONS")) {
+        request.ok();
+        return;
       }
-
+      
       if (_crossOrigin.allowCredentials())
         request.header(ALLOW_CREDENTIALS, "true");
 
@@ -100,10 +117,12 @@ public class RouteCrossOrigin implements RouteBaratine
       //allow methods
       HttpMethod[] methods = _crossOrigin.allowMethods();
 
-      if (methods.length > 0)
+      if (methods.length > 0) {
         request.header(ALLOW_METHODS, join(methods));
-      else
-        request.header(ALLOW_METHODS, _method.toString());
+      }
+      else if (_httpMethod != null) {
+        request.header(ALLOW_METHODS, _httpMethod.toString());
+      }
 
       //allow headers
       String[] allowHeaders = _crossOrigin.allowHeaders();
@@ -119,11 +138,10 @@ public class RouteCrossOrigin implements RouteBaratine
       request.header(MAX_AGE, Long.toString(_crossOrigin.maxAge()));
 
       request.ok();
+      request.halt();
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
     }
-
-    return true;
   }
 
   private String join(Object[] values)

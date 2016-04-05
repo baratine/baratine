@@ -74,8 +74,6 @@ public interface Injector
    */
   <T> T instance(InjectionPoint<T> ip);
   
-  <T,X> T instance(Class<T> type, X param);
-  
   /**
    * Consumer for injecting dependencies.
    */
@@ -94,19 +92,19 @@ public interface Injector
   /**
    * Creates a new manager.
    */
-  public static InjectBuilder newManager(ClassLoader classLoader)
+  public static InjectorBuilder newManager(ClassLoader classLoader)
   {
     return ServiceManagerProvider.current().injectManager(classLoader);
   }
 
-  public static InjectBuilder newManager()
+  public static InjectorBuilder newManager()
   {
     return newManager(Thread.currentThread().getContextClassLoader());
   }
   
-  public interface InjectBuilder
+  public interface InjectorBuilder
   {
-    default InjectBuilder include(Class<?> includeClass)
+    default InjectorBuilder include(Class<?> includeClass)
     {
       throw new UnsupportedOperationException(getClass().getName());
     }
@@ -116,11 +114,11 @@ public interface Injector
     
     <T> BindingBuilder<T> provider(Provider<T> provider);
     
-    <T,X> BindingBuilder<T> function(Function<X,T> function);
+    //<T,X> BindingBuilder<T> function(Function<InjectionPoint<X>,T> function);
     
     <T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
     
-    InjectBuilder autoBind(InjectAutoBind autoBind);
+    InjectorBuilder autoBind(InjectAutoBind autoBind);
     
     Injector get();
   }
@@ -134,7 +132,7 @@ public interface Injector
     BindingBuilder<T> scope(Class<? extends Annotation> scopeType);
   }
   
-  public interface IncludeInject extends IncludeGenerator<InjectBuilder>
+  public interface IncludeInject extends IncludeGenerator<InjectorBuilder>
   {
   }
   
@@ -142,10 +140,10 @@ public interface Injector
   {
     <T> Provider<T> provider(Injector manager, Key<T> key);
     
-    default <T> Provider<T> provider(Injector manager, 
+    default <T> Provider<T> provider(Injector injector, 
                                      InjectionPoint<T> ip)
     {
-      return provider(manager, ip.key());
+      return provider(injector, ip.key());
     }
   }
 }

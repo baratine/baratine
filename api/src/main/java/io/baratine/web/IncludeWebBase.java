@@ -40,17 +40,17 @@ abstract public class IncludeWebBase implements IncludeWeb
     return _builder;
   }
   
-  public WebResourceBuilder get(String path)
+  public RouteBuilder get(String path)
   {
     return builder().get(path);
   }
   
-  public WebResourceBuilder post(String path)
+  public RouteBuilder post(String path)
   {
     return builder().post(path);
   }
   
-  public WebResourceBuilder route(String path)
+  public RouteBuilder route(String path)
   {
     return builder().route(path);
   }

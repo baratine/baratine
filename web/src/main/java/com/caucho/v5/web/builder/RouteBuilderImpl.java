@@ -32,12 +32,13 @@ package com.caucho.v5.web.builder;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 
+import io.baratine.inject.InjectionPoint;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.OutBuilder;
 import io.baratine.web.ServiceWeb;
-import io.baratine.web.WebResourceBuilder;
+import io.baratine.web.RouteBuilder;
 
-public class RouteBuilderImpl implements WebResourceBuilder
+public class RouteBuilderImpl implements RouteBuilder
 {
   private WebServerBuilderImpl _serverBuilder;
   
@@ -69,11 +70,12 @@ public class RouteBuilderImpl implements WebResourceBuilder
   }
 
   @Override
-  public RouteBuilderImpl before(Annotation ann)
+  public <X extends Annotation> 
+  RouteBuilderImpl before(X ann, InjectionPoint<?> ip)
   {
     Objects.requireNonNull(ann);
 
-    System.out.println("ANNZ: " + ann);
+    System.out.println("ANNZ: " + ann + " " + ip);
     return this;
   }
 

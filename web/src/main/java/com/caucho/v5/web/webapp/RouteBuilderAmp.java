@@ -27,15 +27,20 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package com.caucho.v5.web.webapp;
 
-import java.lang.annotation.Annotation;
+import com.caucho.v5.web.builder.WebBuilderAmp;
 
-public interface WebResourceBuilder
+import io.baratine.web.HttpMethod;
+import io.baratine.web.RouteBuilder;
+
+/**
+ * Route builder.
+ */
+public interface RouteBuilderAmp extends RouteBuilder
 {
-  WebResourceBuilder before(Class<? extends ServiceWeb> typeBefore);
-  WebResourceBuilder before(Annotation ann);
-  
-  OutBuilder to(ServiceWeb service);
-  OutBuilder to(Class<? extends ServiceWeb> service);
+  WebBuilderAmp webBuilder();
+
+  String path();
+  HttpMethod method();
 }

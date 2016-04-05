@@ -29,18 +29,19 @@
 
 package com.caucho.v5.web.builder;
 
-import java.util.function.Function;
-
 import com.caucho.v5.bartender.BartenderBuilder;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.journal.JournalSystem;
 import com.caucho.v5.cli.args.ArgsBase;
 import com.caucho.v5.kraken.KrakenSystem;
+import com.caucho.v5.util.TriFunction;
 import com.caucho.v5.web.WebServerImpl;
 import com.caucho.v5.web.cli.ArgsBaratine;
 import com.caucho.v5.web.view.ViewJsonDefault;
-import com.caucho.v5.web.webapp.ServiceCrossOrigin;
+import com.caucho.v5.web.webapp.RouteBuilderAmp;
+import com.caucho.v5.web.webapp.FilterCrossOrigin;
 
+import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.web.CrossOrigin;
 import io.baratine.web.ServiceWeb;
@@ -59,9 +60,11 @@ public class WebServerBuilderBaratine extends WebServerBuilderImpl
   {
     builder.bean(ViewJsonDefault.class).to(new Key<ViewWeb<Object>>() {});
     
-    builder.beanFunction(new Function<CrossOrigin,ServiceWeb>() {
-      public ServiceWeb apply(CrossOrigin ann) { 
-        return new ServiceCrossOrigin(ann); 
+    builder.bean(new TriFunction<CrossOrigin,InjectionPoint<?>,RouteBuilderAmp,ServiceWeb>() {
+      public ServiceWeb apply(CrossOrigin ann, 
+                              InjectionPoint<?> ip,
+                              RouteBuilderAmp builder) { 
+        return new FilterCrossOrigin(ann, ip, builder); 
       }
     });
 

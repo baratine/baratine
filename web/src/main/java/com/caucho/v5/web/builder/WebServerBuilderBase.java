@@ -38,12 +38,12 @@ import io.baratine.convert.Convert;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectAutoBind;
-import io.baratine.inject.Injector.InjectBuilder;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.ViewWeb;
-import io.baratine.web.WebResourceBuilder;
+import io.baratine.web.RouteBuilder;
 import io.baratine.web.WebServer;
 import io.baratine.web.WebServerBuilder;
 import io.baratine.web.WebSocketBuilder;
@@ -82,9 +82,9 @@ class WebServerBuilderBase implements WebServerBuilder
   //
 
   @Override
-  public Injector inject()
+  public Injector injector()
   {
-    return delegate().inject();
+    return delegate().injector();
   }
 
   @Override
@@ -105,11 +105,13 @@ class WebServerBuilderBase implements WebServerBuilder
     return delegate().beanProvider(provider);
   }
 
+  /*
   @Override
   public <T,X> BindingBuilder<T> beanFunction(Function<X,T> function)
   {
     return delegate().beanFunction(function);
   }
+  */
 
   /*
   @Override
@@ -120,7 +122,7 @@ class WebServerBuilderBase implements WebServerBuilder
   */
 
   @Override
-  public InjectBuilder autoBind(InjectAutoBind autoBind)
+  public InjectorBuilder autoBind(InjectAutoBind autoBind)
   {
     return delegate().autoBind(autoBind);
   }
@@ -153,7 +155,7 @@ class WebServerBuilderBase implements WebServerBuilder
   //
 
   @Override
-  public WebResourceBuilder route(HttpMethod method, String path)
+  public RouteBuilder route(HttpMethod method, String path)
   {
     return delegate().route(method, path);
   }

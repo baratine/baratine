@@ -41,8 +41,8 @@ import com.caucho.v5.inject.impl.InjectorImpl;
 import io.baratine.config.Config;
 import io.baratine.convert.Convert;
 import io.baratine.inject.Binding;
+import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector;
-import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Key;
 import io.baratine.spi.ServiceManagerProvider;
 
@@ -80,7 +80,7 @@ public interface InjectorAmp extends Injector
   
   String property(String key);
   
-  public interface InjectBuilderAmp extends InjectBuilder
+  public interface InjectBuilderAmp extends InjectorBuilder
   {
     InjectBuilderAmp context(boolean isContext);
     
@@ -89,7 +89,7 @@ public interface InjectorAmp extends Injector
     @Override
     InjectorAmp get();
 
-    <T,X> BindingBuilder<T> function(Function<X, T> function);
+    //<T,X> BindingBuilder<T> function(Function<InjectionPoint<X>, T> function);
   }
  
   //

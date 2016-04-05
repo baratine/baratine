@@ -48,11 +48,11 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.convert.Convert;
+import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.service.Api;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.service.Workers;
 import io.baratine.vault.Vault;
@@ -76,7 +76,7 @@ import io.baratine.web.ServiceWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Trace;
 import io.baratine.web.WebBuilder;
-import io.baratine.web.WebResourceBuilder;
+import io.baratine.web.RouteBuilder;
 import io.baratine.web.WebSocketPath;
 
 class IncludeWebClass implements IncludeWebAmp
@@ -102,7 +102,7 @@ class IncludeWebClass implements IncludeWebAmp
     Supplier<Object> beanSupplier;
     
     if (IncludeWeb.class.isAssignableFrom(_type)) {
-      Object genObject = builder.inject().instance(_type);
+      Object genObject = builder.injector().instance(_type);
 
       IncludeWeb gen = (IncludeWeb) genObject; 
     
@@ -655,7 +655,7 @@ class IncludeWebClass implements IncludeWebAmp
     {
       String path = buildPath(prefix, pathTail, method);
       
-      WebResourceBuilder routeBuilder = builder.route(httpMethod, path);
+      RouteBuilder routeBuilder = builder.route(httpMethod, path);
       
       filterBefore(routeBuilder, method);
       
@@ -704,7 +704,7 @@ class IncludeWebClass implements IncludeWebAmp
       return path;
     }
     
-    protected void filterBefore(WebResourceBuilder builder, Method method)
+    protected void filterBefore(RouteBuilder builder, Method method)
     {
       Class<?> type = method.getDeclaringClass();
       
@@ -713,7 +713,7 @@ class IncludeWebClass implements IncludeWebAmp
       }
       
       for (Annotation ann : type.getAnnotations()) {
-        filterBefore(builder, ann);
+        filterBefore(builder, method, ann);
       }
       
       for (FilterBefore before : method.getAnnotationsByType(FilterBefore.class)) {
@@ -721,11 +721,13 @@ class IncludeWebClass implements IncludeWebAmp
       }
     
       for (Annotation ann : method.getAnnotations()) {
-        filterBefore(builder, ann);
+        filterBefore(builder, method, ann);
       }
     }
   
-    private void filterBefore(WebResourceBuilder builder, Annotation ann)
+    private void filterBefore(RouteBuilder builder,
+                              Method method,
+                              Annotation ann)
     {
       Class<?> annType = ann.annotationType();
         
@@ -733,7 +735,7 @@ class IncludeWebClass implements IncludeWebAmp
         Class<? extends ServiceWeb> typeBefore = before.value();
 
         if (ServiceWeb.class.equals(typeBefore)) {
-          builder.before(ann);
+          builder.before(ann, InjectionPoint.of(method));
         }
         else {
           builder.before(typeBefore);
@@ -1091,7 +1093,7 @@ class IncludeWebClass implements IncludeWebAmp
     public Object get()
     {
       if (_bean == null) {
-        _bean = _builder.inject().instance(_type);
+        _bean = _builder.injector().instance(_type);
       }
       
       return _bean;

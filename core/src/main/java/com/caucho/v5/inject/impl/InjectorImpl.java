@@ -31,6 +31,7 @@ package com.caucho.v5.inject.impl;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -53,6 +54,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Scope;
 
 import com.caucho.v5.inject.BindingAmp;
 import com.caucho.v5.inject.BindingInject;
@@ -92,10 +94,7 @@ public class InjectorImpl implements InjectorAmp
     
   private HashSet<Class<?>> _qualifierSet = new HashSet<>();
   
-  private ConcurrentHashMap<Class<?>,BindingSet<?>> _bindingMap
-    = new ConcurrentHashMap<>();
-  
-  private ConcurrentHashMap<KeyFunction,Function<?,?>> _functionMap
+  private ConcurrentHashMap<Class<?>,BindingSet<?>> _bindingSetMap
     = new ConcurrentHashMap<>();
   
   private ClassLoader _loader;
@@ -103,6 +102,9 @@ public class InjectorImpl implements InjectorAmp
   private ArrayList<InjectProvider> _providerList = new ArrayList<>();
   
   private ConcurrentHashMap<Key<?>,Provider<?>> _providerMap
+    = new ConcurrentHashMap<Key<?>,Provider<?>>();
+  
+  private ConcurrentHashMap<Key<?>,Provider<?>> _providerDefaultMap
     = new ConcurrentHashMap<Key<?>,Provider<?>>();
   
   private Provider<ConvertManager> _convertManager;
@@ -312,6 +314,7 @@ public class InjectorImpl implements InjectorAmp
     }
   }
 
+  /*
   @Override
   public <T,X> T instance(Class<T> type, X param)
   {
@@ -333,6 +336,7 @@ public class InjectorImpl implements InjectorAmp
       return null;
     }
   }
+  */
 
   @Override
   public <T> Provider<T> provider(InjectionPoint<T> ip)
@@ -354,7 +358,7 @@ public class InjectorImpl implements InjectorAmp
     Objects.requireNonNull(key);
     
     Provider<T> provider = (Provider) _providerMap.get(key);
-    
+
     if (provider == null) {
       provider = lookupProvider(key);
 
@@ -420,6 +424,9 @@ public class InjectorImpl implements InjectorAmp
     return null;
   }
   
+  /**
+   * Create a provider based on registered auto-binders.
+   */
   private <T> Provider<T> autoProvider(Key<T> key)
   {
     for (InjectAutoBind autoBind : _autoBind) {
@@ -430,9 +437,13 @@ public class InjectorImpl implements InjectorAmp
       }
     }
     
-    return createProvider(key);
+    return providerDefault(key);
   }
   
+  
+  /**
+   * Create a provider based on registered auto-binders.
+   */
   private <T> Provider<T> autoProvider(InjectionPoint<T> ip)
   {
     for (InjectAutoBind autoBind : _autoBind) {
@@ -443,48 +454,73 @@ public class InjectorImpl implements InjectorAmp
       }
     }
     
-    return createProvider(ip.key());
+    return providerDefault(ip.key());
   }
 
-  //@Override
-  public <T,X> Function<X,T> function(Key<T> key, Class<X> param)
+  private <T> Provider<T> providerDefault(Key<T> key)
   {
     Objects.requireNonNull(key);
     
-    KeyFunction keyFun = new KeyFunction(key, param);
-    
-    Function<X,T> fun = (Function) _functionMap.get(keyFun);
-    
-    if (fun == null) {
-      fun = lookupFunction(key, param);
+    Provider<T> provider = (Provider) _providerDefaultMap.get(key);
+
+    if (provider == null) {
+      provider = createProvider(key);
       
-      if (fun == null) {
-        return null;
-      }
+      _providerDefaultMap.putIfAbsent(key, provider);
       
-      _functionMap.putIfAbsent(keyFun, fun);
-      
-      fun = (Function) _functionMap.get(keyFun);
+      provider = (Provider) _providerDefaultMap.get(key);
     }
     
-    return fun;
+    return provider;
   }
 
-  private <T,X> Function<X,T> lookupFunction(Key<T> key, Class<X> paramType)
+  /**
+   * default provider
+   */
+  private <T> Provider<T> createProvider(Key<T> key)
   {
-    BindingSet<T> set = (BindingSet) _bindingMap.get(key.rawClass());
-    
-    if (set != null) {
-      return set.findFunction(key, paramType);
+    Class<T> type = (Class<T>) key.rawClass();
+
+    if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) {
+      return ()->null;
     }
     
-    return null;
-  }
+    int priority = 0;
+    
+    // auto-provider is factory
+    InjectScope<T> scope = findScope(type);
 
+    BindingAmp<T> binding = new ProviderConstructor<>(this, key, priority, scope, type);
+    
+    binding.bind();
+    
+    return binding.provider();
+  }
+  
+  private <T> InjectScope<T> findScope(AnnotatedElement annElement)
+  {
+    for (Annotation ann : annElement.getAnnotations()) {
+      Class<? extends Annotation> annType = ann.annotationType();
+      
+      if (annType.isAnnotationPresent(Scope.class)) {
+        Supplier<InjectScope<T>> scopeGen = (Supplier) _scopeMap.get(annType);
+        
+        if (scopeGen != null) {
+          return scopeGen.get();
+        }
+        else {
+          log.fine(L.l("@{0} is an unknown scope", annType.getSimpleName()));
+        }
+      }
+    }
+    
+    return new InjectScopeFactory<>();
+  }
+  
   @Override
   public <T> Iterable<Binding<T>> bindings(Class<T> type)
   {
-    BindingSet<T> set = (BindingSet) _bindingMap.get(type);
+    BindingSet<T> set = (BindingSet) _bindingSetMap.get(type);
    
     if (set != null) {
       return (Iterable) set;
@@ -497,7 +533,7 @@ public class InjectorImpl implements InjectorAmp
   @Override
   public <T> List<Binding<T>> bindings(Key<T> key)
   {
-    BindingSet<T> set = (BindingSet) _bindingMap.get(key.rawClass());
+    BindingSet<T> set = (BindingSet) _bindingSetMap.get(key.rawClass());
    
     if (set != null) {
       return set.bindings(key);
@@ -505,26 +541,6 @@ public class InjectorImpl implements InjectorAmp
     else {
       return Collections.EMPTY_LIST;
     }
-  }
-  
-  private <T> Provider<T> createProvider(Key<T> key)
-  {
-    Class<T> type = (Class<T>) key.rawClass();
-    
-    if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) {
-      return ()->null;
-    }
-    
-    int priority = 0;
-    
-    // auto-provider is factory
-    InjectScope<T> scope = new InjectScopeFactory<>();
-    
-    BindingAmp<T> binding = new ProviderConstructor<>(this, key, priority, scope, type);
-    
-    binding.bind();
-    
-    return binding.provider();
   }
 
   <T> InjectScope<T> scope(Class<? extends Annotation> scopeType)
@@ -690,12 +706,12 @@ public class InjectorImpl implements InjectorAmp
    */
   private <T> void addBinding(Class<T> type, BindingAmp<T> binding)
   {
-    synchronized (_bindingMap) {
-      BindingSet<T> set = (BindingSet) _bindingMap.get(type);
+    synchronized (_bindingSetMap) {
+      BindingSet<T> set = (BindingSet) _bindingSetMap.get(type);
 
       if (set == null) {
         set = new BindingSet<>(type);
-        _bindingMap.put(type, set);
+        _bindingSetMap.put(type, set);
       }
       
       set.addBinding(binding);
@@ -722,7 +738,7 @@ public class InjectorImpl implements InjectorAmp
    */
   private <T> BindingAmp<T> findBinding(Key<T> key)
   {
-    BindingSet<T> set = (BindingSet) _bindingMap.get(key.rawClass());
+    BindingSet<T> set = (BindingSet) _bindingSetMap.get(key.rawClass());
     
     if (set != null) {
       BindingAmp<T> binding = set.find(key);
@@ -737,7 +753,7 @@ public class InjectorImpl implements InjectorAmp
   
   private void bind()
   {
-    for (BindingSet<?> bindingSet : _bindingMap.values()) {
+    for (BindingSet<?> bindingSet : _bindingSetMap.values()) {
       bindingSet.bind();
     }
   }

@@ -34,7 +34,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import io.baratine.inject.Injector.BindingBuilder;
-import io.baratine.inject.Injector.InjectBuilder;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 
 public class InjectBuilderWebImpl<T>
@@ -51,7 +51,7 @@ public class InjectBuilderWebImpl<T>
   
   private BindingBuilder<T> _builder;
   
-  InjectBuilderWebImpl(InjectBuilder injectBuilder, Class<T> type)
+  InjectBuilderWebImpl(InjectorBuilder injectBuilder, Class<T> type)
   {
     Objects.requireNonNull(injectBuilder);
     Objects.requireNonNull(type);
@@ -61,7 +61,7 @@ public class InjectBuilderWebImpl<T>
     _builder = injectBuilder.bean(type);
   }
   
-  InjectBuilderWebImpl(InjectBuilder injectBuilder, T bean)
+  InjectBuilderWebImpl(InjectorBuilder injectBuilder, T bean)
   {
     Objects.requireNonNull(injectBuilder);
     Objects.requireNonNull(bean);
@@ -75,7 +75,8 @@ public class InjectBuilderWebImpl<T>
     _builder = injectBuilder.bean(bean);
   }
   
-  InjectBuilderWebImpl(InjectBuilder injectBuilder, 
+  /*
+  InjectBuilderWebImpl(InjectorBuilder injectBuilder, 
                        Function<?,T> fun)
   {
     Objects.requireNonNull(injectBuilder);
@@ -85,6 +86,7 @@ public class InjectBuilderWebImpl<T>
     
     _builder = injectBuilder.function(fun);
   }
+  */
   
   @Override
   public BindingBuilder<T> to(Class<? super T> api)
@@ -139,9 +141,11 @@ public class InjectBuilderWebImpl<T>
     if (_bean != null) {
       builder = builderWeb.bean(_bean);
     }
+    /*
     else if (_function != null) {
       builder = builderWeb.beanFunction(_function);
     }
+    */
     else {
       builder = builderWeb.bean(_type);
     }
