@@ -29,17 +29,6 @@
 
 package com.caucho.junit;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.VfsOld;
@@ -53,6 +42,18 @@ import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
+
+import javax.inject.Inject;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RunnerBaratine2 extends BlockJUnit4ClassRunner
 {
@@ -119,62 +120,97 @@ public class RunnerBaratine2 extends BlockJUnit4ClassRunner
     }
 
     List<FrameworkField> fields
-      = testClass.getAnnotatedFields(Service.class);
+      = testClass.getAnnotatedFields();
 
     for (FrameworkField field : fields) {
-      Object service = findService(descriptors, field);
+      Object inject = null;
+      if (field.getAnnotation(Service.class) != null) {
+        inject = findService(descriptors, field);
+      }
+      else if (field.getAnnotation(Inject.class) != null) {
+        inject = findInject(manager, field);
+      }
+      else {
+        continue;
+      }
 
       Field javaField = field.getField();
 
       javaField.setAccessible(true);
 
-      javaField.set(test, service);
+      javaField.set(test, inject);
     }
   }
 
   public Object findService(Map<ServiceDescriptor,ServiceRef> map,
                             FrameworkField field)
   {
-    Service service = field.getAnnotation(Service.class);
+    final Service binding = field.getAnnotation(Service.class);
 
-    Class type = field.getType();
+    final Class type = field.getType();
 
-    Object result = null;
+    ServiceRef service = null;
 
     for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
       ServiceDescriptor descriptor = entry.getKey();
 
       if (descriptor.getServiceClass().equals(type)) {
-        result = entry.getValue().as(type);
+        service = entry.getValue();
+
         break;
       }
     }
 
-    if (result == null) {
+    if (service == null) {
       for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
         ServiceDescriptor descriptor = entry.getKey();
 
-        if (descriptor.getAddress().equals(service.value())) {
-          result = entry.getValue().as(type);
+        if (descriptor.getAddress().equals(binding.value())) {
+          service = entry.getValue();
 
           break;
         }
       }
     }
 
-    if (result == null) {
+    if (service == null) {
       for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
         ServiceDescriptor descriptor = entry.getKey();
+        Class api = descriptor.getApi();
 
-        if (type.isAssignableFrom(descriptor.getApi())) {
-          result = entry.getValue().as(type);
+        if (api != null && type.isAssignableFrom(descriptor.getApi())) {
+          service = entry.getValue();
 
           break;
         }
       }
     }
 
-    return result;
+    if (service == null)
+      throw new IllegalStateException(L.l("unable to bind field {0}",
+                                          field.getField()));
+
+    if (ServiceRef.class == type)
+      return service;
+    else
+      return service.as(type);
+  }
+
+  private Object findInject(Services manager, FrameworkField field)
+  {
+    final Class type = field.getType();
+
+    Object inject = null;
+
+    if (type == Services.class) {
+      inject = manager;
+    }
+
+    if (inject == null)
+      throw new IllegalStateException(L.l("unable to bind field {0}",
+                                          field.getField()));
+
+    return inject;
   }
 
   static class ServiceDescriptor
