@@ -29,9 +29,11 @@
 
 package com.caucho.junit;
 
-import com.caucho.v5.bartender.pod.PodBartender;
-
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
@@ -39,81 +41,7 @@ import java.lang.annotation.*;
 public @interface ConfigurationBaratine
 {
   /**
-   * Specifies host for Baratine
-   *
-   * @return Baratine host
-   */
-  String host() default "localhost";
-
-  /**
-   * Baratine Root directory base. The actual directory used by Baratine will
-   * default to rootDirectoryBase() + '/' + "junit-baratine-runner"
-   */
-  String rootDirectoryBase() default "/tmp";
-
-  /**
-   * Specifies port for Baratine
-   *
-   * @return Baratine port
-   */
-  int port() default -1;
-
-  /**
-   * Specifies applications to deploy
-   *
-   * @return archives to deploy
-   */
-  String[] deploy() default {};
-
-  /**
    * Specifies services to deploy
    */
   Class<?>[] services() default {};
-
-  /**
-   * Specifies log level to set to the specified loggers
-   *
-   * @return loglevel to use
-   */
-  @Deprecated
-  String logLevel() default "OFF";
-
-  /**
-   * Specifies loggers to set to a specified log level
-   *
-   * @return names of loggers
-   */
-  @Deprecated
-  String[] logNames() default "";
-
-  /**
-   * Specifies loggers
-   * @return
-   */
-  Log[] logs() default {};
-
-  /**
-   * Specifies pod
-   * @return
-   */
-  String pod() default "pod";
-
-  PodBartender.PodType podType() default PodBartender.PodType.solo;
-
-  /**
-   * Journal delay - default journal delay for testing replay
-   */
-  long journalDelay() default -1;
-
-  /**
-   * If >= 0, use artificial test time. 
-   */
-  long testTime() default -1;
-
-  static public @interface Log
-  {
-    String name() default "";
-
-    String level() default "INFO";
-  }
 }
