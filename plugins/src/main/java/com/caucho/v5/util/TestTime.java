@@ -27,32 +27,28 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.junit;
+package com.caucho.v5.util;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-@Repeatable(value = ConfigurationsBaratine.class)
-public @interface ConfigurationBaratine
+public class TestTime
 {
-  /**
-   * Specifies services to deploy
-   */
-  Class<?>[] services() default {};
+  public static void clear()
+  {
+    CurrentTime.testClear();
+  }
 
-  /**
-   * @return
-   */
-  String workDir() default "{java.io.tmpdir}";
+  public static void setTime(long time)
+  {
+    CurrentTime.setTestTime(time);
+  }
 
-  /**
-   *
-   * @return
-   */
-  long testTime() default -1;
+  public static void addTime(long delta, TimeUnit timeUnit)
+  {
+    delta = timeUnit.toMillis(delta);
+
+    long time = CurrentTime.currentTime() + delta;
+
+    CurrentTime.setTestTime(time);
+  }
 }

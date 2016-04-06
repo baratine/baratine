@@ -36,23 +36,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
+import com.caucho.v5.util.RandomUtil;
+import com.caucho.v5.util.TestTime;
 import com.caucho.v5.vfs.VfsOld;
 import io.baratine.service.Api;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
+import io.baratine.spi.ServiceManagerProvider;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
@@ -101,6 +104,10 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
         list.add((ConfigurationBaratine) annotation);
     }
 
+    if (list.size() == 0) {
+      list.add(new ConfigurationBaratineDefault());
+    }
+
     return list.toArray(new ConfigurationBaratine[list.size()]);
   }
 
@@ -108,7 +115,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
   {
     TestClass testClass = getTestClass();
 
-    Services manager = Services.newManager().start();
+    Services manager = Services.newManager().autoServices(true).start();
 
     Map<ServiceDescriptor,ServiceRef> descriptors = deployServices(manager);
 
@@ -127,7 +134,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       Object inject;
 
       if (field.getAnnotation(Service.class) != null) {
-        inject = findService(descriptors, field);
+        inject = findService(manager, descriptors, field);
       }
       else if (field.getAnnotation(Inject.class) != null) {
         inject = findInject(manager, field);
@@ -160,10 +167,12 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
         descriptors.put(descriptor, ref);
       }
     }
+
     return descriptors;
   }
 
-  public Object findService(Map<ServiceDescriptor,ServiceRef> map,
+  public Object findService(Services manager,
+                            Map<ServiceDescriptor,ServiceRef> map,
                             FrameworkField field)
   {
     final Service binding = field.getAnnotation(Service.class);
@@ -172,13 +181,16 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
 
     ServiceRef service = null;
 
-    service = matchServiceByImpl(map, type, service);
+    service = matchServiceByImpl(map, type);
 
     if (service == null)
-      service = matchServiceByAddress(map, binding, service);
+      service = matchServiceByAddress(map, binding);
 
     if (service == null)
-      service = matchServiceByApi(map, type, service);
+      service = matchServiceByApi(map, type);
+
+    if (service == null)
+      service = matchDefaultService(manager, binding);
 
     if (service == null)
       throw new IllegalStateException(L.l(
@@ -191,51 +203,58 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       return service.as(type);
   }
 
+  private ServiceRef matchDefaultService(Services manager,
+                                         Service binding)
+  {
+    String address = binding.value();
+
+    if (address == null)
+      return null;
+
+    return manager.service(address);
+  }
+
   private ServiceRef matchServiceByApi(Map<ServiceDescriptor,ServiceRef> map,
-                                       Class type, ServiceRef service)
+                                       Class type)
   {
     for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
       ServiceDescriptor descriptor = entry.getKey();
       Class api = descriptor.getApi();
 
       if (api != null && type.isAssignableFrom(descriptor.getApi())) {
-        service = entry.getValue();
-
-        break;
+        return entry.getValue();
       }
     }
-    return service;
+
+    return null;
   }
 
   private ServiceRef matchServiceByAddress(Map<ServiceDescriptor,ServiceRef> map,
-                                           Service binding, ServiceRef service)
+                                           Service binding)
   {
     for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
       ServiceDescriptor descriptor = entry.getKey();
 
       if (descriptor.getAddress().equals(binding.value())) {
-        service = entry.getValue();
-
-        break;
+        return entry.getValue();
       }
     }
-    return service;
+
+    return null;
   }
 
   private ServiceRef matchServiceByImpl(Map<ServiceDescriptor,ServiceRef> map,
-                                        Class type, ServiceRef service)
+                                        Class type)
   {
     for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
       ServiceDescriptor descriptor = entry.getKey();
 
       if (descriptor.getServiceClass().equals(type)) {
-        service = entry.getValue();
-
-        break;
+        return entry.getValue();
       }
     }
 
-    return service;
+    return null;
   }
 
   private Object findInject(Services manager, FrameworkField field)
@@ -355,11 +374,14 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
 
     try {
       thread.setContextClassLoader(envLoader);
-/*
-      TestAlarm.setTime(START_TIME);
-      RandomUtil.setTestSeed(START_TIME);
-      TestState.clear();
-*/
+
+      long startTime = getStartTime();
+
+      if (startTime != -1) {
+        TestTime.setTime(startTime);
+
+        RandomUtil.setTestSeed(startTime);
+      }
 
       Logger.getLogger("").setLevel(Level.INFO);
       Logger.getLogger("javax.management").setLevel(Level.INFO);
@@ -403,9 +425,16 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     }
   }
 
+  private ConfigurationBaratine getFirstConfiguration()
+  {
+    ConfigurationBaratine[] configs = getConfiguration();
+
+    return configs[0];
+  }
+
   private String getWorkDir()
   {
-    final ConfigurationBaratine config = getConfiguration()[0];
+    final ConfigurationBaratine config = getFirstConfiguration();
 
     String workDir = config.workDir();
 
@@ -414,6 +443,13 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     }
 
     return workDir;
+  }
+
+  private long getStartTime()
+  {
+    final ConfigurationBaratine config = getFirstConfiguration();
+
+    return config.testTime();
   }
 
   private String eval(String expr)
@@ -425,8 +461,29 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
 
     return System.getProperty(expr.substring(1, expr.length() - 1));
   }
+}
 
-  public void addTime(int i, TimeUnit unit)
+class ConfigurationBaratineDefault
+  extends AnnotationLiteral<ConfigurationBaratine>
+  implements ConfigurationBaratine
+{
+  public static final long TEST_TIME = 894621091000L;
+
+  @Override
+  public Class<?>[] services()
   {
+    return new Class<?>[0];
+  }
+
+  @Override
+  public String workDir()
+  {
+    return "{java.io.tmpdir}";
+  }
+
+  @Override
+  public long testTime()
+  {
+    return TEST_TIME;
   }
 }
