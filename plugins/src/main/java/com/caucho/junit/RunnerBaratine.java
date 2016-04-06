@@ -29,7 +29,24 @@
 
 package com.caucho.junit;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.io.Vfs;
 import com.caucho.v5.loader.EnvironmentClassLoader;
+import com.caucho.v5.subsystem.RootDirectorySystem;
+import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.VfsOld;
 import io.baratine.service.Api;
@@ -42,18 +59,6 @@ import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
-
-import javax.inject.Inject;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class RunnerBaratine extends BlockJUnit4ClassRunner
 {
@@ -105,25 +110,22 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
 
     Services manager = Services.newManager().start();
 
-    Map<ServiceDescriptor,ServiceRef> descriptors = new HashMap<>();
+    Map<ServiceDescriptor,ServiceRef> descriptors = deployServices(manager);
 
-    for (ConfigurationBaratine config : getConfiguration()) {
-      Class[] services = config.services();
+    bindFields(test, testClass, manager, descriptors);
+  }
 
-      for (Class service : services) {
-        ServiceDescriptor descriptor = ServiceDescriptor.of(service);
-
-        ServiceRef ref = manager.newService(service).addressAuto().ref();
-
-        descriptors.put(descriptor, ref);
-      }
-    }
-
-    List<FrameworkField> fields
-      = testClass.getAnnotatedFields();
+  private void bindFields(Object test,
+                          TestClass testClass,
+                          Services manager,
+                          Map<ServiceDescriptor,ServiceRef> descriptors)
+    throws IllegalAccessException
+  {
+    List<FrameworkField> fields = testClass.getAnnotatedFields();
 
     for (FrameworkField field : fields) {
-      Object inject = null;
+      Object inject;
+
       if (field.getAnnotation(Service.class) != null) {
         inject = findService(descriptors, field);
       }
@@ -142,6 +144,25 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     }
   }
 
+  private Map<ServiceDescriptor,ServiceRef> deployServices(
+    Services manager)
+  {
+    Map<ServiceDescriptor,ServiceRef> descriptors = new HashMap<>();
+
+    for (ConfigurationBaratine config : getConfiguration()) {
+      Class[] services = config.services();
+
+      for (Class service : services) {
+        ServiceDescriptor descriptor = ServiceDescriptor.of(service);
+
+        ServiceRef ref = manager.newService(service).addressAuto().ref();
+
+        descriptors.put(descriptor, ref);
+      }
+    }
+    return descriptors;
+  }
+
   public Object findService(Map<ServiceDescriptor,ServiceRef> map,
                             FrameworkField field)
   {
@@ -151,6 +172,59 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
 
     ServiceRef service = null;
 
+    service = matchServiceByImpl(map, type, service);
+
+    if (service == null)
+      service = matchServiceByAddress(map, binding, service);
+
+    if (service == null)
+      service = matchServiceByApi(map, type, service);
+
+    if (service == null)
+      throw new IllegalStateException(L.l(
+        "unable to bind field {0}, make sure corresponding service is deployed.",
+        field.getField()));
+
+    if (ServiceRef.class == type)
+      return service;
+    else
+      return service.as(type);
+  }
+
+  private ServiceRef matchServiceByApi(Map<ServiceDescriptor,ServiceRef> map,
+                                       Class type, ServiceRef service)
+  {
+    for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
+      ServiceDescriptor descriptor = entry.getKey();
+      Class api = descriptor.getApi();
+
+      if (api != null && type.isAssignableFrom(descriptor.getApi())) {
+        service = entry.getValue();
+
+        break;
+      }
+    }
+    return service;
+  }
+
+  private ServiceRef matchServiceByAddress(Map<ServiceDescriptor,ServiceRef> map,
+                                           Service binding, ServiceRef service)
+  {
+    for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
+      ServiceDescriptor descriptor = entry.getKey();
+
+      if (descriptor.getAddress().equals(binding.value())) {
+        service = entry.getValue();
+
+        break;
+      }
+    }
+    return service;
+  }
+
+  private ServiceRef matchServiceByImpl(Map<ServiceDescriptor,ServiceRef> map,
+                                        Class type, ServiceRef service)
+  {
     for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
       ServiceDescriptor descriptor = entry.getKey();
 
@@ -161,39 +235,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       }
     }
 
-    if (service == null) {
-      for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
-        ServiceDescriptor descriptor = entry.getKey();
-
-        if (descriptor.getAddress().equals(binding.value())) {
-          service = entry.getValue();
-
-          break;
-        }
-      }
-    }
-
-    if (service == null) {
-      for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
-        ServiceDescriptor descriptor = entry.getKey();
-        Class api = descriptor.getApi();
-
-        if (api != null && type.isAssignableFrom(descriptor.getApi())) {
-          service = entry.getValue();
-
-          break;
-        }
-      }
-    }
-
-    if (service == null)
-      throw new IllegalStateException(L.l("unable to bind field {0}",
-                                          field.getField()));
-
-    if (ServiceRef.class == type)
-      return service;
-    else
-      return service.as(type);
+    return service;
   }
 
   private Object findInject(Services manager, FrameworkField field)
@@ -275,7 +317,6 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       ServiceDescriptor that = (ServiceDescriptor) o;
 
       return _serviceClass.equals(that._serviceClass);
-
     }
 
     @Override
@@ -299,9 +340,18 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
   protected void runChild(FrameworkMethod method, RunNotifier notifier)
   {
     Thread thread = Thread.currentThread();
+
     ClassLoader oldLoader = thread.getContextClassLoader();
-    EnvironmentClassLoader envLoader = EnvironmentClassLoader.create(oldLoader,
-                                                                     "test-loader");
+
+    EnvironmentClassLoader envLoader
+      = EnvironmentClassLoader.create(oldLoader, "test-loader");
+
+    String baratineRoot = getWorkDir();
+    System.setProperty("baratine.root", baratineRoot);
+
+    RootDirectorySystem rootDir = null;
+
+    SystemManager manager = null;
 
     try {
       thread.setContextClassLoader(envLoader);
@@ -314,26 +364,66 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       Logger.getLogger("").setLevel(Level.INFO);
       Logger.getLogger("javax.management").setLevel(Level.INFO);
 
-      String user = System.getProperty("user.name");
-      String baratineRoot = "/tmp/" + user + "/qa";
-      System.setProperty("baratine.root", baratineRoot);
-
       try {
         VfsOld.lookup(baratineRoot).removeAll();
       } catch (Exception e) {
       }
 
+      manager = new SystemManager("test-manager");
+
+      rootDir = RootDirectorySystem.createAndAddSystem(Vfs.path(baratineRoot));
+
+      rootDir.start();
+
       super.runChild(method, notifier);
+    } catch (Throwable t) {
+      t.printStackTrace();
     } finally {
       Logger.getLogger("").setLevel(Level.INFO);
 
       try {
+        rootDir.stop(ShutdownModeAmp.GRACEFUL);
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
+
+      try {
         envLoader.close();
-      } catch (Throwable e) {
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
+
+      try {
+        manager.close();
+      } catch (Throwable t) {
+        t.printStackTrace();
       }
 
       thread.setContextClassLoader(oldLoader);
     }
+  }
+
+  private String getWorkDir()
+  {
+    final ConfigurationBaratine config = getConfiguration()[0];
+
+    String workDir = config.workDir();
+
+    if (workDir.charAt(0) == '{') {
+      workDir = eval(workDir);
+    }
+
+    return workDir;
+  }
+
+  private String eval(String expr)
+  {
+    if (expr.charAt(0) != '{' || expr.charAt(expr.length() - 1) != '}')
+      throw new IllegalArgumentException(L.l(
+        "property {0} does not match expected format of {property}",
+        expr));
+
+    return System.getProperty(expr.substring(1, expr.length() - 1));
   }
 
   public void addTime(int i, TimeUnit unit)

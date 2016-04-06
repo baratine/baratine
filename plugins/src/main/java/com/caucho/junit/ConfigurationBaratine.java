@@ -44,4 +44,6 @@ public @interface ConfigurationBaratine
    * Specifies services to deploy
    */
   Class<?>[] services() default {};
+
+  String workDir() default "{java.io.tmpdir}";
 }
