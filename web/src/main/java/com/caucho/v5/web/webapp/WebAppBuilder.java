@@ -703,6 +703,8 @@ public class WebAppBuilder
     
     private ArrayList<FilterFactory<ServiceWeb>> _filtersBefore
       = new ArrayList<>();
+    private ArrayList<FilterFactory<ServiceWeb>> _filtersAfter
+    = new ArrayList<>();
     private Class<? extends ServiceWeb> _serviceClass;
     
     private ViewRef<?> _viewRef;
@@ -729,6 +731,28 @@ public class WebAppBuilder
     public HttpMethod method()
     {
       return _method;
+    }
+
+    @Override
+    public RoutePath after(Class<? extends ServiceWeb> filterClass)
+    {
+      Objects.requireNonNull(filterClass);
+
+      _filtersAfter.add(new BeanFactoryClass<>(filterClass));
+
+      return this;
+    }
+
+    @Override
+    public <X extends Annotation>
+    RoutePath after(X ann, InjectionPoint<?> ip)
+    {
+      Objects.requireNonNull(ann);
+      Objects.requireNonNull(ip);
+      
+      _filtersAfter.add(new BeanFactoryAnn<>(ServiceWeb.class, ann, ip));
+
+      return this;
     }
 
     @Override
@@ -807,6 +831,19 @@ public class WebAppBuilder
           log.warning(L.l("{0} is an unknown filter", filterFactory));
         }
       }
+      
+      ArrayList<ServiceWeb> filtersAfter = new ArrayList<>();
+      
+      for (FilterFactory<ServiceWeb> filterFactory : _filtersAfter) {
+        ServiceWeb filter = filterFactory.apply(this);
+
+        if (filter != null) {
+          filtersAfter.add(filter);
+        }
+        else {
+          log.warning(L.l("{0} is an unknown filter", filterFactory));
+        }
+      }
 
       if (_viewRef != null) {
         views.add(_viewRef);
@@ -836,7 +873,7 @@ public class WebAppBuilder
 
       Predicate<RequestWeb> test = _methodMap.get(method);
 
-      routeApply = new RouteApply(service, filtersBefore, serviceRef, test, views);
+      routeApply = new RouteApply(service, filtersBefore, filtersAfter, serviceRef, test, views);
 
       List<RouteMap> list = new ArrayList<>();
       list.add(new RouteMap(_path, routeApply));

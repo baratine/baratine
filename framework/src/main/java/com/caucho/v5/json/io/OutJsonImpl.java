@@ -59,14 +59,19 @@ public class OutJsonImpl implements OutJson
   
   private StateJsonOut _state = StateJsonOut.FIRST;
   
+  private char []_cBuf = new char[64];
+  private int _cOffset;
+  
   public OutJsonImpl()
   {
   }
 
+  /*
   public OutJsonImpl(Writer os)
   {
     init(os);
   }
+  */
 
   public OutJsonImpl(WriteStream out)
   {
@@ -253,13 +258,31 @@ public class OutJsonImpl implements OutJson
   
   private void write(char []buffer, int offset, int length)
   {
-    try {
-      Writer os = _os;
+    char []cBuf = _cBuf;
+    int cOffset = _cOffset;
+    int cLength = cBuf.length;
+    
+    while (length > 0) {
+      if (cLength <= cOffset) {
+        try {
+          _os.write(cBuf, 0, cOffset);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+        
+        cOffset = 0;
+      }
       
-      os.write(buffer, offset, length);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+      int sublen = Math.min(cLength - cOffset, length);
+      
+      System.arraycopy(buffer, offset, cBuf, cOffset, sublen);
+      
+      length -= sublen;
+      offset += sublen;
+      cOffset += sublen;
     }
+    
+    _cOffset = cOffset;
   }
 
   public void writeString(String v)
@@ -340,21 +363,46 @@ public class OutJsonImpl implements OutJson
   
   private void write(char ch)
   {
-    try {
-      Writer os = _os;
+    char []cBuf = _cBuf;
+    int cOffset = _cOffset;
+    
+    if (cBuf.length <= cOffset) {
+      try {
+        Writer os = _os;
       
-      os.write(ch);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+        os.write(cBuf, 0, cOffset);
+        
+        cOffset = 0;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
+    
+    cBuf[cOffset++] = ch;
+    _cOffset = cOffset;
   }
 
   public void flush()
   {
+    int cOffset = _cOffset;
+    
+    if (cOffset > 0) {
+      _cOffset = 0;
+      
+      try {
+        Writer os = _os;
+        
+        os.write(_cBuf, 0, cOffset);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
+  @Override
   public void close()
   {
+    flush();
   }
 
   @Override

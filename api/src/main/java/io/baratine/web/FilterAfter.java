@@ -24,23 +24,25 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
 package io.baratine.web;
 
-import java.lang.annotation.Annotation;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import io.baratine.inject.InjectionPoint;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-public interface RouteBuilder
+@Retention(RUNTIME)
+@Target({METHOD,TYPE})
+@Repeatable(FiltersAfter.class)
+public @interface FilterAfter
 {
-  RouteBuilder before(Class<? extends ServiceWeb> typeBefore);
-  <X extends Annotation> RouteBuilder before(X ann, InjectionPoint<?> ip);
+  Class<? extends ServiceWeb> value();
   
-  OutBuilder to(ServiceWeb service);
-  OutBuilder to(Class<? extends ServiceWeb> service);
-  
-  RouteBuilder after(Class<? extends ServiceWeb> typeAfter);
-  <X extends Annotation> RouteBuilder after(X ann, InjectionPoint<?> ip);
+  String name() default "";
 }

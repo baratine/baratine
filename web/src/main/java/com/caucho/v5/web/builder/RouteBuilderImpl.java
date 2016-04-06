@@ -61,12 +61,28 @@ public class RouteBuilderImpl implements RouteBuilder
   }
 
   @Override
+  public RouteBuilderImpl after(Class<? extends ServiceWeb> filter)
+  {
+    Objects.requireNonNull(filter);
+
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  @Override
+  public <X extends Annotation> 
+  RouteBuilderImpl after(X ann, InjectionPoint<?> ip)
+  {
+    Objects.requireNonNull(ann);
+
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  @Override
   public RouteBuilderImpl before(Class<? extends ServiceWeb> filter)
   {
     Objects.requireNonNull(filter);
 
-    System.out.println("FILTZ: " + filter);
-    return this;
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
@@ -75,8 +91,7 @@ public class RouteBuilderImpl implements RouteBuilder
   {
     Objects.requireNonNull(ann);
 
-    System.out.println("ANNZ: " + ann + " " + ip);
-    return this;
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override

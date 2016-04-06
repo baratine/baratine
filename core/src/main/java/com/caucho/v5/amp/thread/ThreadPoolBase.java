@@ -114,7 +114,8 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
   private final QueueRingFixed<RunnableItem> _taskQueue
     = new QueueRingFixed<>(16 * 1024);
     
-  private final AtomicInteger _threadWakeStartCount = new AtomicInteger();
+  private final AtomicLong _threadWakeHead = new AtomicLong();
+  private final AtomicLong _threadWakeTail = new AtomicLong();
   
   private long _spinTimeoutCount;
   
@@ -728,39 +729,45 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
             + ",task:" + _taskCount.get()
             + ",spin:" + _spinIdleCount.get()
             + ",idle:" + _idleThreadRing.size()
-            + ",start:" + _threadWakeStartCount.get()
+            + ",start:" + (_threadWakeHead.get() - _threadWakeTail.get())
             + "]");
   }
   
-  @Friend(ThreadAmp.class)
-  void onWakeThread()
-  {
-    _threadWakeStartCount.decrementAndGet();
-  }
-
   //
   // task methods
   //
 
   @Friend(ThreadAmp.class)
-  RunnableItem poll()
+  RunnableItem poll(boolean isWake)
   {
-    RunnableItem item = null;
-    
     QueueRingFixed<RunnableItem> taskQueue = _taskQueue;
     
+    RunnableItem item = null;
+    
     if (startSpinIdle()) {
+      if (isWake) {
+        onWakeThread();
+      }
+      
       for (long i = getSpinCount(); i >= 0 && item == null; i--) {
+        wakeThreadsFromSpin();
         item = taskQueue.poll();
       }
       
       finishSpinIdle();
+      
+      // need to poll after the spin idle completes for timing, because the
+      // caller might see this thread as spinning just as it completes
+      if (item == null) {
+        item = taskQueue.poll();
+      }
     }
-  
-    // need to poll after the spin idle completes for timing, because the
-    // caller might see this thread as spinning just as it completes
-    if (item == null) {
+    else {
       item = taskQueue.poll();
+      
+      if (isWake) {
+        onWakeThread();
+      }
     }
     
     if (item != null) {
@@ -769,6 +776,11 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
     }
     
     return item;
+  }
+
+  private void onWakeThread()
+  {
+    _threadWakeTail.incrementAndGet();
   }
 
   private boolean startSpinIdle()
@@ -792,30 +804,60 @@ public class ThreadPoolBase implements Executor, RunnableItemScheduler
     _spinIdleCount.decrementAndGet();
   }
   
+  /**
+   * Wakes an idle thread from a scheduler.
+   */
   private void wakeIdle()
   {
-    int taskCount = Math.max(0, _taskCount.get());
-    
-    if (taskCount <= 0) {
-      return;
-    }
-    
-    int spinIdleCount = _spinIdleCount.get();
-    int threadStartCount = _threadWakeStartCount.get();
-    
-    int spinCount = spinIdleCount + threadStartCount;
-        
-    if (spinCount > 0) {
-      return;
-    }
-    
-    ThreadAmp thread = _idleThreadRing.poll();
+    wakeThreads(1);
+  }
+  
+  /**
+   * Wakes an idle thread from the spin loop. Wake as many threads as
+   * needed to support the waiting tasks.
+   */
+  private void wakeThreadsFromSpin()
+  {
+    // XXX: this is not actually faster
+    // wakeThreads(8);
+  }
 
-    if (thread != null) {
-      _threadWakeStartCount.incrementAndGet();
-      thread.setWakeThread();
-
-      LockSupport.unpark(thread);
+  /**
+   * wake enough threads to process the tasks 
+   */
+  private void wakeThreads(int count)
+  {
+    while (true) {
+      int taskCount = Math.max(0, _taskCount.get());
+    
+      int spinIdleCount = _spinIdleCount.get();
+      long threadWakeHead = _threadWakeHead.get();
+      long threadWakeTail = _threadWakeTail.get();
+    
+      long threadCount = spinIdleCount + threadWakeHead - threadWakeTail;
+      
+      if (taskCount <= threadCount) {
+        return;
+      }
+      
+      if (count <= threadCount) {
+        return;
+      }
+      
+      ThreadAmp thread = _idleThreadRing.poll();
+      
+      if (thread == null) {
+        return;
+      }
+      
+      if (_threadWakeHead.compareAndSet(threadWakeHead, threadWakeHead + 1)) {
+        thread.setWakeThread();
+        LockSupport.unpark(thread);
+      }
+      else {
+        // avoid duplicate wake
+        _idleThreadRing.offer(thread);
+      }
     }
   }
   
