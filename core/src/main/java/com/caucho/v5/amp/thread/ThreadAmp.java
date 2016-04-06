@@ -171,11 +171,13 @@ public final class ThreadAmp extends Thread
     ThreadPoolBase pool = _pool;
     Thread thread = this;
     Outbox outbox = outbox();
+    boolean isWake = false;
 
     setName(_name);
     
     while (! _isClose) {
-      RunnableItem taskItem = pool.poll();
+      RunnableItem taskItem = pool.poll(isWake);
+      isWake = false;
       
       if (taskItem != null) {
         try {
@@ -190,7 +192,7 @@ public final class ThreadAmp extends Thread
             taskItem.getTask().run();
             
             outbox.flushAndExecuteAll();
-          } while ((taskItem = pool.poll()) != null);
+          } while ((taskItem = pool.poll(false)) != null);
         } catch (Throwable e) {
           log.log(Level.WARNING, e.toString(), e);
         } finally {
@@ -210,8 +212,12 @@ public final class ThreadAmp extends Thread
       else if (_launcher.isIdleExpire()) {
         return;
       }
+      else if (park()) {
+        //thread.onWakeThread();
+        isWake = true;
+      }
       else {
-        park();
+        return;
       }
     }
   }
@@ -221,10 +227,10 @@ public final class ThreadAmp extends Thread
     _wakeState = WakeState.THREAD;
   }
   
-  private void park()
+  private boolean park()
   {
     if (_isClose) {
-      return;
+      return false;
     }
     
     _wakeState = WakeState.IDLE;
@@ -238,12 +244,16 @@ public final class ThreadAmp extends Thread
     }
     
     if (_isClose) {
+      return false;
     }
     else if (_wakeState == WakeState.THREAD) {
-      _pool.onWakeThread();
+      //_pool.onWakeThread();
+      return true;
     }
     else {
       log.warning("Illegal State: " + _wakeState + " " + this);
+      System.out.println("Illegal State: " + _wakeState + " " + this);
+      return false;
     }
   }
   

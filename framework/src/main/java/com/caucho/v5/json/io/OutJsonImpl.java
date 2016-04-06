@@ -66,10 +66,12 @@ public class OutJsonImpl implements OutJson
   {
   }
 
+  /*
   public OutJsonImpl(Writer os)
   {
     init(os);
   }
+  */
 
   public OutJsonImpl(WriteStream out)
   {

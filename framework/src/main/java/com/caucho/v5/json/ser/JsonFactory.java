@@ -404,6 +404,11 @@ public class JsonFactory
   //
   // i/o streams
   //
+  
+  public JsonWriter out()
+  {
+    return new JsonWriter(this);
+  }
 
   public JsonWriter out(Writer os)
   {

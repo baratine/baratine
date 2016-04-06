@@ -43,6 +43,7 @@ import io.baratine.web.ViewWeb;
 public class ViewJsonDefault implements ViewWeb<Object>
 {
   private JsonFactory _serializer = new JsonFactory();
+  private JsonWriter _jOut = _serializer.out();
 
   @Override
   public boolean render(RequestWeb req, Object value)
@@ -70,9 +71,15 @@ public class ViewJsonDefault implements ViewWeb<Object>
       //@TODO add tests
       req.header("Access-Control-Allow-Origin", "*");
 
+      JsonWriter jOut = _jOut;
+      jOut.init(writer);
+      jOut.write(value);
+      jOut.close();
+      /*
       try (JsonWriter jOut = _serializer.out(writer)) {
         jOut.write(value);
       }
+      */
 
       if (callback != null) {
         req.write(");");
