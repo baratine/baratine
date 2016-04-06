@@ -57,7 +57,8 @@ public class RouteApply implements RouteBaratine
   private ArrayList<ViewRef<?>> _views;
   
   RouteApply(ServiceWeb service,
-             ArrayList<ServiceWeb> filters,
+             ArrayList<ServiceWeb> filtersBefore,
+             ArrayList<ServiceWeb> filtersAfter,
              ServiceRefAmp serviceRef,
              Predicate<RequestWeb> predicate,
              ArrayList<ViewRef<?>> views)
@@ -75,7 +76,7 @@ public class RouteApply implements RouteBaratine
     
     ArrayList<ServiceWeb> services = new ArrayList<ServiceWeb>();
     
-    for (ServiceWeb filter : filters) {
+    for (ServiceWeb filter : filtersBefore) {
       // XXX: filter might be proxy
       filter = serviceRef.pin(filter).as(ServiceWeb.class);
       
@@ -84,6 +85,13 @@ public class RouteApply implements RouteBaratine
 
     // XXX: service might be proxy(?)
     services.add(_service);
+    
+    for (ServiceWeb filter : filtersAfter) {
+      // XXX: filter might be proxy
+      filter = serviceRef.pin(filter).as(ServiceWeb.class);
+      
+      services.add(filter);
+    }
     
     _services = new ServiceWeb[services.size()];
     services.toArray(_services);

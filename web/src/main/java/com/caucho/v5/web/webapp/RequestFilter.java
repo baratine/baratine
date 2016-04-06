@@ -58,6 +58,7 @@ public class RequestFilter extends RequestWrapper
   @Override
   public void ok()
   {
+    // XXX: calling next handle is correct? 
     try {
       if (_index < _services.length) {
         _services[_index++].handle(this);
@@ -73,6 +74,17 @@ public class RequestFilter extends RequestWrapper
   @Override
   public void ok(Object value)
   {
-    delegate().ok(value);
+    try {
+      delegate().ok(value);
+      
+      if (_index < _services.length) {
+        _services[_index++].handle(this);
+      }
+      else {
+        delegate().ok();
+      }
+    } catch (Throwable e) {
+      _delegate.fail(e);
+    }
   }
 }

@@ -171,7 +171,7 @@ public final class ThreadAmp extends Thread
     ThreadPoolBase pool = _pool;
     Thread thread = this;
     Outbox outbox = outbox();
-    
+
     setName(_name);
     
     while (! _isClose) {
@@ -202,7 +202,7 @@ public final class ThreadAmp extends Thread
           
           _launcher.onChildIdleBegin();
           thread.setContextClassLoader(systemClassLoader);
-          if (thread.getName() != _name) {
+          if (! thread.getName().equals(_name)) {
             setName(_name);
           }
         }

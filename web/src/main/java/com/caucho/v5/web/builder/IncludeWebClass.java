@@ -59,6 +59,7 @@ import io.baratine.vault.Vault;
 import io.baratine.web.Body;
 import io.baratine.web.Cookie;
 import io.baratine.web.Delete;
+import io.baratine.web.FilterAfter;
 import io.baratine.web.FilterBefore;
 import io.baratine.web.Get;
 import io.baratine.web.Header;
@@ -72,11 +73,11 @@ import io.baratine.web.Put;
 import io.baratine.web.Query;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.Route;
+import io.baratine.web.RouteBuilder;
 import io.baratine.web.ServiceWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Trace;
 import io.baratine.web.WebBuilder;
-import io.baratine.web.RouteBuilder;
 import io.baratine.web.WebSocketPath;
 
 class IncludeWebClass implements IncludeWebAmp
@@ -660,6 +661,8 @@ class IncludeWebClass implements IncludeWebAmp
       filterBefore(routeBuilder, method);
       
       routeBuilder.to(buildWebService(builder, beanFactory, method));
+      
+      filterAfter(routeBuilder, method);
 
       log.config("@" + httpMethod + " " + path + " to " + method.getDeclaringClass().getSimpleName() + "." + method.getName());
     }
@@ -704,6 +707,9 @@ class IncludeWebClass implements IncludeWebAmp
       return path;
     }
     
+    /**
+     * before
+     */
     protected void filterBefore(RouteBuilder builder, Method method)
     {
       Class<?> type = method.getDeclaringClass();
@@ -724,7 +730,10 @@ class IncludeWebClass implements IncludeWebAmp
         filterBefore(builder, method, ann);
       }
     }
-  
+    
+    /**
+     * before
+     */
     private void filterBefore(RouteBuilder builder,
                               Method method,
                               Annotation ann)
@@ -739,6 +748,45 @@ class IncludeWebClass implements IncludeWebAmp
         }
         else {
           builder.before(typeBefore);
+        }
+      }
+    }
+  
+    protected void filterAfter(RouteBuilder builder, Method method)
+    {
+      Class<?> type = method.getDeclaringClass();
+      
+      for (FilterAfter after : type.getAnnotationsByType(FilterAfter.class)) {
+        builder.after(after.value());
+      }
+    
+      for (Annotation ann : type.getAnnotations()) {
+        filterAfter(builder, method, ann);
+      }
+    
+      for (FilterAfter after : method.getAnnotationsByType(FilterAfter.class)) {
+        builder.after(after.value());
+      }
+  
+      for (Annotation ann : method.getAnnotations()) {
+        filterAfter(builder, method, ann);
+      }
+    }
+
+    private void filterAfter(RouteBuilder builder,
+                             Method method,
+                             Annotation ann)
+    {
+      Class<?> annType = ann.annotationType();
+      
+      for (FilterAfter after: annType.getAnnotationsByType(FilterAfter.class)) {
+        Class<? extends ServiceWeb> typeAfter = after.value();
+
+        if (ServiceWeb.class.equals(typeAfter)) {
+          builder.after(ann, InjectionPoint.of(method));
+        }
+        else {
+          builder.after(typeAfter);
         }
       }
     }
