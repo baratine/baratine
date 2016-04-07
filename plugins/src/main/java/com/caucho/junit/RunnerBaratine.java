@@ -283,8 +283,17 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
                              L.l("{0} must declare @Service annotation",
                                  _serviceClass));
 
-      Api api;
+      if (serviceClass.isInterface()) {
+        _api = serviceClass;
+      }
+      else {
+        _api = getApi(serviceClass);
+      }
+    }
 
+    private Class getApi(Class serviceClass)
+    {
+      Api api;
       Class t = serviceClass;
 
       do {
@@ -292,8 +301,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       } while (api == null
                && (t = serviceClass.getSuperclass()) != Object.class);
 
-      if (api != null)
-        _api = api.value();
+      return api == null ? null : api.value();
     }
 
     public String getAddress()
