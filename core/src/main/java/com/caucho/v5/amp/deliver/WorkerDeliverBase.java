@@ -111,7 +111,7 @@ public abstract class WorkerDeliverBase<M> // extends MessageOutbox<M>>
   
   private boolean isDebug()
   {
-    return log.isLoggable(Level.FINER) || ! CurrentTime.isTest();
+    return log.isLoggable(Level.FINER) && ! CurrentTime.isTest();
   }
   
   private static Launcher createLauncher(Executor executor,

@@ -915,7 +915,6 @@ public class WebAppBuilder
     WebSocketPath(String path)
     {
       _path = path;
-      Thread.dumpStack();
     }
 
     @Override

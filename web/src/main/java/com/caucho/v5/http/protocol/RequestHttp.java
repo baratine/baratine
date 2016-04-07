@@ -656,10 +656,10 @@ public class RequestHttp extends RequestHttpBase
 
     SocketBar socket = tcpConn.socket();
 
-    String cipherSuite = socket.getCipherSuite();
+    String cipherSuite = socket.cipherSuite();
     request.setCipherSuite(cipherSuite);
 
-    int keySize = socket.getCipherBits();
+    int keySize = socket.cipherBits();
     if (keySize != 0) {
       request.setCipherKeySize(keySize);
     }
@@ -2453,7 +2453,7 @@ public class RequestHttp extends RequestHttpBase
 
   private void writeCookies(WriteBuffer os) throws IOException
   {
-    ArrayList<WebCookie> cookiesOut = cookiesOut();
+    ArrayList<CookieWeb> cookiesOut = cookiesOut();
 
     if (cookiesOut == null) {
       return;
@@ -2471,6 +2471,24 @@ public class RequestHttp extends RequestHttpBase
     os.print(cookie.name());
     os.print("=");
     os.print(cookie.value());
+    
+    if (cookie.domain() != null) {
+      os.print("; Domain=");
+      os.print(cookie.domain());
+    }
+    
+    if (cookie.path() != null) {
+      os.print("; Path=");
+      os.print(cookie.path());
+    }
+    
+    if (cookie.httpOnly()) {
+      os.print("; HttpOnly");
+    }
+    
+    if (cookie.secure()) {
+      os.print("; Secure");
+    }
   }
   
   @Override

@@ -35,7 +35,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +64,7 @@ import com.caucho.v5.util.CharSegment;
 import com.caucho.v5.util.ClockCurrent;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.LruCache;
+import com.caucho.v5.web.CookieWeb;
 
 /**
  * Abstract request implementing methods common to the different
@@ -127,7 +127,7 @@ public abstract class RequestHttpBase implements OutHttp
   public static final boolean []TOKEN;
   private static final boolean []VALUE;
 
-  private static final WebCookie []NULL_COOKIES = new WebCookie[0];
+  private static final CookieWeb []NULL_COOKIES = new CookieWeb[0];
   
   private static final CountSensor _statusXxxSensor
   = MeterService.createCountMeter("Caucho|Http|xxx");
@@ -273,7 +273,7 @@ public abstract class RequestHttpBase implements OutHttp
   private long _contentLengthOut;
   private boolean _isClosed;
 
-  private ArrayList<WebCookie> _cookiesOut;
+  private ArrayList<CookieWeb> _cookiesOut;
 
   private boolean _isKeepalive;
 
@@ -721,7 +721,7 @@ public abstract class RequestHttpBase implements OutHttp
 
   public String getRemoteAddr()
   {
-    return _conn.getRemoteHost();
+    return _conn.ip();
   }
 
   public int printRemoteAddr(byte []buffer, int offset)
@@ -734,7 +734,7 @@ public abstract class RequestHttpBase implements OutHttp
 
   public String remoteHost()
   {
-    return _conn.getRemoteHost();
+    return _conn.ip();
   }
 
   /**
@@ -1148,7 +1148,7 @@ public abstract class RequestHttpBase implements OutHttp
   /**
    * Returns the cookies from the browser
    */
-  public WebCookie []getCookies()
+  public CookieWeb []getCookies()
   {
     return fillCookies();
 
@@ -1173,12 +1173,12 @@ public abstract class RequestHttpBase implements OutHttp
   /**
    * Parses cookie information from the cookie headers.
    */
-  WebCookie []fillCookies()
+  CookieWeb []fillCookies()
   {
     int size = _cookies.size();
 
     if (size > 0) {
-      WebCookie []cookiesIn = new WebCookie[size];
+      CookieWeb []cookiesIn = new WebCookie[size];
 
       for (int i = size - 1; i >= 0; i--) {
         cookiesIn[i] = _cookies.get(i);
@@ -1370,6 +1370,16 @@ public abstract class RequestHttpBase implements OutHttp
   {
     return _conn.isSecure();
   }
+
+  /**
+   * Returns key-size
+   */
+  /*
+  public int secureKeySize()
+  {
+    return _conn.keySize();
+  }
+  */
 
   //
   // internal methods
@@ -2218,16 +2228,16 @@ public abstract class RequestHttpBase implements OutHttp
     return _footerKeys.size() > 0;
   }
 
-  public void cookie(String key, String value)
+  public void cookie(CookieWeb cookie)
   {
     if (_cookiesOut == null) {
-      _cookiesOut = new ArrayList<WebCookie>();
+      _cookiesOut = new ArrayList<>();
     }
     
-    _cookiesOut.add(new WebCookie(key, value));
+    _cookiesOut.add(cookie);
   }
   
-  protected ArrayList<WebCookie> cookiesOut()
+  protected ArrayList<CookieWeb> cookiesOut()
   {
     return _cookiesOut;
   }

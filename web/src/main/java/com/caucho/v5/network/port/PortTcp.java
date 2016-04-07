@@ -61,7 +61,7 @@ import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.SocketSystem;
 import com.caucho.v5.jni.OpenSSLFactory;
 import com.caucho.v5.lifecycle.Lifecycle;
-import com.caucho.v5.network.ssl.JsseSSLFactory;
+import com.caucho.v5.network.ssl.SSLFactoryJsse;
 import com.caucho.v5.util.Alarm;
 import com.caucho.v5.util.AlarmListener;
 import com.caucho.v5.util.CurrentTime;
@@ -383,19 +383,23 @@ public class PortTcp implements PortSocket
   /**
    * Sets the SSL factory
    */
+  /*
   public JsseSSLFactory createJsse()
   {
     // should probably check that openssl exists
-    return new JsseSSLFactory();
+    return new JsseSSLFactory(_env, portName());
   }
+  */
 
   /**
    * Sets the SSL factory
    */
+  /*
   public void setJsseSsl(JsseSSLFactory factory)
   {
     _sslFactory = factory;
   }
+  */
 
   /**
    * Gets the SSL factory.

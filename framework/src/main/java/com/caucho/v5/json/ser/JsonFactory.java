@@ -146,7 +146,6 @@ public class JsonFactory
   public <T> void addSerializer(Class<T> cl,
                                 SerializerJson<T> ser)
   {
-    System.out.println("ADDSER: " + cl + " " + ser);
     //_serMap.put(cl, ser);
   }
 

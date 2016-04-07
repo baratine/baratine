@@ -45,7 +45,6 @@ import com.caucho.v5.amp.vault.IdAssetGenerator;
 import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.kraken.info.TableInfo;
-import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 
@@ -659,7 +658,7 @@ class EntityInfo<ID,T>
     {
       super(entity);
       
-      _idGen = new IdAssetGenerator(entity.node(), entity.nodeCount());
+      _idGen = new IdAssetGenerator(entity.node());
     }
     
     @Override
@@ -681,7 +680,7 @@ class EntityInfo<ID,T>
     {
       super(entity);
       
-      _idGen = new IdAssetGenerator(entity.node(), entity.nodeCount());
+      _idGen = new IdAssetGenerator(entity.node());
     }
     
     @Override

@@ -43,14 +43,11 @@ public interface OutWeb<T>
   OutWeb<T> write(byte []buffer, int offset, int length);
   
   OutWeb<T> write(String value);
-  OutWeb<T> write(String value, String enc);
   OutWeb<T> write(char []buffer, int offset, int length);
-  OutWeb<T> write(char []buffer, int offset, int length, String enc);
   
   OutWeb<T> flush();
   
   Writer writer();
-  Writer writer(String enc);
   
   OutputStream output();
   

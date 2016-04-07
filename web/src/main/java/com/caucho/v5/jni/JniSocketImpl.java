@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -31,7 +32,8 @@ import com.caucho.v5.util.ModulePrivate;
  * JNI socket.
  */
 @ModulePrivate
-public final class JniSocketImpl extends SocketBar {
+public final class JniSocketImpl extends SocketBar
+{
   private static final L10N L = new L10N(JniSocketImpl.class);
 
   private static final Logger log
@@ -75,6 +77,8 @@ public final class JniSocketImpl extends SocketBar {
   private long _requestExpireTime;
 
   private final AtomicBoolean _isClosed = new AtomicBoolean();
+
+  private InetSocketAddress _ipLocal;
 
   public JniSocketImpl()
   {
@@ -381,6 +385,24 @@ public final class JniSocketImpl extends SocketBar {
   }
 
   /**
+   * Returns the remote client's inet address.
+   */
+  @Override
+  public InetSocketAddress ipLocal()
+  {
+    if (_ipLocal == null) {
+      try {
+        _ipLocal = InetSocketAddress.createUnresolved(getLocalHost(),
+                                                      portLocal());
+      } catch (Exception e) {
+        log.log(Level.FINE, e.toString(), e);
+      }
+    }
+
+    return _ipLocal;
+  }
+
+  /**
    * Returns the local server's inet address.
    */
   public int getLocalAddress(byte []buffer, int offset, int length)
@@ -424,7 +446,7 @@ public final class JniSocketImpl extends SocketBar {
    * Returns the cipher for an ssl connection.
    */
   @Override
-  public String getCipherSuite()
+  public String cipherSuite()
   {
     synchronized (this) {
       return getCipher(_socketFd);
@@ -435,7 +457,7 @@ public final class JniSocketImpl extends SocketBar {
    * Returns the number of bits in the cipher for an ssl connection.
    */
   @Override
-  public int getCipherBits()
+  public int cipherBits()
   {
     return getCipherBits(_socketFd);
   }

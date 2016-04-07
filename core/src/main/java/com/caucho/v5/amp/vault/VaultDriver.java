@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
@@ -108,33 +109,6 @@ public interface VaultDriver<ID,T>
                                        String methodName,
                                        Class<?> []paramTypes)
   {
-    if (type == null) {
-      return null;
-    }
-    
-    for (Method method : type.getMethods()) {
-      if (method.getName().equals(methodName)
-          && Arrays.equals(MethodAmp.paramTypes(method),
-                           paramTypes)) {
-        return newMethod(method);
-      }
-    }
-    
-    MethodVault<V> methodVault
-      = newMethod(type.getSuperclass(), methodName, paramTypes);
-    
-    if (methodVault != null) {
-      return methodVault;
-    }
-
-    for (Class<?> typeIface : type.getInterfaces()) {
-      methodVault = newMethod(typeIface, methodName, paramTypes);
-      
-      if (methodVault != null) {
-        return methodVault;
-      }
-    }
-
     return null;
   }
 

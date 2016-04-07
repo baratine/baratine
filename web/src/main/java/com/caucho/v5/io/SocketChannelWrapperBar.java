@@ -39,6 +39,7 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -164,7 +165,9 @@ public class SocketChannelWrapperBar extends SocketBar
       Objects.requireNonNull(channel);
     
       _sslSocket = sslFactory.ssl(channel);
+      _sslSocket.startHandshake();
     } catch (IOException e) {
+      e.printStackTrace();
       throw new RuntimeException(e);
     }
   }
@@ -182,6 +185,26 @@ public class SocketChannelWrapperBar extends SocketBar
         InetSocketAddress addr = (InetSocketAddress) s.getLocalAddress();
         
         return addr.getAddress();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    else {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the server inet address that accepted the request.
+   */
+  @Override
+  public InetSocketAddress ipLocal()
+  {
+    SocketChannel s = _channel;
+    
+    if (s != null) {
+      try {
+        return (InetSocketAddress) s.getLocalAddress();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -263,16 +286,17 @@ public class SocketChannelWrapperBar extends SocketBar
   {
     return _sslSocket != null;
   }
+  
   /**
    * Returns the secure cipher algorithm.
    */
   @Override
-  public String getCipherSuite()
+  public String cipherSuite()
   {
     SSLSocket sslSocket = _sslSocket;
     
     if (sslSocket == null) {
-      return super.getCipherSuite();
+      return super.cipherSuite();
     }
     
     SSLSession sslSession = sslSocket.getSession();
@@ -284,42 +308,27 @@ public class SocketChannelWrapperBar extends SocketBar
       return null;
     }
   }
-
+  
   /**
-   * Returns the bits in the socket.
+   * Returns the secure cipher algorithm.
    */
   @Override
-  public int getCipherBits()
+  public String secureProtocol()
   {
-    /*
-    if (! (_s instanceof SSLSocket))
-      return super.getCipherBits();
+    SSLSocket sslSocket = _sslSocket;
     
-    SSLSocket sslSocket = (SSLSocket) _s;
+    if (sslSocket == null) {
+      return super.secureProtocol();
+    }
     
     SSLSession sslSession = sslSocket.getSession();
     
-    if (sslSession != null)
-      return _sslKeySizes.get(sslSession.getCipherSuite());
-    else
-      return 0;
-      */
-    return 0;
-  }
-  
-  /**
-   * Returns the client certificate.
-   */
-  @Override
-  public X509Certificate getClientCertificate()
-    throws CertificateException
-  {
-    X509Certificate []certs = getClientCertificates();
-
-    if (certs == null || certs.length == 0)
+    if (sslSession != null) {
+      return sslSession.getProtocol();
+    }
+    else {
       return null;
-    else
-      return certs[0];
+    }
   }
 
   /**

@@ -75,9 +75,8 @@ public class VaultIdGenerator
     IdGeneratorAssetString()
     {
       int nodeIndex = 0;
-      int nodeCount = 1;
       
-      _idGen = new IdAssetGenerator(nodeIndex, nodeCount);
+      _idGen = new IdAssetGenerator(nodeIndex);
     }
 
     @Override
@@ -96,9 +95,8 @@ public class VaultIdGenerator
     IdGeneratorLong()
     {
       int nodeIndex = 0;
-      int nodeCount = 1;
       
-      _idGen = new IdAssetGenerator(nodeIndex, nodeCount);
+      _idGen = new IdAssetGenerator(nodeIndex);
     }
 
     @Override

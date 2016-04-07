@@ -66,6 +66,14 @@ public final class Utf8Util
     }
   }
   
+  public static void write(OutputStream os, char []buffer, int offset, int len)
+    throws IOException
+  {
+    for (int i = 0; i < len; i++) {
+      write(os, buffer[offset + i]);
+    }
+  }
+  
   public static int write(byte []buffer, int offset, char ch)
   {
     if (ch < 0x80) {

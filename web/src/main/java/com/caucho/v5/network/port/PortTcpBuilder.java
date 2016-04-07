@@ -29,13 +29,15 @@
 
 package com.caucho.v5.network.port;
 
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.ServerSocketBar;
-import com.caucho.v5.network.ssl.JsseSSLFactory;
+import com.caucho.v5.io.Vfs;
+import com.caucho.v5.network.ssl.SSLFactoryJsse;
 
 import io.baratine.config.Config;
 
@@ -140,15 +142,37 @@ public class PortTcpBuilder
 
   public SSLFactory sslFactory()
   {
-    boolean isSsl = _env.get(portName() + ".ssl", boolean.class, false);
+    String keyStore = _env.get(portName() + ".ssl.key-store");
+    
+    boolean isSsl = _env.get(portName() + ".ssl.enabled", boolean.class, false);
     
     if (! isSsl) {
       return null;
     }
     
-    JsseSSLFactory sslFactory = new JsseSSLFactory();
     
-    sslFactory.setSelfSignedCertificateName("baratine");
+    if (keyStore != null) {
+      isSsl = true;
+    }
+    
+    SSLFactoryJsse sslFactory = new SSLFactoryJsse(_env, portName());
+    
+    /*
+    if (keyStore != null) {
+      Path path = Vfs.path(keyStore);
+      
+      sslFactory.setKeyStoreFile(path);
+      
+      String password = _env.get(portName() + ".ssl.password");
+      
+      if (password != null) {
+        sslFactory.setPassword(password);
+      }
+    }
+    else {
+      sslFactory.setSelfSignedCertificateName("baratine");
+    }
+    */
     
     sslFactory.init();
 

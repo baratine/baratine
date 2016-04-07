@@ -31,6 +31,7 @@ package com.caucho.v5.io;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.channels.SelectableChannel;
@@ -51,6 +52,11 @@ abstract public class SocketBar implements Closeable
    * Returns the server inet address that accepted the request.
    */
   abstract public InetAddress addressLocal();
+  
+  /**
+   * Returns the server inet address that accepted the request.
+   */
+  abstract public InetSocketAddress ipLocal();
   
   /**
    * Returns the server inet address that accepted the request.
@@ -174,7 +180,15 @@ abstract public class SocketBar implements Closeable
   /**
    * Returns the secure cipher algorithm.
    */
-  public String getCipherSuite()
+  public String cipherSuite()
+  {
+    return null;
+  }
+
+  /**
+   * Returns the secure cipher algorithm.
+   */
+  public String secureProtocol()
   {
     return null;
   }
@@ -182,7 +196,7 @@ abstract public class SocketBar implements Closeable
   /**
    * Returns the bits in the socket.
    */
-  public int getCipherBits()
+  public int cipherBits()
   {
     return 0;
   }

@@ -33,9 +33,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -80,6 +83,12 @@ public class SocketSystemTcp extends SocketSystem
   {
     return new SocketWrapperBar();
   }
+  
+  @Override
+  public SocketBarBuilder connect()
+  {
+    return new SocketBarBuilderTcp();
+  }
 
   @Override
   public SocketBar connect(SocketBar socket,
@@ -88,6 +97,8 @@ public class SocketSystemTcp extends SocketSystem
                          boolean isSSL)
     throws IOException
   {
+    throw new UnsupportedOperationException();
+    /*
     Socket s;
     
     s = new Socket();
@@ -106,9 +117,10 @@ public class SocketSystemTcp extends SocketSystem
     }
 
     return new SocketWrapperBar(s);
+    */
   }
   
-  private Socket connectSSL(Socket s, InetSocketAddress addr)
+  private Socket connectSSL(Socket s, SocketBarBuilderTcp builder)
     throws IOException
   {
     try {
@@ -118,9 +130,23 @@ public class SocketSystemTcp extends SocketSystem
 
       context.init(null, new TrustManager[] { tm }, null);
       SSLSocketFactory factory = context.getSocketFactory();
-
-      s = factory.createSocket(s, addr.getAddress().getHostAddress(), addr.getPort(), true);
       
+      InetSocketAddress addr = builder.inetAddress();
+      
+      s = factory.createSocket(s, 
+                               addr.getAddress().getHostAddress(), 
+                               addr.getPort(), 
+                               true);
+
+      SSLSocket sslSocket = (SSLSocket) s;
+      sslSocket.setUseClientMode(true);
+      
+      if (builder.sslProtocols() != null) {
+        sslSocket.setEnabledProtocols(builder.sslProtocols());
+      }
+
+      sslSocket.startHandshake();
+
       return s;
     } catch (IOException | RuntimeException e) {
       e.printStackTrace();
@@ -148,6 +174,110 @@ public class SocketSystemTcp extends SocketSystem
     @Override
     public void checkServerTrusted(X509Certificate[] cert, String foo)
     {
+    }
+  }
+
+  public class SocketBarBuilderTcp implements SocketBarBuilder
+  {
+    private SocketBar _socket;
+    private InetSocketAddress _address;
+    private long _timeoutConnect;
+    private boolean _isSsl;
+    private int _port;
+    private String []_sslProtocols;
+
+    @Override
+    public SocketBarBuilder socket(SocketBar socket)
+    {
+      Objects.requireNonNull(socket);
+      
+      _socket = socket;
+      
+      return this;
+    }
+
+    @Override
+    public SocketBarBuilder address(String address)
+    {
+      throw new UnsupportedOperationException(address);
+    }
+
+    @Override
+    public SocketBarBuilder address(InetSocketAddress address)
+    {
+      Objects.requireNonNull(address);
+      
+      _address = address;
+
+      return this;
+    }
+    
+    InetSocketAddress inetAddress()
+    {
+      return _address;
+    }
+
+    @Override
+    public SocketBarBuilder port(int port)
+    {
+      _port = port;
+
+      return this;
+    }
+
+    @Override
+    public SocketBarBuilder timeoutConnect(long timeout)
+    {
+      _timeoutConnect = timeout;
+      
+      return this;
+    }
+
+    @Override
+    public SocketBarBuilder ssl(boolean isSsl)
+    {
+      _isSsl = isSsl;
+
+      return this;
+    }
+
+    @Override
+    public SocketBarBuilder sslProtocols(String ...protocols)
+    {
+      Objects.requireNonNull(protocols);
+      
+      _sslProtocols = protocols;
+
+      return this;
+    }
+
+    public String []sslProtocols()
+    {
+      return _sslProtocols;
+    }
+    
+    @Override
+    public SocketBar get()
+      throws IOException
+    {
+      Socket s;
+    
+      s = new Socket();
+
+      if (_timeoutConnect > 0)
+        s.connect(_address, (int) _timeoutConnect);
+      else
+        s.connect(_address);
+
+      if (_isSsl) {
+        s = connectSSL(s, this);
+      }
+    
+      if (! s.isConnected()) {
+        throw new IOException("connection timeout");
+      }
+
+      return new SocketWrapperBar(s);
     }
   }
 }

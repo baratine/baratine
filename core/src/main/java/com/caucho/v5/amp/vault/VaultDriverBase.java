@@ -32,6 +32,7 @@ package com.caucho.v5.amp.vault;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -152,6 +153,58 @@ public class VaultDriverBase<ID,T>
     }
   }
   
+  @Override
+  public <V> MethodVault<V> newMethod(Class<?> type, 
+                                      String methodName,
+                                      Class<?> []paramTypes)
+  {
+    Objects.requireNonNull(type);
+    
+    MethodVault<V> method = newMethodRec(type, methodName, paramTypes);
+
+    if (method != null) {
+      return method;
+    }
+    throw new IllegalStateException(L.l("Unknown method {0}.{1} {2}",
+                                        type.getSimpleName(),
+                                        methodName,
+                                        Arrays.asList(paramTypes)));
+  }
+  
+  protected <V> MethodVault<V> newMethodRec(Class<?> type,
+                                            String methodName,
+                                            Class<?> []paramTypes)
+  {
+    if (type == null) {
+      return null;
+    }
+
+    for (Method method : type.getDeclaredMethods()) {
+      if (method.getName().equals(methodName)
+          && Arrays.equals(MethodAmp.paramTypes(method),
+                           paramTypes)) {
+        return newMethod(method);
+      }
+    }               
+
+    MethodVault<V> methodVault
+      = newMethodRec(type.getSuperclass(), methodName, paramTypes);
+
+    if (methodVault != null) {
+      return methodVault;
+    }
+
+    for (Class<?> typeIface : type.getInterfaces()) {
+      methodVault = newMethodRec(typeIface, methodName, paramTypes);
+
+      if (methodVault != null) {
+        return methodVault;
+      }
+    }       
+
+    return null;
+  }
+
   private <S> MethodVault<S> newCreateMethod(Method targetMethod)
   {
     Supplier<String> idGen = idSupplier();

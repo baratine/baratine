@@ -31,6 +31,7 @@ package com.caucho.v5.network.port;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -77,6 +78,11 @@ public interface ConnectionTcpApi
   InetAddress getLocalAddress();
   
   /**
+   * Returns the local address of the connection
+   */
+  InetSocketAddress ipLocal();
+  
+  /**
    * Returns the local host of the connection
    */
   String getLocalHost();
@@ -94,7 +100,7 @@ public interface ConnectionTcpApi
   /**
    * Returns the remote client's inet address.
    */
-  String getRemoteHost();
+  String ip();
 
   /**
    * Returns the remote address of the connection
@@ -111,20 +117,25 @@ public interface ConnectionTcpApi
   //
   
   /**
+   * Returns the security protocol
+   */
+  String secureProtocol();
+  
+  /**
    * Returns the cipher suite
    */
-  String getCipherSuite();
+  String cipherSuite();
   
   /***
    * Returns the key size.
    */
-  int getKeySize();
+  //int keySize();
   
   /**
    * Returns any client certificates.
    * @throws CertificateException 
    */
-  X509Certificate []getClientCertificates()
+  X509Certificate []clientCertificates()
     throws CertificateException;
   
   //

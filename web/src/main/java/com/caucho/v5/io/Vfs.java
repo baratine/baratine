@@ -29,6 +29,7 @@
 
 package com.caucho.v5.io;
 
+import java.io.File;
 import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -76,6 +77,8 @@ public final class Vfs
     if (p > 0 && p < q) {
       scheme = root.substring(0, p);
       tail = root.substring(p + 1);
+      
+      tail = toNativePath(tail);
 
       if (scheme.equals("classpath")) {
         FileSystem fileSystem = _fileSystemClasspath;
@@ -97,6 +100,20 @@ public final class Vfs
     }
     else {
       return Paths.get(root);
+    }
+  }
+  
+  private static String toNativePath(String path)
+  {
+    if (File.pathSeparatorChar == '/') {
+      return path;
+    }
+    
+    if (path.indexOf(':') == 2 && path.startsWith("/")) {
+      return path.substring(1);
+    }
+    else {
+      return path;
     }
   }
 

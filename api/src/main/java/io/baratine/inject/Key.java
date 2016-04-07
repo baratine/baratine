@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -308,7 +309,12 @@ public class Key<T>
     }
     
     for (int i = 0; i < paramA.length; i++) {
-      if (! rawClass(paramA[i]).equals(rawClass(paramB[i]))) {
+      Class<?> classA = rawClass(paramA[i]);
+      Class<?> classB = rawClass(paramB[i]);
+      
+      if (! classA.equals(classB)
+          && ! classA.equals(Object.class)
+          && ! classB.equals(Object.class)) {
         return false;
       }
     }
@@ -326,8 +332,11 @@ public class Key<T>
       
       return (Class) pType.getRawType();
     }
+    else if (type instanceof WildcardType) {
+      return Object.class;
+    }
     else {
-      throw new UnsupportedOperationException(String.valueOf(type));
+      throw new UnsupportedOperationException(String.valueOf(type) + " " + type.getClass().getName());
     }
   }
   

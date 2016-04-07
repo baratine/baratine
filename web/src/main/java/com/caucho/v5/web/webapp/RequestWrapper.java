@@ -122,21 +122,9 @@ public class RequestWrapper implements RequestWeb
   }
 
   @Override
-  public OutWeb<Buffer> write(String value, String enc)
-  {
-    return delegate().write(value, enc);
-  }
-
-  @Override
   public OutWeb<Buffer> write(char[] buffer, int offset, int length)
   {
     return delegate().write(buffer, offset, length);
-  }
-
-  @Override
-  public OutWeb<Buffer> write(char[] buffer, int offset, int length, String enc)
-  {
-    return delegate().write(buffer, offset, length, enc);
   }
 
   @Override
@@ -149,12 +137,6 @@ public class RequestWrapper implements RequestWeb
   public Writer writer()
   {
     return delegate().writer();
-  }
-
-  @Override
-  public Writer writer(String enc)
-  {
-    return delegate().writer(enc);
   }
 
   @Override
@@ -278,15 +260,9 @@ public class RequestWrapper implements RequestWeb
   }
 
   @Override
-  public boolean secure()
+  public SecureWeb secure()
   {
     return delegate().secure();
-  }
-
-  @Override
-  public X509Certificate[] certs()
-  {
-    return delegate().certs();
   }
 
   @Override
@@ -380,7 +356,7 @@ public class RequestWrapper implements RequestWeb
   }
 
   @Override
-  public RequestWeb cookie(String key, String value)
+  public CookieBuilder cookie(String key, String value)
   {
     return delegate().cookie(key, value);
   }

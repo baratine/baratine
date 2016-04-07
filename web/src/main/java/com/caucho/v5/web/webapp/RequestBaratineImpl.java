@@ -32,13 +32,11 @@ package com.caucho.v5.web.webapp;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.InetSocketAddress;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,15 +44,14 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.OutResponseBase;
 import com.caucho.v5.http.protocol.RequestFacadeBase;
 import com.caucho.v5.http.protocol.RequestHttpBase;
 import com.caucho.v5.http.protocol.RequestHttpState;
 import com.caucho.v5.http.protocol.RequestUpgrade;
-import com.caucho.v5.http.protocol.WebCookie;
 import com.caucho.v5.http.protocol2.OutHeader;
 import com.caucho.v5.http.websocket.WebSocketBaratineImpl;
 import com.caucho.v5.inject.InjectorAmp;
@@ -63,6 +60,7 @@ import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.TempInputStream;
 import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.network.port.ConnectionProtocol;
+import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.CurrentTime;
@@ -79,7 +77,6 @@ import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.BodyReader;
-import io.baratine.web.Form;
 import io.baratine.web.HttpStatus;
 import io.baratine.web.MultiMap;
 import io.baratine.web.OutWeb;
@@ -129,6 +126,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
   private RequestBaratineImpl _next;
   private RequestBaratineImpl _prev;
+  private String _encoding = "utf-8";
 
   public RequestBaratineImpl(ConnectionHttp connHttp)
   {
@@ -217,7 +215,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public String cookie(String key)
   {
-    for (WebCookie cookie : requestHttp().getCookies()) {
+    for (CookieWeb cookie : requestHttp().getCookies()) {
       if (cookie.name().equals(key)) {
         return cookie.value();
       }
@@ -274,8 +272,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
       cookie("JSESSIONID", sessionId);
     }
-    
-    System.out.println("SELP: " + services.service("session:///" + name));
 
     return services.service("session:///" + name + "/" + sessionId);
   }
@@ -552,27 +548,33 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public InetSocketAddress ipLocal()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return connHttp().connTcp().ipLocal();
   }
 
   @Override
   public String ip()
   {
-    return connHttp().connTcp().getRemoteHost();
+    return connHttp().connTcp().ip();
   }
 
   @Override
-  public boolean secure()
+  public SecureWeb secure()
   {
-    return false;
+    if (connHttp().connTcp().isSecure()) {
+      return new SecureWebImpl(connHttp().connTcp());
+    }
+    else {
+      return null;
+    }
   }
 
+  /*
   @Override
   public X509Certificate[] certs()
   {
     return null;
   }
+  */
 
   @Override
   public <X> X body(Class<X> type)
@@ -773,8 +775,34 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     try {
       OutResponseBase out = requestHttp().getOut();
+      String enc = encoding();
+      
+      if ("utf-8".equals(enc)) {
+        Utf8Util.write(out, value);
+      }
+      else {
+        out.write(value.getBytes(enc));
+      }
+    } catch (Exception e) {
+      log.log(Level.WARNING, e.toString(), e);
+    }
 
-      Utf8Util.write(out, value);
+    return this;
+  }
+
+  @Override
+  public OutWeb<Buffer> write(char[] buffer, int offset, int length)
+  {
+    try {
+      OutResponseBase out = requestHttp().getOut();
+      String enc = encoding();
+      
+      if ("utf-8".equals(enc)) {
+        Utf8Util.write(out, buffer, offset, length);
+      }
+      else {
+        out.write(new String(buffer, offset, length).getBytes(enc));
+      }
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
     }
@@ -797,44 +825,16 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
     return this;
   }
-
-  @Override
-  public OutWeb<Buffer> write(String value, String enc)
+  
+  private String encoding()
   {
-    try {
-      requestHttp().getOut().write(value.getBytes(enc));
-
-      return this;
-    } catch (IOException e) {
-      throw new IllegalStateException(getClass().getName());
-    }
-  }
-
-  @Override
-  public OutWeb<Buffer> write(char[] buffer, int offset, int length)
-  {
-    // XXX: hack
-    write(new String(buffer, offset, length));
-
-    return this;
-  }
-
-  @Override
-  public OutWeb<Buffer> write(char[] buffer, int offset, int length, String enc)
-  {
-    return this;
+    return _encoding ;
   }
 
   @Override
   public Writer writer()
   {
     return new WriterBaratine(this);
-  }
-
-  @Override
-  public Writer writer(String enc)
-  {
-    return new WriterBaratineEnc(this, enc);
   }
 
   @Override
@@ -1074,6 +1074,14 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     os.print(cookie.name());
     os.print("=");
     os.print(cookie.value());
+    
+    if (cookie.httpOnly()) {
+      os.print("; HttpOnly");
+    }
+    
+    if (cookie.secure()) {
+      os.print("; Secure");
+    }
   }
 
   @Override
@@ -1082,9 +1090,19 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public RequestWeb cookie(String key, String value)
+  public CookieBuilder cookie(String key, String value)
   {
-    requestHttp().cookie(key, value);
+    CookieBuilderImpl cookieBuilder = new CookieBuilderImpl(key, value);
+    
+    requestHttp().cookie(cookieBuilder);
+    
+    if (secure() != null) {
+      cookieBuilder.secure(true);
+    }
+
+    cookieBuilder.httpOnly(true);
+    cookieBuilder.path("/");
+    
     /*
     if (_cookieList == null) {
       _cookieList = new ArrayList<>();
@@ -1093,7 +1111,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     _cookieList.add(new WebCookie(key, value));
     */
 
-    return this;
+    return cookieBuilder;
   }
 
   //
@@ -1410,6 +1428,35 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return getClass().getSimpleName() + "[null]";
     }
   }
+  
+  private static class SecureWebImpl implements SecureWeb
+  {
+    private ConnectionTcp _connTcp;
+    
+    SecureWebImpl(ConnectionTcp connTcp)
+    {
+      _connTcp = connTcp;
+    }
+
+    @Override
+    public String protocol()
+    {
+      return _connTcp.secureProtocol();
+    }
+
+    @Override
+    public String cipherSuite()
+    {
+      return _connTcp.cipherSuite();
+    }
+    
+    @Override
+    public String toString()
+    {
+      return (getClass().getSimpleName()
+             + "[" + protocol() + "," + cipherSuite() + "]");
+    }
+  }
 
   private static class WriterBaratine extends Writer
   {
@@ -1436,34 +1483,93 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     {
     }
   }
-
-  private static class WriterBaratineEnc extends Writer
+  
+  private class CookieBuilderImpl implements CookieBuilder, CookieWeb
   {
-    private RequestBaratineImpl _request;
-    private String _enc;
-
-    WriterBaratineEnc(RequestBaratineImpl request, String enc)
+    private final String _key;
+    private final String _value;
+    
+    private boolean _httpOnly;
+    private boolean _secure;
+    
+    private String _path;
+    private String _domain;
+    
+    CookieBuilderImpl(String key, String value)
     {
-      _request = request;
-      _enc = enc;
+      Objects.requireNonNull(key);
+      Objects.requireNonNull(value);
+      
+      _key = key;
+      _value = value;
     }
 
     @Override
-    public void write(char []buffer, int offset, int length)
+    public String name()
     {
-      _request.write(buffer, offset, length, _enc);
+      return _key;
     }
 
     @Override
-    public void flush()
-      throws IOException
+    public String value()
     {
-      _request.flush();
+      return _value;
     }
 
-    public void close()
+    @Override
+    public String domain()
     {
+      return _domain;
+      
+    }
+    @Override
+    public CookieBuilderImpl domain(String domain)
+    {
+      _domain = domain;
+      
+      return this;
+    }
+    
+    @Override
+    public CookieBuilder httpOnly(boolean isHttpOnly)
+    {
+      _httpOnly = isHttpOnly;
+      
+      return this;
+    }
 
+    @Override
+    public boolean httpOnly()
+    {
+      return _httpOnly;
+    }
+
+    @Override
+    public String path()
+    {
+      return _path;
+      
+    }
+    @Override
+    public CookieBuilderImpl path(String path)
+    {
+      _path = path;
+      
+      return this;
+    }
+    
+    @Override
+    public CookieBuilder secure(boolean isSecure)
+    {
+      _secure = isSecure;
+      
+      return this;
+    }
+
+    @Override
+    public boolean secure()
+    {
+      return _secure;
     }
   }
 

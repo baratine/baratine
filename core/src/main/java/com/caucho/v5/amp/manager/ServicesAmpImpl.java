@@ -76,6 +76,7 @@ import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.Key;
+import io.baratine.service.Api;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
@@ -472,19 +473,29 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     Objects.requireNonNull(type);
     
     if (api == null) {
-      api = type;
+      api = findApi(type);
     }
     
-    String address = null;
-    
     Service service = type.getAnnotation(Service.class);
-    
+
     if (service != null && ! service.value().isEmpty()) {
       return address(api, service.value());
     }
     else {
       return address(api);
     }
+  }
+  
+  private Class<?> findApi(Class<?> type)
+  {
+    for (Class<?> api : type.getInterfaces()) {
+      if (api.isAnnotationPresent(Api.class)
+          || api.isAnnotationPresent(Service.class)) {
+        return api;
+      }
+    }
+    
+    return type;
   }
   
   @Override

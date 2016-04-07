@@ -30,6 +30,7 @@ package com.caucho.v5.io;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.channels.SelectableChannel;
@@ -166,6 +167,22 @@ public class SocketWrapperBar extends SocketBar
    * Returns the server port that accepted the request.
    */
   @Override
+  public InetSocketAddress ipLocal()
+  {
+    Socket s = getSocket();
+    
+    if (s != null) {
+      return (InetSocketAddress) s.getLocalSocketAddress();
+    }
+    else {
+      return null;
+    }
+  }
+  
+  /**
+   * Returns the server port that accepted the request.
+   */
+  @Override
   public int portLocal()
   {
     Socket s = getSocket();
@@ -217,10 +234,10 @@ public class SocketWrapperBar extends SocketBar
    * Returns the secure cipher algorithm.
    */
   @Override
-  public String getCipherSuite()
+  public String cipherSuite()
   {
     if (! (_s instanceof SSLSocket)) {
-      return super.getCipherSuite();
+      return super.cipherSuite();
     }
 
     SSLSocket sslSocket = (SSLSocket) _s;
@@ -239,10 +256,10 @@ public class SocketWrapperBar extends SocketBar
    * Returns the bits in the socket.
    */
   @Override
-  public int getCipherBits()
+  public int cipherBits()
   {
     if (! (_s instanceof SSLSocket))
-      return super.getCipherBits();
+      return super.cipherBits();
     
     SSLSocket sslSocket = (SSLSocket) _s;
     

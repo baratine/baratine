@@ -37,6 +37,11 @@ import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.vault.IdAsset;
 
+/**
+ * The id can be used for sequence-based tables like log files because
+ * the ids are strictly increasing, and the sequence bits are sufficient to
+ * avoid rollover.
+ */
 public final class IdAssetGenerator
 {
   private static final L10N L = new L10N(IdAssetGenerator.class);
@@ -44,7 +49,6 @@ public final class IdAssetGenerator
   private long _node;
     
   private int _timeOffset;
-  private int _nodeBits = 10; 
   private int _sequenceBits;
   private int _sequenceIncrement;
   
@@ -54,33 +58,57 @@ public final class IdAssetGenerator
 
   private long _sequenceRandomMask;
   
-  public IdAssetGenerator(int nodeIndex, 
-                          int nodeCount)
+  /**
+   * Incrementing generator with a node index, used for database ids.
+   */
+  public IdAssetGenerator(int nodeIndex)
   {
-    this(nodeIndex, nodeCount, 1);
+    _timeOffset = 64 - IdAsset.TIME_BITS;
+    
+    _node = Long.reverse(nodeIndex) >>> IdAsset.TIME_BITS;
+    
+    _sequenceBits = _timeOffset;
+    _sequenceMask = (1L << _sequenceBits) - 1;
+    
+    int nodeBits = 12;
+    _sequenceRandomMask = (1L << (_sequenceBits - nodeBits - 2)) - 1;
+    
+    _sequenceIncrement = 1;
   }
-  
+
+  /**
+   * Id generator used for session id generation.
+   * 
+   * This id may not be strictly increasing because the sequence increment
+   * may cause wrap-around of the sequence bits. The wrap-around will not
+   * caused collisions because the increment is relatively prime to the
+   * sequence space, i.e. all the sequence bits will be used, just not in a
+   * simple increment order.
+   */
   public IdAssetGenerator(int nodeIndex, 
-                          int nodeCount,
                           int sequenceIncrement)
   {
     if (sequenceIncrement < 0 || sequenceIncrement % 2 == 0) {
       throw new IllegalArgumentException(L.l("'{0}' is an invalid sequence increment",
                                              sequenceIncrement));
     }
-    _nodeBits = 32 - Integer.numberOfLeadingZeros(nodeCount);
-    _node = nodeIndex;
     
-    _timeOffset = 64 - IdAsset.TIME_BITS;
-    _sequenceBits = 64 - IdAsset.TIME_BITS - _nodeBits;
+    _timeOffset = 64 - IdAsset.TIME_BITS;    
+    
+    _node = Long.reverse(nodeIndex) >>> IdAsset.TIME_BITS;
+    
+    int nodeBits = 10;
+
+    _sequenceBits = _timeOffset - nodeBits;
     _sequenceMask = (1L << _sequenceBits) - 1;
     _sequenceRandomMask = (1L << (_sequenceBits - 2)) - 1;
     
-    //_sequencePrime = Math.max(1, Primes.getBiggestPrime(_sequenceMask >> 1));
-    //_sequencePrime = 287093;
     _sequenceIncrement = sequenceIncrement;
   }
   
+  /**
+   * Returns the next id.
+   */
   public long get()
   {
     long now = CurrentTime.currentTime() / 1000;
@@ -104,7 +132,7 @@ public final class IdAssetGenerator
     } while (! _sequence.compareAndSet(oldSequence, newSequence));
       
     long id = ((now << _timeOffset)
-               | (_node << _sequenceBits)
+               | _node
                | (newSequence & _sequenceMask));
       
     return id;

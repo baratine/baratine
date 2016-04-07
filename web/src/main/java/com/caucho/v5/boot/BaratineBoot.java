@@ -29,6 +29,7 @@
 
 package com.caucho.v5.boot;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -132,12 +133,27 @@ public class BaratineBoot
       throw new IllegalStateException("unsupported file path: " + filePath + " for " + url);
     }
     
+    filePath = toNative(filePath);
+    
     Path path = Paths.get(filePath);
     
     BootFile bootFile = new BootFile(path);
     
     return bootFile;
     
+  }
+  
+  private static String toNative(String filePath)
+  {
+    if (File.pathSeparatorChar == '/') {
+      return filePath;
+    }
+    
+    if (filePath.indexOf(':') == 2 && filePath.startsWith("/")) {
+      filePath = filePath.substring(1);
+    }
+    
+    return filePath;
   }
 
   public static URLConnection openConnection(URL url)

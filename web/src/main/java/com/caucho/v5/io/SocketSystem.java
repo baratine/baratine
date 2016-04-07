@@ -269,6 +269,11 @@ abstract public class SocketSystem
                                   long timeout,
                                   boolean isSSL)
     throws IOException;
+  
+  public SocketBarBuilder connect()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
 
   public final SocketBar connectUnix(Path path)
     throws IOException
@@ -348,7 +353,20 @@ abstract public class SocketSystem
   {
     return getClass().getSimpleName() + "[]";
   }
-  
+
+  public interface SocketBarBuilder
+  {
+    SocketBarBuilder socket(SocketBar socket);
+    SocketBarBuilder address(String address);
+    SocketBarBuilder address(InetSocketAddress address);
+    SocketBarBuilder port(int port);
+    SocketBarBuilder timeoutConnect(long timeout);
+    SocketBarBuilder ssl(boolean isSsl);
+    SocketBarBuilder sslProtocols(String ...protocol);
+    
+    SocketBar get() throws IOException;
+  }
+    
   static {
     _staticAddressCache = new TimedCache<>(128, Integer.MAX_VALUE);
     _tcpSystem = SocketSystemTcp.create();

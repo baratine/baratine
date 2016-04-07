@@ -42,12 +42,15 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
@@ -56,41 +59,49 @@ import javax.net.ssl.SSLSocketFactory;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.ServerSocketBar;
+import com.caucho.v5.io.Vfs;
 import com.caucho.v5.jni.ServerSocketWrapper;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.config.Config;
 
 /**
  * Abstract socket to handle both normal sockets and bin/resin sockets.
  */
-public class JsseSSLFactory implements SSLFactory
+public class SSLFactoryJsse implements SSLFactory
 {
   private static final Logger log
-    = Logger.getLogger(JsseSSLFactory.class.getName());
+    = Logger.getLogger(SSLFactoryJsse.class.getName());
   
-  private static final L10N L = new L10N(JsseSSLFactory.class);
+  private static final L10N L = new L10N(SSLFactoryJsse.class);
   
-  private Path _keyStoreFile;
-  private String _alias;
-  private String _password;
+  //private Path _keyStoreFile;
   private String _verifyClient;
   private String _keyStoreType = "jks";
-  private String _keyManagerFactory = "SunX509";
+  //private String _keyManagerFactory;
   private String _sslContext = "TLS";
   private String []_cipherSuites;
   private String []_cipherSuitesForbidden;
   private String []_protocols;
+  
+  private String []_enabledProtocols;
 
   private String _selfSignedName;
 
   private KeyStore _keyStore;
+  
+  private Config _config;
+  private String _prefix;
 
   private SSLSocketFactory _sslSocketFactory;
   
   /**
    * Creates a ServerSocket factory without initializing it.
    */
-  public JsseSSLFactory()
+  public SSLFactoryJsse(Config config, String prefix)
   {
+    _config = config;
+    _prefix = prefix;
   }
 
   /**
@@ -114,15 +125,21 @@ public class JsseSSLFactory implements SSLFactory
    */
   public void setKeyStoreFile(Path keyStoreFile)
   {
-    _keyStoreFile = keyStoreFile;
+    //_keyStoreFile = keyStoreFile;
   }
 
   /**
    * Returns the certificate file.
    */
-  public Path getKeyStoreFile()
+  private Path keyStoreFile()
   {
-    return _keyStoreFile;
+    String fileName = _config.get(_prefix + ".ssl.key-store");
+    
+    if (fileName == null) {
+      return null;
+    }
+    
+    return Vfs.path(fileName);
   }
 
   /**
@@ -130,31 +147,57 @@ public class JsseSSLFactory implements SSLFactory
    */
   public void setPassword(String password)
   {
-    _password = password;
+//    _password = password;
   }
 
   /**
-   * Returns the key file.
+   * Returns the key-store password
    */
-  public String getPassword()
+  private String keyStorePassword()
   {
-    return _password;
+    String password = _config.get(_prefix + ".ssl.key-store-password");
+    
+    if (password != null) {
+      return password;
+    }
+    else {
+      return _config.get(_prefix + ".ssl.password");
+    }
+  }
+
+  /**
+   * Returns the key password
+   */
+  private String keyPassword()
+  {
+    String password = _config.get(_prefix + ".ssl.key-password");
+    
+    if (password != null) {
+      return password;
+    }
+    else {
+      return keyStorePassword();
+    }
   }
 
   /**
    * Sets the certificate alias
    */
+  /*
   public void setAlias(String alias)
   {
     _alias = alias;
   }
+  */
 
   /**
    * Returns the alias.
    */
-  public String getAlias()
+  private String alias()
   {
-    return _alias;
+    String alias = _config.get(_prefix + ".ssl.alias", null);
+    
+    return alias;
   }
 
   /**
@@ -176,9 +219,16 @@ public class JsseSSLFactory implements SSLFactory
   /**
    * Sets the key-manager-factory
    */
+  /*
   public void setKeyManagerFactory(String keyManagerFactory)
   {
     _keyManagerFactory = keyManagerFactory;
+  }
+  */
+  
+  private String keyManagerFactory()
+  {
+    return KeyManagerFactory.getDefaultAlgorithm();
   }
 
   /**
@@ -208,10 +258,12 @@ public class JsseSSLFactory implements SSLFactory
   /**
    * Sets the protocol
    */
+  /*
   public void setProtocol(String protocol)
   {
     _protocols = protocol.split("[\\s,]+");
   }
+  */
 
   /**
    * Initialize
@@ -220,24 +272,24 @@ public class JsseSSLFactory implements SSLFactory
   public void init()
   {
     try {
-      if (_keyStoreFile != null && _password == null) {
+      if (keyStoreFile() != null && keyStorePassword() == null) {
         throw new ConfigException(L.l("'password' is required for JSSE."));
       }
 
-      if (_password != null && _keyStoreFile == null) {
+      if (keyStorePassword() != null && keyStoreFile() == null) {
         throw new ConfigException(L.l("'key-store-file' is required for JSSE."));
       }
 
-      if (_alias != null && _keyStoreFile == null) {
+      if (alias() != null && keyStoreFile() == null) {
         throw new ConfigException(L.l("'alias' requires a key store for JSSE."));
       }
 
-      if (_keyStoreFile == null && _selfSignedName == null) {
+      if (keyStoreFile() == null && _selfSignedName == null) {
         throw new ConfigException(L.l("JSSE requires a key-store-file or a self-signed-certificate-name."));
       }
 
-      if (_keyStoreFile != null) {
-        initKeyStore();
+      if (keyStoreFile() != null) {
+        keyStore();
       }
       
       _sslSocketFactory = createFactory();
@@ -247,34 +299,72 @@ public class JsseSSLFactory implements SSLFactory
       throw ConfigException.createConfig(e);
     }
   }
-
-  private void initKeyStore()
+  
+  private KeyStore keyStore()
     throws Exception
   {
-    _keyStore = KeyStore.getInstance(_keyStoreType);
-
-    try (InputStream is = Files.newInputStream(_keyStoreFile)) {
-      _keyStore.load(is, _password.toCharArray());
+    if (_keyStore != null) {
+      return _keyStore;
     }
-
-    if (_alias != null) {
-      Key key = _keyStore.getKey(_alias, _password.toCharArray());
+    
+    if (keyStoreFile() == null) {
+      return null;
+    }
+    
+    KeyStore keyStore = KeyStore.getInstance(_keyStoreType);
+    
+    try (InputStream is = Files.newInputStream(keyStoreFile())) {
+      Objects.requireNonNull(is);
+      
+      keyStore.load(is, keyStorePassword().toCharArray());
+    }
+    
+    String keyAlias = null;
+    
+    Enumeration<?> e = keyStore.aliases();
+    while (e.hasMoreElements()) {
+      String alias = (String) e.nextElement();
+      
+      if (keyStore.isKeyEntry(alias)) {
+        keyAlias = alias;
+      }
+    }
+    
+    if (keyAlias == null) {
+      throw new ConfigException(L.l("Keystore '{0}' has no valid keys",
+                                    keyStoreFile()));
+    }
+    
+    String alias = alias();
+    
+    if (alias == null) {
+      _keyStore = keyStore;
+      
+      return keyStore;
+    }
+    
+    if (alias != null) {
+      Key key = keyStore.getKey(alias, keyPassword().toCharArray());
 
       if (key == null)
         throw new ConfigException(L.l("JSSE alias '{0}' does not have a corresponding key.",
-                                      _alias));
+                                      alias));
 
-      Certificate []certChain = _keyStore.getCertificateChain(_alias);
+      Certificate []certChain = keyStore.getCertificateChain(alias);
 
       if (certChain == null)
         throw new ConfigException(L.l("JSSE alias '{0}' does not have a corresponding certificate chain.",
-                                      _alias));
+                                      alias));
+      
+      keyStore = KeyStore.getInstance(_keyStoreType);
+      keyStore.load(null, keyStorePassword().toCharArray());
 
-      _keyStore = KeyStore.getInstance(_keyStoreType);
-      _keyStore.load(null, _password.toCharArray());
-
-      _keyStore.setKeyEntry(_alias, key, _password.toCharArray(), certChain);
+      keyStore.setKeyEntry(alias, key, keyPassword().toCharArray(), certChain);
+      
+      _keyStore = keyStore;
     }
+    
+    return _keyStore;
   }
 
   /**
@@ -288,31 +378,31 @@ public class JsseSSLFactory implements SSLFactory
     String host = "localhost";
     int port = 8086;
     
+    if (_keyStore == null) {
+      return createAnonymousFactory(null, port);
+    }
     
-    if (_keyStore != null) {
-      SSLContext sslContext = SSLContext.getInstance(_sslContext);
+    SSLContext sslContext = SSLContext.getInstance(_sslContext);
 
-      KeyManagerFactory kmf
-        = KeyManagerFactory.getInstance(_keyManagerFactory);
-    
-      kmf.init(_keyStore, _password.toCharArray());
-      
-      sslContext.init(kmf.getKeyManagers(), null, null);
+    KeyManagerFactory kmf
+    = KeyManagerFactory.getInstance(keyManagerFactory());
 
-      /*
+    kmf.init(_keyStore, keyStorePassword().toCharArray());
+
+    sslContext.init(kmf.getKeyManagers(), null, null);
+
+    /*
       if (_cipherSuites != null)
         sslContext.createSSLEngine().setEnabledCipherSuites(_cipherSuites);
 
-      if (_protocols != null)
-        sslContext.createSSLEngine().setEnabledProtocols(_protocols);
-      */
+     */
+    SSLEngine engine = sslContext.createSSLEngine();
+    
+    _enabledProtocols = enabledProtocols(engine.getEnabledProtocols());
+    
+    engine.setEnabledProtocols(_enabledProtocols);
 
-      ssFactory = sslContext.getSocketFactory();
-    }
-    else {
-      //ssFactory = createAnonymousFactory(host, port);
-      ssFactory = createAnonymousFactory(null, port);
-    }
+    ssFactory = sslContext.getSocketFactory();
     
     return ssFactory;
   }
@@ -329,9 +419,9 @@ public class JsseSSLFactory implements SSLFactory
       SSLContext sslContext = SSLContext.getInstance(_sslContext);
 
       KeyManagerFactory kmf
-        = KeyManagerFactory.getInstance(_keyManagerFactory);
+        = KeyManagerFactory.getInstance(keyManagerFactory());
     
-      kmf.init(_keyStore, _password.toCharArray());
+      kmf.init(_keyStore, keyStorePassword().toCharArray());
       
       sslContext.init(kmf.getKeyManagers(), null, null);
 
@@ -342,6 +432,10 @@ public class JsseSSLFactory implements SSLFactory
       if (_protocols != null)
         sslContext.createSSLEngine().setEnabledProtocols(_protocols);
       */
+      
+      SSLEngine engine = sslContext.createSSLEngine();
+      
+      engine.setEnabledProtocols(enabledProtocols(engine.getSupportedProtocols()));
 
       ssFactory = sslContext.getServerSocketFactory();
     }
@@ -384,9 +478,7 @@ public class JsseSSLFactory implements SSLFactory
       sslServerSocket.setEnabledCipherSuites(cipherSuites);
     }
 
-    if (_protocols != null) {
-      sslServerSocket.setEnabledProtocols(_protocols);
-    }
+    sslServerSocket.setEnabledProtocols(enabledProtocols(sslServerSocket.getSupportedProtocols()));
     
     if ("required".equals(_verifyClient))
       sslServerSocket.setNeedClientAuth(true);
@@ -394,6 +486,28 @@ public class JsseSSLFactory implements SSLFactory
       sslServerSocket.setWantClientAuth(true);
 
     return new ServerSocketWrapper(serverSocket);
+  }
+  
+  private String []enabledProtocols(String []supportedProtocols)
+  {
+    if (_protocols != null) {
+      return _protocols;
+    }
+    
+    ArrayList<String> enabledProtocols = new ArrayList<>();
+    
+    for (String protocol : supportedProtocols) {
+      enabledProtocols.add(protocol);
+    }
+    
+    enabledProtocols.remove("SSLv2");
+    enabledProtocols.remove("SSLv2Hello");
+    enabledProtocols.remove("SSLv3");
+    
+    String []protocols = new String[enabledProtocols.size()];
+    enabledProtocols.toArray(protocols);
+    
+    return protocols;
   }
   
   private boolean isCipherForbidden(String cipher,
@@ -536,6 +650,8 @@ public class JsseSSLFactory implements SSLFactory
     Socket sock = chan.socket();
     
     SSLSocket sslSock = (SSLSocket) _sslSocketFactory.createSocket(sock, null, false);
+
+    sslSock.setEnabledProtocols(_enabledProtocols);
     
     return sslSock;
   }

@@ -135,7 +135,7 @@ public class WebCookie implements Cloneable, Serializable, CookieWeb {
   /**
    * Returns the cookie's domain
    */
-  public String getDomain()
+  public String domain()
   {
     return this.domain;
   }
@@ -145,7 +145,7 @@ public class WebCookie implements Cloneable, Serializable, CookieWeb {
    *
    * @since Servlet 3.0
    */
-  public boolean isHttpOnly()
+  public boolean httpOnly()
   {
     return this.isHttpOnly;
   }
@@ -193,7 +193,7 @@ public class WebCookie implements Cloneable, Serializable, CookieWeb {
   /**
    * Gets the URL path of a cookie.
    */
-  public String getPath()
+  public String path()
   {
     return this.path;
   }
@@ -210,7 +210,7 @@ public class WebCookie implements Cloneable, Serializable, CookieWeb {
   /**
    * Returns true if the cookie must be over a secure connection.
    */
-  public boolean getSecure()
+  public boolean secure()
   {
     return this.secure;
   }
@@ -267,7 +267,7 @@ public class WebCookie implements Cloneable, Serializable, CookieWeb {
       throw new RuntimeException(e.getMessage ());
     }
   }
-
+  
   /**
    * Converts the cookie to a string for debugging.
    */

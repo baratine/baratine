@@ -31,7 +31,6 @@ package io.baratine.web;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 
@@ -68,8 +67,7 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
   InetSocketAddress ipLocal();
   String ip();
 
-  boolean secure();
-  X509Certificate []certs();
+  SecureWeb secure();
   
   <X> X attribute(Class<X> key);
   <X> void attribute(X value);
@@ -85,25 +83,6 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
                 Result<X> result);
 
   InputStream inputStream();
-  
-  //
-  // resources
-  //
-  
-  // configuration
-  
-  Config config();
-  
-  // injection
-  
-  Injector injector();
-  // <X> X instance(Class<X> type, Annotation ...anns);
-
-  //ServiceManager services();
-  
-  ServiceRef service(String address);
-  <X> X service(Class<X> type);
-  <X> X service(Class<X> type, String id);
 
   //
   // response
@@ -112,7 +91,7 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
   RequestWeb status(HttpStatus status);
   
   RequestWeb header(String key, String value);
-  RequestWeb cookie(String key, String value);
+  CookieBuilder cookie(String key, String value);
   RequestWeb length(long length);
   RequestWeb type(String contentType);
   RequestWeb encoding(String contentType);
@@ -141,5 +120,38 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
     else {
       ok(value);
     }
+  }
+  
+  //
+  // resources
+  //
+  
+  // configuration
+  
+  Config config();
+  
+  // injection
+  
+  Injector injector();
+  // <X> X instance(Class<X> type, Annotation ...anns);
+
+  //ServiceManager services();
+  
+  ServiceRef service(String address);
+  <X> X service(Class<X> type);
+  <X> X service(Class<X> type, String id);
+  
+  public interface SecureWeb
+  {
+    String protocol();
+    String cipherSuite();
+  }
+  
+  public interface CookieBuilder
+  {
+    CookieBuilder httpOnly(boolean isHttpOnly);
+    CookieBuilder secure(boolean isSecure);
+    CookieBuilder path(String path);
+    CookieBuilder domain(String domain);
   }
 }

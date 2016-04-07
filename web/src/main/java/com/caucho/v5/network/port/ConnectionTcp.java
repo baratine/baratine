@@ -32,6 +32,7 @@ package com.caucho.v5.network.port;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -413,6 +414,12 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     return _socket.addressLocal();
   }
+  
+  @Override
+  public InetSocketAddress ipLocal()
+  {
+    return _socket.ipLocal();
+  }
 
   /**
    * Returns the local host name.
@@ -445,7 +452,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
    * Returns the socket's remote host name.
    */
   @Override
-  public String getRemoteHost()
+  public String ip()
   {
     return _socket.getRemoteHost();
   }
@@ -494,26 +501,37 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
    * Returns the cipher suite
    */
   @Override
-  public String getCipherSuite()
+  public String secureProtocol()
   {
-    return _socket.getCipherSuite();
+    return _socket.secureProtocol();
+  }
+
+  /**
+   * Returns the cipher suite
+   */
+  @Override
+  public String cipherSuite()
+  {
+    return _socket.cipherSuite();
   }
 
   /***
    * Returns the key size.
    */
+  /*
   @Override
-  public int getKeySize()
+  public int keySize()
   {
-    return _socket.getCipherBits();
+    return _socket.cipherBits();
   }
+  */
 
   /**
    * Returns any client certificates.
    * @throws CertificateException
    */
   @Override
-  public X509Certificate []getClientCertificates()
+  public X509Certificate []clientCertificates()
     throws CertificateException
   {
     return _socket.getClientCertificates();
@@ -1201,8 +1219,6 @@ System.out.println("REQ_COMT:");
     // because of duplex mode
     // ReadStream is = getReadStream();
     _readStream.init(_socket.stream());
-    
-    // XXX: ssl init here
     
     if (log.isLoggable(Level.FINEST)) {
       log.finest(dbgId() + "starting connection " + this

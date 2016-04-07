@@ -30,16 +30,21 @@
 package com.caucho.v5.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A wrapper for Caucho system variables, allowing tests to override
  * the default variables.
  */
-public class HomeUtil {
+public class HomeUtil
+{
+  private static final Logger log = Logger.getLogger(HomeUtil.class.getName());
+  private static final L10N L = new L10N(HomeUtil.class);
 
   private static Path _homeDir;
 
@@ -73,10 +78,18 @@ public class HomeUtil {
         int q = path.indexOf('!');
 
         path = path.substring(p + 1, q);
-
-        Path pwd = Paths.get(path).getParent().getParent();
         
-        _homeDir = pwd;
+        if (path.startsWith("boot:")) {
+        }
+        else {
+          try {
+            Path pwd = Paths.get(path).getParent().getParent();
+        
+            _homeDir = pwd;
+          } catch (Exception e) {
+            log.log(Level.FINER, e.toString(), e);
+          }
+        }
       }
       else if (path.startsWith("file:")) {
         path = path.substring(0, path.length() - className.length());

@@ -34,4 +34,10 @@ public interface CookieWeb
   String name();
   
   String value();
+
+  boolean httpOnly();
+  boolean secure();
+  
+  String path();
+  String domain();
 }

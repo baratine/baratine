@@ -80,7 +80,7 @@ public class ChannelContextJampImpl implements SessionContext
 
   public void initRequest(RequestWeb req)
   {
-    _isSecure = req.secure();
+    _isSecure = req.secure() != null;
     
     HashMap<String,List<String>> headers = new HashMap<>();
     
