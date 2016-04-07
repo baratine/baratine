@@ -49,13 +49,11 @@ import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
-import com.caucho.v5.util.TestTime;
 import com.caucho.v5.vfs.VfsOld;
 import io.baratine.service.Api;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
-import io.baratine.spi.ServiceManagerProvider;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
@@ -85,30 +83,26 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     return test;
   }
 
-  private ConfigurationBaratine[] getConfiguration()
+  private ServiceTest[] getServices()
   {
     TestClass test = getTestClass();
 
-    ConfigurationsBaratine config
-      = test.getAnnotation(ConfigurationsBaratine.class);
+    ServiceTests config
+      = test.getAnnotation(ServiceTests.class);
 
     if (config != null)
       return config.value();
 
     Annotation[] annotations = test.getAnnotations();
 
-    List<ConfigurationBaratine> list = new ArrayList<>();
+    List<ServiceTest> list = new ArrayList<>();
 
     for (Annotation annotation : annotations) {
-      if (ConfigurationBaratine.class.isAssignableFrom(annotation.getClass()))
-        list.add((ConfigurationBaratine) annotation);
+      if (ServiceTest.class.isAssignableFrom(annotation.getClass()))
+        list.add((ServiceTest) annotation);
     }
 
-    if (list.size() == 0) {
-      list.add(new ConfigurationBaratineDefault());
-    }
-
-    return list.toArray(new ConfigurationBaratine[list.size()]);
+    return list.toArray(new ServiceTest[list.size()]);
   }
 
   private void initialize(Object test) throws IllegalAccessException
@@ -156,16 +150,14 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
   {
     Map<ServiceDescriptor,ServiceRef> descriptors = new HashMap<>();
 
-    for (ConfigurationBaratine config : getConfiguration()) {
-      Class[] services = config.services();
+    for (ServiceTest service : getServices()) {
+      Class serviceClass = service.value();
 
-      for (Class service : services) {
-        ServiceDescriptor descriptor = ServiceDescriptor.of(service);
+      ServiceDescriptor descriptor = ServiceDescriptor.of(serviceClass);
 
-        ServiceRef ref = manager.newService(service).addressAuto().ref();
+      ServiceRef ref = manager.newService(serviceClass).addressAuto().ref();
 
-        descriptors.put(descriptor, ref);
-      }
+      descriptors.put(descriptor, ref);
     }
 
     return descriptors;
@@ -291,8 +283,17 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
                              L.l("{0} must declare @Service annotation",
                                  _serviceClass));
 
-      Api api;
+      if (serviceClass.isInterface()) {
+        _api = serviceClass;
+      }
+      else {
+        _api = getApi(serviceClass);
+      }
+    }
 
+    private Class getApi(Class serviceClass)
+    {
+      Api api;
       Class t = serviceClass;
 
       do {
@@ -300,8 +301,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       } while (api == null
                && (t = serviceClass.getSuperclass()) != Object.class);
 
-      if (api != null)
-        _api = api.value();
+      return api == null ? null : api.value();
     }
 
     public String getAddress()
@@ -425,16 +425,20 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     }
   }
 
-  private ConfigurationBaratine getFirstConfiguration()
+  private ConfigurationBaratine getConfiguration()
   {
-    ConfigurationBaratine[] configs = getConfiguration();
+    ConfigurationBaratine config
+      = getTestClass().getAnnotation(ConfigurationBaratine.class);
 
-    return configs[0];
+    if (config == null)
+      config = ConfigurationBaratineDefault.INSTNANCE;
+
+    return config;
   }
 
   private String getWorkDir()
   {
-    final ConfigurationBaratine config = getFirstConfiguration();
+    final ConfigurationBaratine config = getConfiguration();
 
     String workDir = config.workDir();
 
@@ -447,7 +451,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
 
   private long getStartTime()
   {
-    final ConfigurationBaratine config = getFirstConfiguration();
+    final ConfigurationBaratine config = getConfiguration();
 
     return config.testTime();
   }
@@ -469,10 +473,11 @@ class ConfigurationBaratineDefault
 {
   public static final long TEST_TIME = 894621091000L;
 
-  @Override
-  public Class<?>[] services()
+  static final ConfigurationBaratine INSTNANCE
+    = new ConfigurationBaratineDefault();
+
+  private ConfigurationBaratineDefault()
   {
-    return new Class<?>[0];
   }
 
   @Override

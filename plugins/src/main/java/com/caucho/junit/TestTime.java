@@ -29,14 +29,29 @@
 
 package com.caucho.junit;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface ConfigurationsBaratine
+import com.caucho.v5.util.CurrentTime;
+import com.caucho.v5.util.CurrentTimeTest;
+
+public class TestTime
 {
-  ConfigurationBaratine[] value();
+  public static void clear()
+  {
+    CurrentTimeTest.clear();
+  }
+
+  public static void setTime(long time)
+  {
+    CurrentTimeTest.setTime(time);
+  }
+
+  public static void addTime(long delta, TimeUnit timeUnit)
+  {
+    delta = timeUnit.toMillis(delta);
+
+    long time = CurrentTime.currentTime() + delta;
+
+    CurrentTimeTest.setTime(time);
+  }
 }

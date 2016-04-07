@@ -44,10 +44,10 @@ public interface JdbcService
   public static String CONFIG_TEST_QUERY_AFTER = "JDBC_TEST_QUERY_AFTER";
 
   void execute(Result<Integer> result, String sql, Object ... params);
+  void executeBatch(Result<List<Integer>> result, String sql, List<Object> ... params);
+  void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params);
 
   void query(Result<JdbcResultSet> result, String sql, Object ... params);
-
-  void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params);
   void queryBatch(Result<List<JdbcResultSet>> result, String sql, List<Object> ... paramsList);
   void queryBatch(Result<List<JdbcResultSet>> result, List<String> sqlList, List<Object> ... paramsList);
 }

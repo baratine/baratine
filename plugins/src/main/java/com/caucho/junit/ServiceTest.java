@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
  * This file is part of Baratine(TM)
  *
@@ -24,20 +24,21 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Nam Nguyen
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.jdbc;
+package com.caucho.junit;
 
-import java.util.List;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface JdbcServiceSync extends JdbcService
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+@Repeatable(value = ServiceTests.class)
+public @interface ServiceTest
 {
-  Integer execute(String sql, Object ... params);
-  Integer[] executeBatch(String sql, List<Object> ... paramsList);
-  Integer[] executeBatch(List<String> sqlList, List<Object> ... paramsList);
-
-  JdbcResultSet query(String sql, Object ... params);
-  List<JdbcResultSet> queryBatch(String sql, List<Object> ... paramsList);
-  List<JdbcResultSet> queryBatch(List<String> sqlList, List<Object> ... paramsList);
+  Class<?> value();
 }

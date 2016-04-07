@@ -30,29 +30,15 @@
 package com.caucho.junit;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-@Repeatable(value = ConfigurationsBaratine.class)
 public @interface ConfigurationBaratine
 {
-  /**
-   * Specifies services to deploy
-   */
-  Class<?>[] services() default {};
-
-  /**
-   * @return
-   */
   String workDir() default "{java.io.tmpdir}";
 
-  /**
-   *
-   * @return
-   */
   long testTime() default -1;
 }
