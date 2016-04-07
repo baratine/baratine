@@ -27,28 +27,16 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.util;
+package com.caucho.junit;
 
-import java.util.concurrent.TimeUnit;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class TestTime
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface ServiceTests
 {
-  public static void clear()
-  {
-    CurrentTime.testClear();
-  }
-
-  public static void setTime(long time)
-  {
-    CurrentTime.setTestTime(time);
-  }
-
-  public static void addTime(long delta, TimeUnit timeUnit)
-  {
-    delta = timeUnit.toMillis(delta);
-
-    long time = CurrentTime.currentTime() + delta;
-
-    CurrentTime.setTestTime(time);
-  }
+  ServiceTest[] value();
 }

@@ -30,15 +30,15 @@
 package com.caucho.junit;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface ConfigurationBaratine
+@Repeatable(value = ServiceTests.class)
+public @interface ServiceTest
 {
-  String workDir() default "{java.io.tmpdir}";
-
-  long testTime() default -1;
+  Class<?> value();
 }
