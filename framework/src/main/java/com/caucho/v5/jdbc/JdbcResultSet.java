@@ -43,6 +43,10 @@ public class JdbcResultSet implements Iterable<Map<String,Object>>
   private List<String> _nameList = new ArrayList<>();
   private List<Map<String,Object>> _rows = new ArrayList<>();
 
+  public JdbcResultSet()
+  {
+  }
+
   public JdbcResultSet(ResultSet rs)
     throws SQLException
   {

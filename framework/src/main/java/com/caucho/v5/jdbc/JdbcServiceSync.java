@@ -34,10 +34,10 @@ import java.util.List;
 public interface JdbcServiceSync extends JdbcService
 {
   Integer execute(String sql, Object ... params);
+  Integer[] executeBatch(String sql, List<Object> ... paramsList);
+  Integer[] executeBatch(List<String> sqlList, List<Object> ... paramsList);
 
   JdbcResultSet query(String sql, Object ... params);
-
-  Integer[] executeBatch(List<String> sqlList, List<Object> ... paramsList);
   List<JdbcResultSet> queryBatch(String sql, List<Object> ... paramsList);
   List<JdbcResultSet> queryBatch(List<String> sqlList, List<Object> ... paramsList);
 }

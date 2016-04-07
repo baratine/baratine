@@ -47,7 +47,6 @@ import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceRef;
 
 @Service
 public class JdbcConnectionImpl implements JdbcService
@@ -127,7 +126,7 @@ public class JdbcConnectionImpl implements JdbcService
     testQueryBefore();
 
     try {
-      int updateCount = execute(sql);
+      int updateCount = execute(sql, params);
 
       result.ok(updateCount);
 
@@ -141,7 +140,36 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @Override
-  public void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params)
+  public void executeBatch(Result<List<Integer>> result, String sql, List<Object> ... paramsList)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "executeBatch: id=" + _id + ", sql=" + toDebugSafe(sql));
+    }
+
+    testQueryBefore();
+
+    ArrayList<Integer> updateCountList = new ArrayList<>();
+
+    try {
+      for (List<Object> params : paramsList) {
+        int updateCount = execute(sql, params);
+
+        updateCountList.add(updateCount);
+      }
+
+      result.ok(updateCountList);
+
+      testQueryAfter();
+    }
+    catch (SQLException e) {
+      reconnect();
+
+      result.fail(e);
+    }
+  }
+
+  @Override
+  public void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "executeBatch: id=" + _id);
@@ -152,8 +180,12 @@ public class JdbcConnectionImpl implements JdbcService
     ArrayList<Integer> updateCountList = new ArrayList<>();
 
     try {
+      int i = 0;
+
       for (String sql : sqlList) {
-        int updateCount = execute(sql);
+        List<Object> params = paramsList[i++];
+
+        int updateCount = execute(sql, params);
 
         updateCountList.add(updateCount);
       }
@@ -186,6 +218,46 @@ public class JdbcConnectionImpl implements JdbcService
     }
   }
 
+  private int execute(String sql, Object... params)
+    throws SQLException
+  {
+    if (params.length == 0) {
+      return execute(sql);
+    }
+    else {
+      ArrayList<Object> list = new ArrayList<>();
+
+      for (Object param : params) {
+        list.add(param);
+      }
+
+      return execute(sql, list);
+    }
+  }
+
+  private int execute(String sql, List<Object> params)
+    throws SQLException
+  {
+    PreparedStatement stmt = null;
+
+    try {
+      stmt = _conn.prepareStatement(sql);
+
+      int i = 0;
+
+      for (Object param : params) {
+        stmt.setObject(++i, param);
+      }
+
+      stmt.execute();
+
+      return stmt.getUpdateCount();
+    }
+    finally {
+      IoUtil.close(stmt);
+    }
+  }
+
   @Override
   public void query(Result<JdbcResultSet> result, String sql, Object ... params)
   {
@@ -206,14 +278,16 @@ public class JdbcConnectionImpl implements JdbcService
 
       boolean isResultSet = stmt.execute();
 
-      if (isResultSet) {
-        JdbcResultSet rs = new JdbcResultSet(stmt.getResultSet());
+      JdbcResultSet rs;
 
-        result.ok(rs);
+      if (isResultSet) {
+        rs = new JdbcResultSet(stmt.getResultSet());
       }
       else {
-        result.ok(null);
+        rs = new JdbcResultSet();
       }
+
+      result.ok(rs);
 
       testQueryAfter();
     }
@@ -315,12 +389,10 @@ public class JdbcConnectionImpl implements JdbcService
     boolean isResultSet = stmt.execute();
 
     if (isResultSet) {
-      JdbcResultSet rs = new JdbcResultSet(stmt.getResultSet());
-
-      return rs;
+      return new JdbcResultSet(stmt.getResultSet());
     }
     else {
-      return null;
+      return new JdbcResultSet();
     }
   }
 

@@ -76,9 +76,7 @@ public class JdbcServiceImpl implements JdbcService
     Supplier<JdbcConnectionImpl> supplier = new ConnectionSupplier(url, props, testQueryBefore, testQueryAfter);
 
     ServiceBuilder builder = _manager.newService(JdbcConnectionImpl.class, supplier);
-    builder.workers(poolSize);
-
-    ServiceRef ref = builder.start();
+    ServiceRef ref = builder.workers(poolSize).start();
 
     _conn = ref.as(JdbcConnectionImpl.class);
 
@@ -93,6 +91,16 @@ public class JdbcServiceImpl implements JdbcService
     }
 
     _conn.execute(result , sql, params);
+  }
+
+  @Override
+  public void executeBatch(Result<List<Integer>> result, String sql, List<Object>... params)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "executeBatch: " + toDebugSafe(sql));
+    }
+
+    _conn.executeBatch(result, sql, params);
   }
 
   @Override
