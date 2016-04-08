@@ -143,6 +143,8 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
   {
     TestClass testClass = getTestClass();
 
+    InjectorAmp injectorAmp = InjectorAmp.create();
+
     InjectorAmp.InjectBuilderAmp injectBuilder;
 
     ServiceManagerBuilderAmp serviceBuilder;
@@ -178,9 +180,9 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
 
     injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
 
-    serviceBuilder.start();
+    injectBuilder.get();
 
-    InjectorAmp injectorAmp = InjectorAmp.create();
+    serviceBuilder.start();
 
     Map<ServiceDescriptor,ServiceRef> descriptors = deployServices(
       serviceManager);
