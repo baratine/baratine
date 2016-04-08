@@ -29,9 +29,10 @@
 package com.caucho.v5.util;
 
 /**
- * Crc64 hash
+ * Crc32 hash
  */
-public class Crc32Caucho {
+public class Crc32Caucho
+{
   private static final int POLY32REV = 0x04c1_1db7;
   private static final int []CRC_TABLE;
 
