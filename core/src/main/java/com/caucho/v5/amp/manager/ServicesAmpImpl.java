@@ -575,8 +575,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
 
   @Override
   public <T> T newProxy(ServiceRefAmp service, 
-                           Class<T> api,
-                           Class<?> ... apis)
+                           Class<T> api)
   {
     return proxyFactory().createProxy(service, api);
   }

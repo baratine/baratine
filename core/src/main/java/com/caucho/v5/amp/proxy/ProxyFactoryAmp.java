@@ -36,23 +36,6 @@ import com.caucho.v5.amp.ServiceRefAmp;
  */
 public interface ProxyFactoryAmp
 {
-  /*
-  ActorAmp createSkeleton(Object bean,
-                          String path,
-                          String childPath,
-                          ActorContainerAmp container,
-                          ServiceConfig config);
-  
-  ActorAmp createSkeletonMain(Class<?> api,
-                              String path,
-                              ServiceConfig config);
-  
-  ActorAmp createSkeletonSession(Object bean,
-                                 String key,
-                                 ContextSession context,
-                                 ServiceConfig config);
-                                 */
-  
   <T> T createProxy(ServiceRefAmp serviceRef,
                     Class<T> api);
 }

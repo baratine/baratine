@@ -75,8 +75,7 @@ public interface ServicesAmp extends Services, LookupAmp
   Message currentMessage();
  
   <T> T newProxy(ServiceRefAmp actorRef, 
-                    Class<T> api,
-                    Class<?> ...apis);
+                    Class<T> api);
 
   String address(Class<?> type);
   

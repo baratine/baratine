@@ -138,10 +138,9 @@ abstract public class ServiceManagerAmpWrapper implements ServicesAmp
 
   @Override
   public <T> T newProxy(ServiceRefAmp actorRef, 
-                           Class<T> api,
-                           Class<?>... apis)
+                           Class<T> api)
   {
-    return delegate().newProxy(actorRef, api, apis);
+    return delegate().newProxy(actorRef, api);
   }
 
   /*
