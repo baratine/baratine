@@ -29,6 +29,7 @@
 
 package com.caucho.junit;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -41,19 +42,32 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import com.caucho.v5.amp.Amp;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.manager.InjectAutoBindService;
+import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.vault.StubGeneratorVault;
+import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
+import com.caucho.v5.amp.vault.VaultDriver;
+import com.caucho.v5.config.Configs;
+import com.caucho.v5.config.inject.BaratineProducer;
 import com.caucho.v5.inject.AnnotationLiteral;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.loader.EnvironmentClassLoader;
+import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import com.caucho.v5.vfs.VfsOld;
+import io.baratine.config.Config;
 import io.baratine.service.Api;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
+import io.baratine.vault.Asset;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
@@ -105,15 +119,73 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     return list.toArray(new ServiceTest[list.size()]);
   }
 
+  private class ResourceDriver
+    implements VaultDriver<Object,Serializable>
+  {
+    @Override
+    public <T, ID extends Serializable> VaultDriver<T,ID>
+    driver(ServicesAmp ampManager,
+           Class<?> serviceType,
+           Class<T> entityType,
+           Class<ID> idType,
+           String address)
+    {
+      if (entityType.isAnnotationPresent(Asset.class)) {
+        return new VaultDriverDataImpl(ampManager, entityType, idType, address);
+      }
+      else {
+        return null;
+      }
+    }
+  }
+
   private void initialize(Object test) throws IllegalAccessException
   {
     TestClass testClass = getTestClass();
 
-    Services manager = Services.newManager().autoServices(true).start();
+    InjectorAmp.InjectBuilderAmp injectBuilder;
 
-    Map<ServiceDescriptor,ServiceRef> descriptors = deployServices(manager);
+    ServiceManagerBuilderAmp serviceBuilder;
 
-    bindFields(test, testClass, manager, descriptors);
+    ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
+    injectBuilder = InjectorAmp.manager(cl);
+
+    injectBuilder.context(true);
+
+    injectBuilder.include(BaratineProducer.class);
+
+    Config.ConfigBuilder configBuilder = Configs.config();
+
+    injectBuilder.bean(configBuilder.get()).to(Config.class);
+
+    serviceBuilder = ServicesAmp.newManager();
+    serviceBuilder.name("junit-test");
+    serviceBuilder.autoServices(true);
+    serviceBuilder.injectManager(() -> injectBuilder.get());
+
+    StubGeneratorVault gen = new StubGeneratorVaultDriver();
+
+    gen.driver(new ResourceDriver());
+
+    serviceBuilder.stubGenerator(gen);
+
+    serviceBuilder.contextManager(true);
+
+    ServicesAmp serviceManager = serviceBuilder.get();
+
+    Amp.contextManager(serviceManager);
+
+    injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
+
+    serviceBuilder.start();
+
+    InjectorAmp injectorAmp = InjectorAmp.create();
+
+    Map<ServiceDescriptor,ServiceRef> descriptors = deployServices(
+      serviceManager);
+
+    bindFields(test, testClass, serviceManager, descriptors);
   }
 
   private void bindFields(Object test,
@@ -391,7 +463,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       } catch (Exception e) {
       }
 
-      manager = new SystemManager("test-manager");
+      manager = new SystemManager("junit-test", envLoader);
 
       rootDir = RootDirectorySystem.createAndAddSystem(Vfs.path(baratineRoot));
 
@@ -492,3 +564,4 @@ class ConfigurationBaratineDefault
     return TEST_TIME;
   }
 }
+
