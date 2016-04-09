@@ -51,10 +51,10 @@ import com.caucho.v5.h3.H3;
 import com.caucho.v5.h3.InH3;
 import com.caucho.v5.h3.OutFactoryH3;
 import com.caucho.v5.h3.OutH3;
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.util.Alarm;
 import com.caucho.v5.util.AlarmListener;
 import com.caucho.v5.util.WeakAlarm;
-import com.caucho.v5.vfs.ReadStream;
 
 import io.baratine.service.Result;
 
@@ -459,7 +459,7 @@ public class JournalImpl implements JournalAmp
     }
 
     @Override
-    public void onItem(ReadStream is) throws IOException
+    public void onItem(ReadBuffer is) throws IOException
     {
       readItem(is, _queue);
     }

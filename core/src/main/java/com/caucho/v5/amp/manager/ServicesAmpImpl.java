@@ -73,6 +73,7 @@ import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.lifecycle.Lifecycle;
+import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.Key;
@@ -157,6 +158,8 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     
     _classLoader = builder.classLoader();
     
+    EnvLoader.addCloseListener(this, _classLoader);
+    
     _isDebug = builder.isDebug();
     
     if (_isDebug) {
@@ -217,8 +220,6 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     _registry.bind("local://", new SchemeLocal(this));
     
     _injectManager = builder.injectManager(this);
-    
-
   }
 
   /*

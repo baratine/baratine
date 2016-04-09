@@ -39,7 +39,7 @@ import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.config.types.Bytes;
 import com.caucho.v5.log.impl.RolloverLogBase;
-import com.caucho.v5.store.temp.TempFileSystem;
+import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.store.temp.TempWriter;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.FreeRing;
@@ -67,7 +67,7 @@ public class AccessLogWriter extends RolloverLogBase
   //private final LogWriterTask _logWriterTask = new LogWriterTask();
   private final QueueDeliver<LogBuffer> _logWriterQueue;
   
-  private TempFileSystem _tempService;
+  private TempStoreSystem _tempService;
 
   AccessLogWriter(AccessLogBase log)
   {
@@ -86,11 +86,11 @@ public class AccessLogWriter extends RolloverLogBase
 
     // _semaphoreProbe = MeterService.createSemaphoreMeter("Resin|Log|Semaphore");
     
-    _tempService = TempFileSystem.getCurrent();
+    _tempService = TempStoreSystem.current();
     
     if (_tempService == null)
       throw new IllegalStateException(L.l("'{0}' is required for AccessLog",
-                                          TempFileSystem.class.getSimpleName()));
+                                          TempStoreSystem.class.getSimpleName()));
   }
 
   void setBufferSize(Bytes bytes)

@@ -154,7 +154,7 @@ public class JournalSystem extends SubSystemBase
   public void start()
     throws IOException
   {
-    Path dataDir = RootDirectorySystem.getCurrentDataDirectory();
+    Path dataDir = RootDirectorySystem.currentDataDirectory();
     
     ServicesAmp manager = AmpSystem.currentManager();
     

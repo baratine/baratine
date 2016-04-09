@@ -51,4 +51,6 @@ interface ArrayRing<T>
   T pollAndClear(long tailAlloc);
 
   int getIndex(long tail);
+
+  void clear(long start, long end);
 }

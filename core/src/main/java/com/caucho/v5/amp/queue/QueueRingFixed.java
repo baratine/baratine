@@ -98,7 +98,7 @@ public final class QueueRingFixed<M >
     // ring = RingValueArrayUnsafe.create(capacity);
 
     if (ring == null) {
-      ring = new ArrayRingImpl<M>(capacity);
+      ring = new ArrayRingAtomic<M>(capacity);
     }
 
     _ring = ring;

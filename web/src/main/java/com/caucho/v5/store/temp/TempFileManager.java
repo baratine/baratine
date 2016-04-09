@@ -52,7 +52,7 @@ public class TempFileManager
   {
     try {
       TempStoreBuilder tempBuilder = new TempStoreBuilder(path);
-      tempBuilder.ampManager(ampManager);
+      tempBuilder.services(ampManager);
       _tempStore = tempBuilder.build();
 
       /*

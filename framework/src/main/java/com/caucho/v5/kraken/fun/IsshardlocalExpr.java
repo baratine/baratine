@@ -33,7 +33,7 @@ import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.kelp.query.EnvKelp;
 import com.caucho.v5.kraken.query.FunExpr;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TablePodNode;
+import com.caucho.v5.kraken.table.TablePodNodeAmp;
 
 
 public class IsshardlocalExpr extends FunExpr
@@ -67,7 +67,7 @@ public class IsshardlocalExpr extends FunExpr
     else {
       int hash = table.getPodHash(env.getCursor());
       
-      TablePodNode node = table.getTablePod().getNode(hash);
+      TablePodNodeAmp node = table.getTablePod().getNode(hash);
       
       //System.out.println("GPH: " + hash + " " + table.getTablePod().getNode(hash));
       /*
@@ -77,7 +77,7 @@ public class IsshardlocalExpr extends FunExpr
       */
       
       if (_shard != null) {
-        return node.getIndex() == _shard.nodeIndex();
+        return node.index() == _shard.nodeIndex();
       }
       else {
         //System.out.println("ND: " + node.isSelfOwner() + " " + node);

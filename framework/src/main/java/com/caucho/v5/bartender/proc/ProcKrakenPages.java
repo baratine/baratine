@@ -33,10 +33,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import com.caucho.v5.baratine.ServiceApi;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.kelp.DebugKelp;
 import com.caucho.v5.kraken.KrakenSystem;
-import com.caucho.v5.kraken.table.TableManagerKraken;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.kraken.table.KrakenImpl;
 
 import io.baratine.files.BfsFileSync;
 
@@ -46,7 +46,7 @@ import io.baratine.files.BfsFileSync;
 @ServiceApi(BfsFileSync.class)
 public class ProcKrakenPages extends ProcFileBase
 {
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
 
   public ProcKrakenPages()
   {
@@ -56,7 +56,7 @@ public class ProcKrakenPages extends ProcFileBase
   }
   
   @Override
-  protected boolean fillRead(WriteStream out)
+  protected boolean fillRead(WriteBuffer out)
     throws IOException
   {
     Path path = _tableManager.getStorePath();

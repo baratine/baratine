@@ -29,16 +29,16 @@
 
 package com.caucho.v5.bartender.proc;
 
-import io.baratine.files.BfsFileSync;
-import io.baratine.files.Status;
-import io.baratine.service.Result;
-
 import java.io.IOException;
 
 import com.caucho.v5.baratine.ServiceApi;
 import com.caucho.v5.bartender.files.FileStatusImpl;
 import com.caucho.v5.bartender.heartbeat.ServerHeartbeat;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.io.WriteBuffer;
+
+import io.baratine.files.BfsFileSync;
+import io.baratine.files.Status;
+import io.baratine.service.Result;
 
 /**
  * Entry to the filesystem.
@@ -71,7 +71,7 @@ public class ProcServersInstance extends ProcFileBase
   }
 
   @Override
-  protected boolean fillRead(WriteStream out)
+  protected boolean fillRead(WriteBuffer out)
     throws IOException
   {
     out.print("{ \"server\" : \"" + _server.getId() + "\"");

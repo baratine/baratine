@@ -29,21 +29,21 @@
 
 package com.caucho.v5.bartender.proc;
 
-import io.baratine.files.BfsFileSync;
-import io.baratine.files.Status;
-import io.baratine.files.Watch;
-import io.baratine.files.WriteOption;
-import io.baratine.service.Result;
-import io.baratine.service.Service;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.caucho.v5.baratine.ServiceApi;
 import com.caucho.v5.bartender.files.FileServiceBind;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.vfs.TempStream;
-import com.caucho.v5.vfs.WriteStream;
+
+import io.baratine.files.BfsFileSync;
+import io.baratine.files.Status;
+import io.baratine.files.Watch;
+import io.baratine.files.WriteOption;
+import io.baratine.service.Result;
+import io.baratine.service.Service;
 
 /**
  * Base proc filesystem implementation
@@ -100,7 +100,7 @@ public class ProcFileBase
       TempStream ts = new TempStream();
       ts.openWrite();
 
-      WriteStream out = new WriteStream(ts);
+      WriteBuffer out = new WriteBuffer(ts);
 
       if (fillRead(out)) {
         out.close();
@@ -112,7 +112,7 @@ public class ProcFileBase
     }
   }
 
-  protected boolean fillRead(WriteStream out)
+  protected boolean fillRead(WriteBuffer out)
     throws IOException
   {
     return false;

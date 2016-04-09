@@ -42,8 +42,9 @@ public class ServiceInitDatabase implements ServiceInitializer
   @Override
   public void init(Services manager)
   {
-    if (KrakenSystem.current() != null) {
-      manager.newService(new DatabaseSchemeServiceRamp())
+    if (KrakenSystem.current() != null
+        || System.getProperty("baratine.root") != null) {
+      manager.newService(new SchemeDatabaseRamp())
              .address("bardb:")
              .ref();
     }

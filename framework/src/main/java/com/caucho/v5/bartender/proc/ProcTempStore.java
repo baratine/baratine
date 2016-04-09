@@ -29,14 +29,14 @@
 
 package com.caucho.v5.bartender.proc;
 
-import io.baratine.files.BfsFileSync;
-
 import java.io.IOException;
 
 import com.caucho.v5.baratine.ServiceApi;
-import com.caucho.v5.store.temp.TempFileSystem;
+import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.store.temp.TempStore;
-import com.caucho.v5.vfs.WriteStream;
+
+import io.baratine.files.BfsFileSync;
 
 /**
  * /proc/temp-store
@@ -50,15 +50,15 @@ public class ProcTempStore extends ProcFileBase
   {
     super("/temp-store");
     
-    TempFileSystem tempSystem = TempFileSystem.getCurrent();
+    TempStoreSystem tempSystem = TempStoreSystem.current();
     
     if (tempSystem != null) {
-      _tempStore = tempSystem.getTempStore();
+      _tempStore = tempSystem.tempStore();
     }
   }
   
   @Override
-  protected boolean fillRead(WriteStream out)
+  protected boolean fillRead(WriteBuffer out)
     throws IOException
   {
     out.print("{");

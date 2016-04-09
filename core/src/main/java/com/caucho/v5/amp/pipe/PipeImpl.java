@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
-import com.caucho.v5.amp.queue.QueueRingSingleWriter;
+import com.caucho.v5.amp.queue.QueueRingForPipe;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 
@@ -58,7 +58,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   private static final long OFFER_TIMEOUT_DEFAULT = 10000L;
   
   private Pipe<T> _inPipe;
-  private QueueRingSingleWriter<T> _queue;
+  private QueueRingForPipe<T> _queue;
   
   private volatile boolean _isOk;
   private volatile Throwable _fail;
@@ -98,21 +98,23 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     long credits = builder.credits();
     int capacity = builder.capacity();
 
-    if (capacity > 0) {
-    }
-    else if (credits >= 0) {
+    if (credits >= 0) {
       // XXX: illegal argument exception for too-long credits
-      capacity = (int) Math.max(32, 2 * Long.highestOneBit(credits));
+      if (capacity <= 0) {
+        capacity = (int) Math.max(32, 2 * Long.highestOneBit(credits));
+      }
       
       _creditsIn = credits;
       prefetch = 0;
     }
     else {
       if (prefetch <= 0) {
-        prefetch = 24;
+        prefetch = capacity - 8;
       }
 
-      capacity = 2 * Integer.highestOneBit(prefetch);
+      if (capacity <= 0) {
+        capacity = 2 * Integer.highestOneBit(prefetch);
+      }
     }
     
     _prefetch = prefetch;
@@ -121,7 +123,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     
     long offerTimeout = 10000L;
     _outBlock = new FlowOutBlock<>(offerTimeout);
-    _queue = new QueueRingSingleWriter<>(capacity);
+    _queue = new QueueRingForPipe<>(capacity);
     
     updatePrefetchCredits();
     
@@ -424,6 +426,11 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     
     do {
       stateOld = _stateInRef.get();
+      
+      if (stateOld.isActive()) {
+        return;
+      }
+      
       stateNew = stateOld.toWake();
     } while (! _stateInRef.compareAndSet(stateOld, stateNew));
     

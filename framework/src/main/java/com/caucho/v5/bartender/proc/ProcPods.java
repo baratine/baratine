@@ -29,11 +29,6 @@
 
 package com.caucho.v5.bartender.proc;
 
-import io.baratine.files.BfsFileSync;
-import io.baratine.service.OnActive;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +37,12 @@ import com.caucho.v5.baratine.ServiceApi;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.files.FileServiceBind;
 import com.caucho.v5.bartender.pod.PodBartender;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.io.WriteBuffer;
+
+import io.baratine.files.BfsFileSync;
+import io.baratine.service.OnActive;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 /**
  * Entry to the filesystem.
@@ -101,7 +101,7 @@ public class ProcPods extends ProcFileBase
   }
 
   @Override
-  protected boolean fillRead(WriteStream out)
+  protected boolean fillRead(WriteBuffer out)
     throws IOException
   {
     out.println("[");

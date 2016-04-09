@@ -152,10 +152,9 @@ class PipeStatic<T>
   }
   */
   
-  static class PipeOutResultImpl<T> implements PipeOutBuilder<T>
+  static class PipeOutResultImpl<T> extends Result.Wrapper<Pipe<T>, Pipe<T>>
+    implements PipeOutBuilder<T>
   {
-    private Result<Pipe<T>> _result;
-    
     private Function<Pipe<T>,OnAvailable> _onOk;
     
     private Consumer<Throwable> _onFail;
@@ -164,6 +163,8 @@ class PipeStatic<T>
     
     PipeOutResultImpl(OnAvailable flow)
     {
+      super(Result.ignore());
+      
       Objects.requireNonNull(flow);
       
       _flow = flow;
@@ -171,6 +172,8 @@ class PipeStatic<T>
     
     PipeOutResultImpl(Function<Pipe<T>,OnAvailable> onOk)
     {
+      super(Result.ignore());
+      
       Objects.requireNonNull(onOk);
       
       _onOk = onOk;
@@ -178,9 +181,7 @@ class PipeStatic<T>
     
     PipeOutResultImpl(Result<Pipe<T>> result)
     {
-      Objects.requireNonNull(result);
-      
-      _result = result;
+      super(result);
     }
 
     @Override
@@ -210,9 +211,8 @@ class PipeStatic<T>
         OnAvailable flow = _onOk.apply(pipe);
         pipe.credits().onAvailable(flow);
       }
-      else if (_result != null) {
-        _result.ok(pipe);
-      }
+      
+      delegate().ok(pipe);
 
       if (_flow != null) {
         pipe.credits().onAvailable(_flow);
@@ -235,15 +235,8 @@ class PipeStatic<T>
       if (_onFail != null) {
         _onFail.accept(exn);
       }
-      else if (_result != null) {
-        _result.fail(exn);
-      }
-    }
-    
-    @Override
-    public void handle(Pipe<T> pipe, Throwable exn)
-    {
-      throw new IllegalStateException();
+      
+      delegate().fail(exn);
     }
   }
   

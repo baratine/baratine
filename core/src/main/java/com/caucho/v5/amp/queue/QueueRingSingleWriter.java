@@ -97,7 +97,8 @@ public final class QueueRingSingleWriter<M>
     // ring = RingValueArrayUnsafe.create(capacity);
     
     if (ring == null) {
-      ring = new ArrayRingImpl<M>(capacity);
+      //ring = new ArrayRingAtomic<M>(capacity);
+      ring = new ArrayRingPlain<M>(capacity);
     }
     
     _ring = ring; 
@@ -223,8 +224,8 @@ public final class QueueRingSingleWriter<M>
       final long nextHead = head + 1;
 
       if (nextHead - tail < capacity) {
-        headRef.lazySet(nextHead);
         _ring.setLazy(head, value);
+        headRef.lazySet(nextHead);
 
         return true;
       }

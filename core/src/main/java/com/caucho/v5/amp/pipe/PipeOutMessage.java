@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.message.QueryMessageBase;
+import com.caucho.v5.amp.message.QueryWithResultMessage;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.LoadState;
@@ -49,7 +49,7 @@ import io.baratine.pipe.ResultPipeOut;
  * Register a publisher to a pipe.
  */
 public class PipeOutMessage<T>
-  extends QueryMessageBase<Pipe<T>>
+  extends QueryWithResultMessage<Pipe<T>>
   implements ResultPipeOut<T>
 {
   private static final L10N L = new L10N(PipeOutMessage.class);
@@ -74,7 +74,7 @@ public class PipeOutMessage<T>
                         Object []args)
   {
     //super(outbox, headers, serviceRef, method);
-    super(outbox, serviceRef, method, expires);
+    super(outbox, serviceRef, method, expires, result);
     
     Objects.requireNonNull(result);
     

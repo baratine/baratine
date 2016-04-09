@@ -33,11 +33,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import com.caucho.v5.baratine.ServiceApi;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.kelp.DebugKelp;
 import com.caucho.v5.kraken.KrakenSystem;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.kraken.table.KrakenImpl;
 
 import io.baratine.files.BfsFileSync;
 
@@ -47,7 +47,7 @@ import io.baratine.files.BfsFileSync;
 @ServiceApi(BfsFileSync.class)
 public class ProcKrakenDebugTable extends ProcFileBase
 {
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   private String _tableName;
 
   public ProcKrakenDebugTable(String tableName)
@@ -59,7 +59,7 @@ public class ProcKrakenDebugTable extends ProcFileBase
   }
   
   @Override
-  protected boolean fillRead(WriteStream out)
+  protected boolean fillRead(WriteBuffer out)
     throws IOException
   {
     TableKraken table = _tableManager.getTable(_tableName);

@@ -80,7 +80,7 @@ import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.log.StreamHandler;
 import com.caucho.v5.network.NetworkSystem;
 import com.caucho.v5.scan.ScanManager;
-import com.caucho.v5.store.temp.TempFileSystem;
+import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
@@ -1427,7 +1427,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
 
   protected void addServices()
   {
-    TempFileSystem.createAndAddSystem();
+    TempStoreSystem.createAndAddSystem();
     
     // XXX: KrakenSystem.createAndAddSystem(selfServer);
     
