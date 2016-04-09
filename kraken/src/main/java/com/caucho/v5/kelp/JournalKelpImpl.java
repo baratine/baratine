@@ -36,9 +36,9 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.db.journal.JournalStream;
 import com.caucho.v5.db.journal.JournalStream.ReplayCallback;
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.util.BitsUtil;
-import com.caucho.v5.vfs.ReadStream;
 
 /**
  * Implementation of the mauka journal.
@@ -146,7 +146,7 @@ class JournalKelpImpl
     } while (! isValid);
   }
   
-  private void replayJournal(ReadStream is,
+  private void replayJournal(ReadBuffer is,
                              PageServiceImpl pageActor)
     throws IOException
   {
@@ -248,7 +248,7 @@ class JournalKelpImpl
     }
 
     @Override
-    public void onItem(ReadStream is) throws IOException
+    public void onItem(ReadBuffer is) throws IOException
     {
       replayJournal(is, _putActor);
     }

@@ -29,20 +29,19 @@
 
 package com.caucho.v5.kelp.segment;
 
-import io.baratine.service.Result;
-
 import java.io.IOException;
-import java.util.ArrayList;
 
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.kelp.Page;
+import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.kelp.PageBlobImpl;
 import com.caucho.v5.kelp.TableWriterService;
 import com.caucho.v5.kelp.TableWriterServiceImpl;
-import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.util.BitsUtil;
-import com.caucho.v5.vfs.WriteStream;
+
+import io.baratine.service.Result;
 
 /**
  * Actor for doing a segment garbage collection
@@ -124,7 +123,7 @@ public class SegmentStream
     int saveSequence = blobPage.getWriteSequence();
     
     OutSegment sOut = openWriter(rwActor);
-    WriteStream out = sOut.out();
+    WriteBuffer out = sOut.out();
     
     try {
       int head = (int) out.getPosition();

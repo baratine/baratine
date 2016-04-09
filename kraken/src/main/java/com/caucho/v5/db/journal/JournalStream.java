@@ -31,7 +31,7 @@ package com.caucho.v5.db.journal;
 
 import java.io.IOException;
 
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.io.ReadBuffer;
 
 /**
  * Interface to the low level stream.
@@ -61,7 +61,7 @@ public interface JournalStream
   
   interface ReplayCallback
   {
-    void onItem(ReadStream is)
+    void onItem(ReadBuffer is)
       throws IOException;
     
     void completed();

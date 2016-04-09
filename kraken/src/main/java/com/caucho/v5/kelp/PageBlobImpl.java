@@ -37,9 +37,9 @@ import java.util.ArrayList;
 
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.kelp.segment.OutSegment;
 import com.caucho.v5.kelp.segment.SegmentKelp;
-import com.caucho.v5.vfs.WriteStream;
 
 /**
  * page containing a single blob.
@@ -156,7 +156,7 @@ public class PageBlobImpl extends PageBlob
       throw new IllegalStateException(toString());
     }
     
-    WriteStream os = sOut.out();
+    WriteBuffer os = sOut.out();
 
     if (sOut.getAvailable() < os.getPosition() + _length) {
       return null;

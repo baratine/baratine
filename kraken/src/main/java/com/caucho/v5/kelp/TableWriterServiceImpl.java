@@ -29,9 +29,6 @@
 
 package com.caucho.v5.kelp;
 
-import io.baratine.service.AfterBatch;
-import io.baratine.service.Result;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +39,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.Direct;
 import com.caucho.v5.baratine.InService;
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.kelp.PageServiceSync.GcContext;
@@ -51,16 +49,18 @@ import com.caucho.v5.kelp.segment.OutSegment;
 import com.caucho.v5.kelp.segment.SegmentExtent;
 import com.caucho.v5.kelp.segment.SegmentFsyncCallback;
 import com.caucho.v5.kelp.segment.SegmentKelp;
-import com.caucho.v5.kelp.segment.SegmentService;
-import com.caucho.v5.kelp.segment.SegmentStream;
 import com.caucho.v5.kelp.segment.SegmentKelp.SegmentComparatorDescend;
 import com.caucho.v5.kelp.segment.SegmentKelp.SegmentEntryCallback;
+import com.caucho.v5.kelp.segment.SegmentService;
+import com.caucho.v5.kelp.segment.SegmentStream;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.store.io.InStore;
 import com.caucho.v5.store.io.OutStore;
 import com.caucho.v5.store.io.StoreReadWrite;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.ReadStream;
+
+import io.baratine.service.AfterBatch;
+import io.baratine.service.Result;
 
 /**
  * Filesystem access for the BlockStore.
@@ -331,7 +331,7 @@ public class TableWriterServiceImpl
     throws IOException
   {
     try (InSegment reader = openRead(segment)) {
-      ReadStream is = reader.in();
+      ReadBuffer is = reader.in();
       
       int length = segment.getLength();
     
@@ -742,13 +742,13 @@ public class TableWriterServiceImpl
   public class LoadCallback implements SegmentEntryCallback
   {
     private final SegmentKelp _segment;
-    private final ReadStream _is;
+    private final ReadBuffer _is;
     private final SegmentReadContext _reader;
     
     private boolean _isLoadedPage;
     
     LoadCallback(SegmentKelp segment,
-                 ReadStream is,
+                 ReadBuffer is,
                  SegmentReadContext reader)
     {
       _segment = segment;

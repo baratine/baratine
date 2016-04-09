@@ -32,11 +32,11 @@ package com.caucho.v5.kelp.segment;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.kelp.io.CompressorKelp;
 import com.caucho.v5.store.io.InStore;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.ReadStream;
 
 /**
  * Filesystem access for the BlockStore.
@@ -46,7 +46,7 @@ public class InSegment extends StreamImpl implements AutoCloseable
   private static final L10N L = new L10N(InSegment.class);
   
   private InStore _sIn;
-  private ReadStream _is;
+  private ReadBuffer _is;
   private long _address;
   
   private int _length;
@@ -73,10 +73,10 @@ public class InSegment extends StreamImpl implements AutoCloseable
     return _sIn;
   }
   
-  public ReadStream in()
+  public ReadBuffer in()
   {
     if (_is == null) {
-      _is = new ReadStream(this);
+      _is = new ReadBuffer(this);
     }
     
     return _is;
@@ -152,7 +152,7 @@ public class InSegment extends StreamImpl implements AutoCloseable
   public void close()
     throws IOException
   {
-    ReadStream is = _is;
+    ReadBuffer is = _is;
     _is = null;
     
     if (is != null) {

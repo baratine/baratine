@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.kelp.Page;
 import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.kelp.PageServiceSync;
@@ -50,7 +51,6 @@ import com.caucho.v5.kelp.io.CompressorKelp;
 import com.caucho.v5.store.io.OutStore;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.WriteStream;
 
 import io.baratine.service.Result;
 
@@ -80,7 +80,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   private final SegmentKelp _segment;
   
   private OutStore _sOut;
-  private WriteStream _out;
+  private WriteBuffer _out;
   
   private int _position;
   
@@ -168,10 +168,10 @@ public class OutSegment extends StreamImpl implements AutoCloseable
    * Returns the WriteStream for data in the current segment. Data writes
    * from low to high.
    */
-  public WriteStream out()
+  public WriteBuffer out()
   {
     if (_out == null) {
-      _out = new WriteStream(this);
+      _out = new WriteBuffer(this);
     }
     
     return _out;
@@ -237,7 +237,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     int pid = page.getId();
     int nextPid = page.getNextId();
     
-    WriteStream out = out();
+    WriteBuffer out = out();
     
     int head = (int) out.getPosition();
     
@@ -288,7 +288,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
    * entry(0)
    * </pre>
    */
-  boolean addEntry(WriteStream out,
+  boolean addEntry(WriteBuffer out,
                     Page page,
                     Page newPage,
                     int saveSequence,
@@ -359,7 +359,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       return;
     }
 
-    WriteStream out = _out;
+    WriteBuffer out = _out;
     
     if (out != null) {
       try {

@@ -30,12 +30,13 @@
 package com.caucho.v5.db.journal;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
+import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.Hex;
-import com.caucho.v5.vfs.PathImpl;
-import com.caucho.v5.vfs.ReadStream;
-import com.caucho.v5.vfs.WriteStream;
 
 /**
  * Filesystem access for the BlockStore.
@@ -66,11 +67,11 @@ public class JournalDebug
     return this;
   }
 
-  public void debug(WriteStream out, PathImpl path)
+  public void debug(WriteBuffer out, Path path)
     throws IOException
   {
-    try (ReadStream is = path.openRead()) {
-      long length = path.length();
+    try (ReadBuffer is = new ReadBuffer(Files.newInputStream(path))) {
+      long length = Files.size(path);
       
       long magic = BitsUtil.readLong(is);
       

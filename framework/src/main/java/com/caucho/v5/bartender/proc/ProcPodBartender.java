@@ -29,10 +29,6 @@
 
 package com.caucho.v5.bartender.proc;
 
-import io.baratine.files.BfsFileSync;
-import io.baratine.files.Status;
-import io.baratine.service.Result;
-
 import java.io.IOException;
 
 import com.caucho.v5.baratine.ServiceApi;
@@ -41,7 +37,11 @@ import com.caucho.v5.bartender.files.FileStatusImpl;
 import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.bartender.pod.PodBartender.PodType;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.io.WriteBuffer;
+
+import io.baratine.files.BfsFileSync;
+import io.baratine.files.Status;
+import io.baratine.service.Result;
 
 /**
  * Entry to the filesystem.
@@ -59,7 +59,7 @@ public class ProcPodBartender extends ProcFileBase
   }
 
   @Override
-  protected boolean fillRead(WriteStream out)
+  protected boolean fillRead(WriteBuffer out)
     throws IOException
   {
     PodBartender pod = _pod;
@@ -81,7 +81,7 @@ public class ProcPodBartender extends ProcFileBase
                                        modifiedTime, checkSum, null));
   }
 
-  static boolean fillRead(PodBartender pod, WriteStream out)
+  static boolean fillRead(PodBartender pod, WriteBuffer out)
     throws IOException
   {
     out.println("{ \"pod\" : \"" + pod.name() + "." + pod.getClusterId() + "\",");

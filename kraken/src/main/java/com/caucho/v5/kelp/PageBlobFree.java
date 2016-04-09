@@ -29,13 +29,13 @@
 
 package com.caucho.v5.kelp;
 
+import java.io.IOException;
+
 import com.caucho.v5.baratine.InService;
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.kelp.segment.OutSegment;
 import com.caucho.v5.kelp.segment.SegmentKelp;
 import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.vfs.ReadStream;
-
-import java.io.IOException;
 
 /**
  * A blob that is available.
@@ -126,7 +126,7 @@ public class PageBlobFree extends PageBlob
   static void readCheckpoint(TableKelp table,
                              PageServiceImpl pageActor,
                              SegmentKelp segment,
-                             ReadStream is, 
+                             ReadBuffer is, 
                              int length, 
                              int pid,
                              int nextPid)

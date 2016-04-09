@@ -29,19 +29,19 @@
 
 package com.caucho.v5.kelp;
 
-import io.baratine.db.BlobReader;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.ReadStream;
-import com.caucho.v5.vfs.WriteStream;
+
+import io.baratine.db.BlobReader;
 
 /**
  * A column for the log store.
@@ -292,7 +292,7 @@ public class ColumnBlob extends Column
    */
   @Override
   void readJournal(PageServiceImpl pageActor,
-                   ReadStream is, 
+                   ReadBuffer is, 
                    byte[] buffer, int offset, RowCursor cursor)
     throws IOException
   {
@@ -500,7 +500,7 @@ public class ColumnBlob extends Column
   //
 
   @Override
-  void writeCheckpoint(WriteStream os, byte[] rowBuffer, int rowOffset)
+  void writeCheckpoint(WriteBuffer os, byte[] rowBuffer, int rowOffset)
     throws IOException
   {
     int colOffset = rowOffset + getOffset();
@@ -536,7 +536,7 @@ public class ColumnBlob extends Column
    * @return the new blob tail pointer or -1 if the blob doesn't fit.
    */
   @Override
-  int readCheckpoint(ReadStream is,
+  int readCheckpoint(ReadBuffer is,
                      byte[] blockBuffer, int rowOffset, int rowLength,
                      int blobTail)
     throws IOException

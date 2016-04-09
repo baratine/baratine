@@ -32,14 +32,9 @@ package com.caucho.v5.kelp.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
-import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.util.FreeList;
-import com.caucho.v5.vfs.ReadStream;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.WriteBuffer;
 
 /**
  * Compression factory.
@@ -47,13 +42,13 @@ import com.caucho.v5.vfs.WriteStream;
 public class CompressorNull implements CompressorKelp
 {
   @Override
-  public OutputStream out(WriteStream os) throws IOException
+  public OutputStream out(WriteBuffer os) throws IOException
   {
     return os;
   }
   
   @Override
-  public InputStream in(ReadStream is, long offset, int length) throws IOException
+  public InputStream in(ReadBuffer is, long offset, int length) throws IOException
   {
     is.setPosition(offset);
     

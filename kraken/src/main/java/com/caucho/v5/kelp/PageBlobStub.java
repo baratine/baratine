@@ -29,17 +29,17 @@
 
 package com.caucho.v5.kelp;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.kelp.segment.InSegment;
 import com.caucho.v5.kelp.segment.OutSegment;
 import com.caucho.v5.kelp.segment.SegmentKelp;
 import com.caucho.v5.kelp.segment.SegmentServiceImpl;
-import com.caucho.v5.vfs.WriteStream;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 
 /**
@@ -135,7 +135,7 @@ class PageBlobStub extends PageBlob
                        int saveSequence)
     throws IOException
   {
-    WriteStream os = sOut.out();
+    WriteBuffer os = sOut.out();
     
     if (sOut.getAvailable() <= os.getPosition() + _length) {
       return null;

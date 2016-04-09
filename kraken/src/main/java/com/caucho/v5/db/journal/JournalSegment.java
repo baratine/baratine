@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import java.util.zip.CRC32;
 
 import com.caucho.v5.db.journal.JournalStream.ReplayCallback;
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.store.io.InStore;
@@ -43,7 +44,6 @@ import com.caucho.v5.store.io.OutStore;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.ReadStream;
 
 /**
  * The store manages the block-based journal store file.
@@ -394,7 +394,7 @@ public class JournalSegment
       byte []tempBuffer = tBuffer.buffer();
       
       jIn.read(getBlockAddress(address), readBuffer, 0, bufferLength);
-      ReadStream is = new ReadStream();
+      ReadBuffer is = new ReadBuffer();
       
       while (address < _tailAddress
              && (next = scanItem(jIn, address, readBuffer, tempBuffer)) > 0) {

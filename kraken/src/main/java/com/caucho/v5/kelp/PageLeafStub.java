@@ -34,10 +34,10 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 
 import com.caucho.v5.baratine.InService;
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.kelp.segment.InSegment;
 import com.caucho.v5.kelp.segment.SegmentKelp;
 import com.caucho.v5.kelp.segment.SegmentStream;
-import com.caucho.v5.vfs.ReadStream;
 
 /**
  * Stub of a btree-based node
@@ -192,7 +192,7 @@ class PageLeafStub extends PageLeaf
       }
 
       try (InSegment sIn = table.openReader(_segment)) {
-        ReadStream is = sIn.in();
+        ReadBuffer is = sIn.in();
       
         //is.setPosition(_offset);
 
@@ -246,7 +246,7 @@ class PageLeafStub extends PageLeaf
     }
     
     try (InSegment sIn = table.openReader(_segment)) {
-      ReadStream is = sIn.in();
+      ReadBuffer is = sIn.in();
   
       is.setPosition(_offset);
 

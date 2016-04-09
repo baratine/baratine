@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.io.ReadBuffer;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.TempOutputStream;
 import com.caucho.v5.kelp.TableKelp;
@@ -56,7 +57,6 @@ import com.caucho.v5.util.ConcurrentArrayList;
 import com.caucho.v5.util.Crc32Caucho;
 import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.ReadStream;
 
 import io.baratine.service.Result;
 
@@ -572,7 +572,7 @@ public class SegmentServiceImpl
     SegmentExtent metaExtentInit = new SegmentExtent(0, 0, META_SEGMENT_SIZE);
     
     try (InSegment reader = openRead(metaExtentInit)) {
-      ReadStream is = reader.in();
+      ReadBuffer is = reader.in();
       
       if (! readMetaDataHeader(is)) {
         return false;
@@ -594,7 +594,7 @@ public class SegmentServiceImpl
     
     while (true) {
       try (InSegment reader = openRead(metaExtent)) {
-        ReadStream is = reader.in();
+        ReadBuffer is = reader.in();
         
         if (metaExtent.getAddress() == 0) {
           is.setPosition(META_OFFSET);
@@ -614,7 +614,7 @@ public class SegmentServiceImpl
     }
   }
   
-  private boolean readMetaDataHeader(ReadStream is)
+  private boolean readMetaDataHeader(ReadBuffer is)
     throws IOException
   {
     long magic = BitsUtil.readLong(is);
@@ -678,7 +678,7 @@ public class SegmentServiceImpl
     return true;
   }
   
-  private boolean readMetaDataEntry(ReadStream is)
+  private boolean readMetaDataEntry(ReadBuffer is)
     throws IOException
   {
     int crc = _nonce;
@@ -707,7 +707,7 @@ public class SegmentServiceImpl
     return true;
   }
   
-  private boolean readMetaTable(ReadStream is, int crc)
+  private boolean readMetaTable(ReadBuffer is, int crc)
     throws IOException
   {
     byte []key = new byte[TABLE_KEY_SIZE];
@@ -741,7 +741,7 @@ public class SegmentServiceImpl
     return true;
   }
   
-  private boolean readMetaSegment(ReadStream is, int crc)
+  private boolean readMetaSegment(ReadBuffer is, int crc)
     throws IOException
   {
     long value = BitsUtil.readLong(is);
@@ -767,7 +767,7 @@ public class SegmentServiceImpl
     return true;
   }
   
-  private boolean readMetaContinuation(ReadStream is, int crc)
+  private boolean readMetaContinuation(ReadBuffer is, int crc)
     throws IOException
   {
     long value = BitsUtil.readLong(is);

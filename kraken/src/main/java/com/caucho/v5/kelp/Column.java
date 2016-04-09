@@ -29,16 +29,16 @@
 
 package com.caucho.v5.kelp;
 
-import io.baratine.db.BlobReader;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.caucho.v5.io.IoUtil;
+import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.util.Crc64;
-import com.caucho.v5.vfs.ReadStream;
-import com.caucho.v5.vfs.WriteStream;
+
+import io.baratine.db.BlobReader;
 
 /**
  * A column for the log store.
@@ -219,7 +219,7 @@ abstract public class Column {
   }
 
   void readJournal(PageServiceImpl pageActor, 
-                   ReadStream is, 
+                   ReadBuffer is, 
                    byte[] buffer, int offset, RowCursor cursor)
     throws IOException
   {
@@ -278,13 +278,13 @@ abstract public class Column {
   // checkpoint persistence
   //
 
-  void writeCheckpoint(WriteStream os, byte[] buffer, int offset)
+  void writeCheckpoint(WriteBuffer os, byte[] buffer, int offset)
     throws IOException
   {
     os.write(buffer, offset + getOffset(), getLength());
   }
   
-  int readCheckpoint(ReadStream is, 
+  int readCheckpoint(ReadBuffer is, 
                      byte[] buffer, int rowFirst, int rowLength,
                      int blobTail)
     throws IOException

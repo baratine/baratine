@@ -38,9 +38,9 @@ import java.util.logging.Logger;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.StreamSource;
+import com.caucho.v5.io.WriteBuffer;
 import com.caucho.v5.kelp.segment.OutSegment;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.WriteStream;
 
 /**
  * page containing a single blob.
@@ -163,7 +163,7 @@ public class PageBlobTemp extends PageBlob
       throw new IllegalStateException(L.l("Attempted to write double checkpoint {0}", table));
     }
     
-    WriteStream os = sOut.out();
+    WriteBuffer os = sOut.out();
 
     if (sOut.getAvailable() < os.getPosition() + _length) {
       return null;
