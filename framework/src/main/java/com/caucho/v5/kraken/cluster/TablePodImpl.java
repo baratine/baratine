@@ -51,7 +51,7 @@ import com.caucho.v5.kraken.table.BackupTableKrakenCallback;
 import com.caucho.v5.kraken.table.ClusterServiceKraken;
 import com.caucho.v5.kraken.table.KelpManager;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.kraken.table.TablePod;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
@@ -85,7 +85,7 @@ public final class TablePodImpl implements TablePod
   // private TableKelp _table;
   // private PodKraken _podManager;
   private TablePodNode[] _tableNodes;
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   private BackupKelp _replicationCallback;
   
   private ServiceRef _updateRef;
@@ -95,7 +95,7 @@ public final class TablePodImpl implements TablePod
 
   // private RowServiceHub _triadRemoteAll;
 
-  public TablePodImpl(TableManagerKraken tableManager,
+  public TablePodImpl(KrakenImpl tableManager,
                       TableKraken table,
                       PodKraken podKraken)
   {

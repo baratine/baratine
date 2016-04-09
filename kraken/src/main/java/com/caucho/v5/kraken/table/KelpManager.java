@@ -83,7 +83,7 @@ public class KelpManager
   private static final byte []_zeroKey;
   private static final byte []_onesKey;
   
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   
   private final DatabaseKelp _db;
   //private TableKraken _objectTable;
@@ -126,7 +126,7 @@ public class KelpManager
     return _tempStore;
   }
   
-  TableManagerKraken getManager()
+  KrakenImpl getManager()
   {
     return _tableManager;
   }

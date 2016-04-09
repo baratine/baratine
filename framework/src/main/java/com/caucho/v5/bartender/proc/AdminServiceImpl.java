@@ -38,7 +38,7 @@ import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.kraken.KrakenSystem;
 import com.caucho.v5.kraken.table.ArchiveKrakenManager;
 import com.caucho.v5.kraken.table.RestoreKrakenManager;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.PathImpl;
@@ -96,7 +96,7 @@ public class AdminServiceImpl implements AdminService
   @Override
   public void backup(String tag, Result<String> result)
   {
-    Path data = RootDirectorySystem.getCurrentDataDirectory();
+    Path data = RootDirectorySystem.currentDataDirectory();
     
     Path backupDir = data.resolve("backup");
     
@@ -108,7 +108,7 @@ public class AdminServiceImpl implements AdminService
     
     String msg = L.l("backup saved in {0}", path);
     
-    TableManagerKraken manager = KrakenSystem.current().getTableManager();
+    KrakenImpl manager = KrakenSystem.current().getTableManager();
     
     ArchiveKrakenManager archive = manager.archive(path);
     
@@ -121,7 +121,7 @@ public class AdminServiceImpl implements AdminService
   public void backupLoad(String tag, Result<String> result)
   {
     try {
-      Path data = RootDirectorySystem.getCurrentDataDirectory();
+      Path data = RootDirectorySystem.currentDataDirectory();
     
       Path backupDir = data.resolve("backup");
     
@@ -135,7 +135,7 @@ public class AdminServiceImpl implements AdminService
         throw new IllegalArgumentException(L.l("tag={0} is an unknown backup directory", tag));
       }
     
-      TableManagerKraken manager = KrakenSystem.current().getTableManager();
+      KrakenImpl manager = KrakenSystem.current().getTableManager();
     
       RestoreKrakenManager restore = manager.restore(path);
     

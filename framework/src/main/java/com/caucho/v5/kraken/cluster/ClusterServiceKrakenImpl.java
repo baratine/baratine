@@ -54,7 +54,7 @@ import com.caucho.v5.kraken.query.UpdateQuery;
 import com.caucho.v5.kraken.table.ClusterServiceKraken;
 import com.caucho.v5.kraken.table.KelpManager;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.kraken.table.TablePod;
 import com.caucho.v5.store.temp.TempStore;
 import com.caucho.v5.store.temp.TempWriter;
@@ -80,13 +80,13 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
   private static final Logger log
     = Logger.getLogger(ClusterServiceKrakenImpl.class.getName());
 
-  private final TableManagerKraken _tableManager;
+  private final KrakenImpl _tableManager;
   
   private final ClientKrakenImpl _clientKraken;
   
   private HashMap<Long,ChunkedPut> _chunkMap = new HashMap<>();
 
-  ClusterServiceKrakenImpl(TableManagerKraken tableManager,
+  ClusterServiceKrakenImpl(KrakenImpl tableManager,
                            ClientKrakenImpl clientKraken)
   {
     _tableManager = tableManager;

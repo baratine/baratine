@@ -51,7 +51,7 @@ public class ArchiveReader
   private static final long INF = Integer.MAX_VALUE;
   
   private InputStream _is;
-  private TableManagerKraken _manager;
+  private KrakenImpl _manager;
   private KelpManager _backing;
   private InH3 _hIn;
   
@@ -60,7 +60,7 @@ public class ArchiveReader
 
   // private ObjectStore<?,?> _store;
 
-  ArchiveReader(TableManagerKraken manager,
+  ArchiveReader(KrakenImpl manager,
                 KelpManager backing, 
                 InputStream is)
     throws IOException

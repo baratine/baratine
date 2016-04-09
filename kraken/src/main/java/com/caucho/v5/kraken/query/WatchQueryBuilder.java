@@ -37,14 +37,14 @@ import com.caucho.v5.kelp.query.EnvKelp;
 import com.caucho.v5.kelp.query.ExprBuilderKelp;
 import com.caucho.v5.kelp.query.QueryBuilderKelp;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.L10N;
 
 public class WatchQueryBuilder extends QueryBuilderKraken
 {
   private static final L10N L = new L10N(WatchQueryBuilder.class);
   
-  private final TableManagerKraken _tableManager;
+  private final KrakenImpl _tableManager;
   
   private String _tableName;
 
@@ -56,7 +56,7 @@ public class WatchQueryBuilder extends QueryBuilderKraken
 
   private QueryBuilderKelp _builderKelp;
   
-  public WatchQueryBuilder(TableManagerKraken tableManager,
+  public WatchQueryBuilder(KrakenImpl tableManager,
                             String sql)
   {
     super(sql);

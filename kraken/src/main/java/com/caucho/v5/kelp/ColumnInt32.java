@@ -44,7 +44,7 @@ public class ColumnInt32 extends Column
   }
 
   @Override
-  public final int getLength()
+  public final int length()
   {
     return 4;
   }

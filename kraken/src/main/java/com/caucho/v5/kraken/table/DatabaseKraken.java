@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
  * This file is part of Baratine(TM)
  *
@@ -19,63 +19,23 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Baratine; if not, write to the
+ *
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Nam Nguyen
  */
 
-package com.caucho.v5.kraken.query;
+package com.caucho.v5.kraken.table;
 
 import io.baratine.service.Result;
+import io.baratine.service.Service;
 
-import com.caucho.v5.kraken.table.KrakenImpl;
-
-public class QueryBuilderShow extends QueryBuilderKraken
+@Service
+public interface DatabaseKraken
 {
-  private KrakenImpl _tableManager;
-  
-  private String _method = "table";
-  private String _name;
+  void execute(Result<Object> result, String sql, Object ... params);
 
-  public QueryBuilderShow(KrakenImpl tableManager, String sql)
-  {
-    super(sql);
-    
-    _tableManager = tableManager;
-  }
-
-  @Override
-  public void setTableName(String name)
-  {
-    _name = name;
-  }
-
-  @Override
-  public String getTableName()
-  {
-    return _name;
-  }
-
-  public KrakenImpl getTableManager()
-  {
-    return _tableManager;
-  }
-
-  @Override
-  public void build(Result<QueryKraken> result)
-  {
-    result.ok(new QueryShow(this));
-  }
-
-  public void method(String method)
-  {
-    _method = method;
-  }
-  
-  public String method()
-  {
-    return _method;
-  }
+  void query(Result<ResultSetKraken> result, String sql, Object ... params);
 }

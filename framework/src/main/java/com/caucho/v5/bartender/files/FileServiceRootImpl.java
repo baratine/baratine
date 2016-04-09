@@ -72,7 +72,7 @@ import com.caucho.v5.kelp.TableListener;
 import com.caucho.v5.kraken.KrakenSystem;
 import com.caucho.v5.kraken.query.QueryKraken;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.Crc64;
 import com.caucho.v5.util.Fnv128;
@@ -1142,7 +1142,7 @@ public class FileServiceRootImpl
 
   private TableKraken createFileTable()
   {
-    TableManagerKraken kraken = KrakenSystem.current().getTableManager();
+    KrakenImpl kraken = KrakenSystem.current().getTableManager();
 
     String name = getFileTable();
 
@@ -1183,7 +1183,7 @@ public class FileServiceRootImpl
 
   private void createFileQuery()
   {
-    TableManagerKraken kraken = KrakenSystem.current().getTableManager();
+    KrakenImpl kraken = KrakenSystem.current().getTableManager();
     String name = getFileTable();
 
     _fileInsert = kraken.query("INSERT INTO " + name

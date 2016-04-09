@@ -46,7 +46,7 @@ import com.caucho.v5.kraken.query.QueryKraken;
 import com.caucho.v5.kraken.table.PodHashGenerator;
 import com.caucho.v5.kraken.table.PodHashGeneratorColumn;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.ramp.keyvalue.StoreSync;
 
 /*
@@ -66,7 +66,7 @@ public class StoreRootRamp
   private String _insertSql;
   private String _selectSql;
   private String _removeSql;
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   private QueryKraken _insertQuery;
   private QueryKraken _removeQuery;
   private QueryKraken _selectQuery;

@@ -176,7 +176,7 @@ public class TableManagerVault<ID,T>
     sb.append(")");
 
     String sqlCreate = sb.toString();
-
+    
     _db.exec(sqlCreate);
 
     return tableInfo();
@@ -279,6 +279,7 @@ public class TableManagerVault<ID,T>
 
       return tableInfo;
     } catch (Exception e) {
+      e.printStackTrace();
       log.log(Level.FINEST, e.toString(), e);
       
       return null;

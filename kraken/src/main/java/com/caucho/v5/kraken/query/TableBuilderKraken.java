@@ -40,7 +40,7 @@ import com.caucho.v5.kelp.TableBuilderKelp;
 import com.caucho.v5.kelp.TableKelp;
 import com.caucho.v5.kraken.table.KelpManager;
 import com.caucho.v5.kraken.table.PodHashGenerator;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.L10N;
 
 public class TableBuilderKraken
@@ -86,6 +86,11 @@ public class TableBuilderKraken
   public String getSql()
   {
     return _sql;
+  }
+
+  public void addInt8(String name)
+  {
+    _columnMap.put(name, new Int8Col(name));
   }
 
   public void addInt16(String name)
@@ -232,7 +237,7 @@ public class TableBuilderKraken
     return _columnMap.get(name);
   }
 
-  public void create(TableManagerKraken tableManager,
+  public void create(KrakenImpl tableManager,
                      Result<Object> result)
   {
     Objects.requireNonNull(tableManager);
@@ -375,6 +380,19 @@ public class TableBuilderKraken
     public void build(TableBuilderKelp builder)
     {
       throw new UnsupportedOperationException(getClass().getName());
+    }
+  }
+  
+  private static class Int8Col extends Col {
+    private Int8Col(String name)
+    {
+      super(name);
+    }
+
+    @Override
+    public void build(TableBuilderKelp builder)
+    {
+      builder.columnInt8(getName());
     }
   }
   

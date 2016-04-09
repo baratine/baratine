@@ -65,7 +65,7 @@ public final class Row {
     
     int length = 0;
     for (int i = 0; i < columns.length; i++) {
-      length += columns[i].getLength();
+      length += columns[i].length();
     }
     
     _length = length;

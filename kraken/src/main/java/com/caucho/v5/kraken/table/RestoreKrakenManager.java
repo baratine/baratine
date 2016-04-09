@@ -46,9 +46,9 @@ public class RestoreKrakenManager
     = Logger.getLogger(RestoreKrakenManager.class.getName());
     
   private Path _path;
-  private TableManagerKraken _manager;
+  private KrakenImpl _manager;
   
-  public RestoreKrakenManager(TableManagerKraken manager,
+  public RestoreKrakenManager(KrakenImpl manager,
                               Path path)
   {
     Objects.requireNonNull(manager);

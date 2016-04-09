@@ -30,21 +30,20 @@
 package com.caucho.v5.kraken.table;
 
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.kelp.RowCursor;
 import com.caucho.v5.kelp.TableKelp;
+import com.caucho.v5.kraken.Kraken;
 import com.caucho.v5.kraken.query.QueryBuilderKraken;
 import com.caucho.v5.kraken.query.QueryKraken;
 import com.caucho.v5.kraken.query.QueryParserKraken;
 import com.caucho.v5.lifecycle.Lifecycle;
-import com.caucho.v5.store.temp.TempFileSystem;
 import com.caucho.v5.store.temp.TempStore;
-import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.db.Cursor;
@@ -57,14 +56,14 @@ import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
 
 /**
- * Manages the distributed cache
+ * Kraken manager
  */
-public final class TableManagerKraken
+public final class KrakenImpl implements Kraken
 {
-  private static final L10N L = new L10N(TableManagerKraken.class);
-  
-  private final SystemManager _resinSystem;
-  private final ServicesAmp _ampManager;
+  private static final L10N L = new L10N(KrakenImpl.class);
+
+  private final Path _root;
+  private final ServicesAmp _services;
 
   
   // private final ClientKraken _clusterClient;
@@ -91,20 +90,39 @@ public final class TableManagerKraken
 
   private boolean _isCluster;
 
+  private DatabaseKraken _database;
+
+  private DatabaseKrakenSync _databaseSync;
+
   // private boolean _isClusterStarted;
   
-  public TableManagerKraken(SystemManager resinSystem,
-                            ServerBartender serverSelf)
+  public KrakenImpl(KrakenBuilderImpl builder)
   {
-    _resinSystem = resinSystem;
-    _serverSelf = serverSelf;
-    _ampManager = AmpSystem.currentManager();
+    _root = builder.root();
+    Objects.requireNonNull(_root);
+    
+    _serverSelf = builder.serverSelf();
+    _services = builder.services();
     // new AdminPersistentStore(this);
+    
+    _tempStore = builder.tempStore();
+    
     
     _kelpManagerBuilder = new KelpManagerBuilder(this);
     
     //_isCluster = BartenderSystem.current() != null;
     _isCluster = false;
+    
+    ServiceRefAmp databaseRef
+      = _services.newService(new DatabaseKrakenImpl(this)).ref();
+  
+    _database = databaseRef.as(DatabaseKraken.class); 
+    _databaseSync = databaseRef.as(DatabaseKrakenSync.class);
+  }
+
+  public Path root()
+  {
+    return _root;
   }
 
   /*
@@ -133,6 +151,19 @@ public final class TableManagerKraken
   {
     return _isCluster;
   }
+  
+  @Override
+  public DatabaseKraken database()
+  {
+    return _database;
+  }
+  
+  @Override
+  public DatabaseKrakenSync databaseSync()
+  {
+    return _databaseSync;
+  }
+  
   /*
   public void setClusterClient(ClientKraken clusterEngine)
   {
@@ -156,9 +187,9 @@ public final class TableManagerKraken
     return _tableService;
   }
 
-  public ServicesAmp getManager()
+  public ServicesAmp services()
   {
-    return _ampManager;
+    return _services;
   }
 
   public ArchiveServiceSync getArchiveService()
@@ -208,7 +239,7 @@ public final class TableManagerKraken
     return _tableService.getTables();
   }
   
-  public TempStore getTempStore()
+  public TempStore tempStore()
   {
     return _tempStore;
   }
@@ -219,28 +250,21 @@ public final class TableManagerKraken
       return;
     }
     
-    _tempStore = TempFileSystem.getCurrent().getTempStore();
-    
-    ServicesAmp rampManager = AmpSystem.currentManager();
-    
     _kelpBacking = _kelpManagerBuilder.build();
     
     TableManagerServiceImpl tableService = new TableManagerServiceImpl(this);
     
-    _serviceRef = rampManager.newService(tableService).ref();
+    _serviceRef = _services.newService(tableService).ref();
     _tableService = _serviceRef.as(TableManagerServiceSync.class);
     
     WatchServiceImpl watchService = new WatchServiceImpl(this);
-    _watchService = rampManager.newService(watchService).as(WatchService.class);
+    _watchService = _services.newService(watchService).as(WatchService.class);
     
     ArchiveServiceImpl archiveService = new ArchiveServiceImpl(this);
-    _archiveService = rampManager.newService(archiveService)
+    _archiveService = _services.newService(archiveService)
                                  .as(ArchiveServiceSync.class);
 
-    //_clusterClient = new ClientKrakenImpl(this);
     _tableService.startLocal();
-    
-    // _kelpBacking.start();
   }
   
   public void startCluster()
@@ -363,7 +387,7 @@ public final class TableManagerKraken
   {
     QueryBuilderKraken query = QueryParserKraken.parse(this, sql);
       
-    return _ampManager.run(10, TimeUnit.SECONDS,
+    return _services.run(10, TimeUnit.SECONDS,
                     result->query.build(result.of((q,r)->q.exec(r, params))));
   }
 
@@ -669,36 +693,6 @@ public final class TableManagerKraken
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _resinSystem.getId() + "]";
+    return getClass().getSimpleName() + "[" + _root + "]";
   }
-  
-  /*
-  private class FindStreamResult implements Result<TableKraken>
-  {
-    private ResultStream<Cursor> _result;
-    private QueryBuilderKraken _builder;
-    private Object []_args;
-    
-    FindStreamResult(ResultStream<Cursor> result,
-                     QueryBuilderKraken builder,
-                     Object []args)
-    {
-      _result = result;
-      _builder = builder;
-      _args = args;
-    }
-    
-    @Override
-    public void complete(TableKraken table)
-    {
-      findStream(_builder.build(), _args, _result);
-    }
-    
-    @Override
-    public void fail(Throwable e)
-    {
-      _result.fail(e);
-    }
-  }
-  */
 }

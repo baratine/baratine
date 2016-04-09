@@ -64,7 +64,7 @@ public class TableManagerServiceImpl implements TableManagerService
   private static final L10N L = new L10N(TableManagerServiceImpl.class);
   private static final Logger log = Logger.getLogger(TableManagerServiceImpl.class.getName());
   
-  private final TableManagerKraken _tableManager;
+  private final KrakenImpl _tableManager;
   
   private ConcurrentHashMap<HashKey,TableKraken> _tableMap = new ConcurrentHashMap<>();
   private HashMap<String,TableKraken> _tableNameMap = new HashMap<>();
@@ -82,7 +82,7 @@ public class TableManagerServiceImpl implements TableManagerService
 
   private boolean _isClusterStarted;
   
-  public TableManagerServiceImpl(TableManagerKraken tableManager)
+  public TableManagerServiceImpl(KrakenImpl tableManager)
   {
     _tableManager = tableManager;
     
@@ -320,7 +320,8 @@ public class TableManagerServiceImpl implements TableManagerService
         tableName = tableNameKelp;
       }
       
-      PodKrakenAmp podManager = null;//_clusterClient.getPod(podName);
+      //PodKrakenAmp podManager = null;//_clusterClient.getPod(podName);
+      PodKrakenAmp podManager = new PodKrakenLocal(_tableManager, _tableManager.services());
       
       tableKraken = new TableKraken(_tableManager, tableName, 
                                     tableKelp, builder,
@@ -362,7 +363,7 @@ public class TableManagerServiceImpl implements TableManagerService
     TablePod tablePod = _metaTable.getTablePod();
 
     tablePod.findByName(tableName,
-                        result.of((key,r)->loadTableByKey(key, r)));
+                        result.of(this::loadTableByKey));
   }
 
   @Override

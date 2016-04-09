@@ -46,7 +46,7 @@ public class ArchiveOnLoad
 {
   private static final long INF = Integer.MAX_VALUE;
   
-  private TableManagerKraken _manager;
+  private KrakenImpl _manager;
   private OutH3 _out;
   
   private byte []_key;
@@ -54,7 +54,7 @@ public class ArchiveOnLoad
   private byte []_lastStoreKey;
   private boolean _isFirst = true;
   
-  ArchiveOnLoad(TableManagerKraken manager, WriteBuffer os)
+  ArchiveOnLoad(KrakenImpl manager, WriteBuffer os)
     throws IOException
   {
     _manager = manager;

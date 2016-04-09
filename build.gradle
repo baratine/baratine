@@ -44,6 +44,14 @@ project(':web') {
   }
 }
 
+project(':kraken') {
+  dependencies {
+    compile project(':api')
+    compile project(':core')
+    compile project(':web')
+  }
+}
+
 project(':framework') {
   apply plugin: 'application'
 
@@ -51,6 +59,7 @@ project(':framework') {
     compile project(':api')
     compile project(':core')
     compile project(':web')
+    compile project(':kraken')
 //    compile project(':hessian')
   }
 

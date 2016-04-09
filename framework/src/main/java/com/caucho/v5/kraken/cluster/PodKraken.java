@@ -39,7 +39,7 @@ import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.kraken.table.ClusterServiceKraken;
 import com.caucho.v5.kraken.table.PodKrakenAmp;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 
 import io.baratine.service.ServiceRef;
 
@@ -56,7 +56,7 @@ public class PodKraken implements PodKrakenAmp
 
   private ServicesAmp _rampManager;
   
-  public PodKraken(TableManagerKraken krakenManager,
+  public PodKraken(KrakenImpl krakenManager,
                    ServicesAmp rampManager,
                    PodBartender pod)
   {

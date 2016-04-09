@@ -53,7 +53,7 @@ import io.baratine.service.ServiceRef;
  */
 public class WatchServiceImpl implements WatchService
 {
-  private final TableManagerKraken _tableManager;
+  private final KrakenImpl _tableManager;
   
   private final HashMap<TableKraken,WatchTable> _tableMap = new HashMap<>();
   //private final HashMap<TableKraken,WatchTable> _tableMapRemote = new HashMap<>();
@@ -62,7 +62,7 @@ public class WatchServiceImpl implements WatchService
 
   private ServiceRef _serviceRef;
 
-  public WatchServiceImpl(TableManagerKraken tableManager)
+  public WatchServiceImpl(KrakenImpl tableManager)
   {
     Objects.requireNonNull(tableManager);
     

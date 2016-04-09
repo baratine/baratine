@@ -40,7 +40,7 @@ import java.util.HashMap;
  * Entry to the distributed database system.
  */
 @Service
-public class DatabaseSchemeServiceRamp
+public class SchemeDatabaseRamp
 {
   private HashMap<String,DatabaseService> _dbMap = new HashMap<>();
   

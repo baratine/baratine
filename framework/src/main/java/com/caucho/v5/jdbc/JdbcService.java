@@ -47,7 +47,7 @@ public interface JdbcService
   void executeBatch(Result<List<Integer>> result, String sql, List<Object> ... params);
   void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params);
 
-  void query(Result<JdbcResultSet> result, String sql, Object ... params);
-  void queryBatch(Result<List<JdbcResultSet>> result, String sql, List<Object> ... paramsList);
-  void queryBatch(Result<List<JdbcResultSet>> result, List<String> sqlList, List<Object> ... paramsList);
+  void query(Result<ResultSetKraken> result, String sql, Object ... params);
+  void queryBatch(Result<List<ResultSetKraken>> result, String sql, List<Object> ... paramsList);
+  void queryBatch(Result<List<ResultSetKraken>> result, List<String> sqlList, List<Object> ... paramsList);
 }

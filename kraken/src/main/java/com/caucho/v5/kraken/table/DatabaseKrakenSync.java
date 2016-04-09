@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -24,33 +24,17 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Nam Nguyen
  */
 
-package com.caucho.v5.amp.queue;
+package com.caucho.v5.kraken.table;
 
-interface ArrayRing<T>
+import io.baratine.service.Service;
+
+@Service
+public interface DatabaseKrakenSync extends DatabaseKraken
 {
-  int getLength();
-  
-  T get(long index);
-  
-  void set(long index, T value);
-  
-  void setLazy(long index, T value);
-  
-  /**
-   * Polls the array item until a value is available, then clears
-   * the array.
-   */
-  T takeAndClear(long index);
+  Object execute(String sql, Object ... params);
 
-   /**
-   * Polls the array item. If a value is available, clear the array.
-   */
-  T pollAndClear(long tailAlloc);
-
-  int getIndex(long tail);
-
-  void clear(long start, long end);
+  ResultSetKraken query(String sql, Object ... params);
 }

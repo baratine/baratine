@@ -60,7 +60,7 @@ public class ColumnState extends Column
   }
 
   @Override
-  public final int getLength()
+  public final int length()
   {
     return LENGTH;
   }

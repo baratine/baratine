@@ -112,7 +112,7 @@ public class RootDirectorySystem extends SubSystemBase
   /**
    * Returns the data directory for current active directory service.
    */
-  public static Path getCurrentDataDirectory()
+  public static Path currentDataDirectory()
   {
     RootDirectorySystem rootService = getCurrent();
     

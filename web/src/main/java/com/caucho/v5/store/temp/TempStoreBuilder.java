@@ -60,7 +60,7 @@ public class TempStoreBuilder
     return _ampManager;
   }
   
-  public void ampManager(ServicesAmp ampManager)
+  public void services(ServicesAmp ampManager)
   {
     Objects.requireNonNull(ampManager);
     

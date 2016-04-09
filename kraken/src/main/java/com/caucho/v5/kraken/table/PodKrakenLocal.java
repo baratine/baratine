@@ -49,12 +49,12 @@ public class PodKrakenLocal implements PodKrakenAmp
 
   private ServicesAmp _rampManager;
   
-  public PodKrakenLocal(TableManagerKraken krakenManager,
-                        ServicesAmp rampManager)
+  public PodKrakenLocal(KrakenImpl krakenManager,
+                        ServicesAmp services)
   {
     Objects.requireNonNull(krakenManager);
     
-    _rampManager = rampManager;
+    _rampManager = services;
   }
 
   /**

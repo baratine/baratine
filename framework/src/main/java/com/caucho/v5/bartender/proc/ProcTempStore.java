@@ -33,7 +33,7 @@ import java.io.IOException;
 
 import com.caucho.v5.baratine.ServiceApi;
 import com.caucho.v5.io.WriteBuffer;
-import com.caucho.v5.store.temp.TempFileSystem;
+import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.store.temp.TempStore;
 
 import io.baratine.files.BfsFileSync;
@@ -50,10 +50,10 @@ public class ProcTempStore extends ProcFileBase
   {
     super("/temp-store");
     
-    TempFileSystem tempSystem = TempFileSystem.getCurrent();
+    TempStoreSystem tempSystem = TempStoreSystem.current();
     
     if (tempSystem != null) {
-      _tempStore = tempSystem.getTempStore();
+      _tempStore = tempSystem.tempStore();
     }
   }
   

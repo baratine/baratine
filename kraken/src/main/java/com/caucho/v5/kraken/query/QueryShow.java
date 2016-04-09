@@ -35,7 +35,7 @@ import com.caucho.v5.kelp.TableKelp;
 import com.caucho.v5.kraken.info.ColumnInfo;
 import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
 
@@ -46,7 +46,7 @@ public class QueryShow extends QueryKraken
   private static final L10N L = new L10N(QueryShow.class);
   private static final Logger log = Logger.getLogger(QueryShow.class.getName());
   
-  private final TableManagerKraken _tableManager;
+  private final KrakenImpl _kraken;
   private final String _tableName;
 
   private String _method;
@@ -55,7 +55,7 @@ public class QueryShow extends QueryKraken
   {
     super(builder.sql());
     
-    _tableManager = builder.getTableManager();
+    _kraken = builder.getTableManager();
     _tableName = builder.getTableName();
     _method = builder.method();
   }
@@ -64,7 +64,7 @@ public class QueryShow extends QueryKraken
   public void exec(Result<Object> result,
                    Object ...params)
   {
-    _tableManager.loadTable(_tableName, 
+    _kraken.loadTable(_tableName, 
                             result.of((table,r)->execQuery(r,table,params)));
   }
   
@@ -114,7 +114,11 @@ public class QueryShow extends QueryKraken
       isFirst = false;
       
       sb.append("\n  ").append(col.name());
-      sb.append(" ").append(col.getType());
+      sb.append(" ").append(col.type());
+      
+      if (col.size() > 0) {
+        sb.append("(" + col.size() + ")");
+      }
     }
     
     sb.append("\n)");

@@ -70,9 +70,14 @@ abstract public class Column {
     return _name;
   }
 
-  public ColumnType getType()
+  public ColumnType type()
   {
     return _type;
+  }
+  
+  public int size()
+  {
+    return 0;
   }
   
   public final int getOffset()
@@ -80,7 +85,7 @@ abstract public class Column {
     return _offset;
   }
   
-  abstract public int getLength();
+  abstract public int length();
   
   //
   // lifecycle
@@ -148,10 +153,10 @@ abstract public class Column {
   
   public long crc64(long crc64)
   {
-    crc64 = Crc64.generate(crc64, getType().name());
+    crc64 = Crc64.generate(crc64, type().name());
     crc64 = Crc64.generate(crc64, name());
     crc64 = Crc64.generate(crc64, getOffset());
-    crc64 = Crc64.generate(crc64, getLength());
+    crc64 = Crc64.generate(crc64, length());
     
     return crc64;
   }
@@ -215,7 +220,7 @@ abstract public class Column {
                     BlobOutputStream blob)
     throws IOException
   {
-    os.write(buffer, offset + getOffset(), getLength());
+    os.write(buffer, offset + getOffset(), length());
   }
 
   void readJournal(PageServiceImpl pageActor, 
@@ -223,14 +228,14 @@ abstract public class Column {
                    byte[] buffer, int offset, RowCursor cursor)
     throws IOException
   {
-    is.readAll(buffer, offset + getOffset(), getLength());
+    is.readAll(buffer, offset + getOffset(), length());
   }
 
   void readStream(InputStream is, 
                   byte[] buffer, int offset, RowCursor cursor)
     throws IOException
   {
-    IoUtil.readAll(is, buffer, offset + getOffset(), getLength());
+    IoUtil.readAll(is, buffer, offset + getOffset(), length());
   }
 
   void readStreamBlob(InputStream is, 
@@ -258,7 +263,7 @@ abstract public class Column {
   void writeStream(OutputStream os, byte[] buffer, int offset)
     throws IOException
   {
-    os.write(buffer, offset + getOffset(), getLength());
+    os.write(buffer, offset + getOffset(), length());
   }
 
   void writeStreamBlob(OutputStream os, byte[] buffer, int offset,
@@ -271,7 +276,7 @@ abstract public class Column {
   public long getLength(long length, byte[] buffer, int rowOffset,
                         PageServiceImpl pageService)
   {
-    return length + getLength();
+    return length + length();
   }
   
   //
@@ -281,7 +286,7 @@ abstract public class Column {
   void writeCheckpoint(WriteBuffer os, byte[] buffer, int offset)
     throws IOException
   {
-    os.write(buffer, offset + getOffset(), getLength());
+    os.write(buffer, offset + getOffset(), length());
   }
   
   int readCheckpoint(ReadBuffer is, 
@@ -289,7 +294,7 @@ abstract public class Column {
                      int blobTail)
     throws IOException
   {
-    is.readAll(buffer, rowFirst + getOffset(), getLength());
+    is.readAll(buffer, rowFirst + getOffset(), length());
 
     return blobTail;
   }

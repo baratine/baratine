@@ -64,7 +64,7 @@ import com.caucho.v5.io.SocketSystem;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.network.NetworkSystem;
-import com.caucho.v5.store.temp.TempFileSystem;
+import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
@@ -824,7 +824,7 @@ public class ServerBuilder
 
   protected void addServices(ServerBartender selfServer)
   {
-    TempFileSystem.createAndAddSystem();
+    TempStoreSystem.createAndAddSystem();
     
     // XXX: KrakenSystem.createAndAddSystem(selfServer);
     
@@ -1130,11 +1130,11 @@ public class ServerBuilder
     return getClass().getSimpleName() + "[]";
   }
   
-  private static class ServerBartenderSelf extends ServerBartender
+  public static class ServerBartenderSelf extends ServerBartender
   {
     private ClusterBartender _cluster = new ClusterBartenderSelf();
     
-    ServerBartenderSelf(String address, int port)
+    public ServerBartenderSelf(String address, int port)
     {
       super(address, port);
     }

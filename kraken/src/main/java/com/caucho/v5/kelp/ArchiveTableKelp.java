@@ -168,7 +168,7 @@ public class ArchiveTableKelp
       }
   
       columns.add(col.name());
-      columns.add(col.getType().toString());
+      columns.add(col.type().toString());
     }
     
     out.writeString("columns");
@@ -219,7 +219,7 @@ public class ArchiveTableKelp
       for (int i = 1; i < columns.length; i++) {
         Column col = columns[i];
         
-        switch (col.getType()) {
+        switch (col.type()) {
         case INT16:
         case INT32:
           out.writeLong(cursor.getInt(i));
@@ -260,7 +260,7 @@ public class ArchiveTableKelp
           
         default:
           throw new UnsupportedOperationException(L.l("Unknown column type: {0} for {1}",
-                                                      col.getType(), col));
+                                                      col.type(), col));
         }
       }
     }

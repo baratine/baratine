@@ -245,7 +245,7 @@ public final class RowCursor
   
   public void setRemoveState()
   {
-    int stateTail = getColumnState().getLength();
+    int stateTail = getColumnState().length();
     
     Arrays.fill(_data, stateTail, _keyOffset, (byte) 0);
     
@@ -303,7 +303,7 @@ public final class RowCursor
 
   public byte []getBytes(int index)
   {
-    byte[] buffer = new byte[_row.getColumns()[index].getLength()];
+    byte[] buffer = new byte[_row.getColumns()[index].length()];
     
     getBytes(index, buffer, 0);
     
@@ -643,7 +643,7 @@ public final class RowCursor
     int code = buffer[rowOffset];
     
     if ((code & Page.CODE_MASK) == Page.REMOVE) {
-      int stateLength = getColumnState().getLength();
+      int stateLength = getColumnState().length();
       int keyOffset = getRow().getKeyOffset();
       int keyLength = getKeyLength();
       
@@ -728,7 +728,7 @@ public final class RowCursor
     for (; i < columns.length; i++) {
       Column column = columns[i];
       
-      if (column.getType() == ColumnType.BLOB) {
+      if (column.type() == ColumnType.BLOB) {
         return (ColumnBlob) column;
       }
     }

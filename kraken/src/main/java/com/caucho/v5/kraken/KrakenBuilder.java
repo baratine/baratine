@@ -19,6 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Baratine; if not, write to the
+ *
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
@@ -26,56 +27,24 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.query;
+package com.caucho.v5.kraken;
 
-import io.baratine.service.Result;
+import java.nio.file.Path;
 
-import com.caucho.v5.kraken.table.KrakenImpl;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.bartender.ServerBartender;
+import com.caucho.v5.store.temp.TempStore;
 
-public class QueryBuilderShow extends QueryBuilderKraken
+/**
+ * Standalone kraken builder.
+ */
+public interface KrakenBuilder
 {
-  private KrakenImpl _tableManager;
+  void root(Path path);
   
-  private String _method = "table";
-  private String _name;
-
-  public QueryBuilderShow(KrakenImpl tableManager, String sql)
-  {
-    super(sql);
-    
-    _tableManager = tableManager;
-  }
-
-  @Override
-  public void setTableName(String name)
-  {
-    _name = name;
-  }
-
-  @Override
-  public String getTableName()
-  {
-    return _name;
-  }
-
-  public KrakenImpl getTableManager()
-  {
-    return _tableManager;
-  }
-
-  @Override
-  public void build(Result<QueryKraken> result)
-  {
-    result.ok(new QueryShow(this));
-  }
-
-  public void method(String method)
-  {
-    _method = method;
-  }
+  void services(ServicesAmp currentManager);
+  void serverSelf(ServerBartender serverSelf);
+  void tempStore(TempStore tempStore);
   
-  public String method()
-  {
-    return _method;
-  }
+  Kraken get();
 }

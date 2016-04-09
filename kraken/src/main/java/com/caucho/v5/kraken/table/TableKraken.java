@@ -69,11 +69,11 @@ public class TableKraken
   private ExprKelp []_selectExprs;
   private String _tableName;
   private PodHashGenerator _hashGen;
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   private String _sql;
   private OutFactoryH3 _serializerFactory;
   
-  public TableKraken(TableManagerKraken tableManager,
+  public TableKraken(KrakenImpl tableManager,
                      String tableName,
                      TableKelp tableKelp,
                      TableBuilderKraken builder,
@@ -154,14 +154,14 @@ public class TableKraken
     return _sql;
   }
 
-  public TableManagerKraken tableManager()
+  public KrakenImpl tableManager()
   {
     return _tableManager;
   }
 
   public ServicesAmp getManager()
   {
-    return _tableManager.getManager();
+    return _tableManager.services();
   }
 
   public Column getColumn(String name)
@@ -293,7 +293,7 @@ public class TableKraken
   public void fillHashKey(RowCursor rowCursor, Column keyColumn, String value)
   {
     int offset = keyColumn.getOffset();
-    int length = keyColumn.getLength();
+    int length = keyColumn.length();
     
     int sublen = Math.min(value.length(), 8);
     

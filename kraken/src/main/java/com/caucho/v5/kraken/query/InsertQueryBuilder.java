@@ -34,7 +34,7 @@ import com.caucho.v5.h3.OutFactoryH3;
 import com.caucho.v5.kelp.Column;
 import com.caucho.v5.kraken.table.PodHashGenerator;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 
 import io.baratine.service.Result;
 
@@ -43,7 +43,7 @@ public class InsertQueryBuilder extends QueryBuilderKraken
   private TableKraken _table;
   private ArrayList<Column> _columns;
   private ArrayList<ExprKraken> _values;
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   private QueryParserKraken _parser;
   
   public InsertQueryBuilder(QueryParserKraken parser,

@@ -38,16 +38,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JdbcResultSet implements Iterable<Map<String,Object>>
+public class ResultSetKraken implements Iterable<Map<String,Object>>
 {
   private List<String> _nameList = new ArrayList<>();
   private List<Map<String,Object>> _rows = new ArrayList<>();
 
-  public JdbcResultSet()
+  public ResultSetKraken()
   {
   }
 
-  public JdbcResultSet(ResultSet rs)
+  public ResultSetKraken(ResultSet rs)
     throws SQLException
   {
     ResultSetMetaData md = rs.getMetaData();

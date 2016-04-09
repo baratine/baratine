@@ -33,7 +33,7 @@ import io.baratine.service.Result;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.L10N;
 
 
@@ -41,11 +41,11 @@ public class CreateQueryBuilder extends QueryBuilderKraken
 {
   private static final L10N L = new L10N(CreateQueryBuilder.class);
   
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   private TableBuilderKraken _factory;
   private HashMap<String, String> _propMap;
   
-  public CreateQueryBuilder(TableManagerKraken tableManager,
+  public CreateQueryBuilder(KrakenImpl tableManager,
                             TableBuilderKraken factory,
                             String sql,
                             HashMap<String,String> propMap)

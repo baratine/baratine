@@ -42,74 +42,46 @@ import com.caucho.v5.util.L10N;
 /**
  * Value queue with atomic reference.
  */
-public final class QueueRingSingleWriter<M>
+public final class QueueRingForPipe<M>
   extends QueueRingBase<M>
 {
-  private static final L10N L = new L10N(QueueRingSingleWriter.class);
+  private static final L10N L = new L10N(QueueRingForPipe.class);
   
   // private final RingValueArray<M> _ring;
   private final ArrayRing<M> _ring;
-  private final RingTailGetter<M> _tailGetter; 
-  private final RingNonTailGetter<M> _nonTailGetter; 
   
   // private final RingUnsafeArray<T> _ring;
   private final int _capacity;
   
-  private final AtomicLong []_counterGroup;
+  //private final AtomicLong _headRef;
+  //private final AtomicLong _tail;
   
   private final AtomicLong _headRef;
-  
-  private final AtomicLong _tail;
+  private final AtomicLong _tailRef;
   
   private final RingBlocker _blocker;
   
   private volatile boolean _isWriteClosed;
   
-  public QueueRingSingleWriter(int capacity)
-  {
-    this(capacity, CounterBuilder.create(1));
-  }
-  
-  public QueueRingSingleWriter(int capacity,
-                           CounterBuilder counterBuilder)
-  {
-    this(capacity, 0, counterBuilder, new RingBlockerBasic());
-  }
-    
-  public QueueRingSingleWriter(int capacity,
-                                    int initialIndex,
-                                    CounterBuilder counterBuilder,
-                                    RingBlocker blocker)
+  public QueueRingForPipe(int capacity)
   {
     if (Integer.bitCount(capacity) != 1 || capacity < 2) {
       throw new IllegalArgumentException(L.l("Invalid ring capacity {0}",
                                              Long.toHexString(capacity)));
     }
     
-    if (blocker == null) {
-      throw new NullPointerException(L.l("RingBlocker is required"));
-    }
+    RingBlockerBasic blocker = new RingBlockerBasic();
 
     _capacity = capacity;
-
-    ArrayRing<M> ring = null;
     
-    // ring = RingValueArrayUnsafe.create(capacity);
+    _ring = new ArrayRingPlain<M>(capacity);
     
-    if (ring == null) {
-      //ring = new ArrayRingAtomic<M>(capacity);
-      ring = new ArrayRingPlain<M>(capacity);
-    }
+    //_headRef = new AtomicLong();
+    _headRef = new AtomicLong();
+    _tailRef = new AtomicLong();
     
-    _ring = ring; 
-    
-    _tailGetter = new RingTailGetter<M>(_ring);
-    _nonTailGetter = new RingNonTailGetter<M>(_ring);
-    
-    _counterGroup = counterBuilder.build(initialIndex);
-    
-    _headRef = _counterGroup[0];
-    _tail = _counterGroup[_counterGroup.length - 1];
+    //_headRef = counterGroup[0];
+    //_tail = counterGroup[counterGroup.length - 1];
     
     _blocker = blocker;
   }
@@ -130,14 +102,14 @@ public final class QueueRingSingleWriter<M>
   @Override
   public final boolean isEmpty()
   {
-    return _headRef.get() == _tail.get();
+    return _headRef.get() == _tailRef.get();
   }
   
   @Override
   public final int size()
   {
     long head = _headRef.get();
-    long tail = _tail.get();
+    long tail = _tailRef.get();
     
     return (int) (head - tail);
   }
@@ -160,18 +132,18 @@ public final class QueueRingSingleWriter<M>
   
   public final long getTail()
   {
-    return _tail.get();
+    return _tailRef.get();
   }
   
   public final long getTailAlloc()
   {
-    return _tail.get();
+    return _tailRef.get();
   }
   
   @Override
   public int counterGroupSize()
   {
-    return _counterGroup.length;
+    return 2;
   }
   
   /*
@@ -213,26 +185,26 @@ public final class QueueRingSingleWriter<M>
     
     // completePoll();
     
-    final AtomicLong headRef = _headRef;
-    final AtomicLong tailRef = _tail;
-    final int capacity = _capacity;
+    //final AtomicLong headRef = _headRef;
+    //final AtomicLong tailRef = _tail;
+    //final int capacity = _capacity;
     
     while (true) {
       // final AtomicReferenceArray<T> ring = _ring;
-      final long tail = tailRef.get();
-      final long head = headRef.get();
+      final long tail = _tailRef.get();
+      final long head = _headRef.get();
       final long nextHead = head + 1;
 
-      if (nextHead - tail < capacity) {
+      if (nextHead - tail < _capacity) {
         _ring.setLazy(head, value);
-        headRef.lazySet(nextHead);
+        _headRef.lazySet(nextHead);
 
         return true;
       }
       else {
         long offerSequence = _blocker.nextOfferSequence();
         
-        if (capacity <= headRef.get() + 1 - tailRef.get()
+        if (_capacity <= head + 1 - tail
             && ! _blocker.offerWait(offerSequence, timeout, unit)) {
           return false;
         }
@@ -244,7 +216,7 @@ public final class QueueRingSingleWriter<M>
   public final M peek()
   {
     long head = _headRef.get();
-    long tailAlloc = _tail.get();
+    long tailAlloc = _tailRef.get();
     
     if (tailAlloc < head) {
       return get(tailAlloc);
@@ -257,16 +229,16 @@ public final class QueueRingSingleWriter<M>
   public final M poll(long timeout, TimeUnit unit)
   {
     // final AtomicLong tailAllocRef = _tailAlloc;
-    final AtomicLong headRef = _headRef;
-    final AtomicLong tailRef = _tail;
+    //final AtomicLong headRef = _headRef;
+    //final AtomicLong tailRef = _tail;
     
     final ArrayRing<M> ring = _ring;
 
     final RingBlocker blocker = _blocker;
     
     while (true) {
-      long tail = tailRef.get();
-      final long head = headRef.get();
+      long tail = _tailRef.get();
+      final long head = _headRef.get();
       
       M value;
       
@@ -279,7 +251,7 @@ public final class QueueRingSingleWriter<M>
         
         long pollSequence = blocker.nextPollSequence();
         
-        if (headRef.get() == tailRef.get()
+        if (_headRef.get() == _tailRef.get()
             && ! blocker.pollWait(pollSequence, timeout, unit)) {
           // repeat test after pollSequence allocation because of wake
           // timing
@@ -287,14 +259,10 @@ public final class QueueRingSingleWriter<M>
         }
       }
       else if ((value = ring.pollAndClear(tail)) != null) {
-        if (tailRef.compareAndSet(tail, tail + 1)) {
-          blocker.offerWake();
+        _tailRef.set(tail + 1);
+        blocker.offerWake();
           
-          return value;
-        }
-        else {
-          ring.set(tail, value);
-        }
+        return value;
       }
     }
   }
@@ -304,18 +272,15 @@ public final class QueueRingSingleWriter<M>
                       final Outbox outbox)
     throws Exception
   {
-    final AtomicLong headCounter = _headRef;
-    final AtomicLong tailCounter = _tail;
-    
-    long initialTail = tailCounter.get();
+    long initialTail = _tailRef.get();
     long tail = initialTail;
-    long head = headCounter.get();
+    long head = _headRef.get();
     
     try {
       do {
         tail = deliver(head, tail, deliver, outbox);
       
-        head = headCounter.get();
+        head = _headRef.get();
       } while (tail < head);
     } finally {
       _blocker.offerWake();
@@ -334,12 +299,12 @@ public final class QueueRingSingleWriter<M>
   {
     final int tailChunk = 32;
     final ArrayRing<M> ring = _ring;
-    final AtomicLong tailCounter = _tail;
     
     long lastTail = tail;
 
     try {
       while (tail < head) {
+        //long tailChunkStart = tail;
         long tailChunkEnd = Math.min(head, tail + tailChunk);
     
         while (tail < tailChunkEnd) {
@@ -352,12 +317,13 @@ public final class QueueRingSingleWriter<M>
           }
         }
         
-        tailCounter.set(tail);
+        //ring.clear(tailChunkStart, tailChunkEnd);
+        _tailRef.lazySet(tail);
         lastTail = tail;
       }
     } finally {
       if (tail != lastTail) {
-        tailCounter.set(tail);
+        _tailRef.lazySet(tail);
       }
     }
 
@@ -373,45 +339,7 @@ public final class QueueRingSingleWriter<M>
                       boolean isTail)
     throws Exception
   {
-    final AtomicLong []counterGroup = _counterGroup;
-    final AtomicLong headCounter = counterGroup[headIndex];
-    final AtomicLong tailCounter = counterGroup[tailIndex];
-    
-    final RingGetter<M> ringGetter = isTail ? _tailGetter : _nonTailGetter;
-    
-    int tailChunk = 2;
-    long initialTail = tailCounter.get();
-    long tail = initialTail;
-    long head = headCounter.get();
-    
-    try {
-      do {
-        long tailChunkEnd = Math.min(head, tail + tailChunk);
-
-        while (tail < tailChunkEnd) {
-          M item = ringGetter.get(tail);
-          
-          if (item != null) {
-            tail++;
-        
-            processor.deliver(item, outbox);
-          }
-        }
-      
-        tailCounter.set(tail);
-        initialTail = tail;
-        tailChunk = Math.min(256, 2 * tailChunk);
-        nextWorker.wake();
-        
-        head = headCounter.get();
-      } while (head != tail);
-    } finally {
-      if (tail != initialTail) {
-        tailCounter.set(tail);
-      }
-      
-      nextWorker.wake();
-    }
+    throw new UnsupportedOperationException();
   }
 
   /*
@@ -452,52 +380,23 @@ public final class QueueRingSingleWriter<M>
     return getClass().getSimpleName() + "[" + getCapacity() + "]";
   }
   
-  abstract private static class RingGetter<T> {
-    abstract public T get(long index);
-  }
-  
-  private final static class RingTailGetter<T> extends RingGetter<T> {
-    private final ArrayRing<T> _ring;
-    
-    RingTailGetter(ArrayRing<T> ring)
-    {
-      _ring = ring;
-    }
-    
-    @Override
-    public final T get(long index)
-    {
-      return _ring.takeAndClear(index);
-    }
-  }
-  
-  private final static class RingNonTailGetter<T> extends RingGetter<T> {
-    private final ArrayRing<T> _ring;
-    
-    RingNonTailGetter(ArrayRing<T> ring)
-    {
-      _ring = ring;
-    }
-    
-    @Override
-    public final T get(long index)
-    {
-      return _ring.get(index);
-    }
-  }
-
-  /* (non-Javadoc)
-   * @see com.caucho.env.actor.ActorQueue#deliverMultiTail(com.caucho.env.actor.Actor, int, int, com.caucho.env.thread.TaskWorker)
-   */
-  /*
-  @Override
-  public void deliverMultiTail(DeliverOutbox<M> actor,
-                               Outbox outbox,
-                               int headIndex, 
-                               int tailIndex,
-                               WorkerOutbox<M> tailWorker) throws Exception
+  private static final class PtrRef
   {
-    throw new UnsupportedOperationException(getClass().getName());
+    private long _value;
+    
+    public final long get()
+    {
+      return _value;
+    }
+    
+    public final void set(long value)
+    {
+      _value = value;
+    }
+    
+    public final void lazySet(long value)
+    {
+      _value = value;
+    }
   }
-  */
 }

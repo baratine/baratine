@@ -39,7 +39,7 @@ import com.caucho.v5.kelp.Column;
 import com.caucho.v5.kelp.TableKelp;
 import com.caucho.v5.kelp.query.QueryBuilderKelp;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.CharBuffer;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.ModulePrivate;
@@ -72,12 +72,12 @@ public class QueryParserKraken {
   //private AndExpr _andExpr;
   
   private QueryBuilderKelp _queryBuilderKelp;
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   
   //private SerializerFactory _serializerFactory;
   //private OutFactoryH3 _serializerFactory;
 
-  public QueryParserKraken(TableManagerKraken tableManager,
+  public QueryParserKraken(KrakenImpl tableManager,
                             String sql)
   {
     _tableManager = tableManager;
@@ -93,7 +93,7 @@ public class QueryParserKraken {
     */
   }
   
-  public static QueryBuilderKraken parse(TableManagerKraken tableManager,
+  public static QueryBuilderKraken parse(KrakenImpl tableManager,
                                          String tableName,
                                          String sql)
   {
@@ -106,7 +106,7 @@ public class QueryParserKraken {
     return parser.parse();
   }
 
-  public static QueryBuilderKraken parse(TableManagerKraken tableManager,
+  public static QueryBuilderKraken parse(KrakenImpl tableManager,
                                          String sql)
   {
     QueryParserKraken parser = new QueryParserKraken(tableManager, sql);
@@ -120,7 +120,7 @@ public class QueryParserKraken {
     */
   }
 
-  public static String parse(TableManagerKraken tableManager,
+  public static String parse(KrakenImpl tableManager,
                              String tableName, 
                              String columnName, 
                              String query)
@@ -139,7 +139,7 @@ public class QueryParserKraken {
     _podName = podName;
   }
 
-  public TableManagerKraken tableManager()
+  public KrakenImpl tableManager()
   {
     return _tableManager;
   }
@@ -1199,9 +1199,12 @@ public class QueryParserKraken {
     else if (type.equalsIgnoreCase("longtext")) {
       factory.addVarchar(name, 512);
     }
-    else if (type.equalsIgnoreCase("smallint")
-             || type.equalsIgnoreCase("tinyint")
+    else if (type.equalsIgnoreCase("tinyint")
              || type.equalsIgnoreCase("bit")
+             || type.equalsIgnoreCase("int8")) {
+      factory.addInt8(name);
+    }
+    else if (type.equalsIgnoreCase("smallint")
              || type.equalsIgnoreCase("int16")) {
       factory.addInt16(name);
     }

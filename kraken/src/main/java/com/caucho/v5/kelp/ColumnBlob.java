@@ -69,7 +69,7 @@ public class ColumnBlob extends Column
   }
 
   @Override
-  public final int getLength()
+  public final int length()
   {
     return 4;
   }
@@ -156,7 +156,7 @@ public class ColumnBlob extends Column
                    byte []buffer, int offset)
   {
     System.arraycopy(rowBuffer, rowOffset + getOffset(),
-                     buffer, offset, getLength());
+                     buffer, offset, length());
   }
   
   public void write(byte []rowBuffer, int rowOffset, 
@@ -164,7 +164,7 @@ public class ColumnBlob extends Column
   {
     System.arraycopy(buffer, offset,
                      rowBuffer, rowOffset + getOffset(),
-                     getLength());
+                     length());
   }
 
   @Override

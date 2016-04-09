@@ -44,7 +44,7 @@ public class ColumnDouble extends Column
   }
 
   @Override
-  public final int getLength()
+  public final int length()
   {
     return 8;
   }

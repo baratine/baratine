@@ -33,15 +33,15 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import com.caucho.v5.util.L10N;
 
-final class ArrayRingImpl<T> implements ArrayRing<T>
+final class ArrayRingAtomic<T> implements ArrayRing<T>
 {
-  private static final L10N L = new L10N(ArrayRingImpl.class);
+  private static final L10N L = new L10N(ArrayRingAtomic.class);
   
   private final AtomicReferenceArray<T> _ring;
   private final int _length;
   private final int _mask;
   
-  ArrayRingImpl(int length)
+  ArrayRingAtomic(int length)
   {
     _length = length;
     
@@ -92,6 +92,16 @@ final class ArrayRingImpl<T> implements ArrayRing<T>
     }
     
     return value;
+  }
+  
+  @Override
+  public final void clear(long start, long end)
+  {
+    final AtomicReferenceArray<T> ring = _ring;
+    
+    for (; start < end; start++) {
+      ring.lazySet(getIndex(start), null);
+    }
   }
   
   @Override

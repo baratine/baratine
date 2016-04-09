@@ -40,8 +40,8 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.vault.MethodVault;
 import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.amp.vault.VaultDriverBase;
@@ -129,7 +129,7 @@ public class VaultDriverDataImpl<ID, T>
                                       else if (!b) createTable();
                                     });
                                     */
-
+    
     _saveSql = _entityInfo.saveSql();
     _loadSql = _entityInfo.loadSql();
   }
@@ -202,7 +202,7 @@ public class VaultDriverDataImpl<ID, T>
     }
 
     Object[] values = _entityInfo.saveValues(entity);
-    
+
     _db.exec(_saveSql, result.of(o -> { return null; }), values);
   }
 

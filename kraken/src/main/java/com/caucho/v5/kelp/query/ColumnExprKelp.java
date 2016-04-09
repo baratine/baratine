@@ -51,7 +51,7 @@ public class ColumnExprKelp extends ExprKelp
   @Override
   public Object eval(EnvKelp cxt)
   {
-    switch (_column.getType()) {
+    switch (_column.type()) {
     case INT16:
       return cxt.getCursor().getInt(_column.getIndex());
       
@@ -74,14 +74,14 @@ public class ColumnExprKelp extends ExprKelp
       return cxt.getCursor().getObject(_column.getIndex());
       
     default:
-      throw new UnsupportedOperationException(String.valueOf(_column.getType()));
+      throw new UnsupportedOperationException(String.valueOf(_column.type()));
     }
   }
 
   @Override
   public String evalString(EnvKelp env)
   {
-    if (_column.getType() == ColumnType.STRING) {
+    if (_column.type() == ColumnType.STRING) {
       return env.getCursor().getString(_column.getIndex());
     }
     else {

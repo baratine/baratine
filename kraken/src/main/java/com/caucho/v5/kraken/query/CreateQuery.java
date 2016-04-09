@@ -32,14 +32,14 @@ import io.baratine.service.Result;
 
 import java.util.Objects;
 
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 
 public class CreateQuery extends QueryKraken
 {
   private TableBuilderKraken _tableBuilder;
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   
-  public CreateQuery(TableManagerKraken tableManager,
+  public CreateQuery(KrakenImpl tableManager,
                      TableBuilderKraken tableBuilder,
                      String sql)
   {

@@ -39,9 +39,9 @@ import io.baratine.service.Result;
  */
 public class ArchiveServiceImpl implements ArchiveService
 {
-  private TableManagerKraken _manager;
+  private KrakenImpl _manager;
   
-  ArchiveServiceImpl(TableManagerKraken manager)
+  ArchiveServiceImpl(KrakenImpl manager)
   {
     _manager = manager;
   }

@@ -350,7 +350,7 @@ public class DatabaseKelpBuilder
     return _memorySize;
   }
   
-  public DatabaseKelpBuilder rampManager(ServicesAmp manager)
+  public DatabaseKelpBuilder services(ServicesAmp manager)
   {
     _rampManager = manager;
     

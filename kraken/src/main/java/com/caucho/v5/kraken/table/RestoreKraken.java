@@ -41,9 +41,9 @@ public class RestoreKraken
   private String _tableName;
   private Path _path;
   private Boolean _isZip;
-  private TableManagerKraken _manager;
+  private KrakenImpl _manager;
   
-  public RestoreKraken(TableManagerKraken manager,
+  public RestoreKraken(KrakenImpl manager,
                        String tableName,
                        Path path)
   {

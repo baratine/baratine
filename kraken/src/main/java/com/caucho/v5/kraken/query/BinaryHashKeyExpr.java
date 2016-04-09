@@ -88,7 +88,7 @@ public class BinaryHashKeyExpr extends BinaryExpr
   {
     Column column = _column.getColumn();
     
-    switch (column.getType()) {
+    switch (column.type()) {
     case STRING: {
       String value = getRight().evalString(args);
       

@@ -53,38 +53,44 @@ public class ColumnBytes extends Column
   }
 
   @Override
-  public final int getLength()
+  public final int length()
   {
     return _length;
+  }
+  
+  @Override
+  public final int size()
+  {
+    return length();
   }
   
   @Override
   public void setBytes(byte []rowBuffer, int rowOffset,
                        byte []buffer, int offset)
   {
-    if (buffer.length - offset < getLength()) {
+    if (buffer.length - offset < length()) {
       throw new IllegalArgumentException(L.l("{0} requires bytes length={1}, but received {2}",
-                                             this, getLength(), 
+                                             this, length(), 
                                              buffer.length - offset));
     }
     
     System.arraycopy(buffer, offset, 
                      rowBuffer, rowOffset + getOffset(),
-                     getLength());
+                     length());
   }
   
   @Override
   public void getBytes(byte []rowBuffer, int rowOffset,
                        byte []buffer, int offset)
   {
-    if (buffer.length != getLength()) {
+    if (buffer.length != length()) {
       throw new IllegalArgumentException(L.l("{0} requires bytes length={1}, but received {2}",
-                                             this, getLength(), 
+                                             this, length(), 
                                              buffer.length - offset));
     }
     
     System.arraycopy(rowBuffer, rowOffset + getOffset(),
                      buffer, offset,
-                     getLength());
+                     length());
   }
 }

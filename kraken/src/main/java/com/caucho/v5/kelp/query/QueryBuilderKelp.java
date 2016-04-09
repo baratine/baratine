@@ -85,7 +85,7 @@ public class QueryBuilderKelp extends QueryBuilder
                                      name, _table));
     }
     
-    if (column.getType() == ColumnType.OBJECT) {
+    if (column.type() == ColumnType.OBJECT) {
       return new ObjectColumnExprBuilder(column);
     }
     else {
@@ -122,7 +122,7 @@ public class QueryBuilderKelp extends QueryBuilder
     PathKelp path = _pathMap.get(column.name());
     
     if (path == null) {
-      switch (column.getType()) {
+      switch (column.type()) {
       case BLOB:
         path = new PathObjectKelp(column, _table.serializer());
         break;
@@ -148,7 +148,7 @@ public class QueryBuilderKelp extends QueryBuilder
     QueryBuilderH3 path = _pathH3Map.get(column);
     
     if (path == null) {
-      switch (column.getType()) {
+      switch (column.type()) {
       case BLOB:
         path = _table.serializer().newQuery().count(_pathCount);
         break;

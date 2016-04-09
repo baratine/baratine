@@ -34,8 +34,8 @@ import java.util.Objects;
 import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.kraken.KrakenSystem;
-import com.caucho.v5.kraken.table.TableManagerKraken;
-import com.caucho.v5.store.temp.TempFileSystem;
+import com.caucho.v5.kraken.table.KrakenImpl;
+import com.caucho.v5.store.temp.TempStoreSystem;
 
 /**
  * Root of a filesystem. Each filesystem belongs to a pod and has a 
@@ -45,7 +45,7 @@ public class FileServiceBuilder
 {
   private String _podName;
   private String _tableName = "caucho_bfs_file";
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   private String _address;
   private ServicesAmp _ampManager;
   private BartenderFileSystem _system;
@@ -144,10 +144,10 @@ public class FileServiceBuilder
     return _system;
   }
 
-  public TempFileSystem getTempFileSystem()
+  public TempStoreSystem getTempFileSystem()
   {
-    TempFileSystem tempFileSystem
-      = TempFileSystem.getCurrent(getManager().classLoader());
+    TempStoreSystem tempFileSystem
+      = TempStoreSystem.getCurrent(getManager().classLoader());
     Objects.requireNonNull(tempFileSystem);
 
     return tempFileSystem;

@@ -57,7 +57,7 @@ public class ColumnExpr extends ExprKraken
   @Override
   public ExprKraken field(String name)
   {
-    if (_column.getType() == ColumnType.OBJECT) {
+    if (_column.type() == ColumnType.OBJECT) {
       return new FieldExpr(this, name);
     }
     else {

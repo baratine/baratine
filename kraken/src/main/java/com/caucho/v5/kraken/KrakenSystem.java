@@ -29,9 +29,14 @@
 
 package com.caucho.v5.kraken;
 
+import java.nio.file.Path;
+
+import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.ServerBartender;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
+import com.caucho.v5.store.temp.TempStoreSystem;
+import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
 
@@ -42,16 +47,24 @@ public class KrakenSystem extends SubSystemBase
 {
   public static final int START_PRIORITY = START_PRIORITY_KRAKEN;
     
-  private final TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
+
+  private KrakenBuilder _builder;
 
 
   // private DataSource _jdbcDataSource;
   
   private KrakenSystem(ServerBartender serverSelf)
   {
-    SystemManager systemManager = SystemManager.getCurrent();
+    _builder = Kraken.newDatabase();
     
-    _tableManager = new TableManagerKraken(systemManager, serverSelf);
+    _builder.services(AmpSystem.currentManager());
+    _builder.serverSelf(serverSelf);
+    
+    Path path = RootDirectorySystem.currentDataDirectory();
+    _builder.root(path.resolve("kraken"));
+    
+    //_tableManager = new TableManagerKraken(systemManager, serverSelf);
     
     // XXX:
     /*
@@ -98,7 +111,7 @@ public class KrakenSystem extends SubSystemBase
     // _krakenManager.setMemoryMax(memoryMax);
   }
 
-  public TableManagerKraken getTableManager()
+  public KrakenImpl getTableManager()
   {
     return _tableManager;
   }
@@ -112,6 +125,11 @@ public class KrakenSystem extends SubSystemBase
   @Override
   public void start()
   {
+    _builder.tempStore(TempStoreSystem.current().tempStore());
+    
+    _tableManager = (KrakenImpl) _builder.get();
+    //_tableManager = new TableManagerKraken(systemManager, serverSelf);
+    
     _tableManager.start();
   }
   

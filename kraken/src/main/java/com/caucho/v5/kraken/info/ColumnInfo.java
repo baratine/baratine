@@ -43,7 +43,7 @@ public class ColumnInfo
   {
     _table = table;
     _name = column.name();
-    _type = column.getType().toString();
+    _type = column.type().toString();
   }
   
   public TableInfo table()

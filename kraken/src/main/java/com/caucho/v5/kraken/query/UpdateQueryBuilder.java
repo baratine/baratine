@@ -39,7 +39,7 @@ import com.caucho.v5.kelp.query.ExprBuilderKelp;
 import com.caucho.v5.kelp.query.ExprKelp;
 import com.caucho.v5.kelp.query.QueryBuilderKelp;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
@@ -48,7 +48,7 @@ public class UpdateQueryBuilder extends QueryBuilderKraken
 {
   private static final L10N L = new L10N(UpdateQueryBuilder.class);
   
-  private final TableManagerKraken _tableManager;
+  private final KrakenImpl _tableManager;
   
   private String _tableName;
 
@@ -63,7 +63,7 @@ public class UpdateQueryBuilder extends QueryBuilderKraken
 
   private QueryBuilderKelp _builderKelp;
   
-  public UpdateQueryBuilder(TableManagerKraken tableManager,
+  public UpdateQueryBuilder(KrakenImpl tableManager,
                             String sql)
   {
     super(sql);
@@ -305,7 +305,7 @@ public class UpdateQueryBuilder extends QueryBuilderKraken
         Column column = _columns.get(i);
         ExprKelp expr = _exprs.get(i);
 
-        switch (column.getType()) {
+        switch (column.type()) {
         case INT32:
           cursor.setInt(column.getIndex(), expr.evalInt(env));
           break;
@@ -323,7 +323,7 @@ public class UpdateQueryBuilder extends QueryBuilderKraken
           break;
           
         default:
-          throw new UnsupportedOperationException(String.valueOf(column.getType()));
+          throw new UnsupportedOperationException(String.valueOf(column.type()));
         }
       }
       

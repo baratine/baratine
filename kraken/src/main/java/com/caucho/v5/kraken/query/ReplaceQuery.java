@@ -108,7 +108,7 @@ public class ReplaceQuery extends QueryKraken
       Column column = _columns.get(i);
       ExprKelp value = _values.get(i);
       
-      switch (column.getType()) {
+      switch (column.type()) {
       case INT16:
         cursor.setInt(column.getIndex(), value.evalInt(envKelp));
         break;
@@ -178,7 +178,7 @@ public class ReplaceQuery extends QueryKraken
       Column column = _updateColumns.get(i);
       ExprKelp value = _updateValues.get(i);
 
-      switch (column.getType()) {
+      switch (column.type()) {
       case INT16:
         cursor.setInt(column.getIndex(), value.evalInt(envKelp));
         break;

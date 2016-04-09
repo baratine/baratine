@@ -43,7 +43,7 @@ public class ColumnObject extends ColumnBlob
   }
 
   @Override
-  public ColumnType getType()
+  public ColumnType type()
   {
     return ColumnType.OBJECT;
   }

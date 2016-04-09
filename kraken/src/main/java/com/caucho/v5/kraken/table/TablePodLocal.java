@@ -43,74 +43,72 @@ import io.baratine.service.Result;
 public class TablePodLocal implements TablePod
 {
 
-  public TablePodLocal(TableManagerKraken tableManager, 
+  private KrakenImpl _tableManager;
+  private TableKraken _tableKraken;
+  private TablePodNodeLocal _node;
+
+  public TablePodLocal(KrakenImpl tableManager, 
                        TableKraken tableKraken,
                        PodKrakenAmp podManager)
   {
-    // TODO Auto-generated constructor stub
+    _tableManager = tableManager;
+    _tableKraken = tableKraken;
+    
+    _node = new TablePodNodeLocal();
   }
 
   @Override
   public String getName()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return "local";
   }
 
   @Override
   public String getPodName()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return "local";
   }
 
   @Override
   public TableKraken getTable()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return _tableKraken;
   }
 
   @Override
   public TablePodNodeAmp getNode(int hash)
   {
-    // TODO Auto-generated method stub
-    return null;
+    return _node;
   }
 
   @Override
   public int nodeIndex()
   {
-    // TODO Auto-generated method stub
     return 0;
   }
 
   @Override
   public boolean isLocal()
   {
-    // TODO Auto-generated method stub
-    return false;
+    return true;
   }
 
   @Override
   public int getServerCount()
   {
-    // TODO Auto-generated method stub
-    return 0;
+    return 1;
   }
 
   @Override
   public int getNodeCount()
   {
-    // TODO Auto-generated method stub
-    return 0;
+    return 1;
   }
 
   @Override
   public int getVirtualNodeCount()
   {
-    // TODO Auto-generated method stub
-    return 0;
+    return 1;
   }
 
   @Override
@@ -130,44 +128,38 @@ public class TablePodLocal implements TablePod
   @Override
   public void put(byte[] key, StreamSource data, Result<Boolean> result)
   {
-    // TODO Auto-generated method stub
-    
+    result.ok(null);
   }
 
   @Override
   public void get(byte[] key, Result<Boolean> result)
   {
-    // TODO Auto-generated method stub
-    
+    result.ok(null);
   }
 
   @Override
   public void getIfUpdate(byte[] key, long version, Result<Boolean> result)
   {
-    // TODO Auto-generated method stub
-    
+    result.ok(null);
   }
 
   @Override
   public void findByName(String name, Result<byte[]> result)
   {
-    // TODO Auto-generated method stub
-    
+    result.ok(null);
   }
 
   @Override
   public void remove(byte[] key, long version, Result<? super Boolean> result)
   {
-    // TODO Auto-generated method stub
-    
+    result.ok(null);
   }
 
   @Override
   public void getUpdatesFromLocal(int podIndex, long accessTime,
                                   Result<Boolean> result)
   {
-    // TODO Auto-generated method stub
-    
+    result.ok(null);
   }
 
   @Override
@@ -180,15 +172,13 @@ public class TablePodLocal implements TablePod
   @Override
   public ArrayList<ServerBartender> findServersQueryCover()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return new ArrayList<>();
   }
 
   @Override
   public ArrayList<ServerBartender> getUpdateServers()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return new ArrayList<>();
   }
 
   @Override
@@ -202,24 +192,21 @@ public class TablePodLocal implements TablePod
   public void findOne(Result<byte[]> subResult, ServerBartender server,
                       String sql, Object[] args)
   {
-    // TODO Auto-generated method stub
-    
+    subResult.ok(null);
   }
 
   @Override
   public void findAll(Result<Iterable<byte[]>> subResult,
                       ServerBartender server, String sql, Object[] args)
   {
-    // TODO Auto-generated method stub
-    
+    subResult.ok(null);
   }
 
   @Override
   public void update(Result<Integer> result, int node, String sql,
                      Object[] args)
   {
-    // TODO Auto-generated method stub
-    
+    result.ok(null);
   }
 
   @Override
@@ -233,6 +220,52 @@ public class TablePodLocal implements TablePod
   public void notifyForeignWatch(byte[] key, String serverId)
   {
     // TODO Auto-generated method stub
+    
+  }
+  
+  private class TablePodNodeLocal implements TablePodNodeAmp
+  {
+    @Override
+    public int index()
+    {
+      return 0;
+    }
+
+    @Override
+    public boolean isSelfCopy()
+    {
+      return true;
+    }
+
+    @Override
+    public boolean isSelfOwner()
+    {
+      return true;
+    }
+
+    @Override
+    public boolean isSelfPrimary()
+    {
+      return true;
+    }
+
+    @Override
+    public boolean isLocalValid()
+    {
+      return true;
+    }
+
+    @Override
+    public boolean isSelf()
+    {
+      return true;
+    }
+
+    @Override
+    public boolean isStartComplete()
+    {
+      return true;
+    }
     
   }
 }

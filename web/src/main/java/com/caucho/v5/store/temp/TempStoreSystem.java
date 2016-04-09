@@ -44,25 +44,25 @@ import com.caucho.v5.util.L10N;
 /**
  * Represents an inode to a temporary file.
  */
-public class TempFileSystem extends SubSystemBase
+public class TempStoreSystem extends SubSystemBase
 {
   private static final int START_PRIORITY = SubSystem.START_PRIORITY_ENV_SYSTEM;
   
-  private static final L10N L = new L10N(TempFileSystem.class);
+  private static final L10N L = new L10N(TempStoreSystem.class);
   
   private final TempFileManager _manager;
   
-  public TempFileSystem(TempFileManager manager)
+  public TempStoreSystem(TempFileManager manager)
   {
     _manager = manager;
   }
 
-  public static TempFileSystem createAndAddSystem()
+  public static TempStoreSystem createAndAddSystem()
   {
     RootDirectorySystem rootService = RootDirectorySystem.getCurrent();
     if (rootService == null)
       throw new IllegalStateException(L.l("{0} requires an active {1}",
-                                          TempFileSystem.class.getSimpleName(),
+                                          TempStoreSystem.class.getSimpleName(),
                                           RootDirectorySystem.class.getSimpleName()));
 
     Path dataDirectory = rootService.dataDirectory();
@@ -75,24 +75,24 @@ public class TempFileSystem extends SubSystemBase
     return createAndAddSystem(manager);
   }
   
-  public static TempFileSystem createAndAddSystem(TempFileManager manager)
+  public static TempStoreSystem createAndAddSystem(TempFileManager manager)
   {
-    SystemManager system = preCreate(TempFileSystem.class);
+    SystemManager system = preCreate(TempStoreSystem.class);
 
-    TempFileSystem service = new TempFileSystem(manager);
-    system.addSystem(TempFileSystem.class, service);
+    TempStoreSystem service = new TempStoreSystem(manager);
+    system.addSystem(TempStoreSystem.class, service);
 
     return service;
   }
   
-  public static TempFileSystem getCurrent()
+  public static TempStoreSystem current()
   {
-    return SystemManager.getCurrentSystem(TempFileSystem.class);
+    return SystemManager.getCurrentSystem(TempStoreSystem.class);
   }
   
-  public static TempFileSystem getCurrent(ClassLoader loader)
+  public static TempStoreSystem getCurrent(ClassLoader loader)
   {
-    return SystemManager.getCurrentSystem(TempFileSystem.class, loader);
+    return SystemManager.getCurrentSystem(TempStoreSystem.class, loader);
   }
   
   public TempFileManager getManager()
@@ -100,14 +100,14 @@ public class TempFileSystem extends SubSystemBase
     return _manager;
   }
   
-  public TempStore getTempStore()
+  public TempStore tempStore()
   {
     return getManager().getTempStore();
   }
   
   public TempWriter openWriter()
   {
-    return getTempStore().openWriter();
+    return tempStore().openWriter();
   }
   
   @Override

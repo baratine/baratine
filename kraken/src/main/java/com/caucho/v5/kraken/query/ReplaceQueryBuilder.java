@@ -38,7 +38,7 @@ import com.caucho.v5.kelp.query.ExprKelp;
 import com.caucho.v5.kelp.query.QueryBuilderKelp;
 import com.caucho.v5.kraken.table.PodHashGenerator;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 
 public class ReplaceQueryBuilder extends QueryBuilderKraken
 {
@@ -49,10 +49,10 @@ public class ReplaceQueryBuilder extends QueryBuilderKraken
   private ArrayList<Column> _updateColumns;
   private ArrayList<ExprKraken> _updateValues;
   
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   private QueryBuilderKelp _builderKelp;
   
-  public ReplaceQueryBuilder(TableManagerKraken tableManager,
+  public ReplaceQueryBuilder(KrakenImpl tableManager,
                             String sql,
                             TableKraken table, 
                             ArrayList<Column> columns)

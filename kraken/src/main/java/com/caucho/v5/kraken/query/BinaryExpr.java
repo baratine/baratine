@@ -193,7 +193,7 @@ public class BinaryExpr extends ExprKraken
     
     Column column = ((ColumnExpr) _left).getColumn();
     
-    switch (column.getType()) {
+    switch (column.type()) {
     case INT16:
     case INT32:
       rowCursor.setInt(column.getIndex(), _right.evalInt(rowCursor, args));

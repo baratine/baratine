@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
-import com.caucho.v5.amp.queue.QueueRingSingleWriter;
+import com.caucho.v5.amp.queue.QueueRingForPipe;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.util.L10N;
 

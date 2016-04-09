@@ -29,6 +29,14 @@
 
 package com.caucho.v5.ramp.db;
 
+import java.util.Objects;
+
+import com.caucho.v5.io.Vfs;
+import com.caucho.v5.kraken.Kraken;
+import com.caucho.v5.kraken.KrakenBuilder;
+import com.caucho.v5.kraken.KrakenSystem;
+import com.caucho.v5.kraken.table.KrakenImpl;
+
 import io.baratine.db.Cursor;
 import io.baratine.db.CursorPrepareSync;
 import io.baratine.db.DatabaseService;
@@ -40,25 +48,32 @@ import io.baratine.service.Service;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
-import java.util.Arrays;
-
-import com.caucho.v5.kraken.KrakenSystem;
-import com.caucho.v5.kraken.table.TableManagerKraken;
-
 /*
  * Entry to the store.
  */
 public class DatabaseServiceRamp implements DatabaseService
 {
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _kraken;
   
   public DatabaseServiceRamp()
   {
     KrakenSystem krakenSystem = KrakenSystem.current();
     
-    TableManagerKraken kraken = krakenSystem.getTableManager();
+    KrakenImpl kraken;
     
-    _tableManager = kraken;
+    if (krakenSystem != null) {
+      kraken = krakenSystem.getTableManager();
+    }
+    else {
+      String root = System.getProperty("baratine.root");
+      Objects.requireNonNull(root);
+      
+      KrakenBuilder builder = Kraken.newDatabase();
+      builder.root(Vfs.path(root).resolve("kraken"));
+      kraken = (KrakenImpl) builder.get();
+    }
+    
+    _kraken = kraken;
   }
   
   public DatabaseServiceRamp(String name, String hostName)
@@ -76,7 +91,7 @@ public class DatabaseServiceRamp implements DatabaseService
   @Override
   public void exec(String sql, Result<Object> result, Object ...args)
   {
-    _tableManager.query(sql).exec(result, args);
+    _kraken.query(sql).exec(result, args);
   }
   
   /**
@@ -88,7 +103,7 @@ public class DatabaseServiceRamp implements DatabaseService
   @Override
   public void prepare(String sql, Result<CursorPrepareSync> result)
   {
-    result.ok(_tableManager.query(sql).prepare());
+    result.ok(_kraken.query(sql).prepare());
   }
   
   /**
@@ -103,7 +118,7 @@ public class DatabaseServiceRamp implements DatabaseService
   public void findOne(String sql, Result<Cursor> result, Object ...args)
   {
     
-    _tableManager.query(sql).findOne(result, args);
+    _kraken.query(sql).findOne(result, args);
   }
   
   /**
@@ -116,7 +131,7 @@ public class DatabaseServiceRamp implements DatabaseService
   @Override
   public void findAll(String sql, Result<Iterable<Cursor>> result, Object ...args)
   {
-    _tableManager.query(sql).findAll(result, args);
+    _kraken.query(sql).findAll(result, args);
   }
   
   /**
@@ -129,7 +144,7 @@ public class DatabaseServiceRamp implements DatabaseService
   @Override
   public void findAllLocal(String sql, Result<Iterable<Cursor>> result, Object ...args)
   {
-    _tableManager.findAllLocal(sql, args, result);
+    _kraken.findAllLocal(sql, args, result);
   }
   
   /**
@@ -141,7 +156,7 @@ public class DatabaseServiceRamp implements DatabaseService
    */
   public void find(ResultStream<Cursor> result, String sql, Object ...args)
   {
-    _tableManager.findStream(sql, args, result);
+    _kraken.findStream(sql, args, result);
   }
 
   @Override
@@ -159,7 +174,7 @@ public class DatabaseServiceRamp implements DatabaseService
    */
   public void findLocal(ResultStream<Cursor> result, String sql, Object ...args)
   {
-    _tableManager.findLocal(sql, args, result);
+    _kraken.findLocal(sql, args, result);
   }
 
   @Override
@@ -180,7 +195,7 @@ public class DatabaseServiceRamp implements DatabaseService
                   String sql, 
                   Object ...args)
   {
-    _tableManager.map(method, sql, args);
+    _kraken.map(method, sql, args);
   }
 
   /**
@@ -197,7 +212,7 @@ public class DatabaseServiceRamp implements DatabaseService
                     Result<Cancel> result,
                     Object ...args)
   {
-    _tableManager.query(sql, 
+    _kraken.query(sql, 
                         result.of((x,r)->{ x.watch(watch, r, args); }));
   }
   

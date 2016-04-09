@@ -86,7 +86,7 @@ abstract class RowInSkeleton
     for (int i = columns.length - 1; i >= 0; i--) {
       Column column = columns[i];
       
-      if (column.getType().isBlob()) {
+      if (column.type().isBlob()) {
         head = new RowInBlob(head, column.getOffset());
       }
     }
@@ -97,7 +97,7 @@ abstract class RowInSkeleton
     for (int i = columns.length - 1; i >= 0; i--) {
       Column column = columns[i];
       
-      if (column.getType().isBlob()) {
+      if (column.type().isBlob()) {
         if (length > 0) {
           head = new RowInFixed(head, offset, length);
           offset = -1;
@@ -106,11 +106,11 @@ abstract class RowInSkeleton
       }
       else if (length > 0) {
         offset = column.getOffset();
-        length += column.getLength();
+        length += column.length();
       }
       else {
         offset = column.getOffset();
-        length = column.getLength();
+        length = column.length();
       }
     }
     

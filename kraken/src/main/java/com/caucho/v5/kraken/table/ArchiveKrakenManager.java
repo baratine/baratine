@@ -37,12 +37,12 @@ import java.util.Objects;
  */
 public class ArchiveKrakenManager
 {
-  private TableManagerKraken _manager;
+  private KrakenImpl _manager;
   private Path _path;
   
   private boolean _isZip = true;
   
-  public ArchiveKrakenManager(TableManagerKraken manager,
+  public ArchiveKrakenManager(KrakenImpl manager,
                               Path path)
   {
     Objects.requireNonNull(manager);

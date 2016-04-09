@@ -47,7 +47,7 @@ public class ColumnString extends ColumnBlob
   }
 
   @Override
-  public ColumnType getType()
+  public ColumnType type()
   {
     return ColumnType.STRING;
   }

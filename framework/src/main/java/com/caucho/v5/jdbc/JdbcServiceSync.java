@@ -37,7 +37,7 @@ public interface JdbcServiceSync extends JdbcService
   Integer[] executeBatch(String sql, List<Object> ... paramsList);
   Integer[] executeBatch(List<String> sqlList, List<Object> ... paramsList);
 
-  JdbcResultSet query(String sql, Object ... params);
-  List<JdbcResultSet> queryBatch(String sql, List<Object> ... paramsList);
-  List<JdbcResultSet> queryBatch(List<String> sqlList, List<Object> ... paramsList);
+  ResultSetKraken query(String sql, Object ... params);
+  List<ResultSetKraken> queryBatch(String sql, List<Object> ... paramsList);
+  List<ResultSetKraken> queryBatch(List<String> sqlList, List<Object> ... paramsList);
 }

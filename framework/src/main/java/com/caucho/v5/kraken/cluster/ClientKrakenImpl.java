@@ -44,7 +44,7 @@ import com.caucho.v5.kraken.table.ClusterServiceKraken;
 import com.caucho.v5.kraken.table.KelpManager;
 import com.caucho.v5.kraken.table.PodKrakenAmp;
 import com.caucho.v5.kraken.table.TableKraken;
-import com.caucho.v5.kraken.table.TableManagerKraken;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.kraken.table.TablePod;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
@@ -57,7 +57,7 @@ public final class ClientKrakenImpl implements ClientKraken
   private static final Logger log
     = Logger.getLogger(ClientKrakenImpl.class.getName());
   
-  private final TableManagerKraken _tableManager;
+  private final KrakenImpl _tableManager;
   
   private final ServerBartender _selfServer;
   //private int _selfIndex; // server index for this server
@@ -89,7 +89,7 @@ public final class ClientKrakenImpl implements ClientKraken
 
   // private RowServiceHub _triadRemoteAll;
 
-  public ClientKrakenImpl(TableManagerKraken tableManager)
+  public ClientKrakenImpl(KrakenImpl tableManager)
   {
     Objects.requireNonNull(tableManager);
     
@@ -120,7 +120,7 @@ public final class ClientKrakenImpl implements ClientKraken
     return _podManager;
   }
 
-  public TableManagerKraken getTableManager()
+  public KrakenImpl getTableManager()
   {
     return _tableManager;
   }

@@ -35,18 +35,16 @@ import java.lang.management.MemoryUsage;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.kelp.DatabaseKelp;
 import com.caucho.v5.kelp.DatabaseKelpBuilder;
 import com.caucho.v5.store.temp.TempStore;
-import com.caucho.v5.subsystem.RootDirectorySystem;
 
 /**
  * Builder for the local database manager.
  */
 public class KelpManagerBuilder
 {
-  private TableManagerKraken _tableManager;
+  private KrakenImpl _tableManager;
   
   private DatabaseKelpBuilder _builder;
   private DatabaseKelp _db;
@@ -55,13 +53,13 @@ public class KelpManagerBuilder
 
   private String _podName;
   
-  public KelpManagerBuilder(TableManagerKraken tableManager)
+  public KelpManagerBuilder(KrakenImpl tableManager)
   {
     _tableManager = tableManager;
     
     _builder = new DatabaseKelpBuilder();
     
-    _builder.rampManager(AmpSystem.currentManager());
+    _builder.services(_tableManager.services());
     
     // _builder.segmentSize(8 * 1024 * 1024);
     // _builder.journalSegmentSize(8 * 1024 * 1024);
@@ -164,7 +162,7 @@ public class KelpManagerBuilder
     return Runtime.getRuntime().maxMemory();
   }
   
-  TableManagerKraken getManager()
+  KrakenImpl getManager()
   {
     return _tableManager;
   }
@@ -176,12 +174,11 @@ public class KelpManagerBuilder
 
   public KelpManager build()
   {
-    Path dataDirectory = RootDirectorySystem.getCurrentDataDirectory();
-    Path dir = dataDirectory.resolve("kraken");
+    Path dir = _tableManager.root();
    
     _builder.path(dir.resolve("store.db"));
     
-    _tempStore = _tableManager.getTempStore();
+    _tempStore = _tableManager.tempStore();
     Objects.requireNonNull(_tempStore);
     
     _builder.tempStore(_tempStore);

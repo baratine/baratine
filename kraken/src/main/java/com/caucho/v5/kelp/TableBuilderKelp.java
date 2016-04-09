@@ -29,14 +29,14 @@
 
 package com.caucho.v5.kelp;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultFuture;
-
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import com.caucho.v5.util.Fnv256;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Result;
+import io.baratine.service.ResultFuture;
 
 /**
  * The store manages the block-based persistent store file.  Each table
@@ -189,12 +189,12 @@ public class TableBuilderKelp
     
     for (Column col : row.getColumns()) {
       keyGen.update(col.name());
-      keyGen.updateInt32(col.getType().ordinal());
-      keyGen.updateInt32(col.getLength());
+      keyGen.updateInt32(col.type().ordinal());
+      keyGen.updateInt32(col.length());
     }
 
     byte []tableKey = keyGen.getDigest();
-    
+
     if (tableKey.length != TableKelp.TABLE_KEY_SIZE) {
       throw new IllegalStateException();
     }

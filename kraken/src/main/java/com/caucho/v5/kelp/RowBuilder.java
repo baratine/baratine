@@ -49,7 +49,7 @@ public class RowBuilder {
   {
     ColumnState stateColumn = new ColumnState(0, "_row_state", 0);
     
-    _offset += stateColumn.getLength();
+    _offset += stateColumn.length();
     _columns.add(stateColumn);
   }
   
@@ -87,7 +87,7 @@ public class RowBuilder {
   {
     ColumnInt8 column = new ColumnInt8(_columns.size(), name, _offset);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -102,7 +102,7 @@ public class RowBuilder {
   {
     ColumnInt16 column = new ColumnInt16(_columns.size(), name, _offset);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -117,7 +117,7 @@ public class RowBuilder {
   {
     ColumnInt32 column = new ColumnInt32(_columns.size(), name, _offset);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -132,7 +132,7 @@ public class RowBuilder {
   {
     ColumnInt64 column = new ColumnInt64(_columns.size(), name, _offset);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -147,7 +147,7 @@ public class RowBuilder {
   {
     ColumnDouble column = new ColumnDouble(_columns.size(), name, _offset);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -158,7 +158,7 @@ public class RowBuilder {
     ColumnBytes column = new ColumnBytes(_columns.size(), name, 
                                          _offset, length);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -168,7 +168,7 @@ public class RowBuilder {
   {
     ColumnBlob column = new ColumnBlob(_columns.size(), name, _offset);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -178,7 +178,7 @@ public class RowBuilder {
   {
     ColumnString column = new ColumnString(_columns.size(), name, _offset);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -188,7 +188,7 @@ public class RowBuilder {
   {
     ColumnObject column = new ColumnObject(_columns.size(), name, _offset);
     
-    _offset += column.getLength();
+    _offset += column.length();
     _columns.add(column);
     
     return this;
@@ -209,7 +209,7 @@ public class RowBuilder {
     
     int index = 0;
     for (int i = 0; i < _columns.size(); i++) {
-      if (_columns.get(i).getType().isBlob()) {
+      if (_columns.get(i).type().isBlob()) {
         blobs[index++] = _columns.get(i);
       }
     }
@@ -222,7 +222,7 @@ public class RowBuilder {
     int count = 0;
     
     for (int i = 0; i < _columns.size(); i++) {
-      if (_columns.get(i).getType().isBlob()) {
+      if (_columns.get(i).type().isBlob()) {
         count++;
       }
     }
