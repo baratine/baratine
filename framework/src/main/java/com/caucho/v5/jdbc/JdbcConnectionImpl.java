@@ -62,6 +62,11 @@ public class JdbcConnectionImpl implements JdbcService
   private String _testQueryBefore;
   private String _testQueryAfter;
 
+  protected JdbcConnectionImpl()
+  {
+    // zero-arg constructor for Baratine to instantiate proxies of this class
+  }
+
   public JdbcConnectionImpl(int id, String url, Properties props,
                             String testQueryBefore, String testQueryAfter)
   {
