@@ -82,7 +82,9 @@ public class WebStaticFile implements ServiceWeb
     String pathInfo = req.pathInfo();
     
     if (pathInfo.isEmpty() || pathInfo.equals("/")) {
-      pathInfo = "/" + _config.get("server.index", "index.html");
+      pathInfo = _config.get("server.index", "index.html");
+    } else {
+      pathInfo = pathInfo.substring(1);
     }
 
     Path path = _root.resolve(pathInfo);

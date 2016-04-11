@@ -166,7 +166,16 @@ public class PathBase implements Path
   @Override
   public Path resolve(String other)
   {
-    return new PathBase(_fileSystem, _path + other);
+    String path;
+
+    if (_path.endsWith(_fileSystem.getSeparator()))
+      path = _path + other;
+    else if (other.startsWith(_fileSystem.getSeparator()))
+      path = _path + other;
+    else
+    path = _path + _fileSystem.getSeparator() + other;
+
+    return new PathBase(_fileSystem, path);
   }
 
   @Override
