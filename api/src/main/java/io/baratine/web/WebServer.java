@@ -31,7 +31,7 @@ package io.baratine.web;
 
 import io.baratine.spi.WebServerProvider;
 
-public interface WebServer
+public interface WebServer extends AutoCloseable
 {
   static WebServerBuilder server()
   {
