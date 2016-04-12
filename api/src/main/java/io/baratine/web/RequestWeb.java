@@ -77,12 +77,12 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
   
   <X> X body(Class<X> type);
 
-  <X> void body(BodyReader<X> reader, Result<X> result);
+  //<X> void body(BodyReader<X> reader, Result<X> result);
 
   <X> void body(Class<X> type,
                 Result<X> result);
 
-  InputStream inputStream();
+  // InputStream inputStream();
 
   //
   // response

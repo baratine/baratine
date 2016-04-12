@@ -246,14 +246,14 @@ abstract public class SocketSystem
                                boolean isSSL)
     throws IOException
   {
-    return connect(null, new InetSocketAddress(address, port), timeout, isSSL);
+    return connect(null, new InetSocketAddress(address, port), null, timeout, isSSL);
   }
 
   public SocketBar connect(InetSocketAddress address,
                          long timeout)
     throws IOException
   {
-    return connect(null, address, timeout, false);
+    return connect(null, address, null, timeout, false);
   }
 
   public SocketBar connect(InetSocketAddress address,
@@ -261,13 +261,14 @@ abstract public class SocketSystem
                          boolean isSSL)
     throws IOException
   {
-    return connect(null, address, timeout, isSSL);
+    return connect(null, address, null, timeout, isSSL);
   }
 
   public abstract SocketBar connect(SocketBar socket,
-                                  InetSocketAddress address,
-                                  long timeout,
-                                  boolean isSSL)
+                                    InetSocketAddress addressRemote,
+                                    InetSocketAddress addressLocal,
+                                    long timeout,
+                                    boolean isSSL)
     throws IOException;
   
   public SocketBarBuilder connect()
@@ -357,9 +358,10 @@ abstract public class SocketSystem
   public interface SocketBarBuilder
   {
     SocketBarBuilder socket(SocketBar socket);
-    SocketBarBuilder address(String address);
+    //SocketBarBuilder address(String address);
     SocketBarBuilder address(InetSocketAddress address);
-    SocketBarBuilder port(int port);
+    //SocketBarBuilder port(int port);
+    SocketBarBuilder addressLocal(InetSocketAddress address);
     SocketBarBuilder timeoutConnect(long timeout);
     SocketBarBuilder ssl(boolean isSsl);
     SocketBarBuilder sslProtocols(String ...protocol);

@@ -117,7 +117,7 @@ public class ConnectionBartender implements ConnectionProtocol
     
     if (! isLocalAddress(connTcp)) {
       log.warning(L.l("Attemped connection from foreign address {0}",
-                      getConnection().getRemoteAddress()));
+                      getConnection().ipRemote()));
       
       return StateConnection.CLOSE;
     }
@@ -217,8 +217,8 @@ public class ConnectionBartender implements ConnectionProtocol
   {
     //ConnectionTcp conn = getConnection();
     
-    InetAddress remote = conn.getRemoteAddress();
-    InetAddress local  = conn.getLocalAddress();
+    InetAddress remote = conn.ipRemote().getAddress();
+    InetAddress local  = conn.ipLocal().getAddress();
     
     if (remote == null || local == null) {
       return false;

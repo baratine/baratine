@@ -835,7 +835,7 @@ public class RequestHttp2
       removeHeader("ETag");
       removeHeader("Last-Modified");
 
-      setHeaderOut("expires", "Thu, 01 Dec 1994 16:00:00 GMT");
+      headerOut("expires", "Thu, 01 Dec 1994 16:00:00 GMT");
       out.header("cache-control", "no-cache");
     }
     else if (response.isPrivateCache())

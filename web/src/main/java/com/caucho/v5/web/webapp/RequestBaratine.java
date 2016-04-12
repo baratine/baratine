@@ -35,12 +35,10 @@ import java.util.List;
 
 import com.caucho.v5.network.port.ConnectionProtocol;
 
-import io.baratine.web.RequestWeb;
-
 /**
  * Baratine facade for http requests.
  */
-public interface RequestBaratine extends RequestWeb
+public interface RequestBaratine extends RequestWebSpi
 {
   String uri();
 

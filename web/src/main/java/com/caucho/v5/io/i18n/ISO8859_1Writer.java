@@ -107,8 +107,8 @@ public final class ISO8859_1Writer extends EncodingWriter {
                    char []cBuf, int cOffset, int cLength)
     throws IOException
   {
-    byte []bBuf = os.getBuffer();
-    int bOffset = os.getBufferOffset();
+    byte []bBuf = os.buffer();
+    int bOffset = os.offset();
     int bEnd = bBuf.length;
 
     int cEnd = cOffset + cLength;
@@ -128,12 +128,12 @@ public final class ISO8859_1Writer extends EncodingWriter {
       
       if (bOffset == bEnd && cLength > 0) {
         bBuf = os.nextBuffer(bOffset);
-        bOffset = os.getBufferOffset();
+        bOffset = os.offset();
         bEnd = bBuf.length;
       }
     }
 
-    os.setBufferOffset(bOffset);
+    os.offset(bOffset);
     
     return cLength;
   }

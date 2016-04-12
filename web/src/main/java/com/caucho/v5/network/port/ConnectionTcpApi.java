@@ -75,7 +75,7 @@ public interface ConnectionTcpApi
   /**
    * Returns the local address of the connection
    */
-  InetAddress getLocalAddress();
+  //InetAddress getLocalAddress();
   
   /**
    * Returns the local address of the connection
@@ -83,24 +83,29 @@ public interface ConnectionTcpApi
   InetSocketAddress ipLocal();
   
   /**
+   * Returns the remote address of the connection
+   */
+  InetSocketAddress ipRemote();
+  
+  /**
    * Returns the local host of the connection
    */
-  String getLocalHost();
+  //String getLocalHost();
 
   /**
    * Returns the local port of the connection
    */
-  int getLocalPort();
+  int portLocal();
 
   /**
    * Returns the remote address of the connection
    */
-  InetAddress getRemoteAddress();
+  //InetAddress getRemoteAddress();
 
   /**
    * Returns the remote client's inet address.
    */
-  String ip();
+  String addressRemote();
 
   /**
    * Returns the remote address of the connection
@@ -110,7 +115,7 @@ public interface ConnectionTcpApi
   /**
    * Returns the remove port of the connection
    */
-  int getRemotePort();
+  int portRemote();
   
   //
   // SSL-related information

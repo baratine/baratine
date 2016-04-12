@@ -63,17 +63,18 @@ public class SocketSystemJavaIo extends SocketSystem
 
   @Override
   public SocketBar connect(SocketBar socket,
-                         InetSocketAddress addr,
-                         long connectTimeout,
-                         boolean isSSL)
+                           InetSocketAddress addressRemote,
+                           InetSocketAddress addressLocal,
+                           long connectTimeout,
+                           boolean isSSL)
     throws IOException
   {
     Socket s = new Socket();
 
     if (connectTimeout > 0)
-      s.connect(addr, (int) connectTimeout);
+      s.connect(addressRemote, (int) connectTimeout);
     else
-      s.connect(addr);
+      s.connect(addressRemote);
 
     if (! s.isConnected()) {
       throw new IOException("connection timeout");

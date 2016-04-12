@@ -213,6 +213,26 @@ public class SocketChannelWrapperBar extends SocketBar
       return null;
     }
   }
+
+  /**
+   * Returns the server inet address that accepted the request.
+   */
+  @Override
+  public InetSocketAddress ipRemote()
+  {
+    SocketChannel s = _channel;
+    
+    if (s != null) {
+      try {
+        return (InetSocketAddress) s.getRemoteAddress();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    else {
+      return null;
+    }
+  }
   
   /**
    * Returns the server port that accepted the request.

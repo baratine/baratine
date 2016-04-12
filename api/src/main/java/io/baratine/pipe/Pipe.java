@@ -146,36 +146,4 @@ public interface Pipe<T>
     
     ResultPipeIn<T> chain(Credits creditsNext);
   }
-  
-  
-  /**
-   * {@code FlowIn} controls the pipe credits from the subscriber
-   */
-  /*
-  public interface FlowIn<T> extends Credits, Cancel
-  {
-  }
-  */
-  
-  /**
-   * {@code FlowOut} is a callback to wake the publisher when credits are
-   * available for the pipe.
-   * 
-   * Called after the publisher would block, calculated as when the number
-   * of {@code OutPipe.next()} calls match a previous {@code OutPipe.credits()}.
-   */
-  /*
-  public interface FlowOut<T>
-  {
-    void ready(T pipe);
-    
-    default void fail(Throwable exn)
-    {
-    }
-    
-    default void cancel()
-    {
-    }
-  }
-  */
 }

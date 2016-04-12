@@ -126,7 +126,8 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
   private RequestBaratineImpl _next;
   private RequestBaratineImpl _prev;
-  private String _encoding = "utf-8";
+  
+  private Writer _writer;
 
   public RequestBaratineImpl(ConnectionHttp connHttp)
   {
@@ -483,15 +484,9 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public int port()
-  {
-    return requestHttp().getLocalPort();
-  }
-
-  @Override
   public String query()
   {
-    return invocation().getQueryString();
+    return invocation().queryString();
   }
 
   @Override
@@ -541,20 +536,25 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public InetSocketAddress ipRemote()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return connHttp().connTcp().ipRemote();
+  }
+
+  @Override
+  public String ip()
+  {
+    return connHttp().connTcp().addressRemote();
+  }
+
+  @Override
+  public int port()
+  {
+    return connHttp().connTcp().portLocal();
   }
 
   @Override
   public InetSocketAddress ipLocal()
   {
     return connHttp().connTcp().ipLocal();
-  }
-
-  @Override
-  public String ip()
-  {
-    return connHttp().connTcp().ip();
   }
 
   @Override
@@ -592,11 +592,13 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     return (X) _bodyValue;
   }
 
+  /*
   @Override
   public <X> void body(BodyReader<X> reader, Result<X> result)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
 
   @Override
   public <X> void body(Class<X> type,
@@ -637,15 +639,17 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public RequestWeb type(String contentType)
   {
-    header("content-type", contentType);
+    requestHttp().headerOutContentType(contentType);
 
     return this;
   }
 
   @Override
-  public RequestWeb encoding(String contentType)
+  public RequestWeb encoding(String encoding)
   {
-    throw new UnsupportedOperationException(getClass().getName());
+    requestHttp().headerOutContentEncoding(encoding);
+    
+    return this;
   }
 
   /*
@@ -755,7 +759,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     Objects.requireNonNull(key);
     Objects.requireNonNull(value);
 
-    requestHttp().setHeaderOut(key, value);
+    requestHttp().headerOut(key, value);
 
     return this;
   }
@@ -774,17 +778,9 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public RequestBaratine write(String value)
   {
     try {
-      OutResponseBase out = requestHttp().getOut();
-      String enc = encoding();
-      
-      if ("utf-8".equals(enc)) {
-        Utf8Util.write(out, value);
-      }
-      else {
-        out.write(value.getBytes(enc));
-      }
+      writer().write(value);
     } catch (Exception e) {
-      log.log(Level.WARNING, e.toString(), e);
+      throw new RuntimeException(e);
     }
 
     return this;
@@ -794,17 +790,9 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public OutWeb<Buffer> write(char[] buffer, int offset, int length)
   {
     try {
-      OutResponseBase out = requestHttp().getOut();
-      String enc = encoding();
-      
-      if ("utf-8".equals(enc)) {
-        Utf8Util.write(out, buffer, offset, length);
-      }
-      else {
-        out.write(new String(buffer, offset, length).getBytes(enc));
-      }
+      writer().write(buffer, offset, length);
     } catch (Exception e) {
-      log.log(Level.WARNING, e.toString(), e);
+      throw new RuntimeException(e);
     }
 
     return this;
@@ -813,7 +801,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public OutWeb<Buffer> write(Buffer buffer)
   {
-    requestHttp().getOut().write(buffer);
+    requestHttp().out().write(buffer);
 
     return this;
   }
@@ -821,20 +809,15 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public OutWeb<Buffer> write(byte[] buffer, int offset, int length)
   {
-    requestHttp().getOut().write(buffer, offset, length);
+    requestHttp().out().write(buffer, offset, length);
 
     return this;
-  }
-  
-  private String encoding()
-  {
-    return _encoding ;
   }
 
   @Override
   public Writer writer()
   {
-    return new WriterBaratine(this);
+    return requestHttp().writer();
   }
 
   @Override
@@ -847,7 +830,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public RequestBaratineImpl flush()
   {
     try {
-      OutResponseBase out = requestHttp().getOut();
+      OutResponseBase out = requestHttp().out();
 
       out.flush();
     } catch (Exception e) {
@@ -860,7 +843,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public void next(Buffer data)
   {
     try {
-      OutResponseBase out = requestHttp().getOut();
+      OutResponseBase out = requestHttp().out();
 
       out.write(data);
     } catch (Exception e) {
@@ -997,7 +980,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   public final void ok()
   {
     try {
-      requestHttp().getOut().close();
+      requestHttp().out().close();
     } catch (IOException e) {
       log.log(Level.WARNING, e.toString(), e);
     }
@@ -1024,7 +1007,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
 
     try {
-      requestHttp().getOut().close();
+      requestHttp().out().close();
     } catch (IOException e) {
       log.log(Level.WARNING, e.toString(), e);
     }
@@ -1455,32 +1438,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     {
       return (getClass().getSimpleName()
              + "[" + protocol() + "," + cipherSuite() + "]");
-    }
-  }
-
-  private static class WriterBaratine extends Writer
-  {
-    private RequestBaratineImpl _request;
-
-    WriterBaratine(RequestBaratineImpl request)
-    {
-      _request = request;
-    }
-
-    @Override
-    public void write(char []buffer, int offset, int length)
-    {
-      _request.write(buffer, offset, length);
-    }
-
-    @Override
-    public void flush()
-    {
-      _request.flush();
-    }
-
-    public void close()
-    {
     }
   }
   

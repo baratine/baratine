@@ -33,7 +33,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -92,9 +91,10 @@ public class SocketSystemTcp extends SocketSystem
 
   @Override
   public SocketBar connect(SocketBar socket,
-                         InetSocketAddress addr,
-                         long connectTimeout,
-                         boolean isSSL)
+                           InetSocketAddress addressRemote,
+                           InetSocketAddress addressLocal,
+                           long connectTimeout,
+                           boolean isSSL)
     throws IOException
   {
     throw new UnsupportedOperationException();
@@ -131,7 +131,7 @@ public class SocketSystemTcp extends SocketSystem
       context.init(null, new TrustManager[] { tm }, null);
       SSLSocketFactory factory = context.getSocketFactory();
       
-      InetSocketAddress addr = builder.inetAddress();
+      InetSocketAddress addr = builder.address();
       
       s = factory.createSocket(s, 
                                addr.getAddress().getHostAddress(), 
@@ -181,6 +181,7 @@ public class SocketSystemTcp extends SocketSystem
   {
     private SocketBar _socket;
     private InetSocketAddress _address;
+    private InetSocketAddress _addressLocal;
     private long _timeoutConnect;
     private boolean _isSsl;
     private int _port;
@@ -196,11 +197,13 @@ public class SocketSystemTcp extends SocketSystem
       return this;
     }
 
+    /*
     @Override
     public SocketBarBuilder address(String address)
     {
       throw new UnsupportedOperationException(address);
     }
+    */
 
     @Override
     public SocketBarBuilder address(InetSocketAddress address)
@@ -212,11 +215,25 @@ public class SocketSystemTcp extends SocketSystem
       return this;
     }
     
-    InetSocketAddress inetAddress()
+    InetSocketAddress address()
     {
       return _address;
     }
 
+    @Override
+    public SocketBarBuilder addressLocal(InetSocketAddress address)
+    {
+      _addressLocal = address;
+
+      return this;
+    }
+    
+    InetSocketAddress addressLocal()
+    {
+      return _addressLocal;
+    }
+
+    /*
     @Override
     public SocketBarBuilder port(int port)
     {
@@ -224,6 +241,7 @@ public class SocketSystemTcp extends SocketSystem
 
       return this;
     }
+    */
 
     @Override
     public SocketBarBuilder timeoutConnect(long timeout)

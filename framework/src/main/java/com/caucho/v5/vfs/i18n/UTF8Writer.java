@@ -113,8 +113,8 @@ public class UTF8Writer extends EncodingWriter {
   public int write(OutputStreamWithBuffer os, char []cbuf, int off, int len)
     throws IOException
   {
-    byte []buffer = os.getBuffer();
-    int length = os.getBufferOffset();
+    byte []buffer = os.buffer();
+    int length = os.offset();
     int capacity = buffer.length;
     int tail = off + len;
     int head = off;
@@ -122,7 +122,7 @@ public class UTF8Writer extends EncodingWriter {
     while (off < tail) {
       while (capacity - length <= 4) {
         buffer = os.nextBuffer(length);
-        length = os.getBufferOffset();
+        length = os.offset();
       }
       
       char ch = cbuf[off++];
@@ -156,7 +156,7 @@ public class UTF8Writer extends EncodingWriter {
       }
     }
 
-    os.setBufferOffset(length);
+    os.offset(length);
     
     return off - head;
   }

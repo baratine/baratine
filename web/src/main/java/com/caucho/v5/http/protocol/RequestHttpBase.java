@@ -30,7 +30,8 @@
 package com.caucho.v5.http.protocol;
 
 import java.io.IOException;
-import java.net.InetAddress;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -65,6 +66,7 @@ import com.caucho.v5.util.ClockCurrent;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.LruCache;
 import com.caucho.v5.web.CookieWeb;
+import com.caucho.v5.web.webapp.WriterUtf8;
 
 /**
  * Abstract request implementing methods common to the different
@@ -86,6 +88,7 @@ public abstract class RequestHttpBase implements OutHttp
   private static final char []CONNECTION = "connection".toCharArray();
   private static final char []COOKIE = "cookie".toCharArray();
   private static final char []CONTENT_LENGTH = "content-length".toCharArray();
+  private static final char []CONTENT_TYPE = "content-type".toCharArray();
   private static final char []EXPECT = "expect".toCharArray();
   private static final char []HOST = "host".toCharArray();
   private static final char []TRANSFER_ENCODING = "transfer-encoding".toCharArray();
@@ -159,8 +162,6 @@ public abstract class RequestHttpBase implements OutHttp
   = new CharBuffer("cache-control");
   //private static final CharBuffer CONNECTION
   //= new CharBuffer("connection");
-  private static final CharBuffer CONTENT_TYPE
-  = new CharBuffer("content-type");
   //private static final CharBuffer CONTENT_LENGTH
   //= new CharBuffer("content-length");
   private static final CharBuffer DATE
@@ -246,6 +247,9 @@ public abstract class RequestHttpBase implements OutHttp
 
   private final ArrayList<String> _headerKeys = new ArrayList<>();
   private final ArrayList<String> _headerValues = new ArrayList<>();
+  
+  private String _contentType;
+  private String _contentEncoding;
 
   private final ArrayList<String> _footerKeys = new ArrayList<>();
   private final ArrayList<String> _footerValues = new ArrayList<>();
@@ -280,6 +284,8 @@ public abstract class RequestHttpBase implements OutHttp
   private RequestFacade _request;
 
   private boolean _isChunkedIn;
+
+  private Writer _writer;
 
   /**
    * Create a new Request.  Because the actual initialization occurs with
@@ -414,7 +420,7 @@ public abstract class RequestHttpBase implements OutHttp
     _footerKeys.clear();
     _footerValues.clear();
 
-    getOut().start();
+    out().start();
 
     _isHeaderWritten = false;
 
@@ -620,9 +626,7 @@ public abstract class RequestHttpBase implements OutHttp
     }
 
     if (host == null) {
-      InetAddress addr = _conn.getLocalAddress();
-
-      return addr.getHostName();
+      return _conn.ipLocal().getHostName();
     }
 
     int p1 = host.lastIndexOf('/');
@@ -681,7 +685,7 @@ public abstract class RequestHttpBase implements OutHttp
     }
 
     if (host == null)
-      return _conn.getLocalPort();
+      return _conn.portLocal();
 
     int p1 = host.lastIndexOf(':');
 
@@ -708,7 +712,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public int getLocalPort()
   {
-    return _conn.getLocalPort();
+    return _conn.portLocal();
   }
 
   /**
@@ -716,12 +720,12 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public String getLocalHost()
   {
-    return _conn.getLocalHost();
+    return _conn.ipLocal().getHostName();
   }
 
   public String getRemoteAddr()
   {
-    return _conn.ip();
+    return _conn.addressRemote();
   }
 
   public int printRemoteAddr(byte []buffer, int offset)
@@ -734,7 +738,7 @@ public abstract class RequestHttpBase implements OutHttp
 
   public String remoteHost()
   {
-    return _conn.ip();
+    return _conn.addressRemote();
   }
 
   /**
@@ -742,7 +746,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public int getRemotePort()
   {
-    return _conn.getRemotePort();
+    return _conn.portRemote();
   }
 
   /**
@@ -1669,7 +1673,7 @@ public abstract class RequestHttpBase implements OutHttp
   /**
    * Gets the response stream.
    */
-  public final OutResponseBase getOut()
+  public final OutResponseBase out()
   {
     OutResponseBase stream = _responseStream;
     
@@ -1680,6 +1684,30 @@ public abstract class RequestHttpBase implements OutHttp
     
     
     return stream;
+  }
+  
+  public final Writer writer()
+  {
+    Writer writer = _writer;
+    
+    if (writer == null) {
+      String encoding = _contentEncoding;
+      
+      if (encoding == null || encoding.equals("utf-8")) {
+        writer = new WriterUtf8(out());
+      }
+      else {
+        try {
+          writer = new OutputStreamWriter(out(), encoding);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+      
+      _writer = writer;
+    }
+    
+    return writer;
   }
   
   public final void freeResponseStream()
@@ -1704,7 +1732,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   protected void setHead()
   {
-    getOut().toHead();
+    out().toHead();
   }
 
   /**
@@ -1712,7 +1740,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   protected final boolean isHead()
   {
-    return getOut().isHead();
+    return out().isHead();
   }
   
   //
@@ -1763,8 +1791,7 @@ public abstract class RequestHttpBase implements OutHttp
     }
 
     if (name.equalsIgnoreCase("content-type")) {
-      //return request().getContentType() != null;
-      throw new UnsupportedOperationException();
+      return _contentType != null;
     }
 
     if (name.equalsIgnoreCase("content-length")) {
@@ -1802,6 +1829,10 @@ public abstract class RequestHttpBase implements OutHttp
     if (name.equalsIgnoreCase("content-length")) {
       return _contentLengthOut >= 0 ? String.valueOf(_contentLengthOut) : null;
     }
+    
+    if (name.equalsIgnoreCase("content-type")) {
+      return _contentType;
+    }
 
     return null;
   }
@@ -1812,43 +1843,17 @@ public abstract class RequestHttpBase implements OutHttp
    * @param key the header key to set.
    * @param value the header value to set.
    */
-  public void setHeaderOut(String key, String value)
+  public void headerOut(String key, String value)
   {
     Objects.requireNonNull(value);
     
     if (isOutCommitted()) {
       return;
     }
-    // #5824, server/1m15
-    /*
-    if (value == null)
-      throw new NullPointerException();
-      */
 
-    if (setHeaderOutSpecial(key, value)) {
+    if (headerOutSpecial(key, value)) {
       return;
     }
-
-    // server/05e8 (tck)
-    // XXX: server/13w0 for _isHeaderWritten because the Expires in caching
-    // occurs after the output fills (committed), which contradicts the tck
-    // requirements
-    /*
-    if (isOutCommitted() && ! _isHeaderWritten) {
-      return;
-    }
-    */
-    
-    setHeaderOutImpl(key, value);
-
-    /*
-    if (value != null) {
-      setHeaderOutImpl(key, value);
-    }
-    else {
-      removeHeader(key);
-    }
-    */
   }
 
 
@@ -1914,7 +1919,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public void addHeaderOutImpl(String key, String value)
   {
-    if (setHeaderOutSpecial(key, value)) {
+    if (headerOutSpecial(key, value)) {
       return;
     }
     
@@ -1950,7 +1955,7 @@ public abstract class RequestHttpBase implements OutHttp
   /**
    * Special processing for a special value.
    */
-  private boolean setHeaderOutSpecial(String key, String value)
+  private boolean headerOutSpecial(String key, String value)
   {
     int length = key.length();
     
@@ -1966,13 +1971,6 @@ public abstract class RequestHttpBase implements OutHttp
     
     int code = (length << 8) + ch;
     
-    /*
-    if (256 <= length)
-      return false;
-
-    key.getChars(0, length, _headerBuffer, 0);
-    */
-
     switch (code) {
     case 0x0d00 + 'c':
       if (CACHE_CONTROL.matchesIgnoreCase(key)) {
@@ -2001,17 +1999,15 @@ public abstract class RequestHttpBase implements OutHttp
         return false;
       }
 
-    /*
     case 0x0c00 + 'c':
-      if (CONTENT_TYPE.matchesIgnoreCase(key)) {
-        //request().setContentType(value);
-        if (true) throw new UnsupportedOperationException();
+      if (CONTENT_TYPE_CB.matchesIgnoreCase(key)) {
+        headerOutContentType(value);
+        
         return true;
       }
       else {
         return false;
       }
-      */
 
     case 0x0e00 + 'c':
       if (CONTENT_LENGTH_CB.matchesIgnoreCase(key)) {
@@ -2044,6 +2040,36 @@ public abstract class RequestHttpBase implements OutHttp
     default:
       return false;
     }
+  }
+  
+  public void headerOutContentType(String value)
+  {
+    ContentType contentType = parseContentType(value);
+    
+    _contentType = contentType.contentType();
+    
+    if (contentType.encoding() != null) {
+      headerOutContentEncoding(contentType.encoding());
+    }
+    else if (contentType.encodingDefault() != null
+             && _contentEncoding == null) {
+      headerOutContentEncoding(contentType.encodingDefault());
+    }
+  }
+  
+  public void headerOutContentEncoding(String encoding)
+  {
+    _contentEncoding = encoding;
+  }
+  
+  protected String headerOutContentType()
+  {
+    return _contentType;
+  }
+  
+  protected String headerOutContentEncoding()
+  {
+    return _contentEncoding;
   }
   
   private static long parseLong(String string)
@@ -2215,7 +2241,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public void addFooter(String key, String value)
   {
-    if (setHeaderOutSpecial(key, value)) {
+    if (headerOutSpecial(key, value)) {
       return;
     }
 
@@ -2247,7 +2273,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public final boolean isOutCommitted()
   {
-    OutResponseBase stream = getOut();
+    OutResponseBase stream = out();
     
     if (stream.isCommitted()) {
       return true;

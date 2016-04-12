@@ -29,70 +29,30 @@
 
 package com.caucho.v5.web.webapp;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.Writer;
 import java.net.InetSocketAddress;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.http.protocol.ConnectionHttp;
-import com.caucho.v5.http.protocol.OutResponseBase;
-import com.caucho.v5.http.protocol.RequestFacadeBase;
-import com.caucho.v5.http.protocol.RequestHttpBase;
-import com.caucho.v5.http.protocol.RequestHttpState;
-import com.caucho.v5.http.protocol.RequestUpgrade;
-import com.caucho.v5.http.protocol.WebCookie;
-import com.caucho.v5.http.protocol2.OutHeader;
-import com.caucho.v5.http.websocket.WebSocketBaratineImpl;
-import com.caucho.v5.inject.InjectorAmp;
-import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.TempInputStream;
-import com.caucho.v5.io.WriteBuffer;
-import com.caucho.v5.network.port.ConnectionProtocol;
-import com.caucho.v5.network.port.StateConnection;
-import com.caucho.v5.util.Base64Util;
-import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.L10N;
-import com.caucho.v5.util.RandomUtil;
-import com.caucho.v5.util.Utf8Util;
-import com.caucho.v5.web.CookieWeb;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
 import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.Result;
-import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
-import io.baratine.web.BodyReader;
-import io.baratine.web.Form;
 import io.baratine.web.HttpStatus;
-import io.baratine.web.MultiMap;
 import io.baratine.web.OutWeb;
 import io.baratine.web.RequestWeb;
-import io.baratine.web.ServiceWebSocket;
 
 
 /**
  * Wrapper for filter requests.
  */
-public class RequestWrapper implements RequestWeb
+public class RequestWrapper implements RequestWebSpi
 {
-  protected RequestWeb delegate() 
+  protected RequestWebSpi delegate() 
   { 
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -295,11 +255,13 @@ public class RequestWrapper implements RequestWeb
     return delegate().body(type);
   }
 
+  /*
   @Override
   public <X> void body(BodyReader<X> reader, Result<X> result)
   {
     delegate().body(reader, result);
   }
+  */
 
   @Override
   public <X> void body(Class<X> type, Result<X> result)

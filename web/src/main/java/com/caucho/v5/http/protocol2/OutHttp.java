@@ -245,12 +245,6 @@ public class OutHttp implements AutoCloseable
     
     // ChannelHttp2 channel = _conn.getChannel(streamId);
     
-    /*
-    if (channel == null) {
-      System.out.println("WRIT: " + streamId + " with close");
-    }
-    */
-    
     if (offset >= 8) {
       offset -= 8;
       

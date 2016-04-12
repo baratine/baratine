@@ -183,6 +183,22 @@ public class SocketWrapperBar extends SocketBar
    * Returns the server port that accepted the request.
    */
   @Override
+  public InetSocketAddress ipRemote()
+  {
+    Socket s = getSocket();
+    
+    if (s != null) {
+      return (InetSocketAddress) s.getRemoteSocketAddress();
+    }
+    else {
+      return null;
+    }
+  }
+  
+  /**
+   * Returns the server port that accepted the request.
+   */
+  @Override
   public int portLocal()
   {
     Socket s = getSocket();

@@ -61,6 +61,11 @@ abstract public class SocketBar implements Closeable
   /**
    * Returns the server inet address that accepted the request.
    */
+  abstract public InetSocketAddress ipRemote();
+  
+  /**
+   * Returns the server inet address that accepted the request.
+   */
   public String getLocalHost()
   {
     InetAddress localAddress = addressLocal();

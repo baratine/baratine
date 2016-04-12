@@ -409,32 +409,42 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   /**
    * Returns the local address of the socket.
    */
+  /*
   @Override
   public InetAddress getLocalAddress()
   {
     return _socket.addressLocal();
   }
+  */
   
   @Override
   public InetSocketAddress ipLocal()
   {
     return _socket.ipLocal();
   }
+  
+  @Override
+  public InetSocketAddress ipRemote()
+  {
+    return _socket.ipRemote();
+  }
 
   /**
    * Returns the local host name.
    */
+  /*
   @Override
   public String getLocalHost()
   {
     return _socket.getLocalHost();
   }
+  */
 
   /**
    * Returns the socket's local TCP port.
    */
   @Override
-  public int getLocalPort()
+  public int portLocal()
   {
     return _socket.portLocal();
   }
@@ -442,17 +452,19 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   /**
    * Returns the socket's remote address.
    */
+  /*
   @Override
   public InetAddress getRemoteAddress()
   {
     return _socket.addressRemote();
   }
+  */
 
   /**
    * Returns the socket's remote host name.
    */
   @Override
-  public String ip()
+  public String addressRemote()
   {
     return _socket.getRemoteHost();
   }
@@ -470,7 +482,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
    * Returns the socket's remote port
    */
   @Override
-  public int getRemotePort()
+  public int portRemote()
   {
     return _socket.portRemote();
   }
@@ -844,8 +856,8 @@ System.out.println("REQ_COMT:");
       _pollHandle.initKeepalive();
 
       if (log.isLoggable(Level.FINE)) {
-        _dbgId = (getLocalAddress().getHostAddress() + ":" + getLocalPort()
-                  + "<" + getRemoteAddress().getHostAddress() + ":" + getRemotePort()
+        _dbgId = (ipLocal()
+                  + "<" + ipRemote()
                   + "#" + _connectionId);
       }
       

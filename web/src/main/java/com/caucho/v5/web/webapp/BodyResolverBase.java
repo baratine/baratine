@@ -44,7 +44,6 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Utf8Util;
 
 import io.baratine.web.Form;
-import io.baratine.web.RequestWeb;
 
 /**
  * Reads a body
@@ -56,7 +55,7 @@ public class BodyResolverBase implements BodyResolver
   public static final String FORM_TYPE = "application/x-www-form-urlencoded";
 
   @Override
-  public <T> T body(RequestWeb request, Class<T> type)
+  public <T> T body(RequestWebSpi request, Class<T> type)
   {
     if (InputStream.class.equals(type)) {
       InputStream is = request.inputStream(); // new TempInputStream(_bodyHead);
@@ -110,7 +109,7 @@ public class BodyResolverBase implements BodyResolver
     return bodyDefault(request, type);
   }
 
-  public <T> T bodyDefault(RequestWeb request, Class<T> type)
+  public <T> T bodyDefault(RequestWebSpi request, Class<T> type)
   {
     String contentType = request.header("content-type");
 
@@ -302,7 +301,7 @@ public class BodyResolverBase implements BodyResolver
     field.set(bean, value);
   }
 
-  private Form parseForm(RequestWeb request)
+  private Form parseForm(RequestWebSpi request)
   {
     /*
     Form form = request.getForm();

@@ -172,20 +172,20 @@ public class CompressorDeflate implements CompressorKelp
       throws IOException
     {
       while (true) {
-        byte []buffer = os.getBuffer();
-        int offset = os.getBufferOffset();
+        byte []buffer = os.buffer();
+        int offset = os.offset();
         
         int sublen = buffer.length - offset;
         
         if (sublen == 0) {
           os.flushBuffer();
-          buffer = os.getBuffer();
-          offset = os.getBufferOffset();
+          buffer = os.buffer();
+          offset = os.offset();
         }
         
         sublen = deflater.deflate(buffer, offset, sublen);
         
-        os.setBufferOffset(offset + sublen);
+        os.offset(offset + sublen);
         
         if (sublen == 0) {
           return;

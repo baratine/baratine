@@ -37,8 +37,6 @@ import java.io.Reader;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.web.RequestWeb;
-
 /**
  * Reads a body
  */
@@ -47,7 +45,7 @@ public class BodyResolverFramework extends BodyResolverBase
   private static final L10N L = new L10N(BodyResolverFramework.class);
   
   @Override
-  public <T> T bodyDefault(RequestWeb request, Class<T> type)
+  public <T> T bodyDefault(RequestWebSpi request, Class<T> type)
   {
     String contentType = request.header("content-type");
     

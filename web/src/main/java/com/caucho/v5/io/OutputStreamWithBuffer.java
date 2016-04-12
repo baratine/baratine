@@ -41,19 +41,19 @@ abstract public class OutputStreamWithBuffer extends OutputStream
   /**
    * Returns the stream's buffer.
    */
-  abstract public byte []getBuffer()
+  abstract public byte []buffer()
     throws IOException;
   
   /**
    * Returns the stream's buffer offset.
    */
-  abstract public int getBufferOffset()
+  abstract public int offset()
     throws IOException;
   
   /**
    * Sets the stream's buffer length.
    */
-  abstract public void setBufferOffset(int offset)
+  abstract public void offset(int offset)
     throws IOException;
   
   /**

@@ -1712,14 +1712,6 @@ public class RequestHttp extends RequestHttpBase
   // upgrade to duplex
   //
 
-  /*
-  @Override
-  public boolean isSuspend()
-  {
-    return getRequestProtocol().isSuspend();
-  }
-  */
-
   @Override
   public boolean isDuplex()
   {
@@ -1793,24 +1785,10 @@ public class RequestHttp extends RequestHttpBase
     return new OutResponseHttp(this);
   }
   
-  /*
-  OutHttpProxy getProxy()
-  {
-    return _outProxy;
-  }
-  */
-
   boolean isChunked()
   {
-    return getOut().isChunkedEncoding();
+    return out().isChunkedEncoding();
   }
-
-  /*
-  private WriteStream getRawWrite()
-  {
-    return _rawWrite;
-  }
-  */
 
   public boolean calculateChunkedEncoding()
   {
@@ -2120,32 +2098,8 @@ public class RequestHttp extends RequestHttpBase
     
     _isUpgrade = true;
     
-    getOut().upgrade();
+    out().upgrade();
   }
-
-  /**
-   * Upgrade protocol
-   */
-  /*
-  @Override
-  public DuplexController upgradeProtocol(DuplexHandler handler)
-  {
-    TcpConnection conn
-      = (TcpConnection) ((TcpServerRequest) getRequest()).getConnection();
-
-    TcpDuplexController controller = toDuplex(handler);
-
-    HttpServletResponseImpl response = _request.getResponseFacade();
-
-    response.setStatus(101);
-    setContentLength(0);
-
-    if (log.isLoggable(Level.FINE))
-      log.fine(this + " upgrade HTTP to " + handler);
-
-    return controller;
-  }
-  */
 
   /**
    * Writes the 100 continue response.
@@ -2321,6 +2275,19 @@ public class RequestHttp extends RequestHttpBase
 
       if (debug) {
         log.fine(key + ": " + headerValues.get(i) + " (" + dbgId() + ")");
+      }
+    }
+    
+    String contentType = headerOutContentType();
+    String contentEncoding = headerOutContentEncoding();
+    
+    if (contentType != null) {
+      os.print("\r\ncontent-type: ");
+      os.printLatin1NoLf(contentType);
+      
+      if (contentEncoding != null) {
+        os.print("; charset=");
+        os.printLatin1NoLf(contentEncoding);
       }
     }
 

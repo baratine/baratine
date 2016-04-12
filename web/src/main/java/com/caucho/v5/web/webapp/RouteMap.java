@@ -97,7 +97,7 @@ public class RouteMap
       
       invocation.params(params);
       
-      invocation.queryMap(parseQuery(invocation.getQueryString()));
+      invocation.queryMap(parseQuery(invocation.queryString()));
       
       return true;
     }

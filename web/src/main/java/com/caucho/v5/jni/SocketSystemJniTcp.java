@@ -72,9 +72,10 @@ public class SocketSystemJniTcp extends SocketSystemTcp
 
   @Override
   public SocketBar connect(SocketBar socket,
-                         InetSocketAddress addr,
-                         long connectTimeout,
-                         boolean isSSL)
+                           InetSocketAddress addressRemote,
+                           InetSocketAddress addressLocal,
+                           long connectTimeout,
+                           boolean isSSL)
     throws IOException
   {
     try {
@@ -86,8 +87,8 @@ public class SocketSystemJniTcp extends SocketSystemTcp
 
       if (JniSocketImpl.isEnabled() && ! isSSL) {
         jniSocket = JniSocketImpl.connect(jniSocket,
-                                          addr.getAddress().getHostAddress(),
-                                          addr.getPort());
+                                          addressRemote.getAddress().getHostAddress(),
+                                          addressRemote.getPort());
       }
 
       if (jniSocket != null) {
@@ -98,7 +99,7 @@ public class SocketSystemJniTcp extends SocketSystemTcp
       log.finer(e.toString());
     }
 
-    return super.connect(socket, addr, connectTimeout, isSSL);
+    return super.connect(socket, addressRemote, addressLocal, connectTimeout, isSSL);
   }
 
   /*

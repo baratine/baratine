@@ -37,6 +37,7 @@ class ContentType {
   private final String _userContentType;
   private String _contentType;
   private String _encoding;
+  private String _encodingDefault;
 
   /**
    * Creates and parses the ContentType.
@@ -46,21 +47,27 @@ class ContentType {
     _userContentType = userContentType;
 
     parseContentType(userContentType);
+    parseEncodingDefault();
   }
   
-  public String getUserContentType()
+  public String userContentType()
   {
     return _userContentType;
   }
 
-  public String getContentType()
+  public String contentType()
   {
     return _contentType;
   }
 
-  public String getEncoding()
+  public String encoding()
   {
     return _encoding;
+  }
+
+  public String encodingDefault()
+  {
+    return _encodingDefault;
   }
 
   private void parseContentType(String value)
@@ -150,6 +157,22 @@ class ContentType {
     }
 
     _contentType = value.intern();
+  }
+  
+  private void parseEncodingDefault()
+  {
+    if (_contentType.startsWith("text/")) {
+      _encodingDefault = "utf-8";
+      return;
+    }
+    else if (_contentType.contains("json")) {
+      _encodingDefault = "utf-8";
+      return;
+    }
+    else if (_contentType.contains("xml")) {
+      _encodingDefault = "utf-8";
+      return;
+    }
   }
   
   private static boolean isWhitespace(int ch)

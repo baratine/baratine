@@ -1434,8 +1434,8 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
     StreamImpl is = openReadImpl();
 
     try {
-      byte []buffer = os.getBuffer();
-      int offset = os.getBufferOffset();
+      byte []buffer = os.buffer();
+      int offset = os.offset();
       int length = buffer.length;
 
       while (! os.isClosed()) {
@@ -1443,14 +1443,14 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
 
         if (sublen <= 0) {
           buffer = os.nextBuffer(offset);
-          offset = os.getBufferOffset();
+          offset = os.offset();
           sublen = length - offset;
         }
 
         sublen = is.read(buffer, offset, sublen);
 
         if (sublen <= 0) {
-          os.setBufferOffset(offset);
+          os.offset(offset);
           return;
         }
 

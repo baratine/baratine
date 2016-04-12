@@ -29,12 +29,12 @@
 
 package com.caucho.v5.web.webapp;
 
-import io.baratine.web.RequestWeb;
+import java.io.IOException;
 
 /**
  * Reads a body
  */
 public interface BodyResolver
 {
-  <T> T body(RequestWeb request, Class<T> type);
+  <T> T body(RequestWebSpi request, Class<T> type);
 }

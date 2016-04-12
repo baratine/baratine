@@ -225,7 +225,7 @@ public class WriteBuffer extends OutputStreamWithBuffer
    * Returns the write buffer.
    */
   @Override
-  public byte []getBuffer()
+  public byte []buffer()
   {
     return _writeBuffer;
   }
@@ -234,7 +234,7 @@ public class WriteBuffer extends OutputStreamWithBuffer
    * Returns the write offset.
    */
   @Override
-  public int getBufferOffset()
+  public int offset()
   {
     return _writeLength;
   }
@@ -243,7 +243,7 @@ public class WriteBuffer extends OutputStreamWithBuffer
    * Sets the write offset.
    */
   @Override
-  public void setBufferOffset(int offset)
+  public void offset(int offset)
   {
     _writeLength = offset;
   }

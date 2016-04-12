@@ -29,7 +29,6 @@
 
 package com.caucho.v5.web.webapp;
 
-import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWeb;
 
 
@@ -38,19 +37,19 @@ import io.baratine.web.ServiceWeb;
  */
 public class RequestFilter extends RequestWrapper
 {
-  private RequestWeb _delegate;
+  private RequestWebSpi _delegate;
   
   private ServiceWeb []_services;
   private int _index;
   
-  RequestFilter(RequestWeb delegate, ServiceWeb []services)
+  RequestFilter(RequestWebSpi delegate, ServiceWeb []services)
   {
     _delegate = delegate;
     _services = services;
   }
 
   @Override
-  protected RequestWeb delegate() 
+  protected RequestWebSpi delegate() 
   { 
     return _delegate;
   }

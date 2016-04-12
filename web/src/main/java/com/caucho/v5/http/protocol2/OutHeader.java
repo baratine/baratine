@@ -133,15 +133,15 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   {
     WriteBuffer os = _os;
     
-    int offset = os.getBufferOffset();
-    byte []buffer = os.getBuffer();
+    int offset = os.offset();
+    byte []buffer = os.buffer();
     int size = buffer.length;
     
     if (size - offset < 16) {
       os.flush();
       
-      offset = os.getBufferOffset();
-      buffer = os.getBuffer();
+      offset = os.offset();
+      buffer = os.buffer();
     }
     
     _headerOffset = offset;
@@ -248,7 +248,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     if (fillLen > 0) {
       Arrays.fill(buffer, offset, offset + fillLen, (byte) 0);
     }
-    os.setBufferOffset(offset + fillLen);
+    os.offset(offset + fillLen);
     
     _headerOffset = 0;
   }

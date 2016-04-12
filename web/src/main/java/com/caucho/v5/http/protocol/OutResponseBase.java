@@ -271,7 +271,7 @@ public abstract class OutResponseBase
    * Returns the byte buffer.
    */
   @Override
-  public byte []getBuffer()
+  public byte []buffer()
     throws IOException
   {
     return _tailByteBuffer;
@@ -286,7 +286,7 @@ public abstract class OutResponseBase
    * Returns the byte offset.
    */
   @Override
-  public int getBufferOffset()
+  public int offset()
     throws IOException
   {
     return _tailByteLength;
@@ -304,7 +304,7 @@ public abstract class OutResponseBase
    * Sets the byte offset.
    */
   @Override
-  public void setBufferOffset(int offset)
+  public void offset(int offset)
     throws IOException
   {
     _tailByteLength = offset;
@@ -423,7 +423,7 @@ public abstract class OutResponseBase
       _tailByteLength = offset;
       flushByteBuffer();
 
-      return getBuffer();
+      return buffer();
     }
     else {
       _tail.length(offset);
@@ -460,8 +460,9 @@ public abstract class OutResponseBase
   public void print(char []buffer, int offset, int length)
     throws IOException
   {
-    if (isClosed() || isHead())
+    if (isClosed() || isHead()) {
       return;
+    }
 
     int charLength = _charLength;
 

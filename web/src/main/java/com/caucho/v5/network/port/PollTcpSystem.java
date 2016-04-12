@@ -87,9 +87,10 @@ public class PollTcpSystem
     boolean isSSL = false;
 
     SocketBar s = _socketSystem.connect(cxt.getSocket(),
-                                       address,
-                                       timeout,
-                                       isSSL);
+                                        address,
+                                        null,
+                                        timeout,
+                                        isSSL);
 
     cxt.init(s);
   }

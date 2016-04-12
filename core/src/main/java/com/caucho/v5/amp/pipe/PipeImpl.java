@@ -56,6 +56,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   private static final Logger log = Logger.getLogger(PipeImpl.class.getName());
   
   private static final long OFFER_TIMEOUT_DEFAULT = 10000L;
+  private static final int CAPACITY_DEFAULT = 256;
   
   private Pipe<T> _inPipe;
   private QueueRingForPipe<T> _queue;
@@ -101,7 +102,12 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     if (credits >= 0) {
       // XXX: illegal argument exception for too-long credits
       if (capacity <= 0) {
-        capacity = (int) Math.max(32, 2 * Long.highestOneBit(credits));
+        if (credits > 0) {
+          capacity = (int) Math.max(32, 2 * Long.highestOneBit(credits));
+        }
+        else {
+          capacity = CAPACITY_DEFAULT;
+        }
       }
       
       _creditsIn = credits;
@@ -109,11 +115,21 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     }
     else {
       if (prefetch <= 0) {
-        prefetch = capacity - 8;
+        if (capacity <= 0) {
+          capacity = CAPACITY_DEFAULT;
+        }
+        
+        if (capacity >= 16) {
+          prefetch = capacity - 8;
+        }
+        else {
+          prefetch = capacity - 1;
+        }
       }
-
-      if (capacity <= 0) {
-        capacity = 2 * Integer.highestOneBit(prefetch);
+      else {
+        if (capacity <= 0) {
+          capacity = 2 * Integer.highestOneBit(prefetch);
+        }
       }
     }
     

@@ -79,6 +79,7 @@ public final class JniSocketImpl extends SocketBar
   private final AtomicBoolean _isClosed = new AtomicBoolean();
 
   private InetSocketAddress _ipLocal;
+  private InetSocketAddress _ipRemote;
 
   public JniSocketImpl()
   {
@@ -197,6 +198,9 @@ public final class JniSocketImpl extends SocketBar
     _localName = null;
     _localAddr = null;
     _localAddrLength = 0;
+    
+    _ipLocal = null;
+    _ipRemote = null;
 
     _remoteName = null;
     _remoteAddr = null;
@@ -393,6 +397,24 @@ public final class JniSocketImpl extends SocketBar
     if (_ipLocal == null) {
       try {
         _ipLocal = InetSocketAddress.createUnresolved(getLocalHost(),
+                                                      portLocal());
+      } catch (Exception e) {
+        log.log(Level.FINE, e.toString(), e);
+      }
+    }
+
+    return _ipLocal;
+  }
+
+  /**
+   * Returns the remote client's inet address.
+   */
+  @Override
+  public InetSocketAddress ipRemote()
+  {
+    if (_ipRemote == null) {
+      try {
+        _ipRemote = InetSocketAddress.createUnresolved(getLocalHost(),
                                                       portLocal());
       } catch (Exception e) {
         log.log(Level.FINE, e.toString(), e);

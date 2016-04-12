@@ -188,7 +188,7 @@ public class Invocation implements Dependency
   /**
    * Returns the query string.  Characters remain unescaped.
    */
-  public final String getQueryString()
+  public final String queryString()
   {
     return _queryString;
   }
@@ -328,8 +328,8 @@ public class Invocation implements Dependency
       return false;
     }
 
-    String aQuery = getQueryString();
-    String bQuery = inv.getQueryString();
+    String aQuery = queryString();
+    String bQuery = inv.queryString();
 
     if (aQuery != bQuery &&
         (aQuery == null || ! aQuery.equals(bQuery))) {
