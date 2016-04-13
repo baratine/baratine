@@ -29,8 +29,6 @@
 
 package com.caucho.v5.jdbc;
 
-import java.util.List;
-
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 
@@ -44,10 +42,10 @@ public interface JdbcService
   public static String CONFIG_TEST_QUERY_AFTER = "JDBC_TEST_QUERY_AFTER";
 
   void execute(Result<Integer> result, String sql, Object ... params);
-  void executeBatch(Result<List<Integer>> result, String sql, List<Object> ... params);
-  void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... params);
+  void executeBatch(Result<Integer[]> result, String sql, Object[] ... params);
+  void executeBatch(Result<Integer[]> result, String[] sqlList, Object[] ... params);
 
   void query(Result<ResultSetKraken> result, String sql, Object ... params);
-  void queryBatch(Result<List<ResultSetKraken>> result, String sql, List<Object> ... paramsList);
-  void queryBatch(Result<List<ResultSetKraken>> result, List<String> sqlList, List<Object> ... paramsList);
+  void queryBatch(Result<ResultSetKraken[]> result, String sql, Object[] ... paramsList);
+  void queryBatch(Result<ResultSetKraken[]> result, String[] sqlList, Object[] ... paramsList);
 }

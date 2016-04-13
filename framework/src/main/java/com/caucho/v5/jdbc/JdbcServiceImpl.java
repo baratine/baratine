@@ -29,7 +29,6 @@
 
 package com.caucho.v5.jdbc;
 
-import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -84,7 +83,7 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void execute(Result<Integer> result, String sql, Object... params)
+  public void execute(Result<Integer> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "execute: " + toDebugSafe(sql));
@@ -94,7 +93,7 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void executeBatch(Result<List<Integer>> result, String sql, List<Object>... params)
+  public void executeBatch(Result<Integer[]> result, String sql, Object[] ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "executeBatch: " + toDebugSafe(sql));
@@ -104,17 +103,17 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object>... params)
+  public void executeBatch(Result<Integer[]> result, String[] sqlList, Object[] ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "executeBatch: " + sqlList.size());
+      _logger.log(Level.FINER, "executeBatch: " + sqlList.length);
     }
 
     _conn.executeBatch(result, sqlList, params);
   }
 
   @Override
-  public void query(Result<ResultSetKraken> result, String sql, Object... params)
+  public void query(Result<ResultSetKraken> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
@@ -124,7 +123,7 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void queryBatch(Result<List<ResultSetKraken>> result, String sql, List<Object>... paramsList)
+  public void queryBatch(Result<ResultSetKraken[]> result, String sql, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "queryBatch: " + toDebugSafe(sql));
@@ -134,10 +133,10 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void queryBatch(Result<List<ResultSetKraken>> result, List<String> sqlList, List<Object>... paramsList)
+  public void queryBatch(Result<ResultSetKraken[]> result, String[] sqlList, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryBatch: " + sqlList.size());
+      _logger.log(Level.FINER, "queryBatch: " + sqlList.length);
     }
 
     _conn.queryBatch(result, sqlList, paramsList);
