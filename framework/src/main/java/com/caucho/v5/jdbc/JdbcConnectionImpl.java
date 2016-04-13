@@ -36,7 +36,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +60,11 @@ public class JdbcConnectionImpl implements JdbcService
   private int _id;
   private String _testQueryBefore;
   private String _testQueryAfter;
+
+  protected JdbcConnectionImpl()
+  {
+    // zero-arg constructor for Baratine to instantiate proxies of this class
+  }
 
   public JdbcConnectionImpl(int id, String url, Properties props,
                             String testQueryBefore, String testQueryAfter)
@@ -140,7 +144,7 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @Override
-  public void executeBatch(Result<List<Integer>> result, String sql, List<Object> ... paramsList)
+  public void executeBatch(Result<Integer[]> result, String sql, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "executeBatch: id=" + _id + ", sql=" + toDebugSafe(sql));
@@ -148,16 +152,18 @@ public class JdbcConnectionImpl implements JdbcService
 
     testQueryBefore();
 
-    ArrayList<Integer> updateCountList = new ArrayList<>();
+    Integer[] updateCounts = new Integer[paramsList.length];
 
     try {
-      for (List<Object> params : paramsList) {
+      for (int i = 0; i < paramsList.length; i++) {
+        Object[] params = paramsList[i];
+
         int updateCount = execute(sql, params);
 
-        updateCountList.add(updateCount);
+        updateCounts[i] = updateCount;
       }
 
-      result.ok(updateCountList);
+      result.ok(updateCounts);
 
       testQueryAfter();
     }
@@ -169,7 +175,7 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @Override
-  public void executeBatch(Result<List<Integer>> result, List<String> sqlList, List<Object> ... paramsList)
+  public void executeBatch(Result<Integer[]> result, String[] sqlList, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "executeBatch: id=" + _id);
@@ -177,20 +183,20 @@ public class JdbcConnectionImpl implements JdbcService
 
     testQueryBefore();
 
-    ArrayList<Integer> updateCountList = new ArrayList<>();
+    Integer[] updateCounts = new Integer[sqlList.length];
 
     try {
-      int i = 0;
+      for (int i = 0; i < sqlList.length; i++) {
+        String sql = sqlList[i];
 
-      for (String sql : sqlList) {
-        List<Object> params = paramsList[i++];
+        Object[] params = paramsList[i];
 
         int updateCount = execute(sql, params);
 
-        updateCountList.add(updateCount);
+        updateCounts[i] = updateCount;
       }
 
-      result.ok(updateCountList);
+      result.ok(updateCounts);
 
       testQueryAfter();
     }
@@ -232,29 +238,6 @@ public class JdbcConnectionImpl implements JdbcService
       }
 
       return execute(sql, list);
-    }
-  }
-
-  private int execute(String sql, List<Object> params)
-    throws SQLException
-  {
-    PreparedStatement stmt = null;
-
-    try {
-      stmt = _conn.prepareStatement(sql);
-
-      int i = 0;
-
-      for (Object param : params) {
-        stmt.setObject(++i, param);
-      }
-
-      stmt.execute();
-
-      return stmt.getUpdateCount();
-    }
-    finally {
-      IoUtil.close(stmt);
     }
   }
 
@@ -302,7 +285,7 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @Override
-  public void queryBatch(Result<List<ResultSetKraken>> result, String sql, List<Object> ... paramsList)
+  public void queryBatch(Result<ResultSetKraken[]> result, String sql, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + toDebugSafe(sql));
@@ -311,18 +294,20 @@ public class JdbcConnectionImpl implements JdbcService
     testQueryBefore();
 
     PreparedStatement stmt = null;
-    ArrayList<ResultSetKraken> list = new ArrayList<>();
+    ResultSetKraken[] resultList = new ResultSetKraken[paramsList.length];
 
     try {
       stmt = _conn.prepareStatement(sql);
 
-      for (List<Object> params : paramsList) {
+      for (int i = 0; i < paramsList.length; i++) {
+        Object[] params = paramsList[i];
+
         ResultSetKraken rs = query(stmt, params);
 
-        list.add(rs);
+        resultList[i] = rs;
       }
 
-      result.ok(list);
+      result.ok(resultList);
 
       testQueryAfter();
     }
@@ -337,22 +322,22 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @Override
-  public void queryBatch(Result<List<ResultSetKraken>> result, List<String> sqlList, List<Object> ... paramsList)
+  public void queryBatch(Result<ResultSetKraken[]> result, String[] sqlList, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + sqlList.size());
+      _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + sqlList.length);
     }
 
     testQueryBefore();
 
     PreparedStatement stmt = null;
-    ArrayList<ResultSetKraken> list = new ArrayList<>();
+    ResultSetKraken[] resultList = new ResultSetKraken[sqlList.length];
 
     try {
-      int i = 0;
+      for (int i = 0; i < sqlList.length; i++) {
+        String sql = sqlList[i];
 
-      for (String sql : sqlList) {
-        List<Object> params = paramsList[i++];
+        Object[] params = paramsList[i++];
 
         stmt = _conn.prepareStatement(sql);
 
@@ -360,7 +345,7 @@ public class JdbcConnectionImpl implements JdbcService
 
         stmt.close();
 
-        list.add(rs);
+        resultList[i] = rs;
       }
 
       testQueryAfter();
@@ -374,10 +359,10 @@ public class JdbcConnectionImpl implements JdbcService
       IoUtil.close(stmt);
     }
 
-    result.ok(list);
+    result.ok(resultList);
   }
 
-  private ResultSetKraken query(PreparedStatement stmt, List<Object> params)
+  private ResultSetKraken query(PreparedStatement stmt, Object[] params)
     throws SQLException
   {
     int i = 0;

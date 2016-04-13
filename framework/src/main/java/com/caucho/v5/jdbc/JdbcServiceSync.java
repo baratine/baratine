@@ -34,10 +34,10 @@ import java.util.List;
 public interface JdbcServiceSync extends JdbcService
 {
   Integer execute(String sql, Object ... params);
-  Integer[] executeBatch(String sql, List<Object> ... paramsList);
-  Integer[] executeBatch(List<String> sqlList, List<Object> ... paramsList);
+  Integer[] executeBatch(String sql, Object[] ... paramsList);
+  Integer[] executeBatch(String[] sqlList, Object[] ... paramsList);
 
   ResultSetKraken query(String sql, Object ... params);
-  List<ResultSetKraken> queryBatch(String sql, List<Object> ... paramsList);
-  List<ResultSetKraken> queryBatch(List<String> sqlList, List<Object> ... paramsList);
+  List<ResultSetKraken> queryBatch(String sql, Object[] ... paramsList);
+  List<ResultSetKraken> queryBatch(String[] sqlList, Object[] ... paramsList);
 }
