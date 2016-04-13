@@ -60,7 +60,7 @@ public class RequestFilter extends RequestWrapper
     // XXX: calling next handle is correct? 
     try {
       if (_index < _services.length) {
-        _services[_index++].handle(this);
+        _services[_index++].service(this);
       }
       else {
         delegate().ok();
@@ -77,7 +77,7 @@ public class RequestFilter extends RequestWrapper
       delegate().ok(value);
       
       if (_index < _services.length) {
-        _services[_index++].handle(this);
+        _services[_index++].service(this);
       }
       else {
         delegate().ok();

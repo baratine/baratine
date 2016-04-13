@@ -36,7 +36,7 @@ import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * A fast bufferered output stream supporting both character
@@ -449,7 +449,7 @@ public class WriteStream extends OutputStreamWithBuffer
     write(buf, 0, buf.length);
   }
 
-  public void write(Bytes buffer) throws IOException
+  public void write(Buffer buffer) throws IOException
   {
     int length = buffer.length();
     int writeLength = _writeLength;

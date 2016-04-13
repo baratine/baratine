@@ -35,7 +35,7 @@ import java.nio.channels.SocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * Specialized stream to handle sockets.
@@ -367,7 +367,7 @@ public class SocketChannelStream extends StreamImpl
    * Writes an nio buffer to the socket.
    */
   @Override
-  public void write(Bytes buffer, boolean isEnd)
+  public void write(Buffer buffer, boolean isEnd)
     throws IOException
   {
     if (_s == null) {

@@ -31,7 +31,7 @@ package com.caucho.v5.http.protocol;
 
 import com.caucho.v5.io.WriteStream;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * Writer for http response, called in the writer service.
@@ -51,7 +51,7 @@ public interface OutHttp
    * @param isEnd true for the final result
    */
   boolean write(WriteStream out, 
-                Bytes data,
+                Buffer data,
                 boolean isEnd);
   
   /**

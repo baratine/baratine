@@ -29,9 +29,7 @@
 
 package com.caucho.v5.http.protocol;
 
-import com.caucho.v5.io.TempBuffer;
-
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * Proxy writer interface to the http response.
@@ -46,7 +44,7 @@ public interface OutHttpProxy
    * @param data the chunk of data
    * @param isEnd true for the final result
    */
-  void write(OutHttp outHttp, Bytes data, boolean isEnd);
+  void write(OutHttp outHttp, Buffer data, boolean isEnd);
   
   /**
    * Disconnect the connection

@@ -31,7 +31,7 @@ package com.caucho.v5.amp.manager;
 
 import com.caucho.v5.io.BytesFactoryImpl;
 
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffers;
 
 /**
  * Provider for the Services.
@@ -40,7 +40,7 @@ public class ServiceManagerProviderWeb
   extends ServiceManagerProviderCore
 {
   @Override
-  public BytesFactory bytesFactory()
+  public Buffers bytesFactory()
   {
     return BytesFactoryImpl.current();
   }

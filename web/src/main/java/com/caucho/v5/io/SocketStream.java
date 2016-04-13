@@ -40,6 +40,8 @@ import javax.net.ssl.SSLSocket;
 
 import com.caucho.v5.util.L10N;
 
+import io.baratine.io.Buffer;
+
 /**
  * Specialized stream to handle sockets.
  *
@@ -314,6 +316,35 @@ public class SocketStream extends StreamImpl
     try {
       _needsFlush = true;
       _os.write(buf, offset, length);
+      _totalWriteBytes += length;
+    } catch (IOException e) {
+      IOException exn = ClientDisconnectException.create(this + ":" + e, e);
+      
+      try {
+        close();
+      } catch (IOException e1) {
+      }
+
+      throw exn;
+    }
+  }
+  
+  @Override
+  public void write(Buffer buffer, boolean isEnd)
+    throws IOException
+  {
+    if (_os == null) {
+      if (_s == null) {
+        return;
+      }
+      
+      _os = _s.getOutputStream();
+    }
+    
+    try {
+      _needsFlush = true;
+      int length = buffer.length();
+      buffer.read(_os);
       _totalWriteBytes += length;
     } catch (IOException e) {
       IOException exn = ClientDisconnectException.create(this + ":" + e, e);

@@ -35,7 +35,7 @@ import java.util.Objects;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.network.port.ConnectionTcp;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 import io.baratine.service.AfterBatch;
 
 /**
@@ -62,7 +62,7 @@ class OutHttpProxyImpl implements OutHttpProxy
   
   @Override
   public void write(OutHttp out, 
-                    Bytes buffer, 
+                    Buffer buffer, 
                     boolean isEnd)
   {
     if (out.canWrite(_connHttp.sequenceWrite() + 1)) {
@@ -166,10 +166,10 @@ class OutHttpProxyImpl implements OutHttpProxy
   
   private class PendingData extends Pending
   {
-    private Bytes _data;
+    private Buffer _data;
     
     PendingData(OutHttp out,
-                Bytes data,
+                Buffer data,
                 boolean isEnd)
     {
       super(out, isEnd);

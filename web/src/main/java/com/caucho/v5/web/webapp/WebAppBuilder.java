@@ -78,7 +78,7 @@ import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffers;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
@@ -334,9 +334,9 @@ public class WebAppBuilder
     return builder;
   }
 
-  public BytesFactory buffers()
+  public Buffers buffers()
   {
-    return BytesFactory.factory();
+    return Buffers.factory();
   }
 
   private void configException(Throwable e)

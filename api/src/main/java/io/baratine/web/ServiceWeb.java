@@ -32,6 +32,6 @@ package io.baratine.web;
 @FunctionalInterface
 public interface ServiceWeb
 {
-  void handle(RequestWeb request)
+  void service(RequestWeb request)
     throws Exception;
 }

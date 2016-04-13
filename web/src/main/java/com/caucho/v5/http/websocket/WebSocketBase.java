@@ -55,8 +55,8 @@ import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
-import io.baratine.io.Bytes;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffer;
+import io.baratine.io.Buffers;
 import io.baratine.pipe.Credits;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
@@ -171,18 +171,18 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   }
 
   @Override
-  public void write(Bytes data)
+  public void write(Buffer data)
   {
     write(data, true);
   }
 
   @Override
-  public void writePart(Bytes data)
+  public void writePart(Buffer data)
   {
     write(data, false);
   }
 
-  private void write(Bytes buffer, boolean isFinal)
+  private void write(Buffer buffer, boolean isFinal)
   {
     Objects.requireNonNull(buffer);
 
@@ -267,7 +267,6 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
         if (isFinal) {
           _state = _state.toIdle();
         }
-        
         flush(); // XXX:
         return;
       }
@@ -394,7 +393,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   }
 
   //@Override
-  protected final void read(ServiceWebSocket<Bytes,S> handler)
+  protected final void read(ServiceWebSocket<Buffer,S> handler)
   {
     Objects.requireNonNull(handler);
 
@@ -610,7 +609,6 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     //complete(false);
     
     TempBuffer tBuf = _tBuf;
-    
     if (tBuf == null) {
       return;
     }
@@ -790,9 +788,9 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   
   private class InReadBuffer implements InWebSocket
   {
-    private ServiceWebSocket<Bytes,S> _out;
+    private ServiceWebSocket<Buffer,S> _out;
     
-    private InReadBuffer(ServiceWebSocket<Bytes,S> out)
+    private InReadBuffer(ServiceWebSocket<Buffer,S> out)
     {
       Objects.requireNonNull(out);
       
@@ -803,7 +801,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     public void read(FrameInputStream fIs)
       throws IOException
     {
-      Bytes buffer = BytesFactory.factory().create();
+      Buffer buffer = Buffers.factory().create();
       
       fIs.readBuffer(buffer);
       
@@ -828,11 +826,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     public void read(FrameInputStream fIs)
       throws IOException
     {
-      int op = fIs.getOpcode();
+      //int op = fIs.getOpcode();
       int len = (int) fIs.length();
       boolean isPart = ! fIs.isFinal();
       
-      Bytes buffer = BytesFactory.factory().create();
+      Buffer buffer = Buffers.factory().create();
       
       fIs.readBuffer(buffer);
       
@@ -988,11 +986,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   {
     private long _length;
     private boolean _isPart;
-    private Bytes _data;
+    private Buffer _data;
     
     FrameBinary(int length, 
                 boolean isPart,
-                Bytes data)
+                Buffer data)
     {
       _length = length;
       _isPart = isPart;
@@ -1018,7 +1016,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
 
     @Override
-    public Bytes binary()
+    public Buffer binary()
     {
       return _data;
     }
@@ -1068,7 +1066,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
 
     @Override
-    public Bytes binary()
+    public Buffer binary()
     {
       throw new IllegalStateException();
     }

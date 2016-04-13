@@ -56,8 +56,8 @@ import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
-import io.baratine.io.Bytes;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffer;
+import io.baratine.io.Buffers;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpStatus;
@@ -130,7 +130,7 @@ public class WebSocketBaratineImpl<T,S>
     else if (String.class.equals(type)) {
       readString((ServiceWebSocket) service);
     }
-    else if (Bytes.class.equals(type)) {
+    else if (Buffer.class.equals(type)) {
       read((ServiceWebSocket) service);
     }
     else {
@@ -376,6 +376,7 @@ public class WebSocketBaratineImpl<T,S>
   @Override
   protected void send(TempBuffer tBuf)
   {
+    System.out.println("SEND: " + tBuf);
     _outProxy.write(_outWriter, tBuf, false);
   }
   
@@ -453,9 +454,9 @@ public class WebSocketBaratineImpl<T,S>
   
   private static class InReadBinary implements InWebSocket
   {
-    private Pipe<Bytes> _out;
+    private Pipe<Buffer> _out;
     
-    private InReadBinary(Pipe<Bytes> out)
+    private InReadBinary(Pipe<Buffer> out)
     {
       Objects.requireNonNull(out);
       
@@ -467,7 +468,7 @@ public class WebSocketBaratineImpl<T,S>
       throws IOException
     {
       // XXX: actual factory
-      Bytes buffer = BytesFactory.factory().create();
+      Buffer buffer = Buffers.factory().create();
 
       System.out.println("INR: " + _out);
       fIs.readBuffer(buffer);
@@ -539,10 +540,10 @@ public class WebSocketBaratineImpl<T,S>
     }
 
     @Override
-    public Bytes binary()
+    public Buffer binary()
     {
       // bytes factory
-      return BytesFactory.factory().create(_data);
+      return Buffers.factory().create(_data);
     }
     
     public String toString()
@@ -669,7 +670,7 @@ public class WebSocketBaratineImpl<T,S>
   {
     @Override
     public boolean write(WriteStream out,
-                         Bytes data,
+                         Buffer data,
                          boolean isEnd)
     {
       if (out != null) {

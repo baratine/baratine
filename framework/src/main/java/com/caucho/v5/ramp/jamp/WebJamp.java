@@ -85,7 +85,7 @@ public class WebJamp implements ServiceWeb
   }
   
   @Override
-  public void handle(RequestWeb req)
+  public void service(RequestWeb req)
   {
     String pathInfo = req.uri().substring("/s".length());
     

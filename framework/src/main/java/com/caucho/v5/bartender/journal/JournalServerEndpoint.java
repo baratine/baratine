@@ -37,7 +37,7 @@ import com.caucho.v5.db.journal.JournalStream;
 import com.caucho.v5.http.websocket.WebSocketSession;
 import com.caucho.v5.io.TempBuffer;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;
 
@@ -45,7 +45,7 @@ import io.baratine.web.WebSocket;
  * Websocket endpoint for receiving hamp message
  */
 class JournalServerEndpoint
-  implements ServiceWebSocket<InputStream,Bytes>
+  implements ServiceWebSocket<InputStream,Buffer>
 {
   private static final Logger log
     = Logger.getLogger(JournalServerEndpoint.class.getName());

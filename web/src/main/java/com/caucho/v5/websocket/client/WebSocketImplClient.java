@@ -39,7 +39,7 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;
@@ -96,7 +96,7 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
     else if (String.class.equals(_type)) {
       readString((ServiceWebSocket) _service);
     }
-    else if (Bytes.class.equals(_type)) {
+    else if (Buffer.class.equals(_type)) {
       read((ServiceWebSocket) _service);
     }
     else {
@@ -126,14 +126,14 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   }
 
   @Override
-  public void write(Bytes data)
+  public void write(Buffer data)
   {
     // TODO Auto-generated method stub
     
   }
 
   @Override
-  public void writePart(Bytes data)
+  public void writePart(Buffer data)
   {
     // TODO Auto-generated method stub
     

@@ -123,7 +123,7 @@ public class RouteApply implements RouteBaratine
         return true;
       }
       else {
-        _service.handle((RequestWeb) request);
+        _service.service((RequestWeb) request);
       }
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
@@ -148,10 +148,10 @@ public class RouteApply implements RouteBaratine
     }
 
     @Override
-    public void handle(RequestWeb request)
+    public void service(RequestWeb request)
     {
       try {
-        _route.handle((RequestWeb) request); 
+        _route.service((RequestWeb) request); 
       } catch (Throwable e) {
         System.out.println("FAIL: " + e + " " + request);
         e.printStackTrace();;

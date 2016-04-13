@@ -58,7 +58,7 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.web.CookieWeb;
 import com.caucho.v5.web.webapp.RequestBaratine;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * Parses and holds request information for an HTTP request.
@@ -1817,7 +1817,7 @@ public class RequestHttp extends RequestHttpBase
   
   @Override
   public boolean write(WriteStream out, 
-                       Bytes data,
+                       Buffer data,
                        boolean isEnd)
   {
     if (_state.isPrevCloseWrite()) {
@@ -1831,15 +1831,21 @@ public class RequestHttp extends RequestHttpBase
   }
   
   private boolean writeFirstImpl(WriteStream out,
-                                 Bytes data,
+                                 Buffer data,
                                  boolean isEnd)
    {
     try {
-      int length = data != null ? data.length() : -1;
-      
       if (_isFirst) {
         _isFirst = false;
-        writeHeaders(out, isEnd ? length : -1);
+        
+        int length = data != null ? data.length() : 0;
+        
+        if (isEnd) {
+          writeHeaders(out, length);
+        }
+        else {
+          writeHeaders(out, -1);
+        }
         
         if (isChunked() && length > 0) {
           writeFirstChunk(out, length);
@@ -1872,24 +1878,17 @@ public class RequestHttp extends RequestHttpBase
       return true;
     }
   }
-  
+
   @Override
-  protected void closeWrite()
+  public void closeWrite()
   {
-    _state.onCloseWrite();
-    /*
-    RequestFacade request = _request;
-    _request = null;
+    super.closeWrite();
     
-    if (request != null) {
-      request.onCloseWrite(next());
-    }
-    */
-    //_state.onCloseWrite(next());
+    _state.onCloseWrite();
   }
 
   private void saveFirst(WriteStream out,
-                         Bytes data,
+                         Buffer data,
                          boolean isEnd)
   {
     _pending = new PendingFirst(out, data, isEnd);
@@ -1935,11 +1934,11 @@ public class RequestHttp extends RequestHttpBase
   private class PendingFirst extends Pending
   {
     private WriteStream _out;
-    private Bytes _data;
+    private Buffer _data;
     private boolean _isEnd;
     
     PendingFirst(WriteStream out,
-                 Bytes data,
+                 Buffer data,
                  boolean isEnd)
     {
       _out = out;
@@ -2162,7 +2161,7 @@ public class RequestHttp extends RequestHttpBase
     ArrayList<String> headerKeys = headerKeysOut();
     ArrayList<String> headerValues = headerValuesOut();
     int size = headerKeys.size();
-    
+
     for (int i = 0; i < size; i++) {
       String key = headerKeys.get(i);
 

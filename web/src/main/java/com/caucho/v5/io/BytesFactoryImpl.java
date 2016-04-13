@@ -31,13 +31,13 @@ package com.caucho.v5.io;
 
 import com.caucho.v5.loader.EnvironmentLocal;
 
-import io.baratine.io.Bytes;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffer;
+import io.baratine.io.Buffers;
 
 /**
  * Flexible byte buffering.
  */
-public final class BytesFactoryImpl implements BytesFactory
+public final class BytesFactoryImpl implements Buffers
 {
   private static final EnvironmentLocal<BytesFactoryImpl> _current
     = new EnvironmentLocal<>();
@@ -58,19 +58,19 @@ public final class BytesFactoryImpl implements BytesFactory
   }
 
   @Override
-  public Bytes create(byte[] data)
+  public Buffer create(byte[] data)
   {
     return new BytesImpl(data);
   }
 
   @Override
-  public Bytes create(int capacity)
+  public Buffer create(int capacity)
   {
     return new BytesImpl();
   }
 
   @Override
-  public Bytes create()
+  public Buffer create()
   {
     return new BytesImpl();
   }

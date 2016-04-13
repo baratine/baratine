@@ -44,7 +44,7 @@ import com.caucho.v5.loader.DynamicClassLoader;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 
 import io.baratine.config.Config;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffers;
 
 /**
  * Baratine's web-app handle. 
@@ -64,7 +64,7 @@ public class WebApp
 
   private ServicesAmp _services;
   
-  private BytesFactory _buffers;
+  private Buffers _buffers;
 
   private InjectorAmp _injectManager;
 
@@ -191,7 +191,7 @@ public class WebApp
     return _services;
   }
 
-  public BytesFactory buffers()
+  public Buffers buffers()
   {
     return _buffers;
   }

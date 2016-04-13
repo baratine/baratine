@@ -34,7 +34,7 @@ import java.util.ServiceLoader;
 import java.util.WeakHashMap;
 
 import io.baratine.inject.Injector.InjectorBuilder;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffers;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 import io.baratine.stream.ResultStream;
@@ -122,7 +122,7 @@ abstract public class ServiceManagerProvider implements AutoCloseable
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  public BytesFactory bytesFactory()
+  public Buffers bytesFactory()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

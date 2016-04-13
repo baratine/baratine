@@ -55,7 +55,7 @@ import com.caucho.v5.util.CharSegment;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.web.webapp.RequestBaratine;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * Handles requests for a HTTP 2 stream request.
@@ -1005,7 +1005,7 @@ public class RequestHttp2
   }
 
   @Override
-  public boolean write(WriteStream out, Bytes data,
+  public boolean write(WriteStream out, Buffer data,
                        boolean isEnd)
   {
     return false;

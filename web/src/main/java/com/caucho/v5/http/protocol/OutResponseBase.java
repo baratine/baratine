@@ -37,7 +37,7 @@ import com.caucho.v5.io.OutputStreamWithBuffer;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * API for handling the output stream.
@@ -77,7 +77,7 @@ public abstract class OutResponseBase
   // abstract methods
   //
   
-  abstract protected void flush(Bytes data, boolean isEnd);
+  abstract protected void flush(Buffer data, boolean isEnd);
 
   //
   // state predicates
@@ -247,7 +247,7 @@ public abstract class OutResponseBase
     _tailByteLength = byteLength;
   }
 
-  public void write(Bytes data)
+  public void write(Buffer data)
   {
     Objects.requireNonNull(data);
     

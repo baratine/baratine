@@ -53,10 +53,10 @@ final class ServiceWebStub implements ServiceWeb
   }
 
   @Override
-  public void handle(RequestWeb request) throws Exception
+  public void service(RequestWeb request) throws Exception
   {
     try {
-      delegate().handle(request);
+      delegate().service(request);
     } catch (Throwable e) {
       e.printStackTrace();;
       request.fail(e);

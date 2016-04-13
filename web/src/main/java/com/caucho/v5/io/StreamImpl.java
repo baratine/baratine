@@ -31,7 +31,7 @@ package com.caucho.v5.io;
 
 import java.io.IOException;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * This is the service provider's interface for a stream supported by
@@ -205,7 +205,7 @@ public class StreamImpl
     throw new UnsupportedOperationException(String.valueOf(this));
   }
   
-  public void write(Bytes buffer, boolean isEnd)
+  public void write(Buffer buffer, boolean isEnd)
       throws IOException
   {
     throw new UnsupportedOperationException(String.valueOf(this));

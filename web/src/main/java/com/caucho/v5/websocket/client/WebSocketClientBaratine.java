@@ -54,7 +54,7 @@ import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 import com.caucho.v5.websocket.io.WebSocketProtocolException;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.ServiceWebSocket;
 
@@ -94,7 +94,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   
   private String _origin;
 
-  private Pipe<Bytes> _onRead;
+  private Pipe<Buffer> _onRead;
   private SocketBar _socket;
   private TcpConnection _conn;
   private WriteStream _os;
@@ -172,7 +172,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     else if (String.class.equals(valueType)) {
       readString((ServiceWebSocket) _service);
     }
-    else if (Bytes.class.equals(valueType)) {
+    else if (Buffer.class.equals(valueType)) {
       read((ServiceWebSocket) _service);
     }
     else {
@@ -544,7 +544,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   protected void send(TempBuffer tBuf)
   {
     try {
-      _os.write(tBuf.buffer(), 0, tBuf.length());
+      tBuf.read(_os);
       _os.flush();
     } catch (IOException e) {
       throw new RuntimeException(e);

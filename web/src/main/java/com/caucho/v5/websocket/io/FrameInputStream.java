@@ -40,7 +40,7 @@ import com.caucho.v5.util.Utf8Util;
 import com.caucho.v5.websocket.io.CloseReason.CloseCode;
 import com.caucho.v5.websocket.io.CloseReason.CloseCodes;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * WebSocketInputStream reads a single WebSocket packet.
@@ -635,7 +635,7 @@ public class FrameInputStream
     return sublen;
   }
   
-  public boolean readBuffer(Bytes buffer)
+  public boolean readBuffer(Buffer buffer)
     throws IOException
   {
     byte []frameBuffer = _is.buffer();

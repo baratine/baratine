@@ -94,7 +94,7 @@ public class FilterCrossOrigin implements ServiceWeb
    * @param request the http request facade
    */
   @Override
-  public void handle(RequestWeb request)
+  public void service(RequestWeb request)
   {
     try {
       if (! request.method().equals("OPTIONS")) {

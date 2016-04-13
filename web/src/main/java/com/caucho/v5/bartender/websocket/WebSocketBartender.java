@@ -61,8 +61,8 @@ import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
-import io.baratine.io.Bytes;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffer;
+import io.baratine.io.Buffers;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpStatus;
@@ -301,14 +301,14 @@ public class WebSocketBartender<T,S>
   }
 
   @Override
-  public void write(Bytes data)
+  public void write(Buffer data)
   {
     // TODO Auto-generated method stub
     
   }
 
   @Override
-  public void writePart(Bytes data)
+  public void writePart(Buffer data)
   {
     // TODO Auto-generated method stub
     
@@ -655,9 +655,9 @@ public class WebSocketBartender<T,S>
   
   private static class InReadBinary implements InWebSocket
   {
-    private Pipe<Bytes> _out;
+    private Pipe<Buffer> _out;
     
-    private InReadBinary(Pipe<Bytes> out)
+    private InReadBinary(Pipe<Buffer> out)
     {
       Objects.requireNonNull(out);
       
@@ -668,7 +668,7 @@ public class WebSocketBartender<T,S>
     public void read(FrameInputStream fIs)
       throws IOException
     {
-      Bytes buffer = BytesFactory.factory().create();
+      Buffer buffer = Buffers.factory().create();
       
       fIs.readBuffer(buffer);
       
@@ -739,9 +739,9 @@ public class WebSocketBartender<T,S>
     }
 
     @Override
-    public Bytes binary()
+    public Buffer binary()
     {
-      return BytesFactory.factory().create(_data);
+      return Buffers.factory().create(_data);
     }
     
     public String toString()
@@ -855,7 +855,7 @@ public class WebSocketBartender<T,S>
   {
     @Override
     public boolean write(WriteStream out,
-                         Bytes buffer,
+                         Buffer buffer,
                          boolean isEnd)
     {
       if (out != null) {

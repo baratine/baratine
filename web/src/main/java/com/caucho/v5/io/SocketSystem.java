@@ -85,7 +85,7 @@ abstract public class SocketSystem
     }
   }
     
-  public static void setLocal(SocketSystem value)
+  public static void localSystem(SocketSystem value)
   {
     _localSystem.set(value);
   }
@@ -108,13 +108,6 @@ abstract public class SocketSystem
     SocketSystem subSystem = system.createSubSystemImpl(name);
 
     return subSystem;
-  }
-
-  public static void setLocalSystem(SocketSystem subSystem)
-  {
-    Objects.requireNonNull(subSystem);
-    
-    _localSystem.set(subSystem);
   }
 
   protected SocketSystem createSubSystemImpl(String name)

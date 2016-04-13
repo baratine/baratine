@@ -50,7 +50,7 @@ import com.caucho.v5.ramp.hamp.InHamp;
 import com.caucho.v5.ramp.hamp.OutHamp;
 import com.caucho.v5.websocket.io.CloseReason.CloseCode;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 import io.baratine.stream.ResultStream;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;
@@ -59,7 +59,7 @@ import io.baratine.web.WebSocket;
  * Hamp websocket endpoint for sending and receiving hamp message
  */
 public class HampService
-  implements OutAmp, ServiceWebSocket<InputStream,Bytes>
+  implements OutAmp, ServiceWebSocket<InputStream,Buffer>
 {
   private static final Logger log
     = Logger.getLogger(HampService.class.getName());

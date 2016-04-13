@@ -37,8 +37,8 @@ import java.util.Map;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
-import io.baratine.io.Bytes;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffer;
+import io.baratine.io.Buffers;
 import io.baratine.pipe.Credits;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
@@ -60,7 +60,7 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
-  public OutWeb write(Bytes buffer)
+  public OutWeb write(Buffer buffer)
   {
     return delegate().write(buffer);
   }
@@ -320,7 +320,7 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
-  public BytesFactory buffers()
+  public Buffers buffers()
   {
     return delegate().buffers();
   }

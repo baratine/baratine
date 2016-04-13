@@ -34,12 +34,12 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * Data buffer
  */
-class BytesImpl implements Bytes
+class BytesImpl implements Buffer
 {
   private static final Logger log
     = Logger.getLogger(BytesImpl.class.getName());
@@ -147,21 +147,21 @@ class BytesImpl implements Bytes
   }
 
   @Override
+  public int read(byte[] buffer, int offset, int length)
+  {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
   public String toString()
   {
     try {
-      return new String(_data, 0, _tail, "utf-8");
+      return new String(_data, _tail, _head - _tail, "utf-8");
     } catch (Exception e) {
       log.log(Level.FINER, e.toString(), e);
       
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public int read(byte[] buffer, int offset, int length)
-  {
-    // TODO Auto-generated method stub
-    return 0;
   }
 }

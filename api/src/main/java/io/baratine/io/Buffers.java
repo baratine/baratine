@@ -34,16 +34,16 @@ import io.baratine.spi.ServiceManagerProvider;
 /**
  * Binary buffer factory
  */
-public interface BytesFactory
+public interface Buffers
 {
-  static BytesFactory factory()
+  static Buffers factory()
   {
     return ServiceManagerProvider.current().bytesFactory();
   }
   
-  Bytes create(byte[] data);
+  Buffer create(byte[] data);
 
-  Bytes create(int capacity);
+  Buffer create(int capacity);
   
-  Bytes create();
+  Buffer create();
 }

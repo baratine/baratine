@@ -246,11 +246,11 @@ public abstract class RequestHttpBase implements OutHttp
   private int _statusCode = 200;
   private String _statusMessage = "OK";
 
-  private final ArrayList<String> _headerKeys = new ArrayList<>();
-  private final ArrayList<String> _headerValues = new ArrayList<>();
+  private final ArrayList<String> _headerKeysOut = new ArrayList<>();
+  private final ArrayList<String> _headerValuesOut = new ArrayList<>();
   
-  private String _contentType;
-  private String _contentEncoding;
+  private String _contentTypeOut;
+  private String _contentEncodingOut;
 
   private final ArrayList<String> _footerKeys = new ArrayList<>();
   private final ArrayList<String> _footerValues = new ArrayList<>();
@@ -415,8 +415,12 @@ public abstract class RequestHttpBase implements OutHttp
     _statusCode = 200;
     _statusMessage = "OK";
 
-    _headerKeys.clear();
-    _headerValues.clear();
+    _headerKeysOut.clear();
+    _headerValuesOut.clear();
+    
+    _contentTypeOut = null;
+    _contentEncodingOut = null;
+    _contentLengthOut = -1;
 
     _footerKeys.clear();
     _footerValues.clear();
@@ -425,7 +429,6 @@ public abstract class RequestHttpBase implements OutHttp
 
     _isHeaderWritten = false;
 
-    _contentLengthOut = -1;
     _isClosed = false;
     _serverHeader = null;
     
@@ -444,17 +447,8 @@ public abstract class RequestHttpBase implements OutHttp
   }
   */
   
-  protected void closeWrite()
+  public void closeWrite()
   {
-    /*
-    RequestFacade request = _request;
-    _request = null;
-    
-    if (request != null) {
-      request.onCloseWrite(next());
-    }
-    */
-    //_state.onCloseWrite(next());
   }
 
   public Invocation parseInvocation() throws IOException
@@ -1696,7 +1690,7 @@ public abstract class RequestHttpBase implements OutHttp
     Writer writer = _writer;
     
     if (writer == null) {
-      String encoding = _contentEncoding;
+      String encoding = _contentEncodingOut;
       
       if (encoding == null || encoding.equals("utf-8")) {
         writer = new WriterUtf8(out());
@@ -1713,6 +1707,20 @@ public abstract class RequestHttpBase implements OutHttp
     }
     
     return writer;
+  }
+  
+  public void writerClose()
+  {
+    Writer writer = _writer;
+    _writer = null;
+  
+    if (writer != null) {
+      try {
+        writer.close();
+      } catch (IOException e) {
+        log.log(Level.FINEST, e.toString(), e);
+      }
+    }
   }
   
   public final void freeResponseStream()
@@ -1784,7 +1792,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public boolean containsHeaderOut(String name)
   {
-    ArrayList<String> headerKeys = _headerKeys;
+    ArrayList<String> headerKeys = _headerKeysOut;
     int size = headerKeys.size();
     
     for (int i = 0; i < size; i++) {
@@ -1796,7 +1804,7 @@ public abstract class RequestHttpBase implements OutHttp
     }
 
     if (name.equalsIgnoreCase("content-type")) {
-      return _contentType != null;
+      return _contentTypeOut != null;
     }
 
     if (name.equalsIgnoreCase("content-length")) {
@@ -1813,14 +1821,14 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public String headerOut(String name)
   {
-    ArrayList<String> keys = _headerKeys;
+    ArrayList<String> keys = _headerKeysOut;
 
     int headerSize = keys.size();
     for (int i = 0; i < headerSize; i++) {
       String oldKey = keys.get(i);
 
       if (oldKey.equalsIgnoreCase(name)) {
-        return (String) _headerValues.get(i);
+        return (String) _headerValuesOut.get(i);
       }
     }
 
@@ -1836,7 +1844,7 @@ public abstract class RequestHttpBase implements OutHttp
     }
     
     if (name.equalsIgnoreCase("content-type")) {
-      return _contentType;
+      return _contentTypeOut;
     }
 
     return null;
@@ -1859,6 +1867,8 @@ public abstract class RequestHttpBase implements OutHttp
     if (headerOutSpecial(key, value)) {
       return;
     }
+    
+    setHeaderOutImpl(key, value);
   }
 
 
@@ -1873,8 +1883,8 @@ public abstract class RequestHttpBase implements OutHttp
     int i = 0;
     boolean hasHeader = false;
     
-    ArrayList<String> keys = _headerKeys;
-    ArrayList<String> values = _headerValues;
+    ArrayList<String> keys = _headerKeysOut;
+    ArrayList<String> values = _headerValuesOut;
 
     for (i = keys.size() - 1; i >= 0; i--) {
       String oldKey = keys.get(i);
@@ -1928,8 +1938,8 @@ public abstract class RequestHttpBase implements OutHttp
       return;
     }
     
-    ArrayList<String> keys = _headerKeys;
-    ArrayList<String> values = _headerValues;
+    ArrayList<String> keys = _headerKeysOut;
+    ArrayList<String> values = _headerValuesOut;
     
     int size = keys.size();
     
@@ -2051,30 +2061,30 @@ public abstract class RequestHttpBase implements OutHttp
   {
     ContentType contentType = parseContentType(value);
     
-    _contentType = contentType.contentType();
+    _contentTypeOut = contentType.contentType();
     
     if (contentType.encoding() != null) {
       headerOutContentEncoding(contentType.encoding());
     }
     else if (contentType.encodingDefault() != null
-             && _contentEncoding == null) {
+             && _contentEncodingOut == null) {
       headerOutContentEncoding(contentType.encodingDefault());
     }
   }
   
   public void headerOutContentEncoding(String encoding)
   {
-    _contentEncoding = encoding;
+    _contentEncodingOut = encoding;
   }
   
   protected String headerOutContentType()
   {
-    return _contentType;
+    return _contentTypeOut;
   }
   
   protected String headerOutContentEncoding()
   {
-    return _contentEncoding;
+    return _contentEncodingOut;
   }
   
   private static long parseLong(String string)
@@ -2124,8 +2134,8 @@ public abstract class RequestHttpBase implements OutHttp
       return;
     }
     
-    ArrayList<String> keys = _headerKeys;
-    ArrayList<String> values = _headerValues;
+    ArrayList<String> keys = _headerKeysOut;
+    ArrayList<String> values = _headerValuesOut;
 
     for (int i = keys.size() - 1; i >= 0; i--) {
       String oldKey = keys.get(i);
@@ -2140,23 +2150,23 @@ public abstract class RequestHttpBase implements OutHttp
 
   public ArrayList<String> headerKeysOut()
   {
-    return _headerKeys;
+    return _headerKeysOut;
   }
 
   public ArrayList<String> headerValuesOut()
   {
-    return _headerValues;
+    return _headerValuesOut;
   }
 
   public Collection<String> headersOut(String name)
   {
     ArrayList<String> headers = new ArrayList<String>();
 
-    for (int i = 0; i < _headerKeys.size(); i++) {
-      String key = _headerKeys.get(i);
+    for (int i = 0; i < _headerKeysOut.size(); i++) {
+      String key = _headerKeysOut.get(i);
 
       if (key.equals(name))
-        headers.add(_headerValues.get(i));
+        headers.add(_headerValuesOut.get(i));
     }
 
     return headers;
@@ -2164,7 +2174,7 @@ public abstract class RequestHttpBase implements OutHttp
 
   public Collection<String> headerNamesOut()
   {
-    return new HashSet<String>(_headerKeys);
+    return new HashSet<String>(_headerKeysOut);
   }
 
   public ArrayList<String> footerKeysOut()
@@ -2298,8 +2308,8 @@ public abstract class RequestHttpBase implements OutHttp
       return;
     }
     
-    _headerKeys.clear();
-    _headerValues.clear();
+    _headerKeysOut.clear();
+    _headerValuesOut.clear();
 
     _contentLengthOut = -1;
   }

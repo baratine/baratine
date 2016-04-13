@@ -42,7 +42,7 @@ public class SocketSystemJavaIo extends SocketSystem
 {
   public SocketSystemJavaIo()
   {
-    SocketSystem.setLocal(this);
+    SocketSystem.localSystem(this);
   }
 
   @Override

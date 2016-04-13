@@ -65,8 +65,8 @@ import com.caucho.v5.web.CookieWeb;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
-import io.baratine.io.Bytes;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffer;
+import io.baratine.io.Buffers;
 import io.baratine.pipe.Credits;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
@@ -154,7 +154,7 @@ public final class RequestBaratineImpl
   }
 
   @Override
-  public BytesFactory buffers()
+  public Buffers buffers()
   {
     return webApp().buffers();
   }
@@ -651,7 +651,7 @@ public final class RequestBaratineImpl
   }
 
   @Override
-  public OutWeb write(Bytes buffer)
+  public OutWeb write(Buffer buffer)
   {
     requestHttp().out().write(buffer);
 
@@ -692,7 +692,7 @@ public final class RequestBaratineImpl
     return this;
   }
 
-  public void next(Bytes data)
+  public void next(Buffer data)
   {
     try {
       OutResponseBase out = requestHttp().out();
@@ -765,6 +765,7 @@ public final class RequestBaratineImpl
   public final void ok()
   {
     try {
+      requestHttp().writerClose();
       requestHttp().out().close();
     } catch (IOException e) {
       log.log(Level.WARNING, e.toString(), e);

@@ -52,7 +52,14 @@ public class BodyResolverFramework extends BodyResolverBase
     if (contentType == null) {
       return super.bodyDefault(request, type);
     }
-    else if (contentType.equals("application/json")) {
+    
+    int p = contentType.indexOf(';');
+    
+    if (p >= 0) {
+      contentType = contentType.substring(0, p).trim();
+    }
+    
+    if (contentType.equals("application/json")) {
       InputStream is = request.inputStream();
       
       try { 

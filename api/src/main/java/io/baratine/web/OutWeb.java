@@ -32,12 +32,12 @@ package io.baratine.web;
 import java.io.OutputStream;
 import java.io.Writer;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 import io.baratine.pipe.Credits;
 
 public interface OutWeb
 {
-  OutWeb write(Bytes buffer);
+  OutWeb write(Buffer buffer);
   OutWeb write(byte []buffer, int offset, int length);
   
   OutWeb write(String value);
@@ -59,7 +59,7 @@ public interface OutWeb
   
   public interface OutFilterWeb
   {
-    void write(OutWeb out, Bytes buffer);
+    void write(OutWeb out, Buffer buffer);
     
     default Credits credits(OutWeb out)
     {

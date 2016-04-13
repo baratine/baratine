@@ -31,7 +31,7 @@ package com.caucho.v5.http.protocol;
 
 import com.caucho.v5.io.TempBuffer;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 public class OutResponseHttp
   extends OutResponseBase
@@ -99,7 +99,7 @@ public class OutResponseHttp
   }
 
   @Override
-  protected final void flush(Bytes data, boolean isEnd)
+  protected final void flush(Buffer data, boolean isEnd)
   {
     if (data == null || data.length() == 0) {
       data = null;

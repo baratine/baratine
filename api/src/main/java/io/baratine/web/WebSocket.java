@@ -32,7 +32,7 @@ package io.baratine.web;
 import java.io.OutputStream;
 import java.io.Writer;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 import io.baratine.pipe.Credits;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.WebSocketClose.WebSocketCloses;
@@ -48,8 +48,8 @@ public interface WebSocket<T> extends Pipe<T>
   @Override
   Credits credits();
   
-  void write(Bytes data);
-  void writePart(Bytes data);
+  void write(Buffer data);
+  void writePart(Buffer data);
   
   void write(byte []buffer, int offset, int length);
   void writePart(byte []buffer, int offset, int length);
@@ -92,7 +92,7 @@ public interface WebSocket<T> extends Pipe<T>
     FrameType type();
     
     String text();
-    Bytes binary();
+    Buffer binary();
   }
   
   enum FrameType

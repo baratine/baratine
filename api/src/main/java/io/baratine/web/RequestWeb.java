@@ -34,7 +34,7 @@ import java.util.Map;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
-import io.baratine.io.BytesFactory;
+import io.baratine.io.Buffers;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
@@ -139,7 +139,7 @@ public interface RequestWeb extends OutWeb, Result<Object>
   
   // buffers
   
-  BytesFactory buffers();
+  Buffers buffers();
   
   public interface SecureWeb
   {

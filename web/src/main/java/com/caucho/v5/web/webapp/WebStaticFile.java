@@ -75,7 +75,7 @@ public class WebStaticFile implements ServiceWeb
    * @param response the http response facade
    */
   @Override
-  public void handle(RequestWeb req)
+  public void service(RequestWeb req)
   {
     init();
     

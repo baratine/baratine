@@ -31,17 +31,19 @@ package com.caucho.v5.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.util.FreeRing;
 
-import io.baratine.io.Bytes;
+import io.baratine.io.Buffer;
 
 /**
  * Pooled temporary byte buffer.
  */
-public class TempBuffer implements java.io.Serializable, Bytes
+public class TempBuffer implements java.io.Serializable, Buffer
 {
   private static Logger _log;
 
@@ -188,7 +190,7 @@ public class TempBuffer implements java.io.Serializable, Bytes
   }
 
   @Override
-  public Bytes write(byte[] buffer, int offset, int length)
+  public Buffer write(byte[] buffer, int offset, int length)
   {
     byte []thisBuf = _buf;
     int thisLength = _head;
@@ -207,7 +209,7 @@ public class TempBuffer implements java.io.Serializable, Bytes
   }
 
   @Override
-  public Bytes set(int pos, byte[] buffer, int offset, int length)
+  public Buffer set(int pos, byte[] buffer, int offset, int length)
   {
     System.arraycopy(buffer, offset, _buf, pos, length);
     
@@ -215,7 +217,7 @@ public class TempBuffer implements java.io.Serializable, Bytes
   }
 
   @Override
-  public Bytes write(InputStream is)
+  public Buffer write(InputStream is)
     throws IOException
   {
     while (true) {
@@ -237,7 +239,7 @@ public class TempBuffer implements java.io.Serializable, Bytes
   }
 
   @Override
-  public Bytes get(int pos, byte[] buffer, int offset, int length)
+  public Buffer get(int pos, byte[] buffer, int offset, int length)
   {
     if (length < _head - pos) {
       throw new IllegalArgumentException();
@@ -261,6 +263,29 @@ public class TempBuffer implements java.io.Serializable, Bytes
     
     return sublen > 0 ? sublen : -1;
 
+  }
+
+  @Override
+  public void read(ByteBuffer buffer)
+  {
+    int tail = _tail;
+    
+    int sublen = Math.min(_head - tail, buffer.remaining());
+
+    buffer.put(_buf, _tail, sublen);
+    
+    _tail = tail + sublen;
+  }
+
+  @Override
+  public void read(OutputStream os)
+    throws IOException
+  {
+    int tail = _tail;
+    
+    os.write(_buf, tail, _head - tail);
+    
+    _tail = _head;
   }
   
   public void freeSelf()

@@ -1027,7 +1027,7 @@ class IncludeWebClass implements IncludeWebAmp
     }
 
     @Override
-    public void handle(RequestWeb request)
+    public void service(RequestWeb request)
     {
       try {
         Object []args = new Object[_params.length];
