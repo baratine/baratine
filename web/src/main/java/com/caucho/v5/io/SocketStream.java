@@ -335,6 +335,7 @@ public class SocketStream extends StreamImpl
   {
     if (_os == null) {
       if (_s == null) {
+        buffer.free();
         return;
       }
       
@@ -355,6 +356,8 @@ public class SocketStream extends StreamImpl
       }
 
       throw exn;
+    } finally {
+      buffer.free();
     }
   }
 

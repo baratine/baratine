@@ -371,6 +371,7 @@ public class SocketChannelStream extends StreamImpl
     throws IOException
   {
     if (_s == null) {
+      buffer.free();
       return;
     }
     
@@ -402,6 +403,8 @@ public class SocketChannelStream extends StreamImpl
       }
 
       throw exn;
+    } finally {
+      buffer.free();
     }
   }
 

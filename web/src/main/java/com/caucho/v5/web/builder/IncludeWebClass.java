@@ -35,7 +35,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -612,7 +611,7 @@ class IncludeWebClass implements IncludeWebAmp
     {
       // XXX: multimap?
       request.body(Form.class, result.of((map, r)->{
-        _convert.convert(map.getFirst(_paramName), (Result) r);
+        _convert.convert(map.first(_paramName), (Result) r);
       }));
     }
   }
