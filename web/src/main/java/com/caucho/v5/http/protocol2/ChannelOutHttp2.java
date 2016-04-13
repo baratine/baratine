@@ -166,7 +166,7 @@ public class ChannelOutHttp2
       int length = ptr.length() - offset;
       
       if (length < 0) {
-        ptr.freeSelf();
+        ptr.free();
         ptr = next;
         offset = FRAME_LENGTH;
         continue;
@@ -195,7 +195,7 @@ public class ChannelOutHttp2
         return;
       }
       
-      ptr.freeSelf();
+      ptr.free();
       
       ptr = next;
       offset = FRAME_LENGTH;

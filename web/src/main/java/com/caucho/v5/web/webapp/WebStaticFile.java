@@ -126,7 +126,7 @@ public class WebStaticFile implements ServiceWeb
         req.write(buffer, 0, sublen);
       }
       
-      tBuf.freeSelf();
+      tBuf.free();
     } catch (IOException e) {
       req.fail(e);
     }

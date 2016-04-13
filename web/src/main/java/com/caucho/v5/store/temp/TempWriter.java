@@ -124,7 +124,7 @@ public class TempWriter extends OutputStream
       offset += sublen;
     }
 
-    tempBuffer.freeSelf();
+    tempBuffer.free();
   }
   
   private void flushBuffer()
@@ -203,7 +203,7 @@ public class TempWriter extends OutputStream
     _buffer = null;
     
     if (tBuf != null) {
-      tBuf.freeSelf();
+      tBuf.free();
     }
 
     return reader;

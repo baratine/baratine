@@ -442,7 +442,7 @@ class BlobOutputStream extends OutputStream
     _tempBuffer = null;
     
     if (tBuf != null) {
-      tBuf.freeSelf();
+      tBuf.free();
     }
   }
   

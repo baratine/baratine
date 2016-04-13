@@ -102,7 +102,7 @@ class Block
     _buffer = null;
     
     if (tBuf != null) {
-      tBuf.freeSelf();
+      tBuf.free();
     }
   }
   

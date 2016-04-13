@@ -123,7 +123,7 @@ public class IoUtil
       total += sublen;
     }
 
-    tBuf.freeSelf();
+    tBuf.free();
 
     return total;
   }
@@ -144,7 +144,7 @@ public class IoUtil
       total += sublen;
     }
 
-    tBuf.freeSelf();
+    tBuf.free();
 
     return total;
   }

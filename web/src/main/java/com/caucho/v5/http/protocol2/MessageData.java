@@ -121,6 +121,6 @@ public class MessageData extends MessageHttp
     os.write(_tBuf.getBuffer(), _offset, _length);
     */
     
-    _tBuf.freeSelf();
+    _tBuf.free();
   }
 }

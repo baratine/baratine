@@ -214,7 +214,7 @@ public class CompressorDeflate implements CompressorKelp
       _buffer = null;
       
       if (tBuf != null) {
-        tBuf.freeSelf();
+        tBuf.free();
       }
     }
   }
@@ -393,7 +393,7 @@ public class CompressorDeflate implements CompressorKelp
       _buffer = null;
       
       if (tBuf != null) {
-        tBuf.freeSelf();
+        tBuf.free();
       }
     }
   }

@@ -255,7 +255,7 @@ public class CommandPackage extends CommandBase<ArgsBase>
 
     result = crc.getValue();
 
-    tBuf.freeSelf();
+    tBuf.free();
     
     return result;
   }

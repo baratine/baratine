@@ -281,7 +281,7 @@ public class SegmentKelp
       }
     }
     
-    tBuf.freeSelf();
+    tBuf.free();
   }
 
   private int readEntry(TableKelp table,

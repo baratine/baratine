@@ -70,7 +70,7 @@ public class WriteStream extends OutputStreamWithBuffer
     _sysNewlineBytes = _sysNewline.getBytes();
   }
 
-  private TempBuffer _tempWrite;
+  private TempBufferData _tempWrite;
   private byte []_writeBuffer;
   private int _writeLength;
 
@@ -79,7 +79,7 @@ public class WriteStream extends OutputStreamWithBuffer
   private StreamImpl _source;
   private long _position;
 
-  private final char []_chars = new char[CHARS_LENGTH];
+  private char []_chars;
   private byte []_bytes;
 
   // private EncodingWriter _writeEncoding;
@@ -141,7 +141,7 @@ public class WriteStream extends OutputStreamWithBuffer
     }
 
     if (_tempWrite == null) {
-      _tempWrite = TempBuffer.create();
+      _tempWrite = TempBuffers.allocate();
       _writeBuffer = _tempWrite.buffer();
     }
 
@@ -812,26 +812,6 @@ public class WriteStream extends OutputStreamWithBuffer
     throws IOException
   {
     printLatin1(string);
-    /*
-    if (string == null)
-      string = "null";
-
-    int length = string.length();
-    int offset = 0;
-
-    char []chars = _chars;
-
-    while (length > 0) {
-      int sublen = Math.min(length, CHARS_LENGTH);
-
-      string.getChars(offset, offset + sublen, chars, 0);
-
-      print(chars, 0, sublen);
-
-      length -= sublen;
-      offset += sublen;
-    }
-    */
   }
 
   /**
@@ -846,13 +826,7 @@ public class WriteStream extends OutputStreamWithBuffer
     int length = string.length();
     int offset = 0;
 
-    char []chars = _chars;
-    /*
-    if (chars == null) {
-      _chars = new char[CHARS_LENGTH];
-      chars = _chars;
-    }
-    */
+    char []chars = chars();
 
     while (length > 0) {
       int sublen = Math.min(length, CHARS_LENGTH);
@@ -866,42 +840,6 @@ public class WriteStream extends OutputStreamWithBuffer
     }
   }
 
-  /**
-   * Prints a string.
-   */
-  public final void XprintLatin1NoLf(String string)
-      throws IOException
-  {
-    if (string == null)
-      string = "null";
-
-    int length = string.length();
-    int offset = 0;
-
-    char []chars = _chars;
-
-    while (length > 0) {
-      int sublen = Math.min(length, chars.length);
-
-      string.getChars(offset, offset + sublen, chars, 0);
-
-      for (int i = sublen - 1; i >= 0; i--) {
-        char value = chars[i];
-
-        // server/1kr8
-        if (value == '\r' || value == '\n') {
-          sublen = i;
-          length = sublen;
-        }
-      }
-
-      printLatin1(chars, 0, sublen);
-      
-      length -= sublen;
-      offset += sublen;
-    }
-  }
-  
   public final void printLatin1NoLf(String string)
       throws IOException
   {
@@ -911,7 +849,7 @@ public class WriteStream extends OutputStreamWithBuffer
     int length = string.length();
     int offset = 0;
 
-    char []chars = _chars;
+    char []chars = chars();
 
     byte []writeBuffer = _writeBuffer;
     int writeLength = _writeLength;
@@ -967,13 +905,7 @@ public class WriteStream extends OutputStreamWithBuffer
       string = "null";
 
     int charsLength = CHARS_LENGTH;
-    char []chars = _chars;
-    /*
-    if (chars == null) {
-      _chars = new char[charsLength];
-      chars = _chars;
-    }
-    */
+    char []chars = chars();
 
     while (length > 0) {
       int sublen = Math.min(length, charsLength);
@@ -1282,13 +1214,7 @@ public class WriteStream extends OutputStreamWithBuffer
     if (reader == null)
       return;
 
-    char []chars = _chars;
-    /*
-    if (chars == null) {
-      _chars = new char[CHARS_LENGTH];
-      chars = _chars;
-    }
-    */
+    char []chars = chars();
 
     int len;
     while ((len = reader.read(chars, 0, CHARS_LENGTH)) > 0) {
@@ -1427,10 +1353,6 @@ public class WriteStream extends OutputStreamWithBuffer
       _source = null;
     }
     
-    if (s == null) {
-      return;
-    }
-
     try {
       int len = _writeLength;
       if (len > 0) {
@@ -1450,12 +1372,12 @@ public class WriteStream extends OutputStreamWithBuffer
       */
 
       if (! _isReuseBuffer) {
-        TempBuffer tempWrite = _tempWrite;
+        TempBufferData tempWrite = _tempWrite;
         _tempWrite = null;
         _writeBuffer = null;
         
         if (tempWrite != null) {
-          tempWrite.freeSelf();
+          tempWrite.free();
         }
       }
 
@@ -1482,13 +1404,13 @@ public class WriteStream extends OutputStreamWithBuffer
   {
     _source = null;
 
-    TempBuffer tempWrite = _tempWrite;
+    TempBufferData tempWrite = _tempWrite;
 
     _tempWrite = null;
     _writeBuffer = null;
 
     if (tempWrite != null) {
-      TempBuffer.free(tempWrite);
+      tempWrite.free();
     }
   }
 
@@ -1714,6 +1636,17 @@ public class WriteStream extends OutputStreamWithBuffer
     _position += fileLength;
 
     _isFlushRequired = true;
+  }
+  
+  private char []chars()
+  {
+    char []chars = _chars;
+    
+    if (chars == null) {
+      chars = _chars = new char[CHARS_LENGTH];
+    }
+    
+    return chars;
   }
 
   @Override

@@ -269,7 +269,7 @@ public class GradlePackageTask extends DefaultTask
         result = crc.getValue();
       }
       
-      tBuf.freeSelf();
+      tBuf.free();
       
       return result;
     }

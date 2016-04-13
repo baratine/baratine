@@ -164,7 +164,7 @@ public class InputStreamClientImpl extends InputStreamClient
           return sublen;
         }
 
-        head.freeSelf();
+        head.free();
       }
       
       _readHead = head = nextBuffer();

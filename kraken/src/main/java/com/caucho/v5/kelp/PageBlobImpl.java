@@ -206,7 +206,7 @@ public class PageBlobImpl extends PageBlob
 
     if (buffers != null) {
       for (TempBuffer buffer : buffers) {
-        buffer.freeSelf();
+        buffer.free();
       }
     }
   }

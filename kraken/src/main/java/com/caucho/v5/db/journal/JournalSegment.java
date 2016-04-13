@@ -629,7 +629,7 @@ public class JournalSegment
     
     os.write(_tailAddress, buffer, 0, offset);
     
-    tBuf.freeSelf();
+    tBuf.free();
   }
   
   public void close()

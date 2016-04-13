@@ -59,7 +59,7 @@ public final class ReadStream extends InputStream
   public static int ZERO_COPY_SIZE = 1024;
   public static final int READ_TIMEOUT = -4;
 
-  private TempBuffer _tempRead;
+  private TempBufferData _tempRead;
   private byte []_readBuffer;
   private int _readOffset;
   private int _readLength;
@@ -80,7 +80,7 @@ public final class ReadStream extends InputStream
    */
   public ReadStream()
   {
-    _tempRead = TempBuffer.create();
+    _tempRead = TempBuffers.allocate();
     _readBuffer = _tempRead.buffer();
   }
 
@@ -721,13 +721,13 @@ public final class ReadStream extends InputStream
   public final void close()
   {
     try {
-      TempBuffer tempBuffer = _tempRead;
+      TempBufferData tempBuffer = _tempRead;
       
       if (tempBuffer != null && ! _isReuseBuffer) {
         _tempRead = null;
         _readBuffer = null;
 
-        tempBuffer.freeSelf();
+        tempBuffer.free();
       }
 
       if (_source != null) {

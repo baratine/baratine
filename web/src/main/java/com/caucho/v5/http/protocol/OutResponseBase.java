@@ -267,7 +267,7 @@ public abstract class OutResponseBase
       pos += sublen;
     }
     
-    tBuf.freeSelf();
+    tBuf.free();
   }
 
   /**

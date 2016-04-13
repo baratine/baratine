@@ -255,7 +255,7 @@ public class JournalStore
       os.write(0, buffer, 0, buffer.length);
     }
     
-    tBuf.freeSelf();
+    tBuf.free();
   }
 
   void initImpl()
@@ -345,7 +345,7 @@ public class JournalStore
 
       segment.writeTail(os);
       
-      tBuf.freeSelf();
+      tBuf.free();
       
       _segmentList.add(segment);
       

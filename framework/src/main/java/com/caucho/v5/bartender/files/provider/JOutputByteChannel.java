@@ -84,7 +84,7 @@ public class JOutputByteChannel implements SeekableByteChannel
       remaining = src.remaining();
     }
 
-    tempBuffer.freeSelf();
+    tempBuffer.free();
 
     return total;
   }

@@ -174,7 +174,7 @@ class PageBlobStub extends PageBlob
         os.write(buffer, 0, sublen);
       }
       
-      tBuf.freeSelf();
+      tBuf.free();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

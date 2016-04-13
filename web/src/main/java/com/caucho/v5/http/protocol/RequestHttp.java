@@ -1854,6 +1854,7 @@ public class RequestHttp extends RequestHttpBase
 
       if (data != null) {
         out.write(data);
+        data.free();
       }
       
       if (isEnd) {

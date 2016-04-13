@@ -427,7 +427,7 @@ public class InHttp
       sublen = is.readAll(buffer, 0, sublen);
       
       if (sublen < 0) {
-        tBuf.freeSelf();
+        tBuf.free();
         
         return false;
       }

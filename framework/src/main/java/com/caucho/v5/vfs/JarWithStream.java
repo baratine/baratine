@@ -219,7 +219,7 @@ public class JarWithStream extends Jar
                 size += sublen;
               }
               
-              tBuf.freeSelf();
+              tBuf.free();
               
               entryResult.setSize(size);
             }

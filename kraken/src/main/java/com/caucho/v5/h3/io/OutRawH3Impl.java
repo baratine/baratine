@@ -420,7 +420,7 @@ public class OutRawH3Impl implements OutRawH3
     _buffer = null;
     
     if (tBuf != null) {
-      tBuf.freeSelf();
+      tBuf.free();
     }
   }
 }

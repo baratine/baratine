@@ -1538,7 +1538,7 @@ public class WriteStreamOld extends OutputStreamWithBuffer
         _writeBuffer = null;
         
         if (tempWrite != null) {
-          tempWrite.freeSelf();
+          tempWrite.free();
         }
       }
 

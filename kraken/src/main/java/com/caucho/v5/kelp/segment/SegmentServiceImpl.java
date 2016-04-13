@@ -487,7 +487,7 @@ public class SegmentServiceImpl
       _metaOffset += offset;
     }
     
-    tBuf.freeSelf();
+    tBuf.free();
     
     if (_metaTail - _metaOffset < 16) {
       writeMetaContinuation();
@@ -519,7 +519,7 @@ public class SegmentServiceImpl
       _metaOffset += offset;
     }
     
-    tBuf.freeSelf();
+    tBuf.free();
     
     
     if (_metaTail - _metaOffset < 16) {
@@ -559,7 +559,7 @@ public class SegmentServiceImpl
       sOut.write(_metaOffset, buffer, 0, offset);
     }
     
-    tBuf.freeSelf();
+    tBuf.free();
     
     _metaAddress = address;
     _metaOffset = address;

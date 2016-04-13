@@ -33,27 +33,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.caucho.v5.util.FreeRing;
 
 import io.baratine.io.Buffer;
 
 /**
  * Pooled temporary byte buffer.
  */
-public class TempBuffer implements java.io.Serializable, Buffer
+public final class TempBuffer implements java.io.Serializable, Buffer
 {
-  private static Logger _log;
-
-  private static final boolean _isSmallmem;
+  public static final int SIZE = TempBuffers.STANDARD_SIZE;
+  public static final int SMALL_SIZE = TempBuffers.SMALL_SIZE;
   
-  public static final int SMALL_SIZE;
-  public static final int LARGE_SIZE;
-  public static final int SIZE;
-  
-  private static boolean _isFreeException;
+  private TempBufferData _data;
   
   private TempBuffer _next;
   private final byte []_buf;
@@ -61,24 +52,26 @@ public class TempBuffer implements java.io.Serializable, Buffer
   private int _head;
   private int _bufferCount;
 
+  /*
   // validation of allocate/free
   private transient volatile boolean _isFree;
   private transient RuntimeException _freeException;
+  */
 
   /**
    * Create a new TempBuffer.
    */
-  public TempBuffer(int size)
+  public TempBuffer(TempBufferData data)
   {
-    _buf = new byte[size];
+    _data = data;
+    _buf = data.buffer();
+    
+    data.allocate();
   }
-
-  /**
-   * Returns true for a smallmem configuration
-   */
+  
   public static boolean isSmallmem()
   {
-    return _isSmallmem;
+    return TempBuffers.isSmallmem();
   }
 
   /**
@@ -86,7 +79,7 @@ public class TempBuffer implements java.io.Serializable, Buffer
    */
   public static TempBuffer create()
   {
-    return TempBufferStandard.create();
+    return new TempBuffer(TempBuffers.create());
   }
 
   /**
@@ -94,7 +87,7 @@ public class TempBuffer implements java.io.Serializable, Buffer
    */
   public static TempBuffer createSmall()
   {
-    return TempBufferSmall.create();
+    return new TempBuffer(TempBuffers.createSmall());
   }
 
   /**
@@ -102,7 +95,7 @@ public class TempBuffer implements java.io.Serializable, Buffer
    */
   public static TempBuffer createLarge()
   {
-    return TempBufferLarge.create();
+    return new TempBuffer(TempBuffers.createLarge());
   }
 
   /**
@@ -110,11 +103,6 @@ public class TempBuffer implements java.io.Serializable, Buffer
    */
   public final void clearAllocate()
   {
-    if (! _isFree) { // XXX:
-      throw new IllegalStateException();
-    }
-
-    _isFree = false;
     _next = null;
 
     _tail = 0;
@@ -288,100 +276,26 @@ public class TempBuffer implements java.io.Serializable, Buffer
     _tail = _head;
   }
   
-  public void freeSelf()
+  @Override
+  public void free()
   {
+    TempBufferData data = _data;
+    _data = null;
+    
+    if (data != null) {
+      data.free();
+    }
   }
 
   public static void free(TempBuffer tempBuffer)
   {
-    tempBuffer.freeSelf();
+    tempBuffer.free();
   }
-  
-  /**
-   * Frees a single buffer.
-   */
-  public static <X extends TempBuffer> 
-  void free(FreeRing<X> freeList, X tempBuffer)
+
+  public static void freeAll(TempBuffer buffer)
   {
-    TempBuffer buf = tempBuffer;
-    
-    buf._next = null;
-    
-    if (buf._isFree) {
-      _isFreeException = true;
-      RuntimeException freeException = buf._freeException;
-      RuntimeException secondException = new IllegalStateException("duplicate free");
-      secondException.fillInStackTrace();
-      
-      log().log(Level.WARNING, "initial free location", freeException);
-      log().log(Level.WARNING, "secondary free location", secondException);
-      
-      throw new IllegalStateException();
+    for (; buffer != null; buffer = buffer.next()) {
+      buffer.free();
     }
-    
-    buf._isFree = true;
-
-    if (_isFreeException) {
-      buf._freeException = new IllegalStateException("initial free");
-      buf._freeException.fillInStackTrace();
-    }
-      
-    freeList.free(tempBuffer);
-  }
-  
-  public void printFreeException()
-  {
-    if (_freeException != null) {
-      _freeException.printStackTrace();
-    }
-  }
-
-  public static void freeAll(TempBuffer buf)
-  {
-    while (buf != null) {
-      TempBuffer next = buf._next;
-      buf._next = null;
-      
-      buf.freeSelf();
-      
-      buf = next;
-    }
-  }
-  
-  /**
-   * Called on OOM to free buffers.
-   */
-  public static void clearFreeLists()
-  {
-    TempBufferStandard.clearFreeList();
-    TempBufferSmall.clearFreeList();
-    TempBufferLarge.clearFreeList();
-  }
-
-  private static Logger log()
-  {
-    if (_log == null)
-      _log = Logger.getLogger(TempBuffer.class.getName());
-
-    return _log;
-  }
-
-  static {
-    // the max size needs to be less than JNI code, currently max 16k
-    // the min size is 8k because of the JSP spec
-    int size = 8 * 1024;
-    boolean isSmallmem = false;
-
-    String smallmem = System.getProperty("caucho.smallmem");
-    
-    if (smallmem != null && ! "false".equals(smallmem)) {
-      isSmallmem = true;
-      size = 512;
-    }
-
-    _isSmallmem = isSmallmem;
-    SIZE = size;
-    LARGE_SIZE = 8 * 1024;
-    SMALL_SIZE = 512;
   }
 }

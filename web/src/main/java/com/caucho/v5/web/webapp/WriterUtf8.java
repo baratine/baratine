@@ -47,11 +47,13 @@ public final class WriterUtf8 extends Writer
   private char []_cBuf;
   private int _cOffset;
   
-  public WriterUtf8(OutputStreamWithBuffer os)
+  public WriterUtf8(OutputStreamWithBuffer os, char []cBuf)
   {
     Objects.requireNonNull(os);
+    Objects.requireNonNull(cBuf);
     
     _os = os;
+    _cBuf = cBuf;
   }
   
   @Override
@@ -196,15 +198,9 @@ public final class WriterUtf8 extends Writer
     return offset;
   }
   
-  private char []buffer()
+  private final char []buffer()
   {
-    char []cBuf = _cBuf;
-    
-    if (cBuf == null) {
-      cBuf = _cBuf = new char[BUFFER_SIZE];
-    }
-    
-    return cBuf;
+    return _cBuf;
   }
   
   @Override
@@ -220,5 +216,6 @@ public final class WriterUtf8 extends Writer
   {
     // XXX: surrogate pair
     _os.close();
+    _cBuf = null;
   }
 }

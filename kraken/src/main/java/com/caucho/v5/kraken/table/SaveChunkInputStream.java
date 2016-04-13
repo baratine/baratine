@@ -104,7 +104,7 @@ public class SaveChunkInputStream extends InputStream
     if (_is == null) {
       _tBuf = null;
       
-      tBuf.freeSelf();
+      tBuf.free();
       
       return false;
     }

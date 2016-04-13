@@ -218,6 +218,8 @@ public abstract class RequestHttpBase implements OutHttp
   private CharSegment []_smallHeaderValues = new CharSegment[32];
   
   private HttpBufferStore _largeHttpBuffer;
+  
+  private char []_cBuffer = new char[1024];
 
   //private RequestFacade _requestFacade;
 
@@ -1693,7 +1695,7 @@ public abstract class RequestHttpBase implements OutHttp
       String encoding = _contentEncodingOut;
       
       if (encoding == null || encoding.equals("utf-8")) {
-        writer = new WriterUtf8(out());
+        writer = new WriterUtf8(out(), _cBuffer);
       }
       else {
         try {

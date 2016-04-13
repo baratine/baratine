@@ -97,7 +97,7 @@ public class InStreamImpl extends StreamImpl
           return sublen;
         }
 
-        head.freeSelf();
+        head.free();
       }
       
       /*

@@ -29,8 +29,6 @@
 
 package com.caucho.v5.health.shutdown;
 
-import io.baratine.service.Result;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,13 +38,15 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.health.warning.WarningSystem;
-import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.io.TempBuffers;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.lifecycle.LifecycleState;
 import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Result;
 
 /**
  * The ShutdownSystem manages the server shutdown and includes a timeout
@@ -181,7 +181,7 @@ public class ShutdownSystem extends SubSystemBase
    */
   private static void freeMemoryBuffers()
   {
-    TempBuffer.clearFreeLists();
+    TempBuffers.clearFreeLists();
   }
   
   public static void startFailsafe(String msg)
