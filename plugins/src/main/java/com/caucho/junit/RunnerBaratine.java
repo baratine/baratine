@@ -119,7 +119,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     return list.toArray(new ServiceTest[list.size()]);
   }
 
-  private class ResourceDriver
+  private class VaultResourceDriver
     implements VaultDriver<Object,Serializable>
   {
     @Override
@@ -143,15 +143,11 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
   {
     TestClass testClass = getTestClass();
 
-    InjectorAmp injectorAmp = InjectorAmp.create();
-
-    InjectorAmp.InjectBuilderAmp injectBuilder;
-
-    ServiceManagerBuilderAmp serviceBuilder;
+    InjectorAmp.create();
 
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
-    injectBuilder = InjectorAmp.manager(cl);
+    InjectorAmp.InjectBuilderAmp injectBuilder = InjectorAmp.manager(cl);
 
     injectBuilder.context(true);
 
@@ -161,14 +157,14 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
 
     injectBuilder.bean(configBuilder.get()).to(Config.class);
 
-    serviceBuilder = ServicesAmp.newManager();
+    ServiceManagerBuilderAmp serviceBuilder = ServicesAmp.newManager();
     serviceBuilder.name("junit-test");
     serviceBuilder.autoServices(true);
     serviceBuilder.injectManager(() -> injectBuilder.get());
 
     StubGeneratorVault gen = new StubGeneratorVaultDriver();
 
-    gen.driver(new ResourceDriver());
+    gen.driver(new VaultResourceDriver());
 
     serviceBuilder.stubGenerator(gen);
 

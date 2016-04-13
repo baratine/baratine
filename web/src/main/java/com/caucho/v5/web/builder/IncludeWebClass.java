@@ -61,6 +61,7 @@ import io.baratine.web.Cookie;
 import io.baratine.web.Delete;
 import io.baratine.web.FilterAfter;
 import io.baratine.web.FilterBefore;
+import io.baratine.web.Form;
 import io.baratine.web.Get;
 import io.baratine.web.Header;
 import io.baratine.web.HttpMethod;
@@ -610,8 +611,8 @@ class IncludeWebClass implements IncludeWebAmp
     public void evalAsync(RequestWeb request, Result<Object> result)
     {
       // XXX: multimap?
-      request.body(Map.class, result.of((map,r)->{
-        _convert.convert((String) map.get(_paramName), (Result) r);
+      request.body(Form.class, result.of((map, r)->{
+        _convert.convert(map.getFirst(_paramName), (Result) r);
       }));
     }
   }
