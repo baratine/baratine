@@ -32,7 +32,7 @@ package com.caucho.v5.websocket.client;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 
 import io.baratine.service.ServiceRef;
 
@@ -44,10 +44,10 @@ class ThreadClientTask implements Runnable {
   
   private WebSocketClientBaratine _client;
 
-  private ReadBuffer _is;
+  private ReadStream _is;
   
   ThreadClientTask(WebSocketClientBaratine client,
-                   ReadBuffer is)
+                   ReadStream is)
   {
     _client = client;
     _is = is;

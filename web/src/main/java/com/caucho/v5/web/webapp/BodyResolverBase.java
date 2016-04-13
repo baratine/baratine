@@ -138,10 +138,10 @@ public class BodyResolverBase implements BodyResolver
       for (Field field : type.getDeclaredFields()) {
         String name = field.getName();
 
-        String value = form.getFirst(name);
+        String value = form.first(name);
 
         if (value == null && name.startsWith("_")) {
-          value = form.getFirst(name.substring(1));
+          value = form.first(name.substring(1));
         }
 
         if (value == null) {
@@ -186,7 +186,7 @@ public class BodyResolverBase implements BodyResolver
   {
     Object result = null;
 
-    String str = form.getFirst(param);
+    String str = form.first(param);
 
     if (type == String.class) {
       result = str;

@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 public class VfsStringWriter extends StreamImpl {
-  private WriteStream _ws;
+  private WriteStreamOld _ws;
   private CharBuffer _cb;
 
   public VfsStringWriter()
@@ -52,7 +52,7 @@ public class VfsStringWriter extends StreamImpl {
   /**
    * Opens a write stream using this StringWriter as the resulting string
    */
-  public WriteStream openWrite()
+  public WriteStreamOld openWrite()
   {
     if (_cb != null)
       _cb.clear();
@@ -60,7 +60,7 @@ public class VfsStringWriter extends StreamImpl {
       _cb = CharBuffer.allocate();
 
     if (_ws == null)
-      _ws = new WriteStream(this);
+      _ws = new WriteStreamOld(this);
     else
       _ws.init(this);
 

@@ -31,7 +31,7 @@ package com.caucho.v5.http.protocol;
 
 import java.io.IOException;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.StreamImpl;
 
 /**
@@ -39,10 +39,10 @@ import com.caucho.v5.io.StreamImpl;
  */
 class InChunked extends StreamImpl
 {
-  private ReadBuffer _next;
+  private ReadStream _next;
   private int _available;
 
-  void init(ReadBuffer next)
+  void init(ReadStream next)
   {
     _next = next;
     _available = 0;
@@ -137,7 +137,7 @@ class InChunked extends StreamImpl
     int length = 0;
     int ch;
 
-    ReadBuffer is = _next;
+    ReadStream is = _next;
 
     // skip whitespace
     for (ch = is.read();

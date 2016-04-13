@@ -27,14 +27,24 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.io;
+package com.caucho.v5.vfs;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Locale;
+
+import com.caucho.v5.io.OutputStreamWithBuffer;
+import com.caucho.v5.io.SendfileOutputStream;
+import com.caucho.v5.io.StreamImpl;
+import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.io.i18n.Encoding;
+import com.caucho.v5.io.i18n.EncodingWriter;
+import com.caucho.v5.util.CharSegment;
 
 /**
  * A fast bufferered output stream supporting both character
@@ -49,8 +59,8 @@ import java.util.Arrays;
  * Specialized applications, like servers, need the capability of recycling
  * streams.
  */
-public class WriteBuffer extends OutputStreamWithBuffer
-  //implements SendfileOutputStream
+public class WriteStreamOld extends OutputStreamWithBuffer
+  implements LockableStream, SendfileOutputStream
 {
   private static final byte []LF_BYTES = new byte[] {'\n'};
   private static final byte []CR_BYTES = new byte[] {'\r'};
@@ -64,8 +74,28 @@ public class WriteBuffer extends OutputStreamWithBuffer
   private static final int CHARS_LENGTH;
 
   static {
-    _sysNewline = "\n"; // PathImpl.getNewlineString();
+    _sysNewline = PathImpl.getNewlineString();
     _sysNewlineBytes = _sysNewline.getBytes();
+  }
+
+  static {
+    int charsLength;
+
+    if (TempBuffer.isSmallmem()) {
+      charsLength = 128;
+    }
+    else {
+      charsLength = 256;
+    }
+
+    CHARS_LENGTH = charsLength;
+
+    LATIN1 = new byte[65536];
+    Arrays.fill(LATIN1, (byte) '?');
+
+    for (int i = 0; i < 0x100; i++) {
+      LATIN1[i] = (byte) i;
+    }
   }
 
   private TempBuffer _tempWrite;
@@ -80,15 +110,17 @@ public class WriteBuffer extends OutputStreamWithBuffer
   private final char []_chars = new char[CHARS_LENGTH];
   private byte []_bytes;
 
-  // private EncodingWriter _writeEncoding;
-  //private String _writeEncodingName;
+  private EncodingWriter _writeEncoding;
+  private String _writeEncodingName;
 
   private boolean _implicitFlush = false;
   private boolean _isFlushOnNewline;
+  private boolean _isDisableClose;
+  private boolean _isDisableCloseSource;
   private boolean _isDisableFlush;
   private boolean _isReuseBuffer;
 
-  //private StreamPrintWriter _printWriter;
+  private StreamPrintWriter _printWriter;
 
   private String _newline = "\n";
   private byte []_newlineBytes = LF_BYTES;
@@ -96,7 +128,7 @@ public class WriteBuffer extends OutputStreamWithBuffer
   /**
    * Creates an uninitialized stream. Use <code>init</code> to initialize.
    */
-  public WriteBuffer()
+  public WriteStreamOld()
   {
   }
 
@@ -105,19 +137,9 @@ public class WriteBuffer extends OutputStreamWithBuffer
    *
    * @param source Underlying source for the stream.
    */
-  public WriteBuffer(StreamImpl source)
+  public WriteStreamOld(StreamImpl source)
   {
     init(source);
-  }
-
-  /**
-   * Creates a stream and initializes with a specified source.
-   *
-   * @param source Underlying source for the stream.
-   */
-  public WriteBuffer(OutputStream os)
-  {
-    init(new VfsStream(os));
   }
 
   /**
@@ -127,6 +149,9 @@ public class WriteBuffer extends OutputStreamWithBuffer
    */
   public void init(StreamImpl source)
   {
+    _isDisableClose = false;
+    _isDisableCloseSource = false;
+
     if (_source != null && _source != source) {
       try {
         close();
@@ -134,12 +159,11 @@ public class WriteBuffer extends OutputStreamWithBuffer
       }
     }
 
-    if (source == null) {
+    if (source == null)
       throw new IllegalArgumentException();
-    }
 
     if (_tempWrite == null) {
-      _tempWrite = TempBuffer.allocate();
+      _tempWrite = TempBuffer.create();
       _writeBuffer = _tempWrite.buffer();
     }
 
@@ -157,8 +181,8 @@ public class WriteBuffer extends OutputStreamWithBuffer
     _newline = "\n";
     _newlineBytes = LF_BYTES;
 
-    //_writeEncoding = null;
-    //_writeEncodingName = "ISO-8859-1";
+    _writeEncoding = null;
+    _writeEncodingName = "ISO-8859-1";
   }
 
   public void setSysNewline()
@@ -182,13 +206,11 @@ public class WriteBuffer extends OutputStreamWithBuffer
    *
    * @param filter the filter to be added.
    */
-  /*
   public void pushFilter(StreamFilter filter)
   {
     filter.init(_source);
     _source = filter;
   }
-  */
 
   /**
    * Returns true if the buffer allows writes.
@@ -216,7 +238,7 @@ public class WriteBuffer extends OutputStreamWithBuffer
     }
   }
 
-  public void reuseBuffer(boolean reuse)
+  public void setReuseBuffer(boolean reuse)
   {
     _isReuseBuffer = reuse;
   }
@@ -553,7 +575,6 @@ public class WriteBuffer extends OutputStreamWithBuffer
    * Sets the character encoding for writing to this stream.
    * Encoding can be a Java encoding or a mime-encoding.
    */
-  /*
   public void setEncoding(String encoding)
     throws UnsupportedEncodingException
   {
@@ -578,12 +599,10 @@ public class WriteBuffer extends OutputStreamWithBuffer
     if (_writeEncoding == null && locale != null)
       setEncoding(Encoding.getMimeName(locale));
   }
-  */
 
   /**
    * Returns the mime-encoding used for writing.
    */
-  /*
   public String getEncoding()
   {
     if (_source instanceof ReaderWriterStream)
@@ -596,7 +615,6 @@ public class WriteBuffer extends OutputStreamWithBuffer
   {
     return Encoding.getJavaName(getEncoding());
   }
-  */
 
   /**
    * Some streams, like log streams, should be flushed on every println
@@ -655,14 +673,12 @@ public class WriteBuffer extends OutputStreamWithBuffer
     if (_source == null)
       return;
 
-    /*
     if (_writeEncoding != null) {
       _isDisableFlush = true;
       _writeEncoding.write(this, buffer, offset, length);
       _isDisableFlush = false;
       return;
     }
-    */
 
     printLatin1(buffer, offset, length);
   }
@@ -749,14 +765,12 @@ public class WriteBuffer extends OutputStreamWithBuffer
   public final void print(char ch)
     throws IOException
   {
-    /*
     if (_writeEncoding != null) {
       _isDisableFlush = true;
       _writeEncoding.write(this, ch);
       _isDisableFlush = false;
       return;
     }
-    */
 
     write((byte) ch);
   }
@@ -777,13 +791,11 @@ public class WriteBuffer extends OutputStreamWithBuffer
    *
    * @param segment character buffer to write
    */
-  /*
   public final void print(CharSegment segment)
     throws IOException
   {
-    print(segment.getBuffer(), segment.getOffset(), segment.getLength());
+    print(segment.buffer(), segment.offset(), segment.length());
   }
-  */
 
   /**
    * Prints a string.
@@ -791,8 +803,6 @@ public class WriteBuffer extends OutputStreamWithBuffer
   public final void print(String string)
     throws IOException
   {
-    printLatin1(string);
-    /*
     if (string == null)
       string = "null";
 
@@ -800,6 +810,12 @@ public class WriteBuffer extends OutputStreamWithBuffer
     int offset = 0;
 
     char []chars = _chars;
+    /*
+    if (chars == null) {
+      _chars = new char[CHARS_LENGTH];
+      chars = _chars;
+    }
+    */
 
     while (length > 0) {
       int sublen = Math.min(length, CHARS_LENGTH);
@@ -811,7 +827,6 @@ public class WriteBuffer extends OutputStreamWithBuffer
       length -= sublen;
       offset += sublen;
     }
-    */
   }
 
   /**
@@ -847,10 +862,74 @@ public class WriteBuffer extends OutputStreamWithBuffer
   }
 
   /**
-   * Prints a string.
+   * Prints the character buffer to the stream encoded as latin1.
+   *
+   * @param string number of characters to write
    */
   public final void XprintLatin1NoLf(String string)
-      throws IOException
+    throws IOException
+  {
+    if (_source == null) {
+      return;
+    }
+
+    if (string == null) {
+      string = "null";
+    }
+
+    byte []writeBuffer = _writeBuffer;
+    int writeLength = _writeLength;
+
+    int length = string.length();
+    int offset = 0;
+
+    int charsLength = CHARS_LENGTH;
+    char []chars = _chars;
+
+    //if (chars == null) {
+    //  _chars = new char[charsLength];
+    //  chars = _chars;
+    //}
+
+    while (length > 0) {
+      int sublen = Math.min(charsLength, writeBuffer.length - writeLength);
+
+      if (sublen <= 0) {
+        _source.write(writeBuffer, 0, writeLength, false);
+        _position += writeLength;
+        _isFlushRequired = true;
+        writeLength = 0;
+
+        sublen = Math.min(charsLength,  writeBuffer.length - writeLength);
+      }
+
+      sublen = Math.min(length, sublen);
+
+      string.getChars(offset, sublen, chars, 0);
+
+      for (int i = 0; i < sublen; i++) {
+        byte value = (byte) chars[i];
+
+        if (value == '\r' || value == '\n') {
+          length = 0;
+          break;
+        }
+
+        writeBuffer[writeLength++] = value;
+      }
+
+      offset += sublen;
+      length -= sublen;
+    }
+
+    _writeLength = writeLength;
+  }
+
+  /**
+   * Prints a string.
+   */
+  public final void printLatin1NoLf(String string)
+    throws IOException
   {
     if (string == null)
       string = "null";
@@ -876,60 +955,9 @@ public class WriteBuffer extends OutputStreamWithBuffer
       }
 
       printLatin1(chars, 0, sublen);
-      
-      length -= sublen;
-      offset += sublen;
-    }
-  }
-  
-  public final void printLatin1NoLf(String string)
-      throws IOException
-  {
-    if (string == null)
-      string = "null";
-
-    int length = string.length();
-    int offset = 0;
-
-    char []chars = _chars;
-
-    byte []writeBuffer = _writeBuffer;
-    int writeLength = _writeLength;
-    
-    while (length > 0) {
-      int sublen = Math.min(length, chars.length);
-      sublen = Math.min(sublen, writeBuffer.length - writeLength);
-
-      string.getChars(offset, offset + sublen, chars, 0);
-
-      for (int i = sublen - 1; i >= 0; i--) {
-        char ch = chars[i];
-
-        if (0x20 <= ch && ch < 0x80) {
-          writeBuffer[writeLength + i] = (byte) ch;
-        }
-        else if (ch == '\r' || ch == '\n') {
-          sublen = i;
-          length = sublen;
-        }
-        else {
-          writeBuffer[writeLength + i] = LATIN1[i];
-        }
-      }
-      
-      if (length == sublen) {
-        _writeLength = writeLength + sublen;
-        return;
-      }
 
       length -= sublen;
       offset += sublen;
-      writeLength += sublen;
-      
-      _source.write(writeBuffer, 0, writeLength, false);
-      _position += writeLength;
-      _isFlushRequired = true;
-      writeLength = 0;
     }
   }
 
@@ -1081,6 +1109,19 @@ public class WriteBuffer extends OutputStreamWithBuffer
   }
 
   /**
+   * Prints a double, converted by String.valueOf()
+   */
+  public final void print(Object o) throws IOException
+  {
+    if (o == null)
+      print("null");
+    else if (o instanceof VfsWriteObject)
+      ((VfsWriteObject) o).print(this);
+    else
+      print(o.toString());
+  }
+
+  /**
    * Prints a newline
    */
   public final void println() throws IOException
@@ -1192,6 +1233,26 @@ public class WriteBuffer extends OutputStreamWithBuffer
   }
 
   /**
+   * Returns a printWriter writing to this stream.
+   */
+  public PrintWriter getPrintWriter()
+  {
+    /*
+    if (_writer == null)
+      _writer = new StreamWriter();
+    */
+
+    if (_printWriter == null)
+      _printWriter = new StreamPrintWriter(this);
+    /*
+    else
+      _printWriter.setWriter(_writer);
+    */
+
+    return _printWriter;
+  }
+
+  /**
    * Logs a line to the stream.  log is essentially println, but
    * it doesn't throw an exception and it always flushes the output.
    */
@@ -1206,6 +1267,21 @@ public class WriteBuffer extends OutputStreamWithBuffer
     }
   }
 
+  public final void log(Throwable exn)
+  {
+    try {
+      PrintWriter out = getPrintWriter();
+      synchronized (this) {
+        if (exn != null) {
+          exn.printStackTrace(out);
+          flush();
+        }
+      }
+    } catch (Throwable e) {
+      e.printStackTrace();
+    }
+  }
+
   /**
    * Writes the contents of a JDK stream.  Essentially this will copy
    * <code>source</code> to the current stream.
@@ -1214,8 +1290,9 @@ public class WriteBuffer extends OutputStreamWithBuffer
    */
   public long writeStream(InputStream source) throws IOException
   {
-    if (source == null)
+    if (source == null) {
       return 0;
+    }
 
     int len;
     int length = _writeBuffer.length;
@@ -1255,7 +1332,7 @@ public class WriteBuffer extends OutputStreamWithBuffer
    * Writes the contents of a JDK reader.  Essentially this will copy
    * <code>source</code> to the current stream.
    *
-   * @param source InputStream to read.
+   * @param reader InputStream to read.
    */
   public void writeStream(Reader reader) throws IOException
   {
@@ -1368,7 +1445,6 @@ public class WriteBuffer extends OutputStreamWithBuffer
    *
    * @param path Path of the file to copy.
    */
-  /*
   public void writeFile(PathImpl path) throws IOException
   {
     StreamImpl is = path.openReadImpl();
@@ -1382,7 +1458,30 @@ public class WriteBuffer extends OutputStreamWithBuffer
         is.close();
     }
   }
-  */
+
+  /**
+   * Disables close.  Sometimes an application will pass a stream
+   * to a client that may close the stream at an inappropriate time.
+   * Setting disable close gives the calling routine control over closing
+   * the stream.
+   */
+  public void setDisableClose(boolean disableClose)
+  {
+    _isDisableClose = disableClose;
+  }
+
+  public boolean getDisableClose()
+  {
+    return _isDisableClose;
+  }
+
+  /**
+   * Disables close of the underlying source.
+   */
+  public void setDisableCloseSource(boolean disableClose)
+  {
+    _isDisableCloseSource = disableClose;
+  }
 
   /**
    * Returns true if the stream is closed.
@@ -1404,7 +1503,9 @@ public class WriteBuffer extends OutputStreamWithBuffer
     synchronized (this) {
       s = _source;
       
-      _source = null;
+      if (! _isDisableClose) {
+        _source = null;
+      }
     }
     
     if (s == null) {
@@ -1417,17 +1518,19 @@ public class WriteBuffer extends OutputStreamWithBuffer
         _writeLength = 0;
 
         if (s != null) {
-          s.write(_writeBuffer, 0, len, true);
+          s.write(_writeBuffer, 0, len, ! _isDisableClose);
         }
       }
     } finally {
+      if (_isDisableClose) {
+        return;
+      }
+
       _source = null;
 
-      /*
       if (_writeEncoding != null) {
         _writeEncoding = null;
       }
-      */
 
       if (! _isReuseBuffer) {
         TempBuffer tempWrite = _tempWrite;
@@ -1439,7 +1542,7 @@ public class WriteBuffer extends OutputStreamWithBuffer
         }
       }
 
-      if (s != null) {
+      if (s != null && ! _isDisableCloseSource) {
         s.closeWrite();
       }
     }
@@ -1563,7 +1666,6 @@ public class WriteBuffer extends OutputStreamWithBuffer
     _sysNewlineBytes = _sysNewline.getBytes();
   }
 
-  /*
   public boolean lock(boolean shared, boolean block)
   {
     if (! (_source instanceof LockableStream))
@@ -1581,7 +1683,6 @@ public class WriteBuffer extends OutputStreamWithBuffer
     LockableStream ls = (LockableStream) _source;
     return ls.unlock();
   }
-  */
 
   /**
    * Returns the write position.
@@ -1622,13 +1723,15 @@ public class WriteBuffer extends OutputStreamWithBuffer
     }
   }
 
-  //@Override
+  /*
+  @Override
   public boolean isMmapEnabled()
   {
     return _source.isMmapEnabled();
   }
+  */
 
-  //@Override
+  @Override
   public boolean isSendfileEnabled()
   {
     return _source.isSendfileEnabled();
@@ -1653,7 +1756,8 @@ public class WriteBuffer extends OutputStreamWithBuffer
   }
   */
 
-  //@Override
+  /*
+  @Override
   public void writeMmap(long mmapAddress,
                         long []mmapBlocks,
                         long mmapOffset,
@@ -1674,8 +1778,9 @@ public class WriteBuffer extends OutputStreamWithBuffer
 
     _position += mmapLength;
   }
+  */
 
-  //@Override
+  @Override
   public void writeSendfile(byte []fileName, int nameLength,
                             long fileLength)
     throws IOException
@@ -1701,24 +1806,5 @@ public class WriteBuffer extends OutputStreamWithBuffer
   {
     return getClass().getSimpleName() + "[" + _source + "]";
   }
-  
-  static {
-    int charsLength;
-    
-    if (TempBuffer.isSmallmem()) {
-      charsLength = 128;
-    }
-    else {
-      charsLength = 256;
-    }
-    
-    CHARS_LENGTH = charsLength;
-    
-    LATIN1 = new byte[65536];
-    Arrays.fill(LATIN1, (byte) '?');
-    
-    for (int i = 0; i < 0x100; i++) {
-      LATIN1[i] = (byte) i;
-    }
-  }
+
 }

@@ -34,8 +34,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.caucho.v5.io.IoUtil;
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.Crc64;
 
 import io.baratine.db.BlobReader;
@@ -224,7 +224,7 @@ abstract public class Column {
   }
 
   void readJournal(PageServiceImpl pageActor, 
-                   ReadBuffer is, 
+                   ReadStream is, 
                    byte[] buffer, int offset, RowCursor cursor)
     throws IOException
   {
@@ -283,13 +283,13 @@ abstract public class Column {
   // checkpoint persistence
   //
 
-  void writeCheckpoint(WriteBuffer os, byte[] buffer, int offset)
+  void writeCheckpoint(WriteStream os, byte[] buffer, int offset)
     throws IOException
   {
     os.write(buffer, offset + getOffset(), length());
   }
   
-  int readCheckpoint(ReadBuffer is, 
+  int readCheckpoint(ReadStream is, 
                      byte[] buffer, int rowFirst, int rowLength,
                      int blobTail)
     throws IOException

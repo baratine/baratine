@@ -232,7 +232,7 @@ public class JournalStore
     
     _segmentList.add(_systemSegment);
     
-    TempBuffer tBuf = TempBuffer.allocateLarge();
+    TempBuffer tBuf = TempBuffer.createLarge();
     byte []buffer = tBuf.buffer();
     
     Arrays.fill(buffer, (byte) 0);
@@ -264,7 +264,7 @@ public class JournalStore
     
     _address = segmentCount * _segmentSize;
     
-    TempBuffer tBuf = TempBuffer.allocateLarge();
+    TempBuffer tBuf = TempBuffer.createLarge();
     byte []buffer = tBuf.buffer();
     
     for (int i = 1; i < segmentCount; i++) {
@@ -334,7 +334,7 @@ public class JournalStore
       segment = new JournalSegment(this, key, address,
                                    sequence, sequence);
       
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
 
       byte []buffer = tBuf.buffer();
       Arrays.fill(buffer, (byte) 0);

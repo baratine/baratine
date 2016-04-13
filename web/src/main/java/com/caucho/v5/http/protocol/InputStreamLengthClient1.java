@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.caucho.v5.http.protocol2.InputStreamClient;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 
 /**
  * InputStreamHttp reads a single HTTP frame.
@@ -41,7 +41,7 @@ import com.caucho.v5.io.ReadBuffer;
 public class InputStreamLengthClient1 extends InputStreamClient
 {
   private ClientStream1 _stream;
-  private ReadBuffer _is;
+  private ReadStream _is;
   
   private long _length;
   private long _pos;

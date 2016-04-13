@@ -40,9 +40,9 @@ import com.caucho.v5.util.CauchoUtil;
 import com.caucho.v5.util.CharBuffer;
 import com.caucho.v5.vfs.MemoryStream;
 import com.caucho.v5.vfs.PathImpl;
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Compiles Java source, returning the loaded class.
@@ -74,7 +74,7 @@ public class ExternalCompiler extends AbstractJavaCompiler
     throws IOException
   {
     MemoryStream tempStream = new MemoryStream();
-    WriteStream error = new WriteStream(tempStream);
+    WriteStreamOld error = new WriteStreamOld(tempStream);
     _inputStream = null;
     _errorStream = null;
     boolean chdir = CauchoUtil.isUnix();
@@ -198,7 +198,7 @@ public class ExternalCompiler extends AbstractJavaCompiler
       tempStream.close();
 
       if (log.isLoggable(Level.FINE)) {
-        ReadStream read = tempStream.openReadAndSaveBuffer();
+        ReadStreamOld read = tempStream.openReadAndSaveBuffer();
         CharBuffer cb = new CharBuffer();
         int ch;
 
@@ -215,7 +215,7 @@ public class ExternalCompiler extends AbstractJavaCompiler
         };
       }
 
-      ReadStream read = tempStream.openReadAndSaveBuffer();
+      ReadStreamOld read = tempStream.openReadAndSaveBuffer();
       ErrorParser parser;
         
       // the javac error parser will work with jikes in "emacs" mode
@@ -297,7 +297,7 @@ public class ExternalCompiler extends AbstractJavaCompiler
   /**
    * Read any errors from the process.
    */
-  private void waitForErrors(WriteStream error,
+  private void waitForErrors(WriteStreamOld error,
                              InputStream inputStream,
                              InputStream errorStream)
     throws IOException

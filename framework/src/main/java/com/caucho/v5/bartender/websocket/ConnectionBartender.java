@@ -36,8 +36,8 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.io.IoUtil;
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.NetworkSystemBartender;
 import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.network.port.ConnectionTcp;
@@ -95,12 +95,12 @@ public class ConnectionBartender implements ConnectionProtocol
     return _conn;
   }
   
-  ReadBuffer getReadStream()
+  ReadStream getReadStream()
   {
     return _conn.readStream();
   }
   
-  WriteBuffer getWriteStream()
+  WriteStream getWriteStream()
   {
     return _conn.writeStream();
   }
@@ -122,7 +122,7 @@ public class ConnectionBartender implements ConnectionProtocol
       return StateConnection.CLOSE;
     }
     
-    ReadBuffer is = connTcp.readStream();
+    ReadStream is = connTcp.readStream();
 
     if (! readHeader(is)) {
       log.fine("No cluster websocket uri found");
@@ -142,7 +142,7 @@ public class ConnectionBartender implements ConnectionProtocol
       return StateConnection.CLOSE;
     }
     
-    WriteBuffer os = connTcp.writeStream();
+    WriteStream os = connTcp.writeStream();
     os.println(PROTOCOL_HEADER);
     os.println("status: 200");
     os.println();
@@ -181,7 +181,7 @@ public class ConnectionBartender implements ConnectionProtocol
     return StateConnection.READ;
   }
   
-  private boolean readHeader(ReadBuffer is)
+  private boolean readHeader(ReadStream is)
     throws IOException
   {
     String header = IoUtil.readln(is);

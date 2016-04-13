@@ -41,7 +41,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.Page;
 import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.kelp.PageServiceSync;
@@ -80,7 +80,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   private final SegmentKelp _segment;
   
   private OutStore _sOut;
-  private WriteBuffer _out;
+  private WriteStream _out;
   
   private int _position;
   
@@ -138,7 +138,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       throw new IllegalStateException(String.valueOf(_segment));
     }
     
-    _entryTempBuf = TempBuffer.allocateLarge();
+    _entryTempBuf = TempBuffer.createLarge();
     _entryBuffer = _entryTempBuf.buffer();
     
     _entryPosition = segment.getLength() - BLOCK_SIZE;
@@ -168,10 +168,10 @@ public class OutSegment extends StreamImpl implements AutoCloseable
    * Returns the WriteStream for data in the current segment. Data writes
    * from low to high.
    */
-  public WriteBuffer out()
+  public WriteStream out()
   {
     if (_out == null) {
-      _out = new WriteBuffer(this);
+      _out = new WriteStream(this);
     }
     
     return _out;
@@ -237,7 +237,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     int pid = page.getId();
     int nextPid = page.getNextId();
     
-    WriteBuffer out = out();
+    WriteStream out = out();
     
     int head = (int) out.getPosition();
     
@@ -288,7 +288,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
    * entry(0)
    * </pre>
    */
-  boolean addEntry(WriteBuffer out,
+  boolean addEntry(WriteStream out,
                     Page page,
                     Page newPage,
                     int saveSequence,
@@ -359,7 +359,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       return;
     }
 
-    WriteBuffer out = _out;
+    WriteStream out = _out;
     
     if (out != null) {
       try {

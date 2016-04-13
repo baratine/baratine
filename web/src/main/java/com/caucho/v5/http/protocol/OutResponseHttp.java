@@ -29,35 +29,19 @@
 
 package com.caucho.v5.http.protocol;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.logging.Logger;
-
-import com.caucho.v5.http.container.HttpContainer;
-import com.caucho.v5.io.SendfileOutputStream;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.util.L10N;
+
+import io.baratine.io.Bytes;
 
 public class OutResponseHttp
-//extends OutResponseCache
   extends OutResponseBase
-  implements SendfileOutputStream
 {
-  private static final L10N L = new L10N(OutResponseHttp.class);
-  private static final Logger log
-    = Logger.getLogger(OutResponseHttp.class.getName());
-
   private static final int CHUNK_HEADER = 8;
-  private static final int CHUNK_TAIL = 7;
-  private static final int _tailChunkedLength = 7;
-  private static final byte []_tailChunked
-    = new byte[] {'\r', '\n', '0', '\r', '\n', '\r', '\n'};
 
   private RequestHttp _request;
 
   private boolean _isChunked;
   private boolean _isHeaders;
-  // private int _bufferStartOffset;
 
   OutResponseHttp(RequestHttp request)
   {
@@ -83,13 +67,6 @@ public class OutResponseHttp
     
     super.start();
   }
-  
-  /*
-  RequestFacade request()
-  {
-    return _request.request();
-  }
-  */
 
   //
   // implementations
@@ -107,7 +84,7 @@ public class OutResponseHttp
   }
   
   @Override
-  public boolean isChunkedEncoding()
+  public boolean isChunked()
   {
     return _isChunked;
   }
@@ -117,93 +94,51 @@ public class OutResponseHttp
   {
     if (_isChunked) {
       _isChunked = false;
-      System.out.println("UBZDSF");
+      System.out.println("Upgrade disables chunked encoding");
     }
   }
 
   @Override
-  protected final TempBuffer flushData(TempBuffer head, 
-                                       TempBuffer tail, 
-                                       boolean isEnd)
+  protected final void flush(Bytes data, boolean isEnd)
   {
-    if (head == null || head.length() == 0) {
-      head = null;
+    if (data == null || data.length() == 0) {
+      data = null;
     }
     
     if (_isChunked) {
-      for (TempBuffer ptr = head; ptr != null; ptr = ptr.getNext()) {
-        writeChunkHeader(ptr.buffer(), CHUNK_HEADER, ptr.length() - CHUNK_HEADER);
-      }
+      // writeChunkHeader(ptr.buffer(), CHUNK_HEADER, ptr.length() - CHUNK_HEADER);
     }
     
     if (! _isHeaders) {
       _isHeaders = true;
-      
-      // session flushing
-      // XXX:
-      /*
-      RequestFacade request = request();
-
-      if (request != null) {
-        request.fillHeaders();
-      }
-      */
 
       if (! isEnd) {
         _isChunked = _request.calculateChunkedEncoding();
       }
+    }
       
-      long length = 0;
-      for (TempBuffer ptr = head; ptr != null; ptr = ptr.getNext()) {
-        length += ptr.length();
-      }
-      
-      _request.outProxy().writeFirst(_request, head, length, isEnd);
-    }
-    else {
-      _request.outProxy().writeNext(_request, head, isEnd);
-    }
-    
-    if (isEnd || head == null) {
-      return tail;
-    }
-    else {
-      return TempBuffer.allocate();
-    }
-  }
-  
-  protected void closeStream()
-      throws IOException
-  {
-    /*
-      RequestHttpBase req = _response.getRequest();
-    
-      if (req.isKeepalive() || req.isDuplex()) {
-        //_nextStream.flushBuffer();
-        _nextStream.flush();
-      }
-      else {
-        _nextStream.close();
-      }
-      */
+    _request.outProxy().write(_request, data, isEnd);
   }
 
   /**
    * Fills the chunk header.
    */
-  private void writeChunkHeader(byte []buffer, int start, int length)
+  @Override
+  protected void fillChunkHeader(TempBuffer tBuf, int length)
   {
     if (length == 0)
       throw new IllegalStateException();
+    
+    byte []buffer = tBuf.buffer();
 
-    buffer[start - 8] = (byte) '\r';
-    buffer[start - 7] = (byte) '\n';
-    buffer[start - 6] = hexDigit(length >> 12);
-    buffer[start - 5] = hexDigit(length >> 8);
-    buffer[start - 4] = hexDigit(length >> 4);
-    buffer[start - 3] = hexDigit(length);
-    buffer[start - 2] = (byte) '\r';
-    buffer[start - 1] = (byte) '\n';
+    buffer[0] = (byte) '\r';
+    buffer[1] = (byte) '\n';
+    buffer[2] = hexDigit(length >> 12);
+    buffer[3] = hexDigit(length >> 8);
+    buffer[4] = hexDigit(length >> 4);
+    buffer[5] = hexDigit(length);
+    buffer[6] = (byte) '\r';
+    buffer[7] = (byte) '\n';
   }
 
   /**
@@ -213,80 +148,11 @@ public class OutResponseHttp
   {
     value &= 0xf;
 
-    if (value <= 9)
+    if (value <= 9) {
       return (byte) ('0' + value);
-    else
+    }
+    else {
       return (byte) ('a' + value - 10);
-  }
-
-  @Override
-  public boolean isMmapEnabled()
-  {
-    //return _nextStream.isMmapEnabled();
-    return false;
-  }
-
-  @Override
-  public boolean isSendfileEnabled()
-  {
-    //return _nextStream.isSendfileEnabled();
-    return false;
-  }
-
-  /**
-   * Sends a file.
-   *
-   * @param path the path to the file
-   * @param length the length of the file (-1 if unknown)
-   */
-  @Override
-  public void sendFile(Path path, long offset, long length)
-    throws IOException
-  {
-    RequestHttpBase request = _request;
-    HttpContainer http = request.http();
-    
-    /*
-    if (! isSendfileEnabled()
-        || ! http.isSendfileEnabled()
-        || (request.request().isCaching()
-            && length < http.getSendfileMinLength())) {
-      path.writeToStream(this);
-      return;
     }
-    */
-    
-    if (true) return;
-    
-    http.addSendfileCount();
-    
-    //path.sendfile(this, offset, length);
-  }
-  
-  @Override
-  public void writeMmap(long mmapAddress, long []mmapBlocks, 
-                        long mmapOffset, long mmapLength)
-    throws IOException
-  {
-    if (_isChunked) {
-      throw new IllegalStateException(L.l("writeMmap cannot use chunked"));
-    }
-    
-    //flushBuffer();
-    
-    //_nextStream.writeMmap(mmapAddress, mmapBlocks, mmapOffset, mmapLength);
-  }
-
-  @Override
-  public void writeSendfile(byte []fileName, int nameLength, long fileLength)
-    throws IOException
-  {
-    if (_isChunked) {
-      throw new IllegalStateException(L.l("writeSendfile cannot use chunked"));
-    }
-    
-    //flushBuffer();
-    
-    //_nextStream.writeSendfile(fileName, nameLength, fileLength);
   }
 }

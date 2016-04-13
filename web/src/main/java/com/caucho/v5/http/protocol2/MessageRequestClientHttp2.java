@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 /**
  * InputStreamHttp reads a single HTTP frame.
@@ -77,7 +77,7 @@ public class MessageRequestClientHttp2 extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteBuffer os, OutHttp outHttp)
+  public void deliver(WriteStream os, OutHttp outHttp)
     throws IOException
   {
     // OutChannelHttp2 stream = _request.getStreamOut();

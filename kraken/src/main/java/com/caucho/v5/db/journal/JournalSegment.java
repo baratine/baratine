@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 import java.util.zip.CRC32;
 
 import com.caucho.v5.db.journal.JournalStream.ReplayCallback;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.store.io.InStore;
@@ -106,7 +106,7 @@ public class JournalSegment
   {
     _blockStore = blockStore;
     
-    _tBuf = TempBuffer.allocateLarge();
+    _tBuf = TempBuffer.createLarge();
     _buffer = _tBuf.buffer();
     
     _startAddress = startAddress;
@@ -374,7 +374,7 @@ public class JournalSegment
    */
   public void replay(ReplayCallback replayCallback)
   {
-    TempBuffer tReadBuffer = TempBuffer.allocateLarge();
+    TempBuffer tReadBuffer = TempBuffer.createLarge();
     byte []readBuffer = tReadBuffer.buffer();
     int bufferLength = readBuffer.length;
 
@@ -390,11 +390,11 @@ public class JournalSegment
       
       setSequence(replay.getSequence());
 
-      TempBuffer tBuffer = TempBuffer.allocate();
+      TempBuffer tBuffer = TempBuffer.create();
       byte []tempBuffer = tBuffer.buffer();
       
       jIn.read(getBlockAddress(address), readBuffer, 0, bufferLength);
-      ReadBuffer is = new ReadBuffer();
+      ReadStream is = new ReadStream();
       
       while (address < _tailAddress
              && (next = scanItem(jIn, address, readBuffer, tempBuffer)) > 0) {
@@ -607,7 +607,7 @@ public class JournalSegment
     if (os == null) {
       return; // XXX: shutdown timing?
     }
-    TempBuffer tBuf = TempBuffer.allocateLarge();
+    TempBuffer tBuf = TempBuffer.createLarge();
     byte []buffer = tBuf.buffer();
     
     int offset = 0;

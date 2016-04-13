@@ -43,7 +43,7 @@ import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.L10N;
 
@@ -57,7 +57,7 @@ public class OutHttp implements AutoCloseable
   private static final Logger log
     = Logger.getLogger(OutHttp.class.getName());
   
-  private WriteBuffer _os;
+  private WriteStream _os;
   
   private AtomicInteger _openCount = new AtomicInteger();
   
@@ -87,14 +87,14 @@ public class OutHttp implements AutoCloseable
     _queue = createQueue();
   }
   
-  public OutHttp(WriteBuffer os, PeerHttp peer)
+  public OutHttp(WriteStream os, PeerHttp peer)
   {
     this(new ConnectionHttp2(peer), peer);
     
     init(os);
   }
   
-  public void init(WriteBuffer os)
+  public void init(WriteStream os)
   {
     _os = os;
     _openCount.set(1);
@@ -215,7 +215,7 @@ public class OutHttp implements AutoCloseable
     int settingCount = 2;
     int length = 5 * settingCount;
     
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     os.write(length >> 8);
     os.write(length);
@@ -237,7 +237,7 @@ public class OutHttp implements AutoCloseable
   void writeData(int streamId, byte []buffer, int offset, int length, int flags)
     throws IOException
   {
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     if (os == null) {
       return;
@@ -285,7 +285,7 @@ public class OutHttp implements AutoCloseable
   void writeFlow(int streamId, int credit)
     throws IOException
   {
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     if (os == null) {
       return;
@@ -306,7 +306,7 @@ public class OutHttp implements AutoCloseable
   void writeBlock(int streamId, int credit)
     throws IOException
   {
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     if (os == null) {
       return;
@@ -337,7 +337,7 @@ public class OutHttp implements AutoCloseable
   {
     int lastStream = 0;
     
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     int length = 8;
     
@@ -374,7 +374,7 @@ public class OutHttp implements AutoCloseable
   public void writeBlock(int streamId)
     throws IOException
   {
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     int length = 0;
     
@@ -389,7 +389,7 @@ public class OutHttp implements AutoCloseable
   void writeReset(int streamId, int errorCode)
     throws IOException
   {
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     int length = 4;
     
@@ -418,7 +418,7 @@ public class OutHttp implements AutoCloseable
   void writePriority(int streamId, int streamRef, int weight)
     throws IOException
   {
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     int length = 5;
     
@@ -439,7 +439,7 @@ public class OutHttp implements AutoCloseable
   void flush()
     throws IOException
   {
-    WriteBuffer os = _os;
+    WriteStream os = _os;
         
     if (os != null) {
       os.flush();
@@ -492,7 +492,7 @@ public class OutHttp implements AutoCloseable
     public void afterBatch()
     {
       try {
-        WriteBuffer os = _os;
+        WriteStream os = _os;
         // log.warning("FLUSH: " + this + " " + os);
     
         if (os != null) {

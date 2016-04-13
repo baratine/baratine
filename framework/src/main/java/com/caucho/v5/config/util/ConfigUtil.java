@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 import com.caucho.v5.vfs.VfsOld;
 
 /**
@@ -47,7 +47,7 @@ public class ConfigUtil
     if (systemId == null)
       return "";
 
-    try (ReadStream is = VfsOld.lookup().lookup(systemId).openRead()) {
+    try (ReadStreamOld is = VfsOld.lookup().lookup(systemId).openRead()) {
       int line = 0;
       StringBuilder sb = new StringBuilder("\n\n");
       String text;

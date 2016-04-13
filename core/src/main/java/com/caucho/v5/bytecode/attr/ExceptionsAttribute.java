@@ -111,7 +111,7 @@ public class ExceptionsAttribute extends Attribute {
     
     TempBuffer ptr = ts.getHead();
 
-    for (; ptr != null; ptr = ptr.getNext())
+    for (; ptr != null; ptr = ptr.next())
       out.write(ptr.buffer(), 0, ptr.length());
 
     ts.destroy();

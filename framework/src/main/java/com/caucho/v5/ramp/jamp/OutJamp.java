@@ -42,7 +42,7 @@ import com.caucho.v5.amp.ErrorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.json.ser.JsonFactory;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * JampWriteStream writes HMTP packets to an OutputStream.
@@ -80,7 +80,7 @@ public class OutJamp
     _jOut.init(writer);
   }
   
-  public void init(WriteStream os)
+  public void init(WriteStreamOld os)
   {
     Objects.requireNonNull(os);
     

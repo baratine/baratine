@@ -211,7 +211,7 @@ public class JarWithStream extends Jar
             
             if (entry.getSize() < 0 && ! entry.isDirectory()) {
               long size = 0;
-              TempBuffer tBuf = TempBuffer.allocate();
+              TempBuffer tBuf = TempBuffer.create();
               byte []buffer = tBuf.buffer();
               
               int sublen;

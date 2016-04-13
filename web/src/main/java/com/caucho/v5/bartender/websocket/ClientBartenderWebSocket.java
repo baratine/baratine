@@ -40,10 +40,10 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.io.IoUtil;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.SocketSystem;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.websocket.client.WebSocketImplClient;
 import com.caucho.v5.websocket.io.CloseReason;
@@ -169,8 +169,8 @@ public class ClientBartenderWebSocket
     try {
       s.setSoTimeout(60 * 1000);
       
-      ReadBuffer is = s.getInputStream();
-      WriteBuffer os = s.getOutputStream();
+      ReadStream is = s.getInputStream();
+      WriteStream os = s.getOutputStream();
 
       os.print("HAMP *\n");
 

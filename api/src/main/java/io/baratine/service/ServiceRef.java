@@ -33,10 +33,10 @@ package io.baratine.service;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**
- * ServiceRef allows an actor service to get to its service reference.
+ * ServiceRef allows a service to get to its service reference.
  * This can be useful for invoking methods which are in fact queued for later execution.
  * 
- * Normally service actors do not need to access their underlying ServiceRef.
+ * Normally services do not need to access their underlying ServiceRef.
  * 
  * There may be some special circumstances for debugging, logging, auditing, security where a service might need to access
  * this information. One could also setup their own topology of services based on custom shard rules.
@@ -47,23 +47,11 @@ import io.baratine.spi.ServiceManagerProvider;
  * //Inside of a service @OnInit
  * ServiceManager manager = ServiceManager.current();
  * 
- * MyService southWestRegionService = manager.newService()
- *                                           .service(new MyServiceImpl(SOUTH_WEST_REGION)
- *                                           .build()
+ * MyService southWestRegionService = manager.newService(new MyServiceImpl(SOUTH_WEST_REGION)
  *                                           .as(MyService.class);
  *                                           
- * MyService northEastRegionService = manager.newService()
- *                                           .service(new MyServiceImpl(NORTH_EAST_REGION)
- *                                           .build()
+ * MyService northEastRegionService = manager.newService(new MyServiceImpl(NORTH_EAST_REGION)
  *                                           .as(MyService.class);
- * 
- * //Bind a service that is available for remote calls with a given interface for internal usage
- * MyServiceRegionSharder sharder = manager.bind(new MyServiceRegionSharderImpl(southWestRegionService, northEastRegionService),
- * "/internal/interface", MyService.class);
- * 
- * //Bind a service that is available for remote calls with a given interface for public usage
- * MyServiceRegionSharderPublic sharder2 = manager.bind(new MyServiceRegionSharderImpl(), "/externalInterface", MyServicePublic.class);
- * 
  * </pre>
  */
 
@@ -74,7 +62,7 @@ public interface ServiceRef
    */
   static ServiceRef current()
   {
-    return ServiceManagerProvider.current().getCurrentServiceRef();
+    return ServiceManagerProvider.current().currentServiceRef();
   }
   
   /**
@@ -88,13 +76,6 @@ public interface ServiceRef
    * @return the service's manager
    */
   Services manager();
-  
-  /**
-   * Lookup a specific method of this service.
-   * @param name name of the method
-   * @return
-   */
-  //MethodRef getMethod(String name);
 
   /**
    * Pin an object to the service, creating a dependent service 
@@ -165,7 +146,7 @@ public interface ServiceRef
   }
   
   /**
-   * Returns the ServiceRef for a proxy. <code>toServiceRef()</code>
+   * Returns the ServiceRef for a proxy. <code>toRef()</code>
    * is the inverse of <code>as()</code>.
    *  
    */
@@ -197,12 +178,11 @@ public interface ServiceRef
      * Address to lookup the service in the ServiceManager.
      * 
      * <pre><code>
-     * manager.newService()
-     *        .service(new MyServiceImpl())
+     * manager.newService(new MyServiceImpl())
      *        .address("local:///my-service")
      *        .build();
      *        
-     * proxy = manager.lookup("/my-service")
+     * proxy = manager.service("/my-service")
      *                .as(MyService.class);
      * </code></pre>
      * 

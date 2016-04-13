@@ -68,8 +68,8 @@ public class MultipartStream extends StreamImpl {
 
   private byte []_dummyBuffer = new byte[32];
   
-  private ReadStream _is;
-  private ReadStream _readStream;
+  private ReadStreamOld _is;
+  private ReadStreamOld _readStream;
   private boolean _isPartDone;
   private boolean _isDone;
   private boolean _isComplete;
@@ -87,7 +87,7 @@ public class MultipartStream extends StreamImpl {
     _boundary = new ByteArrayBuffer();
   }
 
-  public MultipartStream(ReadStream is, String boundary)
+  public MultipartStream(ReadStreamOld is, String boundary)
     throws IOException
   {
     this();
@@ -118,7 +118,7 @@ public class MultipartStream extends StreamImpl {
    * @param is the underlying stream
    * @param headerBoundary the multipart/mime boundary.
    */
-  public void init(ReadStream is, String headerBoundary)
+  public void init(ReadStreamOld is, String headerBoundary)
     throws IOException
   {
     _is = is;
@@ -158,13 +158,13 @@ public class MultipartStream extends StreamImpl {
    * Opens the next part of the multipart/mime stream for reading.  Returns
    * null when the last section is read.
    */
-  public ReadStream openRead()
+  public ReadStreamOld openRead()
     throws IOException
   {
     if (_isDone)
       return null;
     else if (_readStream == null)
-      _readStream = new ReadStream(this);
+      _readStream = new ReadStreamOld(this);
     else if (! _isPartDone) {
       int len;
       while ((len = read(_dummyBuffer, 0, _dummyBuffer.length)) >= 0) {

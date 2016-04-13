@@ -44,9 +44,9 @@ public final class ZipScanner
   private int _nameLen;
 
   private PathImpl _path;
-  private ReadStream _is;
+  private ReadStreamOld _is;
   
-  private ReadStream _fileIs;
+  private ReadStreamOld _fileIs;
   
   private boolean _isValid;
 
@@ -71,7 +71,7 @@ public final class ZipScanner
     
       int length = (int) path.length();
     
-      ReadStream is = path.openRead();
+      ReadStreamOld is = path.openRead();
 
       try {
         // PACK200 is a standard comment, so try skipping it first
@@ -128,7 +128,7 @@ public final class ZipScanner
 
     _index++;
 
-    ReadStream is = _is;
+    ReadStreamOld is = _is;
 
     if (is.readInt() != 0x504b0102) {
       throw new IOException("illegal zip format");

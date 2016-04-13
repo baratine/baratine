@@ -36,7 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.io.IoUtil;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.L10N;
@@ -56,7 +56,7 @@ public class InHttp
   
   private SettingsHttp _peerSettings = new SettingsHttp();
   
-  private ReadBuffer _is;
+  private ReadStream _is;
   private InHeader _inHeader;
   private final byte []_header = new byte[8];
   
@@ -76,7 +76,7 @@ public class InHttp
     _inHandler = inHandler;
   }
 
-  public InHttp(ReadBuffer is, InHttpHandler inHandler)
+  public InHttp(ReadStream is, InHttpHandler inHandler)
   {
     this(new DummyConnection(inHandler), inHandler);
     
@@ -103,7 +103,7 @@ public class InHttp
     _settings.setInitialWindowSize(window);
   }
   
-  void init(ReadBuffer is)
+  void init(ReadStream is)
   {
     Objects.requireNonNull(is);
     
@@ -132,7 +132,7 @@ public class InHttp
   {
     int isData = -1;
     
-    ReadBuffer is = _is;
+    ReadStream is = _is;
     byte []header = _header;
 
     if (is == null || is.available() <= 0 || _conn.isClosed()) {
@@ -166,7 +166,7 @@ public class InHttp
     return _openStream.decrementAndGet();
   }
   
-  private boolean readFrame(ReadBuffer is, byte []header)
+  private boolean readFrame(ReadStream is, byte []header)
     throws IOException
   {
     if (is == null) {
@@ -220,7 +220,7 @@ public class InHttp
   public boolean readSettings()
     throws IOException
   {
-    ReadBuffer is = _is;
+    ReadStream is = _is;
     
     int length = BitsUtil.readInt16(is);
     int type = is.read();
@@ -245,7 +245,7 @@ public class InHttp
   /**
    * settings
    */
-  private boolean readSettings(ReadBuffer is, int length)
+  private boolean readSettings(ReadStream is, int length)
     throws IOException
   {
     if (length % 5 != 0) {
@@ -272,7 +272,7 @@ public class InHttp
   /**
    * window-update
    */
-  private boolean readFlow(ReadBuffer is, int length, int streamId)
+  private boolean readFlow(ReadStream is, int length, int streamId)
     throws IOException
   {
     if (length != 4) {
@@ -301,7 +301,7 @@ public class InHttp
   /**
    * blocked
    */
-  private boolean readBlocked(ReadBuffer is, int length, int streamId)
+  private boolean readBlocked(ReadStream is, int length, int streamId)
     throws IOException
   {
     if (length != 0) {
@@ -319,7 +319,7 @@ public class InHttp
   /**
    * go-away
    */
-  private boolean readGoAway(ReadBuffer is, int length)
+  private boolean readGoAway(ReadStream is, int length)
     throws IOException
   {
     int lastStream = BitsUtil.readInt(is);
@@ -341,7 +341,7 @@ public class InHttp
   /**
    * rst_stream
    */
-  private boolean readReset(ReadBuffer is, int length, int streamId)
+  private boolean readReset(ReadStream is, int length, int streamId)
     throws IOException
   {
     int errorCode = BitsUtil.readInt(is);
@@ -373,7 +373,7 @@ public class InHttp
   /**
    * priority
    */
-  private boolean readPriority(ReadBuffer is, int length, int streamId)
+  private boolean readPriority(ReadStream is, int length, int streamId)
     throws IOException
   {
     int streamRef = BitsUtil.readInt(is);
@@ -387,7 +387,7 @@ public class InHttp
   /**
    * data (op=0)
    */
-  private boolean readData(ReadBuffer is,
+  private boolean readData(ReadStream is,
                            int length,
                            int flags,
                            int streamId)
@@ -414,10 +414,10 @@ public class InHttp
       TempBuffer tBuf;
     
       if (length < TempBuffer.SMALL_SIZE) {
-        tBuf = TempBuffer.allocateSmall();
+        tBuf = TempBuffer.createSmall();
       }
       else {
-        tBuf = TempBuffer.allocate();
+        tBuf = TempBuffer.create();
       }
       
       byte []buffer = tBuf.buffer();
@@ -477,7 +477,7 @@ public class InHttp
   /**
    * header (op=1)
    */
-  private boolean readHeader(ReadBuffer is,
+  private boolean readHeader(ReadStream is,
                              int length,
                              int flags,
                              int streamId)

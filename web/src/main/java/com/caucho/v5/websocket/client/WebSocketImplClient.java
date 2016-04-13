@@ -37,9 +37,9 @@ import com.caucho.v5.http.websocket.WebSocketBase;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
-import io.baratine.io.Buffer;
+import io.baratine.io.Bytes;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;
@@ -51,12 +51,12 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   implements WebSocket<S>
 {
   private String _uri;
-  private WriteBuffer _os;
+  private WriteStream _os;
   private Class<?> _type;
   private ServiceWebSocket<T,S> _service;
 
   public WebSocketImplClient(String uri,
-                             WriteBuffer os,
+                             WriteStream os,
                              ServiceWebSocket<T,S> service)
   {
     super(new WebSocketManager());
@@ -96,7 +96,7 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
     else if (String.class.equals(_type)) {
       readString((ServiceWebSocket) _service);
     }
-    else if (Buffer.class.equals(_type)) {
+    else if (Bytes.class.equals(_type)) {
       read((ServiceWebSocket) _service);
     }
     else {
@@ -126,14 +126,14 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   }
 
   @Override
-  public void write(Buffer data)
+  public void write(Bytes data)
   {
     // TODO Auto-generated method stub
     
   }
 
   @Override
-  public void writePart(Buffer data)
+  public void writePart(Bytes data)
   {
     // TODO Auto-generated method stub
     

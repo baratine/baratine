@@ -29,7 +29,7 @@
 
 package com.caucho.v5.http.protocol2;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 
 
 /**
@@ -37,7 +37,7 @@ import com.caucho.v5.io.ReadBuffer;
  */
 public class InHeaderRequest extends InHeader
 {
-  public InHeaderRequest(ReadBuffer is)
+  public InHeaderRequest(ReadStream is)
   {
     super(is);
   }

@@ -195,7 +195,7 @@ public class ArchiveTableKelp
     RowCursor maxCursor = _table.cursor();
     maxCursor.setKeyMax();
     
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     byte []buffer = tBuf.buffer();
     
     for (RowCursor cursor : _table.queryRange(minCursor,  maxCursor, x->true)) {

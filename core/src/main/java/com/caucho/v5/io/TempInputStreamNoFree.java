@@ -52,7 +52,7 @@ public class TempInputStreamNoFree extends InputStream {
     int value = _head.buffer()[_offset++] & 0xff;
 
     if (_head.length() <= _offset) {
-      TempBuffer next = _head.getNext();
+      TempBuffer next = _head.next();
 
       _head = next;
       _offset = 0;
@@ -76,7 +76,7 @@ public class TempInputStreamNoFree extends InputStream {
     System.arraycopy(_head.buffer(), _offset, buf, offset, sublen);
 
     if (_head.length() <= _offset + sublen) {
-      TempBuffer next = _head.getNext();
+      TempBuffer next = _head.next();
 
       _head = next;
       _offset = 0;

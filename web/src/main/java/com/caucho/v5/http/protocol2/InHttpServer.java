@@ -29,7 +29,7 @@
 
 package com.caucho.v5.http.protocol2;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 
 /**
  * InputStreamHttp reads a single HTTP frame.
@@ -42,7 +42,7 @@ public class InHttpServer extends InHttp
     super(conn, inHandler);
   }
 
-  public InHttpServer(ReadBuffer is, InHttpHandler inHandler)
+  public InHttpServer(ReadStream is, InHttpHandler inHandler)
   {
     super(is, inHandler);
   }

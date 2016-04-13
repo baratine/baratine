@@ -42,7 +42,7 @@ import com.caucho.v5.health.shutdown.ExitCode;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Version;
 import com.caucho.v5.vfs.PathImpl;
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 import com.caucho.v5.vfs.VfsOld;
 
 /**
@@ -91,7 +91,7 @@ public class ShellCommandOld extends ServerCommandBase<ArgsCli>
       PathImpl pwd = VfsOld.getPwd();
       PathImpl scriptPath = VfsOld.lookup(fileName);
 
-      try (ReadStream is = scriptPath.openRead()) {
+      try (ReadStreamOld is = scriptPath.openRead()) {
         // XXX: change to __DIR__ and __FILE__
         VfsOld.setPwd(scriptPath.getParent());
 
@@ -122,14 +122,14 @@ public class ShellCommandOld extends ServerCommandBase<ArgsCli>
 
   private void doBatch(ArgsCli args)
   {
-    try (ReadStream is = VfsOld.openRead(System.in)) {
+    try (ReadStreamOld is = VfsOld.openRead(System.in)) {
       doBatch(is, args);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void doBatch(ReadStream is, ArgsCli args)
+  private void doBatch(ReadStreamOld is, ArgsCli args)
     throws IOException
   {
     String line;

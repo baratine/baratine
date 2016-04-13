@@ -43,8 +43,8 @@ import com.caucho.v5.util.L10N;
  * g  : gigabytes
  * </pre>
  */
-public class Bytes {
-  private static final L10N L = new L10N(Bytes.class);
+public class BytesType {
+  private static final L10N L = new L10N(BytesType.class);
 
   public static final long BYTE = 1L;
   public static final long KILOBYTE = 1024;
@@ -55,11 +55,11 @@ public class Bytes {
 
   private long _bytes;
 
-  public Bytes()
+  public BytesType()
   {
   }
 
-  public Bytes(long bytes)
+  public BytesType(long bytes)
   {
     _bytes = bytes;
   }

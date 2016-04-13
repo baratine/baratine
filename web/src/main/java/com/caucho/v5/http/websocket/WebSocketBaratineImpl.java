@@ -44,7 +44,7 @@ import com.caucho.v5.http.protocol.OutHttp;
 import com.caucho.v5.http.protocol.OutHttpProxy;
 import com.caucho.v5.http.protocol.OutResponseBase;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.Hex;
@@ -56,7 +56,8 @@ import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
-import io.baratine.io.Buffer;
+import io.baratine.io.Bytes;
+import io.baratine.io.BytesFactory;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpStatus;
@@ -81,7 +82,7 @@ public class WebSocketBaratineImpl<T,S>
   private InWebSocket _inBinary = new InWebSocketSkip();
   private InWebSocket _inText = new InWebSocketSkip();
   
-  private char []_charBuf = new char[256];
+  //private char []_charBuf = new char[256];
 
   private OutResponseBase _os;
 
@@ -129,7 +130,7 @@ public class WebSocketBaratineImpl<T,S>
     else if (String.class.equals(type)) {
       readString((ServiceWebSocket) service);
     }
-    else if (Buffer.class.equals(type)) {
+    else if (Bytes.class.equals(type)) {
       read((ServiceWebSocket) service);
     }
     else {
@@ -156,57 +157,57 @@ public class WebSocketBaratineImpl<T,S>
     String uri = req.uri();
 
     if (! "GET".equals(method)) {
-      req.sendError(METHOD_NOT_ALLOWED);
+      req.halt(METHOD_NOT_ALLOWED);
 
       throw new IllegalStateException(L.l("HTTP Method must be 'GET', because the WebSocket protocol requires 'GET'.\n  remote-IP: {0}",
-                                          req.addressRemote()));
+                                          req.ip()));
     }
 
     String connection = req.header("Connection");
     String upgrade = req.header("Upgrade");
 
     if (! "websocket".equalsIgnoreCase(upgrade)) {
-      req.sendError(HttpStatus.BAD_REQUEST);
+      req.halt(HttpStatus.BAD_REQUEST);
 
       throw new IllegalStateException(L.l("HTTP Upgrade header '{0}' must be 'WebSocket', because the WebSocket protocol requires an Upgrade: WebSocket header.\n  remote-IP: {1}",
                                           upgrade,
-                                          req.addressRemote()));
+                                          req.ip()));
     }
 
     if (connection == null
         || connection.toLowerCase().indexOf("upgrade") < 0) {
-      req.sendError(HttpStatus.BAD_REQUEST);
+      req.halt(HttpStatus.BAD_REQUEST);
 
       throw new IllegalStateException(L.l("HTTP Connection header '{0}' must be 'Upgrade', because the WebSocket protocol requires a Connection: Upgrade header.\n  remote-IP: {1}",
                                           connection,
-                                          req.addressRemote()));
+                                          req.ip()));
     }
 
     String key = req.header("Sec-WebSocket-Key");
 
     if (key == null) {
-      req.sendError(HttpStatus.BAD_REQUEST);
+      req.halt(HttpStatus.BAD_REQUEST);
 
       throw new IllegalStateException(L.l("HTTP Sec-WebSocket-Key header is required, because the WebSocket protocol requires an Origin header.\n  remote-IP: {0}",
-                                          req.addressRemote()));
+                                          req.ip()));
     }
     else if (key.length() != 24) {
-      req.sendError(HttpStatus.BAD_REQUEST);
+      req.halt(HttpStatus.BAD_REQUEST);
 
       throw new IllegalStateException(L.l("HTTP Sec-WebSocket-Key header is invalid '{0}' because it's not a 16-byte value.\n  remote-IP: {1}",
                                           key,
-                                          req.addressRemote()));
+                                          req.ip()));
     }
 
     String version = req.header("Sec-WebSocket-Version");
 
     String requiredVersion = WebSocketConstants.VERSION;
     if (! requiredVersion.equals(version)) {
-      req.sendError(HttpStatus.BAD_REQUEST);
+      req.halt(HttpStatus.BAD_REQUEST);
 
       throw new IllegalStateException(L.l("HTTP Sec-WebSocket-Version header with value '{0}' is required, because the WebSocket protocol requires an Sec-WebSocket-Version header.\n  remote-IP: {1}",
                                           requiredVersion,
-                                          req.addressRemote()));
+                                          req.ip()));
     }
 
     String extensions = req.header("Sec-WebSocket-Extensions");
@@ -243,7 +244,7 @@ public class WebSocketBaratineImpl<T,S>
       req.header("Sec-WebSocket-Extensions", sb.toString());
     }
 
-    req.contentLength(0);
+    req.length(0);
 
     FrameInputStream fIs;
 
@@ -342,7 +343,7 @@ public class WebSocketBaratineImpl<T,S>
   
   private void toTextFromIdle(int length)
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     _tBuf = tBuf;
     
     if (length >> 2 < 0x7d) {
@@ -358,7 +359,7 @@ public class WebSocketBaratineImpl<T,S>
   
   private void toBinaryFromIdle(int length)
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     _tBuf = tBuf;
     
     if (length >> 2 < 0x7d) {
@@ -375,19 +376,20 @@ public class WebSocketBaratineImpl<T,S>
   @Override
   protected void send(TempBuffer tBuf)
   {
-    _outProxy.writeFirst(_outWriter, tBuf, tBuf.length(), false);
+    _outProxy.write(_outWriter, tBuf, false);
   }
   
   @Override
   protected void sendEnd(TempBuffer tBuf)
   {
-    _outProxy.writeFirst(_outWriter, tBuf, tBuf.length(), true);
+    _outProxy.write(_outWriter, tBuf, true);
   }
   
   //
   // impl
   //
   
+  @Override
   public StateConnection service()
   {
     if (readFrame()) {
@@ -451,9 +453,9 @@ public class WebSocketBaratineImpl<T,S>
   
   private static class InReadBinary implements InWebSocket
   {
-    private Pipe<Buffer> _out;
+    private Pipe<Bytes> _out;
     
-    private InReadBinary(Pipe<Buffer> out)
+    private InReadBinary(Pipe<Bytes> out)
     {
       Objects.requireNonNull(out);
       
@@ -464,7 +466,8 @@ public class WebSocketBaratineImpl<T,S>
     public void read(FrameInputStream fIs)
       throws IOException
     {
-      Buffer buffer = Buffer.create();
+      // XXX: actual factory
+      Bytes buffer = BytesFactory.factory().create();
 
       System.out.println("INR: " + _out);
       fIs.readBuffer(buffer);
@@ -536,9 +539,10 @@ public class WebSocketBaratineImpl<T,S>
     }
 
     @Override
-    public Buffer binary()
+    public Bytes binary()
     {
-      return Buffer.create(_data);
+      // bytes factory
+      return BytesFactory.factory().create(_data);
     }
     
     public String toString()
@@ -664,13 +668,14 @@ public class WebSocketBaratineImpl<T,S>
   private class OutWebSocketWriter implements OutHttp
   {
     @Override
-    public boolean writeFirst(WriteBuffer out, TempBuffer buffer, long length,
-                           boolean isEnd)
+    public boolean write(WriteStream out,
+                         Bytes data,
+                         boolean isEnd)
     {
       if (out != null) {
         try {
-          out.write(buffer.buffer(), 0, buffer.length());
-          out.flush(); // xxx:
+          out.write(data);
+          // out.flush(); // xxx:
         } catch (Exception e) {
           log.log(Level.WARNING, e.toString(), e);
         }
@@ -680,14 +685,7 @@ public class WebSocketBaratineImpl<T,S>
     }
 
     @Override
-    public boolean writeNext(WriteBuffer out, TempBuffer buffer, boolean isEnd)
-    {
-      System.out.println("NEXT: " + out);
-      return false;
-    }
-
-    @Override
-    public void disconnect(WriteBuffer out)
+    public void disconnect(WriteStream out)
     {
     }
 

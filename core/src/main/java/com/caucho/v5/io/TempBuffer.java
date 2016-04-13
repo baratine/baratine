@@ -29,15 +29,19 @@
 
 package com.caucho.v5.io;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.util.FreeRing;
 
+import io.baratine.io.Bytes;
+
 /**
  * Pooled temporary byte buffer.
  */
-public class TempBuffer implements java.io.Serializable
+public class TempBuffer implements java.io.Serializable, Bytes
 {
   private static Logger _log;
 
@@ -51,8 +55,8 @@ public class TempBuffer implements java.io.Serializable
   
   private TempBuffer _next;
   private final byte []_buf;
-  private int _offset;
-  private int _length;
+  private int _tail;
+  private int _head;
   private int _bufferCount;
 
   // validation of allocate/free
@@ -78,25 +82,25 @@ public class TempBuffer implements java.io.Serializable
   /**
    * Allocate a TempBuffer, reusing one if available.
    */
-  public static TempBuffer allocate()
+  public static TempBuffer create()
   {
-    return TempBufferStandard.allocate();
+    return TempBufferStandard.create();
   }
 
   /**
    * Allocate a TempBuffer, reusing one if available.
    */
-  public static TempBuffer allocateSmall()
+  public static TempBuffer createSmall()
   {
-    return TempBufferSmall.allocate();
+    return TempBufferSmall.create();
   }
 
   /**
    * Allocate a TempBuffer, reusing one if available.
    */
-  public static TempBuffer allocateLarge()
+  public static TempBuffer createLarge()
   {
-    return TempBufferLarge.allocate();
+    return TempBufferLarge.create();
   }
 
   /**
@@ -111,8 +115,8 @@ public class TempBuffer implements java.io.Serializable
     _isFree = false;
     _next = null;
 
-    _offset = 0;
-    _length = 0;
+    _tail = 0;
+    _head = 0;
     _bufferCount = 0;
     
   }
@@ -124,8 +128,8 @@ public class TempBuffer implements java.io.Serializable
   {
     _next = null;
 
-    _offset = 0;
-    _length = 0;
+    _tail = 0;
+    _head = 0;
     _bufferCount = 0;
   }
 
@@ -142,7 +146,7 @@ public class TempBuffer implements java.io.Serializable
    */
   public final int length()
   {
-    return _length;
+    return _head - _tail;
   }
 
   /**
@@ -150,25 +154,25 @@ public class TempBuffer implements java.io.Serializable
    */
   public final void length(int length)
   {
-    _length = length;
+    _head = length;
   }
 
-  public final int getCapacity()
+  public final int capacity()
   {
     return _buf.length;
   }
 
-  public int getAvailable()
+  public int available()
   {
-    return _buf.length - _length;
+    return _buf.length - _head;
   }
 
-  public final TempBuffer getNext()
+  public final TempBuffer next()
   {
     return _next;
   }
 
-  public final void setNext(TempBuffer next)
+  public final void next(TempBuffer next)
   {
     _next = next;
   }
@@ -183,19 +187,80 @@ public class TempBuffer implements java.io.Serializable
     _bufferCount = count;
   }
 
-  public int write(byte []buf, int offset, int length)
+  @Override
+  public Bytes write(byte[] buffer, int offset, int length)
   {
     byte []thisBuf = _buf;
-    int thisLength = _length;
+    int thisLength = _head;
 
-    if (thisBuf.length - thisLength < length)
-      length = thisBuf.length - thisLength;
+    /*
+    if (thisBuf.length - thisLength < length) {
+      throw new IllegalArgumentException();
+    }
+    */
 
-    System.arraycopy(buf, offset, thisBuf, thisLength, length);
+    System.arraycopy(buffer, offset, thisBuf, thisLength, length);
 
-    _length = thisLength + length;
+    _head = thisLength + length;
 
-    return length;
+    return this;
+  }
+
+  @Override
+  public Bytes set(int pos, byte[] buffer, int offset, int length)
+  {
+    System.arraycopy(buffer, offset, _buf, pos, length);
+    
+    return this;
+  }
+
+  @Override
+  public Bytes write(InputStream is)
+    throws IOException
+  {
+    while (true) {
+      int length = _head;
+      int sublen = _buf.length - length;
+    
+      if (sublen <= 0) {
+        throw new IllegalStateException();
+      }
+    
+      sublen = is.read(_buf, length, sublen);
+    
+      if (sublen < 0) {
+        return this;
+      }
+    
+      _head = length + sublen;
+    }
+  }
+
+  @Override
+  public Bytes get(int pos, byte[] buffer, int offset, int length)
+  {
+    if (length < _head - pos) {
+      throw new IllegalArgumentException();
+    }
+    
+    System.arraycopy(_buf, pos, buffer, offset, length);
+    
+    return this;
+  }
+
+  @Override
+  public int read(byte[] buffer, int offset, int length)
+  {
+    int tail = _tail;
+    
+    int sublen = Math.min(_head - tail, length);
+    
+    System.arraycopy(_buf, tail, buffer, offset, sublen);
+    
+    _tail += sublen;
+    
+    return sublen > 0 ? sublen : -1;
+
   }
   
   public void freeSelf()

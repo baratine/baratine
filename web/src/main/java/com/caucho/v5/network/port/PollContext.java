@@ -35,10 +35,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.io.IoUtil;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.SocketSystem;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.port.PollTcpManager.PollResult;
 import com.caucho.v5.util.CurrentTime;
 
@@ -54,8 +54,8 @@ public class PollContext
   implements PollController
 {
   private SocketBar _socket;
-  private final ReadBuffer _is;
-  private final WriteBuffer _os;
+  private final ReadStream _is;
+  private final WriteStream _os;
   private final Runnable _task;
   private final Executor _executor;
   private final PollTcpManager _systemSelectManager;
@@ -98,8 +98,8 @@ public class PollContext
   {
     _socket = networkSystem.createSocket();
 
-    _is = new ReadBuffer();
-    _os = new WriteBuffer();
+    _is = new ReadStream();
+    _os = new WriteStream();
 
     _task = task;
     _executor = executor;
@@ -121,12 +121,12 @@ public class PollContext
     return _socket;
   }
 
-  public WriteBuffer getWriteStream()
+  public WriteStream getWriteStream()
   {
     return _os;
   }
 
-  public ReadBuffer getReadStream()
+  public ReadStream getReadStream()
   {
     return _is;
   }

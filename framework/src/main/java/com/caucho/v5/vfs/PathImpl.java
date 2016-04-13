@@ -1169,7 +1169,7 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
   }
 
   @Override
-  public final ReadStream inputStream() throws IOException
+  public final ReadStreamOld inputStream() throws IOException
   {
     return openRead();
   }
@@ -1177,26 +1177,26 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
   /**
    * Opens a ReadStream for reading.
    */
-  public final ReadStream openRead() throws IOException
+  public final ReadStreamOld openRead() throws IOException
   {
     clearStatusCache();
 
     StreamImpl impl = openReadImpl();
     //impl.setPath(this);
 
-    return new ReadStream(impl);
+    return new ReadStreamOld(impl);
   }
 
   /**
    * Opens a WriteStream for writing.
    */
-  public final WriteStream openWrite() throws IOException
+  public final WriteStreamOld openWrite() throws IOException
   {
     clearStatusCache();
 
     StreamImpl impl = openWriteImpl();
     //impl.setPath(this);
-    return new WriteStream(impl);
+    return new WriteStreamOld(impl);
   }
 
   /**
@@ -1223,13 +1223,13 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
     StreamImpl impl = openReadWriteImpl();
     //impl.setPath(this);
 
-    WriteStream writeStream = new WriteStream(impl);
-    ReadStream readStream;
+    WriteStreamOld writeStream = new WriteStreamOld(impl);
+    ReadStreamOld readStream;
 
     if (isAutoFlush)
-      readStream = new ReadStream(impl);
+      readStream = new ReadStreamOld(impl);
     else
-      readStream = new ReadStream(impl);
+      readStream = new ReadStreamOld(impl);
 
     return new ReadWritePair(readStream, writeStream);
   }
@@ -1243,7 +1243,7 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
    * @param is pre-allocated ReadStream to be initialized
    * @param os pre-allocated WriteStream to be initialized
    */
-  public void openReadWrite(ReadStream is, WriteStream os) throws IOException
+  public void openReadWrite(ReadStreamOld is, WriteStreamOld os) throws IOException
   {
     clearStatusCache();
 
@@ -1257,12 +1257,12 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
   /**
    * Opens a stream for appending.
    */
-  public WriteStream openAppend() throws IOException
+  public WriteStreamOld openAppend() throws IOException
   {
     clearStatusCache();
 
     StreamImpl impl = openAppendImpl();
-    return new WriteStream(impl);
+    return new WriteStreamOld(impl);
   }
   
   public boolean isMmapSupported()
@@ -1311,7 +1311,7 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
     synchronized (LOCK) {
       if (! exists()) {
         clearStatusCache();
-        WriteStream s = openWrite();
+        WriteStreamOld s = openWrite();
         s.close();
         return true;
       }
@@ -1406,7 +1406,7 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
     throws IOException
   {
     StreamImpl is = openReadImpl();
-    TempBuffer tempBuffer = TempBuffer.allocate();
+    TempBuffer tempBuffer = TempBuffer.create();
     try {
       byte []buffer = tempBuffer.buffer();
       int length = buffer.length;
@@ -1495,7 +1495,7 @@ public abstract class PathImpl implements Path, Source //, Comparable<PathImpl> 
         return digest;
       }
       else if (canRead()) {
-        ReadStream is = openRead();
+        ReadStreamOld is = openRead();
 
         try {
           long digest = 0x1;

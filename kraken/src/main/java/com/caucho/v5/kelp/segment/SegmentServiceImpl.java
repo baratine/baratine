@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.TempOutputStream;
 import com.caucho.v5.kelp.TableKelp;
@@ -419,7 +419,7 @@ public class SegmentServiceImpl
   
   private long writeTemp(OutStore sOut, long offset, TempBuffer tBuf)
   {
-    for (; tBuf != null; tBuf = tBuf.getNext()) {
+    for (; tBuf != null; tBuf = tBuf.next()) {
       byte []buffer = tBuf.buffer();
       int sublen = Math.min(buffer.length, tBuf.length());
       
@@ -466,7 +466,7 @@ public class SegmentServiceImpl
   
   private void writeMetaTable(TableEntry entry)
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     byte []buffer = tBuf.buffer();
     
     int offset = 0;
@@ -496,7 +496,7 @@ public class SegmentServiceImpl
   
   private void writeMetaSegment(SegmentExtent extent)
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     byte []buffer = tBuf.buffer();
     
     int offset = 0;
@@ -529,7 +529,7 @@ public class SegmentServiceImpl
 
   private void writeMetaContinuation()
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     byte []buffer = tBuf.buffer();
     
     int metaLength = _segmentMeta[0].getSize();
@@ -572,7 +572,7 @@ public class SegmentServiceImpl
     SegmentExtent metaExtentInit = new SegmentExtent(0, 0, META_SEGMENT_SIZE);
     
     try (InSegment reader = openRead(metaExtentInit)) {
-      ReadBuffer is = reader.in();
+      ReadStream is = reader.in();
       
       if (! readMetaDataHeader(is)) {
         return false;
@@ -594,7 +594,7 @@ public class SegmentServiceImpl
     
     while (true) {
       try (InSegment reader = openRead(metaExtent)) {
-        ReadBuffer is = reader.in();
+        ReadStream is = reader.in();
         
         if (metaExtent.getAddress() == 0) {
           is.setPosition(META_OFFSET);
@@ -614,7 +614,7 @@ public class SegmentServiceImpl
     }
   }
   
-  private boolean readMetaDataHeader(ReadBuffer is)
+  private boolean readMetaDataHeader(ReadStream is)
     throws IOException
   {
     long magic = BitsUtil.readLong(is);
@@ -678,7 +678,7 @@ public class SegmentServiceImpl
     return true;
   }
   
-  private boolean readMetaDataEntry(ReadBuffer is)
+  private boolean readMetaDataEntry(ReadStream is)
     throws IOException
   {
     int crc = _nonce;
@@ -707,7 +707,7 @@ public class SegmentServiceImpl
     return true;
   }
   
-  private boolean readMetaTable(ReadBuffer is, int crc)
+  private boolean readMetaTable(ReadStream is, int crc)
     throws IOException
   {
     byte []key = new byte[TABLE_KEY_SIZE];
@@ -741,7 +741,7 @@ public class SegmentServiceImpl
     return true;
   }
   
-  private boolean readMetaSegment(ReadBuffer is, int crc)
+  private boolean readMetaSegment(ReadStream is, int crc)
     throws IOException
   {
     long value = BitsUtil.readLong(is);
@@ -767,7 +767,7 @@ public class SegmentServiceImpl
     return true;
   }
   
-  private boolean readMetaContinuation(ReadBuffer is, int crc)
+  private boolean readMetaContinuation(ReadStream is, int crc)
     throws IOException
   {
     long value = BitsUtil.readLong(is);
@@ -824,7 +824,7 @@ public class SegmentServiceImpl
       
       long addressBlock = address + length - BLOCK_SIZE;
       
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
       byte []buffer = tBuf.buffer();
       
       int offset = 0;

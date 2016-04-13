@@ -81,9 +81,9 @@ import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.LruCache;
 import com.caucho.v5.util.Murmur32;
 import com.caucho.v5.vfs.Crc64OutputStream;
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Root of a filesystem. Each filesystem belongs to a pod and has a 
@@ -1074,7 +1074,7 @@ public class FileServiceRootImpl
   
   private List<String> readDirFile(InputStream is)
   {
-    try (ReadStream in = VfsOld.openRead(is)) {
+    try (ReadStreamOld in = VfsOld.openRead(is)) {
       JsonReader jIn = new JsonReader(in.getReader());
       
       Object value = jIn.readObject();
@@ -1098,7 +1098,7 @@ public class FileServiceRootImpl
     TempOutputStream tOs = new TempOutputStream();
     Crc64OutputStream crcOut = new Crc64OutputStream(tOs);
     
-    try (WriteStream out = VfsOld.openWrite(crcOut)) {
+    try (WriteStreamOld out = VfsOld.openWrite(crcOut)) {
       out.setEncoding("utf-8");
       
       out.print("[");

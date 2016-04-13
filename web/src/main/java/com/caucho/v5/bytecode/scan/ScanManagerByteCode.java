@@ -45,7 +45,7 @@ import java.util.zip.ZipInputStream;
 
 import com.caucho.v5.bytecode.ByteCodeClassMatcher;
 import com.caucho.v5.bytecode.ByteCodeClassScanner;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.ModulePrivate;
@@ -173,7 +173,7 @@ public class ScanManagerByteCode {
     
     matcher.init(root, path);
 
-    try (ReadBuffer is = new ReadBuffer(Files.newInputStream(path))) {
+    try (ReadStream is = new ReadStream(Files.newInputStream(path))) {
       classScanner.init(path.toString(), is, matcher);
 
       classScanner.scan();
@@ -284,7 +284,7 @@ public class ScanManagerByteCode {
           matcher.init(); // path, path);
           
           try (InputStream isEntry = new InputStreamEntry(zIs)) {
-            try (ReadBuffer is = new ReadBuffer(isEntry)) {
+            try (ReadStream is = new ReadStream(isEntry)) {
               classScanner.init(entryName, is, matcher);
 
               classScanner.scan();

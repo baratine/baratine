@@ -46,7 +46,7 @@ import com.caucho.v5.io.Vfs;
 import com.caucho.v5.log.impl.LogHandlerConfig;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Runtime environment for the command-line
@@ -54,11 +54,11 @@ import com.caucho.v5.vfs.WriteStream;
 public class EnvCliOld
 {
   private TableCli _envTable = new TableCli();
-  private WriteStream _out;
+  private WriteStreamOld _out;
   
   private boolean _isEmbedded;
   
-  public WriteStream getOut()
+  public WriteStreamOld getOut()
   {
     if (_out == null) {
       _out = VfsOld.openWrite(System.out);
@@ -70,9 +70,9 @@ public class EnvCliOld
   }
   
   
-  public WriteStream setOut(WriteStream out)
+  public WriteStreamOld setOut(WriteStreamOld out)
   {
-    WriteStream oldOut = _out;
+    WriteStreamOld oldOut = _out;
     
     _out = out;
     

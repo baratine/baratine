@@ -48,7 +48,7 @@ public class InRawH3Impl implements InRawH3
     Objects.requireNonNull(is);
     _is = is;
     
-    _tBuf = TempBuffer.allocate();
+    _tBuf = TempBuffer.create();
     _buffer = _tBuf.buffer();
     _length = 0;
   }

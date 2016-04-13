@@ -32,7 +32,7 @@ package com.caucho.v5.http.protocol2;
 import java.io.IOException;
 
 import com.caucho.v5.amp.deliver.MessageDeliver;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 
 /**
@@ -47,7 +47,7 @@ public class MessageHttp implements MessageDeliver<MessageHttp>
    * @param header temp buffer for the frame header
    * @param writerHttp the writer context
    */
-  public void deliver(WriteBuffer os,
+  public void deliver(WriteStream os,
                       OutHttp writerHttp)
     throws IOException
   {

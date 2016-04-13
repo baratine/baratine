@@ -34,13 +34,13 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Utf8Util;
 import com.caucho.v5.websocket.io.CloseReason.CloseCode;
 import com.caucho.v5.websocket.io.CloseReason.CloseCodes;
 
-import io.baratine.io.Buffer;
+import io.baratine.io.Bytes;
 
 /**
  * WebSocketInputStream reads a single WebSocket packet.
@@ -71,7 +71,7 @@ public class FrameInputStream
   //private WebSocketReader _textIn;
   private WebSocketInputStream _binaryIn;
   
-  private ReadBuffer _is;
+  private ReadStream _is;
   
   /*
   private byte []_byteBuffer;
@@ -92,7 +92,7 @@ public class FrameInputStream
   private int _frameOpInit;
   private CloseReason _closeReason;
   
-  public void init(FrameListener listener, ReadBuffer is)
+  public void init(FrameListener listener, ReadStream is)
   {
     Objects.requireNonNull(is);
     
@@ -635,7 +635,7 @@ public class FrameInputStream
     return sublen;
   }
   
-  public boolean readBuffer(Buffer buffer)
+  public boolean readBuffer(Bytes buffer)
     throws IOException
   {
     byte []frameBuffer = _is.buffer();
@@ -647,7 +647,7 @@ public class FrameInputStream
       int sublen = (int) Math.min(bufferLength - bufferOffset, frameLength);
       
       if (sublen > 0) {
-        buffer.addBytes(frameBuffer, bufferOffset, sublen);
+        buffer.write(frameBuffer, bufferOffset, sublen);
         bufferOffset += sublen;
         frameLength -= sublen;
       }
@@ -851,7 +851,7 @@ public class FrameInputStream
 
   public void close()
   {
-    ReadBuffer is = _is;
+    ReadStream is = _is;
     _is = null;
   }
   

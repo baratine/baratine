@@ -29,8 +29,8 @@
 
 package com.caucho.v5.network.balance;
 
-import com.caucho.v5.vfs.ReadStream;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.ReadStreamOld;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Defines a connection to the client.
@@ -44,12 +44,12 @@ public interface ClientSocketApi {
   /**
    * Returns the input stream.
    */
-  public ReadStream getInputStream();
+  public ReadStreamOld getInputStream();
 
   /**
    * Returns the write stream.
    */
-  public WriteStream getOutputStream();
+  public WriteStreamOld getOutputStream();
 
   /**
    * Returns the idle start time, 

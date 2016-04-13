@@ -117,8 +117,8 @@ public class VfsStreamOld extends StreamImpl {
   public static ReadWritePair openReadWrite(InputStream is, OutputStream os)
   {
     VfsStreamOld s = new VfsStreamOld(is, os);
-    WriteStream writeStream = new WriteStream(s);
-    ReadStream readStream = new ReadStream(s);
+    WriteStreamOld writeStream = new WriteStreamOld(s);
+    ReadStreamOld readStream = new ReadStreamOld(s);
     return new ReadWritePair(readStream, writeStream);
   }
 
@@ -129,22 +129,22 @@ public class VfsStreamOld extends StreamImpl {
    *
    * @return the new ReadStream
    */
-  public static ReadStream openRead(InputStream is)
+  public static ReadStreamOld openRead(InputStream is)
   {
     VfsStreamOld s = new VfsStreamOld(is, null);
-    return new ReadStream(s);
+    return new ReadStreamOld(s);
   }
 
-  public static ReadStream openRead(InputStream is, WriteStream ws)
+  public static ReadStreamOld openRead(InputStream is, WriteStreamOld ws)
   {
     VfsStreamOld s = new VfsStreamOld(is, null);
-    return new ReadStream(s);
+    return new ReadStreamOld(s);
   }
 
-  public static WriteStream openWrite(OutputStream os)
+  public static WriteStreamOld openWrite(OutputStream os)
   {
     VfsStreamOld s = new VfsStreamOld(null, os);
-    return new WriteStream(s);
+    return new WriteStreamOld(s);
   }
 
   public boolean canRead()

@@ -34,7 +34,7 @@ import java.util.Map;
 
 public interface MultiMap<K,V> extends Map<K,List<V>>
 {
-  default V getFirst(String key)
+  default V first(String key)
   {
     List<V> list = get(key);
     

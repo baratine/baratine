@@ -260,7 +260,7 @@ public class SocketStream extends StreamImpl
         return -1;
       }
       else {
-        return ReadBuffer.READ_TIMEOUT;
+        return ReadStream.READ_TIMEOUT;
       }
     } finally {
       s.setSoTimeout(oldTimeout);

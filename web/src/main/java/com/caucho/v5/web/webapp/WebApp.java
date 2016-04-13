@@ -30,7 +30,6 @@
 package com.caucho.v5.web.webapp;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,11 +42,9 @@ import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.loader.DynamicClassLoader;
 import com.caucho.v5.loader.EnvironmentClassLoader;
-import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.config.Config;
-import io.baratine.vault.IdAsset;
+import io.baratine.io.BytesFactory;
 
 /**
  * Baratine's web-app handle. 
@@ -65,7 +62,9 @@ public class WebApp
   
   private InvocationRouter<InvocationBaratine> _router;
 
-  private ServicesAmp _ampManager;
+  private ServicesAmp _services;
+  
+  private BytesFactory _buffers;
 
   private InjectorAmp _injectManager;
 
@@ -102,7 +101,7 @@ public class WebApp
     // initialize context
     injectBuilder.get();
     
-    _ampManager = builder.serviceBuilder().getRaw();
+    _services = builder.serviceBuilder().getRaw();
     
     builder.build(this);
     
@@ -118,7 +117,7 @@ public class WebApp
     
     try {
       //_ampManager = builder.serviceBuilder().getRaw();
-      _ampManager = builder.serviceBuilder().get();
+      _services = builder.serviceBuilder().get();
       
       //Amp.setContextManager(_ampManager);
       
@@ -129,15 +128,17 @@ public class WebApp
       throw e;
     }
     
+    _buffers = builder.buffers();
+    Objects.requireNonNull(_buffers);
     //builder.buildServices(_ampManager);
     
     _router = builder.buildRouter(this);
     Objects.requireNonNull(_router);
     
-    _ampManager = builder.serviceBuilder().start();
+    _services = builder.serviceBuilder().start();
     
     int prime = 287093;
-    _idGenerator = new IdAssetGenerator(_ampManager.node().nodeIndex(),
+    _idGenerator = new IdAssetGenerator(_services.node().nodeIndex(),
                                         prime);
                                         
     _bodyResolver = builder.bodyResolver();
@@ -185,9 +186,14 @@ public class WebApp
   }
 
   // @Override
-  public ServicesAmp serviceManager()
+  public ServicesAmp services()
   {
-    return _ampManager;
+    return _services;
+  }
+
+  public BytesFactory buffers()
+  {
+    return _buffers;
   }
 
   public BodyResolver bodyResolver()

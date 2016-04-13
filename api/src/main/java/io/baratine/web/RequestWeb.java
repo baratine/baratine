@@ -29,18 +29,17 @@
 
 package io.baratine.web;
 
-import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.Map;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
-import io.baratine.io.Buffer;
+import io.baratine.io.BytesFactory;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
+import io.baratine.service.Services;
 
-public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
+public interface RequestWeb extends OutWeb, Result<Object>
 {
   String protocol();
   String version();
@@ -55,7 +54,7 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
   
   String query();
   String query(String key);
-  Map<String,List<String>> queryMap();
+  MultiMap<String,String> queryMap();
   
   String header(String string);
   String cookie(String name);
@@ -77,12 +76,8 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
   
   <X> X body(Class<X> type);
 
-  //<X> void body(BodyReader<X> reader, Result<X> result);
-
   <X> void body(Class<X> type,
                 Result<X> result);
-
-  // InputStream inputStream();
 
   //
   // response
@@ -133,13 +128,18 @@ public interface RequestWeb extends OutWeb<Buffer>, Result<Object>
   // injection
   
   Injector injector();
-  // <X> X instance(Class<X> type, Annotation ...anns);
-
-  //ServiceManager services();
+  
+  // services
+  
+  Services services();
   
   ServiceRef service(String address);
   <X> X service(Class<X> type);
   <X> X service(Class<X> type, String id);
+  
+  // buffers
+  
+  BytesFactory buffers();
   
   public interface SecureWeb
   {

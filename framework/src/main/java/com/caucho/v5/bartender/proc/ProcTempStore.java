@@ -32,7 +32,7 @@ package com.caucho.v5.bartender.proc;
 import java.io.IOException;
 
 import com.caucho.v5.baratine.ServiceApi;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.store.temp.TempStore;
 
@@ -58,7 +58,7 @@ public class ProcTempStore extends ProcFileBase
   }
   
   @Override
-  protected boolean fillRead(WriteBuffer out)
+  protected boolean fillRead(WriteStream out)
     throws IOException
   {
     out.print("{");

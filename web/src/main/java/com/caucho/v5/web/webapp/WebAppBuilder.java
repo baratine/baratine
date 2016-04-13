@@ -78,11 +78,11 @@ import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
+import io.baratine.io.BytesFactory;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 import io.baratine.vault.Vault;
-import io.baratine.web.CrossOrigin;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.IncludeWeb;
 import io.baratine.web.InstanceBuilder;
@@ -279,7 +279,7 @@ public class WebAppBuilder
     
     _injectBuilder.provider(()->webApp.config()).to(Config.class);
     _injectBuilder.provider(()->webApp.inject()).to(Injector.class);
-    _injectBuilder.provider(()->webApp.serviceManager()).to(Services.class);
+    _injectBuilder.provider(()->webApp.services()).to(Services.class);
 
     generateFromFactory();
 
@@ -334,6 +334,11 @@ public class WebAppBuilder
     return builder;
   }
 
+  public BytesFactory buffers()
+  {
+    return BytesFactory.factory();
+  }
+
   private void configException(Throwable e)
   {
     if (_configException == null) {
@@ -382,7 +387,7 @@ public class WebAppBuilder
 
     ArrayList<RouteMap> mapList = new ArrayList<>();
 
-    ServicesAmp manager = webApp.serviceManager();
+    ServicesAmp manager = webApp.services();
 
     ServiceRefAmp serviceRef = manager.newService(new RouteService()).ref();
     

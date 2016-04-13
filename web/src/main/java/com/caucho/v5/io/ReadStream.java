@@ -51,10 +51,10 @@ import com.caucho.v5.util.CurrentTime;
  * Specialized applications, like servers, need the capability of recycling
  * streams.
  */
-public final class ReadBuffer extends InputStream
+public final class ReadStream extends InputStream
 {
   private static final Logger log
-    = Logger.getLogger(ReadBuffer.class.getName());
+    = Logger.getLogger(ReadStream.class.getName());
   
   public static int ZERO_COPY_SIZE = 1024;
   public static final int READ_TIMEOUT = -4;
@@ -78,9 +78,9 @@ public final class ReadBuffer extends InputStream
    * @param source Underlying source for the stream.
    * @param sibling Sibling write stream.
    */
-  public ReadBuffer()
+  public ReadStream()
   {
-    _tempRead = TempBuffer.allocate();
+    _tempRead = TempBuffer.create();
     _readBuffer = _tempRead.buffer();
   }
 
@@ -90,7 +90,7 @@ public final class ReadBuffer extends InputStream
    * @param source Underlying source for the stream.
    * @param sibling Sibling write stream.
    */
-  public ReadBuffer(InputStream is)
+  public ReadStream(InputStream is)
   {
     this();
     
@@ -103,7 +103,7 @@ public final class ReadBuffer extends InputStream
    * @param source Underlying source for the stream.
    * @param sibling Sibling write stream.
    */
-  public ReadBuffer(StreamImpl source)
+  public ReadStream(StreamImpl source)
   {
     this();
     

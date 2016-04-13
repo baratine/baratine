@@ -63,7 +63,7 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Version;
 import com.caucho.v5.vfs.PathImpl;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 import io.baratine.config.Config;
 
@@ -140,7 +140,7 @@ public class ArgsBase
     return _env;
   }
   
-  public WriteStream getOut()
+  public WriteStreamOld getOut()
   {
     return envCli().getOut();
   }

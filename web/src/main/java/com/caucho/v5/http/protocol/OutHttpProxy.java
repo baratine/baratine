@@ -31,32 +31,22 @@ package com.caucho.v5.http.protocol;
 
 import com.caucho.v5.io.TempBuffer;
 
+import io.baratine.io.Bytes;
+
 /**
  * Proxy writer interface to the http response.
  */
 public interface OutHttpProxy
 {
   /**
-   * Writes the first buffer for a http response. The first buffer
+   * Writes a buffer for a http response. The first buffer
    * will trigger the headers to be written.
    * 
-   * If the request is not the final request, free the buffer.
-   * 
-   * @param buffer the temp buffer with data
-   * @param length the length of the data in the buffer
+   * @param outHttp the http output writer
+   * @param data the chunk of data
    * @param isEnd true for the final result
    */
-  void writeFirst(OutHttp outHttp, TempBuffer head, long length, boolean isEnd);
-  
-  /**
-   * Writes a following buffer for a http response.
-   * 
-   * If the request is not the final request, free the buffer.
-   * 
-   * @param buffer the temp buffer with data
-   * @param isEnd true for the final result
-   */
-  void writeNext(OutHttp outHttp, TempBuffer head, boolean isEnd);
+  void write(OutHttp outHttp, Bytes data, boolean isEnd);
   
   /**
    * Disconnect the connection

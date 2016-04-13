@@ -103,7 +103,7 @@ public class OutputStreamClient extends OutputStream
       throw new IllegalStateException(L.l("stream is closed"));
     }
     
-    _tBuf = TempBuffer.allocate();
+    _tBuf = TempBuffer.create();
     _tempBuffer = _tBuf.buffer();
   }
   

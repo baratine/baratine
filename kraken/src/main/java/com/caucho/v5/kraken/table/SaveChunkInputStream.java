@@ -53,7 +53,7 @@ public class SaveChunkInputStream extends InputStream
   public void init(InputStream is)
   {
     _is = is;
-    _tBuf = TempBuffer.allocate();
+    _tBuf = TempBuffer.create();
   }
   
   @Override

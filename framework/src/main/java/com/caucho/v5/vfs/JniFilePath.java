@@ -29,16 +29,13 @@
 
 package com.caucho.v5.vfs;
 
-import java.lang.reflect.Method;
-
-import com.caucho.v5.jni.JniFilePathImpl;
-
 /**
  * FilePath implements the native filesystem.
  */
 public class JniFilePath {
   public static FilesystemPath create()
   {
+    /*
     try {
       Thread thread = Thread.currentThread();
       ClassLoader loader = thread.getContextClassLoader();
@@ -55,6 +52,7 @@ public class JniFilePath {
       }
     } catch (Throwable e) {
     }
+    */
 
     return null;
   }

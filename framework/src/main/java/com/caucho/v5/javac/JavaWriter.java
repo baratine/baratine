@@ -40,14 +40,14 @@ import java.lang.reflect.WildcardType;
 
 import com.caucho.v5.bytecode.JClass;
 import com.caucho.v5.vfs.PathImpl;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Writing class for generated Java code.
  */
 public class JavaWriter extends Writer {
   // Write stream for generating the code
-  private WriteStream _os;
+  private WriteStreamOld _os;
 
   // Indentation depth
   private int _indentDepth;
@@ -66,7 +66,7 @@ public class JavaWriter extends Writer {
   // Generates a unique string.
   private int _uniqueId;
 
-  public JavaWriter(WriteStream os) 
+  public JavaWriter(WriteStreamOld os) 
   {
     _os = os;
   }
@@ -74,7 +74,7 @@ public class JavaWriter extends Writer {
   /**
    * Returns the underlying stream.
    */
-  public WriteStream getWriteStream()
+  public WriteStreamOld getWriteStream()
   {
     return _os;
   }

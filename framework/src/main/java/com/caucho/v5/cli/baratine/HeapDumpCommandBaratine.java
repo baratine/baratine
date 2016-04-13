@@ -35,7 +35,7 @@ import com.caucho.v5.cli.spi.CommandBase;
 import com.caucho.v5.health.shutdown.ExitCode;
 import com.caucho.v5.profile.HeapDump;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 public class HeapDumpCommandBaratine extends CommandBase<ArgsCli>
 {
@@ -61,7 +61,7 @@ public class HeapDumpCommandBaratine extends CommandBase<ArgsCli>
     return ExitCode.OK;
   }
 
-  private void doHeapDump(WriteStream out)
+  private void doHeapDump(WriteStreamOld out)
   {
     try {
       HeapDump dump = HeapDump.create();

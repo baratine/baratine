@@ -41,7 +41,7 @@ import com.caucho.v5.http.pod.PodApp;
 import com.caucho.v5.http.pod.PodAppHandle;
 import com.caucho.v5.http.pod.PodContainer;
 import com.caucho.v5.http.pod.PodManagerApp;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 import io.baratine.files.BfsFileSync;
 import io.baratine.service.Result;
@@ -79,7 +79,7 @@ public class ProcServices extends ProcFileBase
   }
 
   @Override
-  protected boolean fillRead(WriteBuffer out)
+  protected boolean fillRead(WriteStream out)
     throws IOException
   {
     PodContainer podContainer = PodContainer.getCurrent();

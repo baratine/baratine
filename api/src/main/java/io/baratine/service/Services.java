@@ -39,11 +39,11 @@ import io.baratine.spi.ServiceManagerProvider;
  * Management for Baratine services.
  * 
  * <pre><code>
- * &#64;Inject ServiceManager _manager;
+ * &#64;Inject Services _manager;
  * ...
  *  //Create a new local service
- *  MyActor actor = _manager.service(new MyActorImpl())
- *                          .as(MyActor.class);
+ *  MyService service = _manager.newService(new MyServiceImpl())
+ *                              .as(MyService.class);
  *  
  *  //Bind a service that is available for remote calls with a given interface
  *  MySub sub = _manager.newService(new MySubImpl())
@@ -54,7 +54,7 @@ import io.baratine.spi.ServiceManagerProvider;
 public interface Services
 {
   /**
-   * Returns the current ServiceManager
+   * Returns the current Services manager
    */
   static Services current()
   {
@@ -62,11 +62,11 @@ public interface Services
   }
 
   /**
-   * Creates a new ServiceManager for using Baratine embedded in another
+   * Creates a new Services manager for using Baratine embedded in another
    * application.
    * 
    * <pre><code>
-   * manager = ServiceManager.manager()
+   * manager = ServiceManager.newManager()
    *                         .start();
    * </code></pre>
    */

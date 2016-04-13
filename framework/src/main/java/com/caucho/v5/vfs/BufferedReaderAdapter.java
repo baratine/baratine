@@ -37,16 +37,16 @@ import java.io.IOException;
    * allocation once.
    */
 public class BufferedReaderAdapter extends BufferedReader {
-  private ReadStream _rs;
+  private ReadStreamOld _rs;
   private BufferedReader _bufferedReader;
 
-  public BufferedReaderAdapter(ReadStream rs)
+  public BufferedReaderAdapter(ReadStreamOld rs)
   {
     // this is only a dummy because the rs.getReader is never actually called
     super(rs.getReader(), 1);
   }
 
-  public void init(ReadStream rs)
+  public void init(ReadStreamOld rs)
   {
     _rs = rs;
     _bufferedReader = null;

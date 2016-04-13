@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.util.L10N;
 
 
@@ -54,7 +54,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
   
   private TableEntry _key = new TableEntry();
   
-  private ReadBuffer _is;
+  private ReadStream _is;
 
   private StateHeaderIn _state;
   
@@ -71,7 +71,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
 
   private int _pad;
   
-  public InHeader(ReadBuffer is)
+  public InHeader(ReadStream is)
   {
     Objects.requireNonNull(is);
     

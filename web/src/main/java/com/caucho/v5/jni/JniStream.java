@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.io.ClientDisconnectException;
 import com.caucho.v5.io.ClientTimeoutException;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.ModulePrivate;
@@ -123,7 +123,7 @@ public class JniStream extends StreamImpl {
       return result;
     }
     else if (result == TIMEOUT_EXN) {
-      return ReadBuffer.READ_TIMEOUT;
+      return ReadStream.READ_TIMEOUT;
     }
     else if (result < -1) {
       throw exception(result);

@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.Direct;
 import com.caucho.v5.baratine.InService;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.kelp.PageServiceSync.GcContext;
@@ -331,7 +331,7 @@ public class TableWriterServiceImpl
     throws IOException
   {
     try (InSegment reader = openRead(segment)) {
-      ReadBuffer is = reader.in();
+      ReadStream is = reader.in();
       
       int length = segment.getLength();
     
@@ -742,13 +742,13 @@ public class TableWriterServiceImpl
   public class LoadCallback implements SegmentEntryCallback
   {
     private final SegmentKelp _segment;
-    private final ReadBuffer _is;
+    private final ReadStream _is;
     private final SegmentReadContext _reader;
     
     private boolean _isLoadedPage;
     
     LoadCallback(SegmentKelp segment,
-                 ReadBuffer is,
+                 ReadStream is,
                  SegmentReadContext reader)
     {
       _segment = segment;

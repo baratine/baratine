@@ -36,7 +36,7 @@ import java.util.Arrays;
 import com.caucho.v5.h3.H3;
 import com.caucho.v5.h3.OutFactoryH3;
 import com.caucho.v5.h3.OutH3;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.RowCursor;
 
 /**
@@ -54,7 +54,7 @@ public class ArchiveOnLoad
   private byte []_lastStoreKey;
   private boolean _isFirst = true;
   
-  ArchiveOnLoad(KrakenImpl manager, WriteBuffer os)
+  ArchiveOnLoad(KrakenImpl manager, WriteStream os)
     throws IOException
   {
     _manager = manager;

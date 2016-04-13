@@ -41,12 +41,12 @@ import com.caucho.v5.util.L10N;
 /**
  * The wait-for-exit service waits for Resin to exit.
  */
-class WaitForExitService2
+class WaitForExitService
 {
   private static final Logger log
-    = Logger.getLogger(WaitForExitService2.class.getSimpleName());
+    = Logger.getLogger(WaitForExitService.class.getSimpleName());
 
-  private static final L10N L = new L10N(WaitForExitService2.class);
+  private static final L10N L = new L10N(WaitForExitService.class);
 
   private ServerBase _server;
   private SystemManager _resinSystem;
@@ -58,7 +58,7 @@ class WaitForExitService2
   /**
    * Creates a new resin server.
    */
-  WaitForExitService2(ServerBase server,
+  WaitForExitService(ServerBase server,
                      SystemManager systemManager)
   {
     _server = server;

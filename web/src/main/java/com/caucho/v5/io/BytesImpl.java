@@ -27,38 +27,42 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.io;
+package com.caucho.v5.io;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.baratine.io.Bytes;
+
 /**
  * Data buffer
  */
-class BufferImpl implements Buffer
+class BytesImpl implements Bytes
 {
   private static final Logger log
-    = Logger.getLogger(BufferImpl.class.getName());
+    = Logger.getLogger(BytesImpl.class.getName());
   
   private byte []_data;
-  private int _length;
   
-  BufferImpl(byte []buffer)
+  private int _head;
+  private int _tail;
+  
+  BytesImpl(byte []buffer)
   {
     _data = new byte[buffer.length];
     
     System.arraycopy(buffer, 0, _data, 0, buffer.length);
 
-    _length = buffer.length;
+    _head = buffer.length;
   }
   
-  BufferImpl()
+  BytesImpl()
   {
     _data = new byte[256];
 
-    _length = 0;
+    _tail = 0;
   }
   
   /**
@@ -67,19 +71,31 @@ class BufferImpl implements Buffer
   @Override
   public int length()
   {
-    return _length;
+    return _head - _tail;
   }
+
   
   /**
    * adds bytes from the buffer
    */
   @Override
-  public BufferImpl addBytes(byte []buffer, int offset, int length)
+  public BytesImpl set(int pos, byte []buffer, int offset, int length)
+  {
+    System.arraycopy(buffer, offset, _data, pos, length);
+    
+    return this;
+  }
+    
+  /**
+   * adds bytes from the buffer
+   */
+  @Override
+  public BytesImpl write(byte []buffer, int offset, int length)
   {
     while (length > 0) {
-      int sublen = Math.min(_data.length - _length, length);
+      int sublen = Math.min(_data.length - _tail, length);
       
-      System.arraycopy(buffer, offset, _data, _length, sublen);
+      System.arraycopy(buffer, offset, _data, _tail, sublen);
       
       if (sublen <= 0) {
         throw new UnsupportedOperationException();
@@ -87,30 +103,30 @@ class BufferImpl implements Buffer
       
       length -= sublen;
       offset += sublen;
-      _length += sublen;
+      _head += sublen;
     }
     
     return this;
   }
   
   @Override
-  public BufferImpl addBytes(InputStream is)
+  public BytesImpl write(InputStream is)
   {
     try {
       while (true) {
-        int sublen = _data.length - _length;
+        int sublen = _data.length - _tail;
         
         if (sublen == 0) {
           throw new UnsupportedOperationException();
         }
 
-        sublen = is.read(_data, _length, sublen);
+        sublen = is.read(_data, _tail, sublen);
         
         if (sublen < 0) {
           return this;
         }
         
-        _length += sublen;
+        _head += sublen;
       }
     } catch (IOException e) {
       log.log(Level.WARNING, e.toString(), e);
@@ -123,7 +139,7 @@ class BufferImpl implements Buffer
    * gets bytes from the buffer
    */
   @Override
-  public BufferImpl getBytes(int pos, byte []buffer, int offset, int length)
+  public BytesImpl get(int pos, byte []buffer, int offset, int length)
   {
     System.arraycopy(_data, pos, buffer, offset, length);
     
@@ -134,11 +150,18 @@ class BufferImpl implements Buffer
   public String toString()
   {
     try {
-      return new String(_data, 0, _length, "utf-8");
+      return new String(_data, 0, _tail, "utf-8");
     } catch (Exception e) {
       log.log(Level.FINER, e.toString(), e);
       
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public int read(byte[] buffer, int offset, int length)
+  {
+    // TODO Auto-generated method stub
+    return 0;
   }
 }

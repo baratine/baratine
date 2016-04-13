@@ -61,7 +61,7 @@ import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;
@@ -82,7 +82,7 @@ public class InJamp
   
   private String _id;
   
-  private ReadStream _is;
+  private ReadStreamOld _is;
   // private OutboxAmp _outbox;
   
   private long _queueTimeout = 1000;
@@ -148,7 +148,7 @@ public class InJamp
     _id = id;
   }
 
-  public void init(ReadStream is)
+  public void init(ReadStreamOld is)
   {
     _is = is;
   }

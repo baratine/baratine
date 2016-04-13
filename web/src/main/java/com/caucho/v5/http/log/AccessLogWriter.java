@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.deliver.QueueDeliver;
-import com.caucho.v5.config.types.Bytes;
+import com.caucho.v5.config.types.BytesType;
 import com.caucho.v5.log.impl.RolloverLogBase;
 import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.store.temp.TempWriter;
@@ -93,7 +93,7 @@ public class AccessLogWriter extends RolloverLogBase
                                           TempStoreSystem.class.getSimpleName()));
   }
 
-  void setBufferSize(Bytes bytes)
+  void setBufferSize(BytesType bytes)
   {
     _logBufferSize = (int) bytes.getBytes();
   }

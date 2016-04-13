@@ -34,8 +34,8 @@ import java.nio.file.Path;
 import java.util.logging.Logger;
 
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.http.protocol.RequestFacade;
 import com.caucho.v5.loader.EnvLoader;
+import com.caucho.v5.web.webapp.RequestBaratine;
 
 /**
  * Represents an log of every top-level request to the server.
@@ -152,7 +152,7 @@ abstract public class AccessLogBase implements AccessLog, AutoCloseable
    * @param response the http response.
    */
   @Override
-  public abstract void log(RequestFacade request);
+  public abstract void log(RequestBaratine request);
 
   /**
    * Flushes the log.

@@ -491,7 +491,7 @@ public final class JniSocketImpl extends SocketBar
   public X509Certificate getClientCertificate()
     throws java.security.cert.CertificateException
   {
-    TempBuffer tb = TempBuffer.allocate();
+    TempBuffer tb = TempBuffer.create();
     byte []buffer = tb.buffer();
     int len = getClientCertificate(_socketFd, buffer, 0, buffer.length);
     X509Certificate cert = null;

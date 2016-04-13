@@ -68,7 +68,7 @@ public class MemoryStream extends StreamImpl {
       TempBuffer tail = _tail;
       
       if (tail == null || tail.buffer().length <= tail.length()) {
-        addBuffer(TempBuffer.allocate());
+        addBuffer(TempBuffer.create());
         tail = _tail;
       }
       
@@ -91,11 +91,11 @@ public class MemoryStream extends StreamImpl {
 
   private void addBuffer(TempBuffer buf)
   {
-    buf.setNext(null);
+    buf.next(null);
     buf.length(0);
     
     if (_tail != null) {
-      _tail.setNext(buf);
+      _tail.next(buf);
       _tail = buf;
     } else {
       _tail = buf;
@@ -107,7 +107,7 @@ public class MemoryStream extends StreamImpl {
 
   public void writeToStream(OutputStream os) throws IOException
   {
-    for (TempBuffer node = _head; node != null; node = node.getNext()) {
+    for (TempBuffer node = _head; node != null; node = node.next()) {
       os.write(node.buffer(), 0, node.length());
     } 
   }
@@ -120,7 +120,7 @@ public class MemoryStream extends StreamImpl {
       return (_head.getBufferCount() - 1) * _head.length() + _tail.length();
   }
 
-  public ReadStream openReadAndSaveBuffer()
+  public ReadStreamOld openReadAndSaveBuffer()
     throws IOException
   {
     close();
@@ -128,7 +128,7 @@ public class MemoryStream extends StreamImpl {
     TempReadStream read = new TempReadStream(_head);
     read.setFreeWhenDone(false);
 
-    return new ReadStream(read);
+    return new ReadStreamOld(read);
   }
 
   public void destroy()
@@ -141,7 +141,7 @@ public class MemoryStream extends StreamImpl {
     _tail = null;
     
     for (; ptr != null; ptr = next) {
-      next = ptr.getNext();
+      next = ptr.next();
       TempBuffer.free(ptr);
       ptr = null;
     }

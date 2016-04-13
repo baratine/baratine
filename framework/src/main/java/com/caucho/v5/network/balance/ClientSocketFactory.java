@@ -48,7 +48,7 @@ import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.QDate;
 import com.caucho.v5.vfs.PathImpl;
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 import com.caucho.v5.vfs.ReadWritePair;
 import com.caucho.v5.vfs.VfsOld;
 
@@ -1145,7 +1145,7 @@ public class ClientSocketFactory implements ClientSocketFactoryApi
 
     try {
       ReadWritePair pair = openTCPPair();
-      ReadStream rs = pair.getReadStream();
+      ReadStreamOld rs = pair.getReadStream();
       rs.setEnableReadTime(true);
       
       //rs.setAttribute("timeout", new Integer((int) _loadBalanceSocketTimeout));

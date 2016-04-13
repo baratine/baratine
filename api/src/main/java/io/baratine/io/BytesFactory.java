@@ -27,38 +27,23 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.service;
+package io.baratine.io;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
+import io.baratine.spi.ServiceManagerProvider;
 
 /**
- * Annotation {@code @Lookup} is used with {@code @javax.inject.Inject}
- * and specifies an address of a service (or resource) to inject.
- * <br>
- * <br>
- * <blockquote><pre>
- *  &#64;Inject &#64;Lookup("remote:///my-service")
- *  private MyService _service;
- *
- *  &#64;Inject &#64;Lookup("remote:///counter/1")
- *  private Counter _counter;
- * </pre></blockquote>
- *
- * @see io.baratine.service.Service
+ * Binary buffer factory
  */
-@Documented
-@Retention(RUNTIME)
-@Target({METHOD, FIELD})
-@Qualifier
-public @interface Lookup
+public interface BytesFactory
 {
-  String value() default "";
+  static BytesFactory factory()
+  {
+    return ServiceManagerProvider.current().bytesFactory();
+  }
+  
+  Bytes create(byte[] data);
+
+  Bytes create(int capacity);
+  
+  Bytes create();
 }

@@ -29,5 +29,5 @@
 package com.caucho.v5.vfs;
 
 public interface EnclosedWriteStream {
-  public WriteStream getWriteStream();
+  public WriteStreamOld getWriteStream();
 }

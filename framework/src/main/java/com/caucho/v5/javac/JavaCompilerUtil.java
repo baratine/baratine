@@ -51,9 +51,9 @@ import com.caucho.v5.util.CauchoUtil;
 import com.caucho.v5.util.CharBuffer;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.PathImpl;
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Compiles Java source, returning the loaded class.
@@ -769,7 +769,7 @@ public class JavaCompilerUtil {
       ByteCodeParser parser = new ByteCodeParser();
       JavaClass javaClass;
 
-      ReadStream is = classPath.openRead();
+      ReadStreamOld is = classPath.openRead();
       try {
         javaClass = parser.parse(is);
       } finally {
@@ -795,7 +795,7 @@ public class JavaCompilerUtil {
 
       javaClass.addAttribute(attr);
 
-      WriteStream os = classPath.openWrite();
+      WriteStreamOld os = classPath.openWrite();
       try {
         javaClass.write(os);
       } finally {

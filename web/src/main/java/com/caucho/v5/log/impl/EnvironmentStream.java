@@ -34,7 +34,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 import com.caucho.v5.io.StreamImpl;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.loader.EnvironmentLocal;
 import com.caucho.v5.util.CurrentTime;
 
@@ -48,9 +48,9 @@ public class EnvironmentStream extends StreamImpl {
   private final static PrintStream _origSystemErrWriter;
   
   // original stdout stream
-  private final static WriteBuffer _origSystemOut;
+  private final static WriteStream _origSystemOut;
   // original stderr stream
-  private final static WriteBuffer _origSystemErr;
+  private final static WriteStream _origSystemErr;
   
   // static stdout stream
   private static PrintStream _systemOut;
@@ -210,8 +210,8 @@ public class EnvironmentStream extends StreamImpl {
       return;
     }
 
-    if (os instanceof WriteBuffer) {
-      WriteBuffer out = (WriteBuffer) os;
+    if (os instanceof WriteStream) {
+      WriteStream out = (WriteStream) os;
 
       /*
       if (out.getSource() == StdoutStream.create()
@@ -235,7 +235,7 @@ public class EnvironmentStream extends StreamImpl {
   /**
    * Returns the original System.out writer
    */
-  public static WriteBuffer getOriginalSystemOutStream()
+  public static WriteStream getOriginalSystemOutStream()
   {
     return _origSystemOut;
   }
@@ -261,8 +261,8 @@ public class EnvironmentStream extends StreamImpl {
       return;
     }
 
-    if (os instanceof WriteBuffer) {
-      WriteBuffer out = (WriteBuffer) os;
+    if (os instanceof WriteStream) {
+      WriteStream out = (WriteStream) os;
 
       /*
       if (out.getSource() == StdoutStream.create()
@@ -325,7 +325,7 @@ public class EnvironmentStream extends StreamImpl {
   /**
    * Returns the original System.out writer
    */
-  public static WriteBuffer getOriginalSystemErrStream()
+  public static WriteStream getOriginalSystemErrStream()
   {
     return _origSystemErr;
   }
@@ -377,11 +377,11 @@ public class EnvironmentStream extends StreamImpl {
   static {
     _origSystemOutWriter = System.out;
     
-    _origSystemOut = new WriteBuffer(System.out);
+    _origSystemOut = new WriteStream(System.out);
     _origSystemOut.setFlushOnNewline(true);
     
     _origSystemErrWriter = System.err;
-    _origSystemErr = new WriteBuffer(System.err);
+    _origSystemErr = new WriteStream(System.err);
     _origSystemErr.setFlushOnNewline(true);
   }
 }

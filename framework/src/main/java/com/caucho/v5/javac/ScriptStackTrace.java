@@ -44,7 +44,7 @@ import com.caucho.v5.bytecode.attr.Attribute;
 import com.caucho.v5.bytecode.attr.OpaqueAttribute;
 import com.caucho.v5.loader.SimpleLoader;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 import com.caucho.v5.vfs.VfsOld;
 
 /**
@@ -185,7 +185,7 @@ public class ScriptStackTrace
 
           ByteArrayInputStream bis = new ByteArrayInputStream(value);
 
-          ReadStream rs = VfsOld.openRead(bis);
+          ReadStreamOld rs = VfsOld.openRead(bis);
           rs.setEncoding("UTF-8");
 
           try {
@@ -212,7 +212,7 @@ public class ScriptStackTrace
   /**
    * Parses the SMAP file.
    */
-  private static LineMap parseSmap(ReadStream is)
+  private static LineMap parseSmap(ReadStreamOld is)
     throws IOException
   {
     String smap = is.readln();

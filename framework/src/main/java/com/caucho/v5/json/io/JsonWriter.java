@@ -34,7 +34,7 @@ import java.util.Objects;
 
 import com.caucho.v5.json.ser.SerializerJson;
 import com.caucho.v5.json.ser.JsonFactory;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Abstract output stream for JSON requests.
@@ -79,7 +79,7 @@ public class JsonWriter extends OutJsonImpl
     init(os);
   }
 
-  public JsonWriter(WriteStream out)
+  public JsonWriter(WriteStreamOld out)
   {
     this();
     

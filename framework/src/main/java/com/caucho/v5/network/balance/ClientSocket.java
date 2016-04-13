@@ -39,8 +39,8 @@ import com.caucho.v5.health.meter.ActiveMeter;
 import com.caucho.v5.health.meter.MeterActiveTime;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.ReadStream;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.ReadStreamOld;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Defines a connection to the client.
@@ -56,8 +56,8 @@ public class ClientSocket implements ClientSocketApi {
   // The pools sequence id when the stream was allocated.
   private long _poolSequenceId;
 
-  private ReadStream _is;
-  private WriteStream _os;
+  private ReadStreamOld _is;
+  private WriteStreamOld _os;
 
   private boolean _isAuthenticated;
 
@@ -74,8 +74,8 @@ public class ClientSocket implements ClientSocketApi {
 
   ClientSocket(ClientSocketFactory pool, 
                int count,
-               ReadStream is,
-               WriteStream os)
+               ReadStreamOld is,
+               WriteStreamOld os)
   {
     _pool = pool;
     _poolSequenceId = pool.getStartSequenceId();
@@ -106,7 +106,7 @@ public class ClientSocket implements ClientSocketApi {
    * Returns the input stream.
    */
   @Override
-  public ReadStream getInputStream()
+  public ReadStreamOld getInputStream()
   {
     _idleStartTime = 0;
 
@@ -117,7 +117,7 @@ public class ClientSocket implements ClientSocketApi {
    * Returns the write stream.
    */
   @Override
-  public WriteStream getOutputStream()
+  public WriteStreamOld getOutputStream()
   {
     _idleStartTime = 0;
 
@@ -215,7 +215,7 @@ public class ClientSocket implements ClientSocketApi {
   public void switchToHmtp(boolean isUnidir)
   {
     try {
-      WriteStream out = getOutputStream();
+      WriteStreamOld out = getOutputStream();
 
       /*
       if (isUnidir)
@@ -332,10 +332,10 @@ public class ClientSocket implements ClientSocketApi {
    */
   void closeImpl()
   {
-    ReadStream is = _is;
+    ReadStreamOld is = _is;
     _is = null;
 
-    WriteStream os = _os;
+    WriteStreamOld os = _os;
     _os = null;
 
     try {

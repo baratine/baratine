@@ -33,12 +33,11 @@ import java.lang.annotation.Annotation;
 
 import javax.inject.Singleton;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 
 import io.baratine.inject.Bean;
 import io.baratine.inject.InjectionPoint;
-import io.baratine.service.Lookup;
 import io.baratine.service.Service;
 
 /**
@@ -69,7 +68,8 @@ public class BaratineProducer
   }
   */
   
-  @Lookup
+  /*
+  @OnLookup
   public Object lookup(InjectionPoint ip)
   {
     Class<?> type = (Class<?>) ip.type();
@@ -101,6 +101,7 @@ public class BaratineProducer
     
     return null;
   }
+  */
   
   @Service
   public Object service(InjectionPoint ip)

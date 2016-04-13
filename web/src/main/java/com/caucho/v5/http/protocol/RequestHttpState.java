@@ -414,7 +414,7 @@ public class RequestHttpState implements ConnectionProtocol
   protected boolean startBartender()
     throws IOException
   {
-    RequestFacade request = null;
+    ConnectionProtocol request = null;
     
     ProtocolHttp protocolHttp = connHttp().protocol();
 

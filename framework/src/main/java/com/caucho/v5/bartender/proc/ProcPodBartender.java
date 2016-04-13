@@ -37,7 +37,7 @@ import com.caucho.v5.bartender.files.FileStatusImpl;
 import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.bartender.pod.PodBartender.PodType;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 import io.baratine.files.BfsFileSync;
 import io.baratine.files.Status;
@@ -59,7 +59,7 @@ public class ProcPodBartender extends ProcFileBase
   }
 
   @Override
-  protected boolean fillRead(WriteBuffer out)
+  protected boolean fillRead(WriteStream out)
     throws IOException
   {
     PodBartender pod = _pod;
@@ -81,7 +81,7 @@ public class ProcPodBartender extends ProcFileBase
                                        modifiedTime, checkSum, null));
   }
 
-  static boolean fillRead(PodBartender pod, WriteBuffer out)
+  static boolean fillRead(PodBartender pod, WriteStream out)
     throws IOException
   {
     out.println("{ \"pod\" : \"" + pod.name() + "." + pod.getClusterId() + "\",");

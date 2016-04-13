@@ -251,7 +251,7 @@ public class GradlePackageTask extends DefaultTask
     private long calculateCrc(Path path)
       throws IOException
     {
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
       byte []buffer = tBuf.buffer();
       
       long result = 0;

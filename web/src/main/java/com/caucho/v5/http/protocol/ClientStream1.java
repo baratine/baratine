@@ -37,8 +37,8 @@ import java.util.Objects;
 
 import com.caucho.v5.http.protocol2.InputStreamClient;
 import com.caucho.v5.http.protocol2.OutputStreamClient;
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.CharBuffer;
 
 /**
@@ -124,7 +124,7 @@ public class ClientStream1
     return _is;
   }
 
-  ReadBuffer getIn()
+  ReadStream getIn()
   {
     return _client.getIn();
   }
@@ -132,7 +132,7 @@ public class ClientStream1
   void writeData()
   {
     try {
-      WriteBuffer out = _client.getOut();
+      WriteStream out = _client.getOut();
     
       out.print(_method);
       out.print(" ");
@@ -152,7 +152,7 @@ public class ClientStream1
   InputStreamClient parseResult()
   {
     try {
-      ReadBuffer is = _client.getIn();
+      ReadStream is = _client.getIn();
       
       StringBuilder sb = new StringBuilder();
       
@@ -164,7 +164,7 @@ public class ClientStream1
     }
   }
 
-  private int parseStatus(ReadBuffer is, StringBuilder sb)
+  private int parseStatus(ReadStream is, StringBuilder sb)
     throws IOException
   {
     int ch;
@@ -204,7 +204,7 @@ public class ClientStream1
     return status;
   }
 
-  private InputStreamClient parseHeaders(ReadBuffer is, StringBuilder keyBuf)
+  private InputStreamClient parseHeaders(ReadStream is, StringBuilder keyBuf)
     throws IOException
   {
     int ch;

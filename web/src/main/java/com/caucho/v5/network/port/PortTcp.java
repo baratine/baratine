@@ -54,7 +54,7 @@ import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.health.meter.ActiveMeter;
 import com.caucho.v5.health.meter.CountMeter;
 import com.caucho.v5.health.meter.MeterService;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.ServerSocketBar;
 import com.caucho.v5.io.SocketBar;
@@ -1239,7 +1239,7 @@ public class PortTcp implements PortSocket
   /**
    * Reads data from a keepalive connection
    */
-  int keepaliveThreadRead(ReadBuffer is, long timeoutConn)
+  int keepaliveThreadRead(ReadStream is, long timeoutConn)
     throws IOException
   {
     if (isClosed()) {

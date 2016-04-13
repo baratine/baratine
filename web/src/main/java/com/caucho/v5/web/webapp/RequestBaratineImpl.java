@@ -33,8 +33,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -48,17 +46,14 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.OutResponseBase;
-import com.caucho.v5.http.protocol.RequestFacadeBase;
 import com.caucho.v5.http.protocol.RequestHttpBase;
 import com.caucho.v5.http.protocol.RequestHttpState;
-import com.caucho.v5.http.protocol.RequestUpgrade;
-import com.caucho.v5.http.protocol2.OutHeader;
 import com.caucho.v5.http.websocket.WebSocketBaratineImpl;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.TempInputStream;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.network.port.StateConnection;
@@ -66,17 +61,16 @@ import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
-import com.caucho.v5.util.Utf8Util;
 import com.caucho.v5.web.CookieWeb;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
-import io.baratine.io.Buffer;
-import io.baratine.pipe.Pipe;
+import io.baratine.io.Bytes;
+import io.baratine.io.BytesFactory;
+import io.baratine.pipe.Credits;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
-import io.baratine.web.BodyReader;
 import io.baratine.web.HttpStatus;
 import io.baratine.web.MultiMap;
 import io.baratine.web.OutWeb;
@@ -87,26 +81,18 @@ import io.baratine.web.ServiceWebSocket;
 /**
  * User facade for baratine http requests.
  */
-public final class RequestBaratineImpl extends RequestFacadeBase
-  implements RequestBaratine
+public final class RequestBaratineImpl 
+  implements RequestBaratine, ConnectionProtocol
 {
   private static final L10N L = new L10N(RequestBaratineImpl.class);
   private static final Logger log
     = Logger.getLogger(RequestBaratineImpl.class.getName());
 
-  private static final String FORM_TYPE = "application/x-www-form-urlencoded";
+  //private static final String FORM_TYPE = "application/x-www-form-urlencoded";
 
   private ConnectionHttp _connHttp;
 
-  //private RequestHttpBase _requestHttp;
   private RequestHttpState _requestState;
-
-  //private InvocationBaratine _invocation;
-
-  private RequestUpgrade _upgrade;
-  private int _status = 200;
-  private String _statusMessage = "ok";
-  private String _contentType;
 
   private List<ViewRef<?>> _views;
 
@@ -124,20 +110,10 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   private Object _bodyValue;
   private RequestProxy _requestProxy;
 
-  private RequestBaratineImpl _next;
-  private RequestBaratineImpl _prev;
-  
-  private Writer _writer;
-
   public RequestBaratineImpl(ConnectionHttp connHttp)
   {
     Objects.requireNonNull(connHttp);
     _connHttp = connHttp;
-
-    //if (true) throw new UnsupportedOperationException();
-
-    //RequestHttpBase requestHttp = null;
-    //_requestHttp = requestHttp;
   }
 
   public void init(RequestHttpState requestState)
@@ -171,15 +147,16 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     return invocation().webApp();
   }
 
-  private ServicesAmp services()
+  @Override
+  public ServicesAmp services()
   {
-    return webApp().serviceManager();
+    return webApp().services();
   }
 
   @Override
-  public String addressRemote()
+  public BytesFactory buffers()
   {
-    return requestHttp().getRemoteAddr();
+    return webApp().buffers();
   }
 
   @Override
@@ -223,20 +200,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
 
     return null;
-  }
-
-  @Override
-  public Reader getReader()
-  {
-    throw new UnsupportedOperationException();
-    /*
-    try {
-      //return requestHttp().getReader();
-      throw new UnsupportedOperationException();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    */
   }
 
   @Override
@@ -316,16 +279,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   // injection methods
   //
 
-  /*
-  @Override
-  public <T> T instance(Class<T> type, Annotation ...qualifiers)
-  {
-    InjectManagerAmp inject = InjectManagerAmp.current();
-
-    return inject.instance(type, qualifiers);
-  }
-  */
-
   @Override
   public Injector injector()
   {
@@ -338,14 +291,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return InjectorAmp.current();
     }
   }
-
-  /*
-  @Override
-  public ServiceManager services()
-  {
-    return ServiceManagerAmp.current();
-  }
-  */
 
   //
   // config methods
@@ -431,49 +376,9 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public void finishRequest()
-  {
-    /*
-    try {
-      //getRequestHttp().finishInvocation();
-      //getRequestHttp().getResponse().finishRequest();
-
-      //getRequestHttp().finishRequest();
-      //getRequestHttp().getResponse().finishRequest();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    */
-  }
-
-  //
-  // RequestFacade methods
-  //
-
-  @Override
-  public String getMethod()
-  {
-    return requestHttp().getMethod();
-  }
-
-  @Override
-  public String getHeader(String key)
-  {
-    return requestHttp().getHeader(key);
-  }
-
-  /*
-  @Override
-  public void read(Pipe<Buffer> reader, int prefetch)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  */
-
-  @Override
   public String protocol()
   {
-    return requestHttp().getScheme();
+    return requestHttp().scheme();
   }
 
   @Override
@@ -492,7 +397,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public String query(String name)
   {
-    return queryMap().getFirst(name);
+    return queryMap().first(name);
   }
 
   @Override
@@ -568,14 +473,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
   }
 
-  /*
-  @Override
-  public X509Certificate[] certs()
-  {
-    return null;
-  }
-  */
-
   @Override
   public <X> X body(Class<X> type)
   {
@@ -591,14 +488,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     
     return (X) _bodyValue;
   }
-
-  /*
-  @Override
-  public <X> void body(BodyReader<X> reader, Result<X> result)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  */
 
   @Override
   public <X> void body(Class<X> type,
@@ -631,7 +520,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public RequestWeb length(long length)
   {
-    contentLength(length);
+    requestHttp().contentLengthOut(length);
 
     return this;
   }
@@ -652,14 +541,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     return this;
   }
 
-  /*
-  @Override
-  public void ok(Object value)
-  {
-    getResponse().ok(value);
-  }
-  */
-
   @Override
   public void ok(Object result, Throwable exn)
   {
@@ -670,15 +551,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       ok(result);
     }
   }
-
-  /*
-  @Override
-  public void fail(Throwable exn)
-  {
-    getResponse().fail(exn);
-    System.out.println("GR: " + getResponse() + " " + exn);
-  }
-  */
 
   @Override
   public void halt()
@@ -712,18 +584,16 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public OutWeb<Buffer> push(Pipe<Buffer> out)
+  public OutWeb push(OutFilterWeb filter)
   {
     throw new UnsupportedOperationException();
   }
 
-  /*
   @Override
-  public void handle(Buffer value, Throwable exn, boolean isEnd)
+  public Credits credits()
   {
     throw new UnsupportedOperationException();
   }
-  */
 
   @Override
   public RequestBaratine status(HttpStatus status)
@@ -731,24 +601,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     Objects.requireNonNull(status);
 
     requestHttp().status(status.code(), status.message());
-
-    return this;
-  }
-
-  public RequestBaratine status(int code, String message)
-  {
-    if (code <= 0 || code >= 600) {
-      throw new IllegalArgumentException(String.valueOf(code));
-    }
-
-    if (message == null || message.isEmpty()) {
-      throw new IllegalArgumentException(message);
-    }
-
-    _status = code;
-    _statusMessage = message;
-
-    requestHttp().status(code, message);
 
     return this;
   }
@@ -787,7 +639,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public OutWeb<Buffer> write(char[] buffer, int offset, int length)
+  public OutWeb write(char[] buffer, int offset, int length)
   {
     try {
       writer().write(buffer, offset, length);
@@ -799,7 +651,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public OutWeb<Buffer> write(Buffer buffer)
+  public OutWeb write(Bytes buffer)
   {
     requestHttp().out().write(buffer);
 
@@ -807,7 +659,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   @Override
-  public OutWeb<Buffer> write(byte[] buffer, int offset, int length)
+  public OutWeb write(byte[] buffer, int offset, int length)
   {
     requestHttp().out().write(buffer, offset, length);
 
@@ -823,7 +675,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   @Override
   public OutputStream output()
   {
-    throw new UnsupportedOperationException();
+    return requestHttp().out();
   }
 
   //@Override
@@ -840,7 +692,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     return this;
   }
 
-  public void next(Buffer data)
+  public void next(Bytes data)
   {
     try {
       OutResponseBase out = requestHttp().out();
@@ -849,73 +701,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
     }
-  }
-
-  // XXX: temp
-  @Override
-  public PrintWriter getWriter()
-  {
-    throw new UnsupportedOperationException();
-    /*
-    PrintWriter writer = _writer;
-
-    if (writer != null) {
-      return writer;
-    }
-
-    // String encoding = getCharacterEncoding();
-    String encoding = null; // getResponse().getEncoding();
-
-    ResponseWriter newWriter = getResponse().getResponsePrintWriter();
-    newWriter.init(getResponse().getOut());
-
-    _writer = newWriter;
-
-    if (encoding != null) {
-      try {
-        getResponse().getOut().setEncoding(encoding);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-
-    return newWriter;
-    */
-  }
-  //
-  // response facade methods
-  //
-
-  @Override
-  public int getStatus()
-  {
-    return _status;
-  }
-
-  @Override
-  public String getStatusMessage()
-  {
-    return _statusMessage;
-  }
-
-  @Override
-  public String getContentType()
-  {
-    return _contentType;
-  }
-
-  @Override
-  public void setContentType(String value)
-  {
-    _contentType = value;
-  }
-
-  @Override
-  public RequestBaratine contentLength(long length)
-  {
-    requestHttp().contentLengthOut(length);
-
-    return this;
   }
 
   @Override
@@ -1036,8 +821,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   // http response
   //
 
-  @Override
-  public void writeCookies(WriteBuffer os) throws IOException
+  public void writeCookies(WriteStream os) throws IOException
   {
     ArrayList<CookieWeb> cookieList = _cookieList;
 
@@ -1050,7 +834,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
   }
 
-  private void printCookie(WriteBuffer os, CookieWeb cookie)
+  private void printCookie(WriteStream os, CookieWeb cookie)
     throws IOException
   {
     os.print("\r\nSet-Cookie: ");
@@ -1067,10 +851,12 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     }
   }
 
+  /*
   @Override
   public void fillCookies(OutHeader out) throws IOException
   {
   }
+  */
 
   @Override
   public CookieBuilder cookie(String key, String value)
@@ -1085,14 +871,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
     cookieBuilder.httpOnly(true);
     cookieBuilder.path("/");
-    
-    /*
-    if (_cookieList == null) {
-      _cookieList = new ArrayList<>();
-    }
-
-    _cookieList.add(new WebCookie(key, value));
-    */
 
     return cookieBuilder;
   }
@@ -1104,22 +882,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   // implementation methods
   //
 
-  /*
   @Override
-  public ResponseBaratine getResponse()
-  {
-    return _response;
-  }
-  */
-
-  /*
-  @Override
-  public void invocation(Invocation invocation)
-  {
-    _invocation = (InvocationBaratine) invocation;
-  }
-  */
-
   public void requestProxy(RequestProxy proxy)
   {
     _requestProxy = proxy;
@@ -1129,20 +892,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   {
     return _requestProxy;
   }
-
-  /*
-  @Override
-  public StateConnection resume()
-  {
-    try {
-      return super.resume();
-    } catch (Throwable e) {
-      log.log(Level.WARNING, e.toString(), e);
-
-      return StateConnection.CLOSE;
-    }
-  }
-  */
 
   @Override
   public StateConnection onCloseRead()
@@ -1162,40 +911,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   }
 
   //@Override
-  public void next(ConnectionProtocol next)
-  {
-    RequestBaratineImpl nextBar = (RequestBaratineImpl) next;
-    _next = nextBar;
-
-    if (nextBar != null) {
-      nextBar._prev = this;
-    }
-  }
-
-  public RequestBaratineImpl next()
-  {
-    return _next;
-  }
-
-  public RequestBaratineImpl prev()
-  {
-    return _prev;
-  }
-
-  @Override
-  public boolean isPrevCloseWrite()
-  {
-    RequestBaratineImpl prev = prev();
-
-    if (prev == null) {
-      return true;
-    }
-    else {
-      return prev._state.isCloseWrite();
-    }
-  }
-
-  //@Override
   public void onCloseWrite()
   {
     StateRequest state = _state;
@@ -1204,13 +919,15 @@ public final class RequestBaratineImpl extends RequestFacadeBase
 
     ConnectionHttp connHttp = connHttp();
 
-    RequestBaratineImpl reqNext = next();
+    //RequestBaratineImpl reqNext = null;//next();
 
     connHttp.onCloseWrite();
 
+    /*
     if (reqNext != null) {
       reqNext.writePending();
     }
+    */
 
     switch (state) {
     case CLOSE_READ:
@@ -1218,7 +935,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       break;
     }
 
-    _next = null;
+    //_next = null;
     /*
     RequestHttpBase requestHttp = _requestHttp;
     _requestHttp = null;
@@ -1229,6 +946,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
     */
   }
 
+  /*
   private void writePending()
   {
     RequestHttpBase reqHttp = requestHttp();
@@ -1237,6 +955,7 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       reqHttp.writePending();
     }
   }
+  */
 
   @Override
   public StateConnection service()
@@ -1274,55 +993,6 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return StateConnection.CLOSE_READ_A;
     }
   }
-
-  /*
-  private StateConnection accept()
-  {
-    try {
-      _state = StateRequest.ACTIVE;
-
-      _requestHttp = _connHttp.newRequestHttp();
-
-      _invocation = (InvocationBaratine) _requestHttp.parseInvocation(this);
-
-      if (_invocation == null) {
-        _state = StateRequest.CLOSE;
-
-        return StateConnection.CLOSE;
-      }
-
-      if (! _isBodyComplete) {
-        // XXX: only on non-upgrade and non-101
-        _requestHttp.readBodyChunk(this);
-      }
-
-      StateConnection nextState = _invocation.service(this);
-
-      ServiceRef.flushOutboxAndExecuteLast();
-
-      if (! _isBodyComplete) {
-        return StateConnection.READ;
-      }
-      else if (_state == StateRequest.UPGRADE) {
-        return StateConnection.READ;
-      }
-      else if (_requestHttp.isKeepalive()) {
-        return StateConnection.READ;
-      }
-      else {
-        return StateConnection.CLOSE_READ_A;
-      }
-    } catch (Throwable e) {
-      log.log(Level.WARNING, e.toString(), e);
-
-      e.printStackTrace();
-
-      toClose();
-
-      return StateConnection.CLOSE;
-    }
-  }
-  */
 
   private StateConnection readBody()
   {
@@ -1365,19 +1035,19 @@ public final class RequestBaratineImpl extends RequestFacadeBase
   // body callback
   //
 
-  @Override
+  //@Override
   public void bodyChunk(TempBuffer tBuf)
   {
     if (_bodyHead == null) {
       _bodyHead = _bodyTail = tBuf;
     }
     else {
-      _bodyTail.setNext(tBuf);
+      _bodyTail.next(tBuf);
       _bodyTail = tBuf;
     }
   }
 
-  @Override
+  //@Override
   public void bodyComplete()
   {
     _isBodyComplete = true;
@@ -1540,13 +1210,17 @@ public final class RequestBaratineImpl extends RequestFacadeBase
         return null;
       }
 
+      /*
       @Override
       public StateRequest toUpgrade() { return StateRequest.UPGRADE; }
+      */
     },
 
     ACTIVE {
+      /*
       @Override
       public StateRequest toUpgrade() { return StateRequest.UPGRADE; }
+      */
 
       @Override
       public StateConnection service(RequestBaratineImpl request)
@@ -1567,8 +1241,8 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       @Override
       public StateRequest toCloseRead() { return CLOSE; }
 
-      @Override
-      public boolean isCloseWrite() { return true; }
+      //@Override
+      //public boolean isCloseWrite() { return true; }
     },
 
     CLOSE {
@@ -1578,8 +1252,8 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       @Override
       public StateRequest toCloseWrite() { return this; }
 
-      @Override
-      public boolean isCloseWrite() { return true; }
+      //@Override
+      //public boolean isCloseWrite() { return true; }
     };
 
     public StateConnection service(RequestBaratineImpl requestBaratineImpl)
@@ -1587,10 +1261,12 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       throw new IllegalStateException(toString());
     }
 
+    /*
     public StateRequest toUpgrade()
     {
       throw new IllegalStateException(toString());
     }
+    */
 
     public StateRequest toCloseRead()
     {
@@ -1602,9 +1278,11 @@ public final class RequestBaratineImpl extends RequestFacadeBase
       return CLOSE_WRITE;
     }
 
+    /*
     public boolean isCloseWrite()
     {
       return false;
     }
+    */
   }
 }

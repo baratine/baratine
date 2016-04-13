@@ -111,7 +111,7 @@ public class IoUtil
   public static long copy(InputStream is, OutputStream os)
     throws IOException
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     byte []buffer = tBuf.buffer();
 
     long total = 0;
@@ -131,7 +131,7 @@ public class IoUtil
   public static long copy(InputStream is, OutputStream os, int len)
     throws IOException
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     byte []buffer = tBuf.buffer();
 
     long total = 0;

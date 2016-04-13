@@ -228,7 +228,7 @@ public class SegmentKelp
                           InSegment reader,
                           SegmentEntryCallback cb)
   {
-    TempBuffer tBuf = TempBuffer.allocateLarge();
+    TempBuffer tBuf = TempBuffer.createLarge();
     byte []buffer = tBuf.buffer();
     
     InStore sIn = reader.getStoreRead();
@@ -324,7 +324,7 @@ public class SegmentKelp
   int findFirstEntryBlock(InStore sIn)
       throws IOException
   {
-    TempBuffer tBuf = TempBuffer.allocateLarge();
+    TempBuffer tBuf = TempBuffer.createLarge();
     byte []buffer = tBuf.buffer();
     
     for (int ptr = getLength() - BLOCK_SIZE; ptr > 0; ptr -= BLOCK_SIZE) {

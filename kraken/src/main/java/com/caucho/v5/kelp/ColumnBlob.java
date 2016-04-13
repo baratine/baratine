@@ -35,9 +35,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.L10N;
 
@@ -292,7 +292,7 @@ public class ColumnBlob extends Column
    */
   @Override
   void readJournal(PageServiceImpl pageActor,
-                   ReadBuffer is, 
+                   ReadStream is, 
                    byte[] buffer, int offset, RowCursor cursor)
     throws IOException
   {
@@ -323,7 +323,7 @@ public class ColumnBlob extends Column
       return;
     }
     
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     byte []tempBuffer = tBuf.buffer();
 
     is.readAll(tempBuffer, 0, len);
@@ -500,7 +500,7 @@ public class ColumnBlob extends Column
   //
 
   @Override
-  void writeCheckpoint(WriteBuffer os, byte[] rowBuffer, int rowOffset)
+  void writeCheckpoint(WriteStream os, byte[] rowBuffer, int rowOffset)
     throws IOException
   {
     int colOffset = rowOffset + getOffset();
@@ -536,7 +536,7 @@ public class ColumnBlob extends Column
    * @return the new blob tail pointer or -1 if the blob doesn't fit.
    */
   @Override
-  int readCheckpoint(ReadBuffer is,
+  int readCheckpoint(ReadStream is,
                      byte[] blockBuffer, int rowOffset, int rowLength,
                      int blobTail)
     throws IOException

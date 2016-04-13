@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.db.journal.JournalStream;
 import com.caucho.v5.db.journal.JournalStream.ReplayCallback;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.util.BitsUtil;
 
@@ -63,7 +63,7 @@ class JournalKelpImpl
   private final JournalStream _jOut;
   private final JournalOutputStream _jOs;
   
-  private final TempBuffer _tBuf = TempBuffer.allocate();
+  private final TempBuffer _tBuf = TempBuffer.create();
   private final byte []_buffer = _tBuf.buffer();
   
   private final RowCursor _workCursor;
@@ -146,7 +146,7 @@ class JournalKelpImpl
     } while (! isValid);
   }
   
-  private void replayJournal(ReadBuffer is,
+  private void replayJournal(ReadStream is,
                              PageServiceImpl pageActor)
     throws IOException
   {
@@ -248,7 +248,7 @@ class JournalKelpImpl
     }
 
     @Override
-    public void onItem(ReadBuffer is) throws IOException
+    public void onItem(ReadStream is) throws IOException
     {
       replayJournal(is, _putActor);
     }

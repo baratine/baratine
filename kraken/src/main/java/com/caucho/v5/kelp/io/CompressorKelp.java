@@ -33,15 +33,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 
 /**
  * Compression factory.
  */
 public interface CompressorKelp
 {
-  OutputStream out(WriteBuffer os) throws IOException;
+  OutputStream out(WriteStream os) throws IOException;
   
-  InputStream in(ReadBuffer is, long offset, int length) throws IOException;
+  InputStream in(ReadStream is, long offset, int length) throws IOException;
 }

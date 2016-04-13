@@ -43,24 +43,25 @@ import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.InjectorImpl;
 import com.caucho.v5.loader.EnvLoader;
 
-import io.baratine.service.Services;
 import io.baratine.service.ServiceRef;
+import io.baratine.service.Services;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**
  * Provider for the Services.
  */
-public class ServiceManagerProviderAmp extends ServiceManagerProvider
+public class ServiceManagerProviderCore
+  extends ServiceManagerProvider
 {
-  private static final Logger log = Logger.getLogger(ServiceManagerProviderAmp.class.getName());
+  private static final Logger log = Logger.getLogger(ServiceManagerProviderCore.class.getName());
   
-  public ServiceManagerProviderAmp()
+  public ServiceManagerProviderCore()
   {
     EnvLoader.addCloseListener(this);
   }
   
   @Override
-  public Services currentManager()
+  public ServicesAmp currentManager()
   {
     return Amp.getCurrentManager();
   }
@@ -82,7 +83,7 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
   }
 
   @Override
-  public ServiceRef getCurrentServiceRef()
+  public ServiceRef currentServiceRef()
   {
     OutboxAmp outbox = OutboxAmp.current();
     
@@ -91,7 +92,7 @@ public class ServiceManagerProviderAmp extends ServiceManagerProvider
     }
 
     try {
-      ServicesAmp manager = Amp.getContextManager();
+      ServicesAmp manager = currentManager();
     
       if (manager != null) {
         return manager.inboxSystem().serviceRef();

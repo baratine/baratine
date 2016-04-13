@@ -40,7 +40,7 @@ import com.caucho.v5.bartender.ClusterBartender;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.files.FileServiceBind;
 import com.caucho.v5.bartender.heartbeat.ServerHeartbeat;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 import io.baratine.files.BfsFileSync;
 import io.baratine.service.OnActive;
@@ -115,7 +115,7 @@ public class ProcServers extends ProcFileBase
   }
   
   @Override
-  protected boolean fillRead(WriteBuffer out)
+  protected boolean fillRead(WriteStream out)
     throws IOException
   {
     out.println("[");
@@ -159,7 +159,7 @@ public class ProcServers extends ProcFileBase
     return true;
   }
   
-  private void printServer(WriteBuffer out, ServerHeartbeat server)
+  private void printServer(WriteStream out, ServerHeartbeat server)
     throws IOException
   {
     out.print("  { \"server\" : \"" + server.getId() + "\"");

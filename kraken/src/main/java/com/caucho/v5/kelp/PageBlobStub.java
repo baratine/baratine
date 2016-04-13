@@ -35,7 +35,7 @@ import java.io.OutputStream;
 
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.segment.InSegment;
 import com.caucho.v5.kelp.segment.OutSegment;
 import com.caucho.v5.kelp.segment.SegmentKelp;
@@ -135,7 +135,7 @@ class PageBlobStub extends PageBlob
                        int saveSequence)
     throws IOException
   {
-    WriteBuffer os = sOut.out();
+    WriteStream os = sOut.out();
     
     if (sOut.getAvailable() <= os.getPosition() + _length) {
       return null;
@@ -161,7 +161,7 @@ class PageBlobStub extends PageBlob
     try (InSegment is = _segment.openRead()) {
       is.setPosition(getOffset());
 
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
       byte []buffer = tBuf.buffer();
       
       int length = _length;

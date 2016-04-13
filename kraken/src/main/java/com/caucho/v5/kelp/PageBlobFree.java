@@ -32,7 +32,7 @@ package com.caucho.v5.kelp;
 import java.io.IOException;
 
 import com.caucho.v5.baratine.InService;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.kelp.segment.OutSegment;
 import com.caucho.v5.kelp.segment.SegmentKelp;
 import com.caucho.v5.util.CurrentTime;
@@ -126,7 +126,7 @@ public class PageBlobFree extends PageBlob
   static void readCheckpoint(TableKelp table,
                              PageServiceImpl pageActor,
                              SegmentKelp segment,
-                             ReadBuffer is, 
+                             ReadStream is, 
                              int length, 
                              int pid,
                              int nextPid)

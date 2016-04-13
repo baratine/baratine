@@ -29,13 +29,13 @@
 package com.caucho.v5.vfs;
 
 public class ReadWritePair {
-  private ReadStream _readStream;
-  private WriteStream _writeStream;
+  private ReadStreamOld _readStream;
+  private WriteStreamOld _writeStream;
 
   /**
    * Creates a ReadWritePair
    */
-  public ReadWritePair(ReadStream readStream, WriteStream writeStream)
+  public ReadWritePair(ReadStreamOld readStream, WriteStreamOld writeStream)
   {
     _readStream = readStream;
     _writeStream = writeStream;
@@ -44,7 +44,7 @@ public class ReadWritePair {
   /**
    * Return the read stream of the pair.
    */
-  public ReadStream getReadStream()
+  public ReadStreamOld getReadStream()
   {
     return _readStream;
   }
@@ -52,7 +52,7 @@ public class ReadWritePair {
   /**
    * Return the write stream of the pair.
    */
-  public WriteStream getWriteStream()
+  public WriteStreamOld getWriteStream()
   {
     return _writeStream;
   }

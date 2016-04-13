@@ -370,7 +370,7 @@ public class BenchHttpCommand extends CommandBase<ArgsCli>
 
         String address = uri.getScheme() + "://" + uri.getAuthority();
 
-        TempBuffer tBuf = TempBuffer.allocate();
+        TempBuffer tBuf = TempBuffer.create();
         byte []buffer = tBuf.buffer();
 
         long startTime = System.currentTimeMillis();
@@ -576,7 +576,7 @@ public class BenchHttpCommand extends CommandBase<ArgsCli>
 
         String address = uri.getScheme() + "://" + uri.getAuthority();
 
-        TempBuffer tBuf = TempBuffer.allocate();
+        TempBuffer tBuf = TempBuffer.create();
         byte []buffer = tBuf.buffer();
 
         long startTime = System.currentTimeMillis();

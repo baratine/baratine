@@ -49,10 +49,10 @@ import java.util.zip.ZipOutputStream;
 
 import com.caucho.v5.amp.thread.WorkerThreadPoolBase;
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.config.types.Bytes;
+import com.caucho.v5.config.types.BytesType;
 import com.caucho.v5.config.types.CronType;
 import com.caucho.v5.io.IoUtil;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.util.Alarm;
 import com.caucho.v5.util.AlarmListener;
@@ -76,7 +76,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
   private static final long DAY = 24L * 3600L * 1000L;
 
   // Default maximum log size = 2G
-  private static final long DEFAULT_ROLLOVER_SIZE = Bytes.INFINITE;
+  private static final long DEFAULT_ROLLOVER_SIZE = BytesType.INFINITE;
   // How often to check size
   private static final long DEFAULT_ROLLOVER_CHECK_PERIOD = 600L * 1000L;
 
@@ -130,8 +130,8 @@ public class RolloverLogBase extends OutputStream // implements Closeable
   //private TempWriter _tempStream;
   private long _tempStreamSize;
 
-  private WriteBuffer _os;
-  private WriteBuffer _zipOut;
+  private WriteStream _os;
+  private WriteStream _zipOut;
 
   private volatile boolean _isClosed;
   private final RolloverAlarm _rolloverListener;
@@ -261,7 +261,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
    *
    * @param bytes maximum size of the log file
    */
-  public void setRolloverSize(Bytes bytes)
+  public void setRolloverSize(BytesType bytes)
   {
     setRolloverSizeBytes(bytes.getBytes());
   }
@@ -269,7 +269,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
   public void setRolloverSizeBytes(long size)
   {
     if (size < 0)
-      _rolloverSize = Bytes.INFINITE;
+      _rolloverSize = BytesType.INFINITE;
     else
       _rolloverSize = size;
   }
@@ -552,7 +552,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
   {
     closeLogStream();
 
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     _os = null;
 
     IoUtil.close(os);
@@ -579,7 +579,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
     for (int i = 0; i < 3 && _os == null; i++) {
       try {
         OutputStream out = Files.newOutputStream(path, StandardOpenOption.APPEND);
-        _os = new WriteBuffer(out);
+        _os = new WriteStream(out);
       } catch (IOException e) {
         exn = e;
       }
@@ -590,7 +590,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
     try {
       if (pathName.endsWith(".gz")) {
         _zipOut = _os;
-        _os = new WriteBuffer(new GZIPOutputStream(_zipOut));
+        _os = new WriteStream(new GZIPOutputStream(_zipOut));
       }
       else if (pathName.endsWith(".zip")) {
         throw new ConfigException("Can't support .zip in path-format");
@@ -630,7 +630,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
 
     try {
       if (Files.exists(path)) {
-        WriteBuffer os = null;
+        WriteStream os = null;
         OutputStream out = null;
 
         // *.gz and *.zip are copied.  Others are just renamed
@@ -891,7 +891,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
   private void closeLogStream()
   {
     try {
-      WriteBuffer os = _os;
+      WriteStream os = _os;
       _os = null;
 
       if (os != null)
@@ -901,7 +901,7 @@ public class RolloverLogBase extends OutputStream // implements Closeable
     }
 
     try {
-      WriteBuffer zipOut = _zipOut;
+      WriteStream zipOut = _zipOut;
       _zipOut = null;
 
       if (zipOut != null)

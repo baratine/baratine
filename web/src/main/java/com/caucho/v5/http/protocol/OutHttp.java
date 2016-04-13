@@ -29,8 +29,9 @@
 
 package com.caucho.v5.http.protocol;
 
-import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
+
+import io.baratine.io.Bytes;
 
 /**
  * Writer for http response, called in the writer service.
@@ -49,21 +50,12 @@ public interface OutHttp
    * @param length the length of the data in the buffer
    * @param isEnd true for the final result
    */
-  boolean writeFirst(WriteBuffer out, 
-                     TempBuffer head, long length, boolean isEnd);
-  
-  /**
-   * Writes a following buffer for a http response.
-   * 
-   * If the request is not the final request, free the buffer.
-   * 
-   * @param buffer the temp buffer with data
-   * @param isEnd true for the final result
-   */
-  boolean writeNext(WriteBuffer out, TempBuffer head, boolean isEnd);
+  boolean write(WriteStream out, 
+                Bytes data,
+                boolean isEnd);
   
   /**
    * Disconnect the connection
    */
-  void disconnect(WriteBuffer out);
+  void disconnect(WriteStream out);
 }

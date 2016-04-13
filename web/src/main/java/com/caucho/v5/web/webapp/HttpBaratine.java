@@ -29,8 +29,6 @@
 
 package com.caucho.v5.web.webapp;
 
-import io.baratine.web.HttpStatus;
-
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -42,9 +40,11 @@ import com.caucho.v5.http.dispatch.InvocationManager;
 import com.caucho.v5.http.dispatch.InvocationManagerBuilder;
 import com.caucho.v5.http.dispatch.InvocationRouter;
 import com.caucho.v5.http.protocol.ConnectionHttp;
-import com.caucho.v5.http.protocol.RequestFacade;
 import com.caucho.v5.io.ClientDisconnectException;
 import com.caucho.v5.io.Dependency;
+import com.caucho.v5.network.port.ConnectionProtocol;
+
+import io.baratine.web.HttpStatus;
 
 
 public class HttpBaratine
@@ -105,14 +105,14 @@ public class HttpBaratine
 
   @Override
   public void sendRequestError(Throwable e, 
-                               RequestFacade requestFacade)
+                               RequestBaratine requestFacade)
       throws ClientDisconnectException
   {
     e.printStackTrace();
   }
 
   @Override
-  public RequestFacade newRequest(ConnectionHttp connHttp)
+  public ConnectionProtocol newRequest(ConnectionHttp connHttp)
   {
     return new RequestBaratineImpl(connHttp);
   }

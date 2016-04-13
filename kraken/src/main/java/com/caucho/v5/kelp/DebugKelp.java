@@ -35,8 +35,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.kelp.segment.InSegment;
 import com.caucho.v5.kelp.segment.SegmentExtent;
@@ -71,13 +71,13 @@ public class DebugKelp
   }
   */
 
-  public void debug(WriteBuffer out, Path path)
+  public void debug(WriteStream out, Path path)
     throws IOException
   {
     debug(out, path, null);
   }
 
-  public void debug(WriteBuffer out, Path path, byte []tableKey)
+  public void debug(WriteStream out, Path path, byte []tableKey)
     throws IOException
   {
     SegmentKelpBuilder builder = new SegmentKelpBuilder();
@@ -152,7 +152,7 @@ public class DebugKelp
     */
   }
   
-  private void debugSegment(WriteBuffer out, 
+  private void debugSegment(WriteStream out, 
                             SegmentServiceImpl segmentService,
                             SegmentExtent extent,
                             byte []debugTableKey)
@@ -161,7 +161,7 @@ public class DebugKelp
     int length = extent.getLength();
     
     try (InSegment in = segmentService.openRead(extent)) {
-      ReadBuffer is = new ReadBuffer(in);
+      ReadStream is = new ReadStream(in);
 
       is.setPosition(length - BLOCK_SIZE);
 
@@ -203,8 +203,8 @@ public class DebugKelp
     */
   }
   
-  private void debugSegmentEntries(WriteBuffer out, 
-                                   ReadBuffer is,
+  private void debugSegmentEntries(WriteStream out, 
+                                   ReadStream is,
                                    SegmentExtent extent,
                                    TableEntry table)
     throws IOException
@@ -238,8 +238,8 @@ public class DebugKelp
     }
   }
   
-  private int debugSegmentEntry(WriteBuffer out, 
-                                ReadBuffer is,
+  private int debugSegmentEntry(WriteStream out, 
+                                ReadStream is,
                                 long segmentAddress,
                                 long ptr,
                                 int tail,
@@ -294,8 +294,8 @@ public class DebugKelp
     return tail;
   }
   
-  void debugLeaf(WriteBuffer out, 
-                 ReadBuffer is, 
+  void debugLeaf(WriteStream out, 
+                 ReadStream is, 
                  long segmentAddress, 
                  int offset,
                  TableEntry table)
@@ -317,8 +317,8 @@ public class DebugKelp
     out.print("]");
   }
   
-  void debugTree(WriteBuffer out, 
-                 ReadBuffer is, 
+  void debugTree(WriteStream out, 
+                 ReadStream is, 
                  long segmentAddress, 
                  int offset,
                  TableEntry table)
@@ -339,7 +339,7 @@ public class DebugKelp
     out.print("]");
   }
   
-  private void printKey(WriteBuffer out, byte []key)
+  private void printKey(WriteStream out, byte []key)
     throws IOException
   {
     if (key.length <= 4) {

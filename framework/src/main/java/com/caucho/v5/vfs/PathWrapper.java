@@ -545,7 +545,7 @@ public abstract class PathWrapper extends PathImpl {
    * @param is pre-allocated ReadStream to be initialized
    * @param os pre-allocated WriteStream to be initialized
    */
-  public void openReadWrite(ReadStream is, WriteStream os) throws IOException
+  public void openReadWrite(ReadStreamOld is, WriteStreamOld os) throws IOException
   {
     getWrappedPath().openReadWrite(is, os);
   }
@@ -553,7 +553,7 @@ public abstract class PathWrapper extends PathImpl {
   /**
    * Opens a stream for appending.
    */
-  public WriteStream openAppend() throws IOException
+  public WriteStreamOld openAppend() throws IOException
   {
     return getWrappedPath().openAppend();
   }

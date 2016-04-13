@@ -35,6 +35,7 @@ import java.util.Objects;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.network.port.ConnectionTcp;
 
+import io.baratine.io.Bytes;
 import io.baratine.service.AfterBatch;
 
 /**
@@ -60,23 +61,23 @@ class OutHttpProxyImpl implements OutHttpProxy
   }
   
   @Override
-  public void writeFirst(OutHttp out, 
-                         TempBuffer buffer, 
-                         long length, 
-                         boolean isEnd)
+  public void write(OutHttp out, 
+                    Bytes buffer, 
+                    boolean isEnd)
   {
     if (out.canWrite(_connHttp.sequenceWrite() + 1)) {
-      _isClose = out.writeFirst(conn().writeStream(), buffer, length, isEnd);
+      _isClose = out.write(conn().writeStream(), buffer, isEnd);
       
       if (isEnd) {
         writePending();
       }
     }
     else {
-      _pendingList.add(new PendingFirst(out, buffer, length, isEnd));
+      _pendingList.add(new PendingData(out, buffer, isEnd));
     }
   }
 
+  /*
   @Override
   public void writeNext(OutHttp out, TempBuffer buffer, boolean isEnd)
   {
@@ -91,6 +92,7 @@ class OutHttpProxyImpl implements OutHttpProxy
       _pendingList.add(new PendingNext(out, buffer, isEnd));
     }
   }
+  */
   
   private void writePending()
   {
@@ -162,47 +164,23 @@ class OutHttpProxyImpl implements OutHttpProxy
     abstract void write(); 
   }
   
-  private class PendingFirst extends Pending
+  private class PendingData extends Pending
   {
-    private TempBuffer _head;
-    private long _length;
-    private boolean _isEnd;
+    private Bytes _data;
     
-    PendingFirst(OutHttp out,
-                 TempBuffer head,
-                 long length,
-                 boolean isEnd)
-    {
-      super(out, isEnd);
-
-      _head = head;
-      _length = length;
-    }
-    
-    @Override
-    void write()
-    {
-      out().writeFirst(conn().writeStream(), _head, _length, isEnd());
-    }
-  }
-  
-  private class PendingNext extends Pending
-  {
-    private TempBuffer _head;
-    
-    PendingNext(OutHttp out,
-                TempBuffer head,
+    PendingData(OutHttp out,
+                Bytes data,
                 boolean isEnd)
     {
       super(out, isEnd);
 
-      _head = head;
+      _data = data;
     }
     
     @Override
     void write()
     {
-      out().writeNext(conn().writeStream(), _head, isEnd());
+      out().write(conn().writeStream(), _data, isEnd());
     }
   }
 }

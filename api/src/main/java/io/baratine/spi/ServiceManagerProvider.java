@@ -34,8 +34,9 @@ import java.util.ServiceLoader;
 import java.util.WeakHashMap;
 
 import io.baratine.inject.Injector.InjectorBuilder;
-import io.baratine.service.Services;
+import io.baratine.io.BytesFactory;
 import io.baratine.service.ServiceRef;
+import io.baratine.service.Services;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
@@ -95,7 +96,7 @@ abstract public class ServiceManagerProvider implements AutoCloseable
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  public ServiceRef getCurrentServiceRef()
+  public ServiceRef currentServiceRef()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -120,6 +121,12 @@ abstract public class ServiceManagerProvider implements AutoCloseable
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+
+  public BytesFactory bytesFactory()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
   /**
    * Gets the current <code>ServiceManagerProvider</code> for the system.
    *

@@ -37,9 +37,9 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.config.types.Bytes;
+import com.caucho.v5.config.types.BytesType;
 import com.caucho.v5.io.StreamImpl;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 import io.baratine.service.ResultFuture;
 
@@ -60,7 +60,7 @@ public class RotateStream extends StreamImpl
   private static RotateStreamQueue _stdStreamQueue;
 
   private final RolloverLogBase _rolloverLog;
-  private final WriteBuffer _out;
+  private final WriteStream _out;
 
   private volatile AtomicBoolean _isInit = new AtomicBoolean();
 
@@ -77,7 +77,7 @@ public class RotateStream extends StreamImpl
     _rolloverLog = new RolloverLogBase();
     _rolloverLog.setPathFormat(formatPath);
     
-    _out = new WriteBuffer(_rolloverLog);
+    _out = new WriteStream(_rolloverLog);
 
     // _queue = buildQueue(this);
     _queue = new RotateStreamQueue(this);
@@ -93,12 +93,12 @@ public class RotateStream extends StreamImpl
     _rolloverLog = new RolloverLogBase();
     _rolloverLog.setPath(path);
     
-    _out = new WriteBuffer(_rolloverLog);
+    _out = new WriteStream(_rolloverLog);
 
     _queue = new RotateStreamQueue(this);
   }
   
-  private RotateStream(WriteBuffer out)
+  private RotateStream(WriteStream out)
   {
     _rolloverLog = new RolloverLogBase();
     //_rolloverLog.setPath(out.getPath());
@@ -109,7 +109,7 @@ public class RotateStream extends StreamImpl
     _queue = new RotateStreamQueue(this);
   }
   
-  private RotateStream(WriteBuffer out, RotateStreamQueue queue)
+  private RotateStream(WriteStream out, RotateStreamQueue queue)
   {
     _rolloverLog = new RolloverLogBase();
     //_rolloverLog.setPath(out.getPath());
@@ -249,7 +249,7 @@ public class RotateStream extends StreamImpl
    */
   public void setRolloverSize(long size)
   {
-    _rolloverLog.setRolloverSize(new Bytes(size));
+    _rolloverLog.setRolloverSize(new BytesType(size));
   }
 
   /**
@@ -309,9 +309,9 @@ public class RotateStream extends StreamImpl
   /**
    * Gets the current write stream
    */
-  public WriteBuffer getStream()
+  public WriteStream getStream()
   {
-    return new WriteBuffer(this);
+    return new WriteStream(this);
   }
   
   public void waitForFlush(ResultFuture<Boolean> future)

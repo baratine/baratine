@@ -30,7 +30,8 @@
 package com.caucho.v5.ramp.jamp;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -164,9 +165,11 @@ public class RouteJampPodsImpl implements RouteBaratine
     InJamp in = new InJamp(channel, _jsonFactory); // , outbox);
     
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(channel.getManager())) {
-      int queryCount = in.readMessages(req.getReader(), outbox);
+      Reader reader = req.body(Reader.class);
       
-      PrintWriter pw = req.getWriter();
+      int queryCount = in.readMessages(reader, outbox);
+      
+      Writer pw = req.writer();
       OutJamp out = new OutJamp(_jsonFactory);
       out.init(pw);
       
@@ -174,9 +177,9 @@ public class RouteJampPodsImpl implements RouteBaratine
       
       if (queryCount > 0) {
         if ((msg = channel.pollMessage(_rpcTimeout, TimeUnit.MILLISECONDS)) != null) {
-          pw.print("[");
+          pw.write("[");
           msg.write(out);
-          pw.print("]");
+          pw.write("]");
           
           //pw.flush(); // XXX:
           
@@ -187,7 +190,7 @@ public class RouteJampPodsImpl implements RouteBaratine
         //outbox.flush();
       }
       
-      pw.print("[]");
+      pw.write("[]");
       //pw.flush();
       
       

@@ -29,7 +29,7 @@
 
 package com.caucho.v5.http.log;
 
-import com.caucho.v5.http.protocol.RequestFacade;
+import com.caucho.v5.web.webapp.RequestBaratine;
 
 /**
  * Represents an log of every top-level request to the server.
@@ -43,5 +43,5 @@ public interface AccessLog
    * @param request the http request.
    * @param response the http response.
    */
-  void log(RequestFacade request);
+  void log(RequestBaratine request);
 }

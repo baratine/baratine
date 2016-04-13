@@ -31,7 +31,7 @@ package com.caucho.v5.http.protocol2;
 
 import java.io.IOException;
 
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 
 /**
@@ -39,7 +39,7 @@ import com.caucho.v5.io.WriteBuffer;
  */
 public class OutHeaderHuffmanResponse extends OutHeader
 {
-  public OutHeaderHuffmanResponse(WriteBuffer os)
+  public OutHeaderHuffmanResponse(WriteStream os)
   {
     super(os);
   }

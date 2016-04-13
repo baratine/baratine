@@ -77,10 +77,10 @@ public class TempReadStream extends StreamImpl {
     System.arraycopy(cursor.buffer(), _offset, buf, offset, sublen);
 
     if (cursor.length() <= _offset + sublen) {
-      _cursor = cursor.getNext();
+      _cursor = cursor.next();
 
       if (_freeWhenDone) {
-        cursor.setNext(null);
+        cursor.next(null);
         TempBuffer.free(cursor);
         cursor = null;
       }

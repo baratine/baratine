@@ -35,7 +35,8 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.http.dispatch.InvocationManager;
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.HttpBufferStore;
-import com.caucho.v5.http.protocol.RequestFacade;
+import com.caucho.v5.network.port.ConnectionProtocol;
+import com.caucho.v5.web.webapp.RequestBaratine;
 
 public interface HttpContainer
 {
@@ -64,7 +65,7 @@ public interface HttpContainer
 
   InvocationManager<?> getInvocationManager();
 
-  RequestFacade newRequest(ConnectionHttp conn);
+  ConnectionProtocol newRequest(ConnectionHttp conn);
   
   HttpBufferStore allocateHttpBuffer();
 
@@ -78,7 +79,7 @@ public interface HttpContainer
   String getServerId();
 
   void sendRequestError(Throwable e,
-                        RequestFacade requestFacade)
+                        RequestBaratine requestFacade)
                         throws IOException;
 
   boolean isIgnoreClientDisconnect();

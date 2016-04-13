@@ -115,7 +115,7 @@ public class WebStaticFile implements ServiceWeb
         req.length(len);
       }
       
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
       byte []buffer = tBuf.buffer();
       
       int sublen;

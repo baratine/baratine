@@ -56,10 +56,10 @@ public class VfsStringReader extends StreamImpl {
    *
    * @return a ReadStream reading from the string.
    */
-  public static ReadStream open(String string)
+  public static ReadStreamOld open(String string)
   {
     VfsStringReader ss = new VfsStringReader(string);
-    ReadStream rs = new ReadStream(ss);
+    ReadStreamOld rs = new ReadStreamOld(ss);
     try {
       rs.setEncoding("UTF-8");
     } catch (Exception e) {

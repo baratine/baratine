@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.BitsUtil;
 
 
@@ -52,7 +52,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   
   private TableEntry _key = new TableEntry();
   
-  private final WriteBuffer _os;
+  private final WriteStream _os;
   
   private byte []_buffer;
   private int _headerOffset;
@@ -74,7 +74,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   
   private int _pad;
   
-  public OutHeader(WriteBuffer os)
+  public OutHeader(WriteStream os)
   {
     Objects.requireNonNull(os);
     
@@ -131,7 +131,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   private void startChunk()
     throws IOException
   {
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     int offset = os.offset();
     byte []buffer = os.buffer();
@@ -243,7 +243,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     
     BitsUtil.writeInt(buffer, headerOffset + 4, _streamId);
     
-    WriteBuffer os = _os;
+    WriteStream os = _os;
     
     if (fillLen > 0) {
       Arrays.fill(buffer, offset, offset + fillLen, (byte) 0);

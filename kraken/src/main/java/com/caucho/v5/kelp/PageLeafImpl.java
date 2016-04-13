@@ -42,9 +42,9 @@ import java.util.TreeSet;
 
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.IoUtil;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.StreamSource;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.PageServiceSync.PutType;
 import com.caucho.v5.kelp.segment.OutSegment;
 import com.caucho.v5.kelp.segment.SegmentKelp;
@@ -846,7 +846,7 @@ public final class PageLeafImpl extends PageLeaf
     
     int size = BLOCK_SIZE * blocks.length;
     
-    WriteBuffer os = sOut.out();
+    WriteStream os = sOut.out();
     
     int available = sOut.getAvailable();
     
@@ -904,7 +904,7 @@ public final class PageLeafImpl extends PageLeaf
   
   @InService(SegmentServiceImpl.class)
   private Type writeDelta(TableKelp table, 
-                          WriteBuffer os,
+                          WriteStream os,
                           int saveLength)
     throws IOException
   {
@@ -1058,7 +1058,7 @@ public final class PageLeafImpl extends PageLeaf
    */
   void readCheckpointDelta(TableKelp table,
                            PageServiceImpl pageActor,
-                           ReadBuffer is,
+                           ReadStream is,
                            int length)
     throws IOException
   {

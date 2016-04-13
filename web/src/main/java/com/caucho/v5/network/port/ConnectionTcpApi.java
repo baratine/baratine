@@ -35,9 +35,9 @@ import java.net.InetSocketAddress;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 
 /**
@@ -53,12 +53,12 @@ public interface ConnectionTcpApi
   /**
    * Returns the connection's buffered read stream.
    */
-  ReadBuffer readStream();
+  ReadStream readStream();
 
   /**
    * Returns the connection's buffered write stream. 
    */
-  WriteBuffer writeStream();
+  WriteStream writeStream();
 
   /**
    * Returns true if secure (ssl)

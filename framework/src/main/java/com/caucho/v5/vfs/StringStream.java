@@ -45,10 +45,10 @@ public class StringStream extends StreamImpl {
     _index = 0;
   }
 
-  public static ReadStream open(String string)
+  public static ReadStreamOld open(String string)
   {
     StringStream ss = new StringStream(string);
-    return new ReadStream(ss);
+    return new ReadStreamOld(ss);
   }
 
   public PathImpl getPath() { return new StringPath(_string); }

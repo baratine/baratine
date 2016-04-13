@@ -29,14 +29,13 @@
 package com.caucho.v5.io;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import io.baratine.io.Bytes;
 
 /**
  * Specialized stream to handle sockets.
@@ -352,6 +351,48 @@ public class SocketChannelStream extends StreamImpl
       }
 
       _totalWriteBytes += length;
+    } catch (IOException e) {
+      IOException exn = ClientDisconnectException.create(this + ":" + e, e);
+      
+      try {
+        close();
+      } catch (IOException e1) {
+      }
+
+      throw exn;
+    }
+  }
+
+  /**
+   * Writes an nio buffer to the socket.
+   */
+  @Override
+  public void write(Bytes buffer, boolean isEnd)
+    throws IOException
+  {
+    if (_s == null) {
+      return;
+    }
+    
+    try {
+      _needsFlush = true;
+      
+      if (buffer.isDirect()) {
+        _totalWriteBytes += buffer.length(); 
+        _s.write(buffer.direct());
+        return;
+      }
+      
+      _totalWriteBytes += buffer.length();
+      
+      while (buffer.length() > 0) {
+        _writeBuffer.clear();
+        
+        buffer.read(_writeBuffer);
+        _writeBuffer.flip();
+        
+        _s.write(_writeBuffer);
+      }
     } catch (IOException e) {
       IOException exn = ClientDisconnectException.create(this + ":" + e, e);
       

@@ -55,7 +55,7 @@ import com.caucho.v5.http.dispatch.InvocationDecoder;
 import com.caucho.v5.http.dispatch.InvocationManager;
 import com.caucho.v5.http.log.LogBuffer;
 import com.caucho.v5.io.IoUtil;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.io.i18n.Encoding;
 import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.network.port.ConnectionTcp;
@@ -66,6 +66,7 @@ import com.caucho.v5.util.ClockCurrent;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.LruCache;
 import com.caucho.v5.web.CookieWeb;
+import com.caucho.v5.web.webapp.RequestBaratine;
 import com.caucho.v5.web.webapp.WriterUtf8;
 
 /**
@@ -281,7 +282,7 @@ public abstract class RequestHttpBase implements OutHttp
 
   private boolean _isKeepalive;
 
-  private RequestFacade _request;
+  private RequestBaratine _request;
 
   private boolean _isChunkedIn;
 
@@ -431,6 +432,7 @@ public abstract class RequestHttpBase implements OutHttp
     _isKeepalive = true;
   }
   
+  /*
   protected RequestFacade request()
   {
     throw new UnsupportedOperationException();
@@ -440,6 +442,7 @@ public abstract class RequestHttpBase implements OutHttp
   {
     return null;
   }
+  */
   
   protected void closeWrite()
   {
@@ -752,7 +755,7 @@ public abstract class RequestHttpBase implements OutHttp
   /**
    * Returns the request's scheme.
    */
-  public String getScheme()
+  public String scheme()
   {
     return isSecure() ? "https" : "http";
   }
@@ -1359,9 +1362,11 @@ public abstract class RequestHttpBase implements OutHttp
     return _conn.isSecure();
   }
 
+  /*
   protected void initAttributes(RequestFacade facade)
   {
   }
+  */
 
   //
   // security
@@ -2280,7 +2285,7 @@ public abstract class RequestHttpBase implements OutHttp
     }
 
     // server/05a7
-    if (_contentLengthOut > 0 && _contentLengthOut <= stream.getContentLength()) {
+    if (_contentLengthOut > 0 && _contentLengthOut <= stream.contentLength()) {
       return true;
     }
 
@@ -2313,7 +2318,7 @@ public abstract class RequestHttpBase implements OutHttp
     
     // stream can be null for duplex (websocket)
     if (stream != null) {
-      return stream.getContentLength();
+      return stream.contentLength();
     }
     else {
       return Math.max(_contentLengthOut, 0);
@@ -2390,7 +2395,7 @@ public abstract class RequestHttpBase implements OutHttp
   */
   
   @Override
-  public void disconnect(WriteBuffer out)
+  public void disconnect(WriteStream out)
   {
     try {
       out.close();

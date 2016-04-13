@@ -62,7 +62,7 @@ public class TempWriter extends OutputStream
   {
     _store = store;
     
-    _tBuf = TempBuffer.allocate();
+    _tBuf = TempBuffer.create();
     _buffer = _tBuf.buffer();
   }
 
@@ -106,7 +106,7 @@ public class TempWriter extends OutputStream
   public void writeStream(int offset, InputStream is, int length)
     throws IOException
   {
-    TempBuffer tempBuffer = TempBuffer.allocate();
+    TempBuffer tempBuffer = TempBuffer.create();
     byte []buffer = tempBuffer.buffer();
     
     while (length > 0) {

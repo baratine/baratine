@@ -42,7 +42,7 @@ import com.caucho.v5.io.StreamSource;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.PathImpl;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 public class ReportPdfCommand extends RemoteCommandBase
 {
@@ -95,7 +95,7 @@ public class ReportPdfCommand extends RemoteCommandBase
     }
     
     try (InputStream is = ss.openInputStream()) {
-      try (WriteStream os = localPath.openWrite()) {
+      try (WriteStreamOld os = localPath.openWrite()) {
         os.writeStream(is);
       }
       

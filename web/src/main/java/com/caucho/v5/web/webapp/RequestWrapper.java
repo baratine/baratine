@@ -33,16 +33,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.Map;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
-import io.baratine.io.Buffer;
-import io.baratine.pipe.Pipe;
+import io.baratine.io.Bytes;
+import io.baratine.io.BytesFactory;
+import io.baratine.pipe.Credits;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
+import io.baratine.service.Services;
 import io.baratine.web.HttpStatus;
+import io.baratine.web.MultiMap;
 import io.baratine.web.OutWeb;
 import io.baratine.web.RequestWeb;
 
@@ -58,37 +60,31 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
-  public OutWeb<Buffer> push(Pipe<Buffer> out)
-  {
-    return delegate().push(out);
-  }
-
-  @Override
-  public OutWeb<Buffer> write(Buffer buffer)
+  public OutWeb write(Bytes buffer)
   {
     return delegate().write(buffer);
   }
 
   @Override
-  public OutWeb<Buffer> write(byte[] buffer, int offset, int length)
+  public OutWeb write(byte[] buffer, int offset, int length)
   {
     return delegate().write(buffer, offset, length);
   }
 
   @Override
-  public OutWeb<Buffer> write(String value)
+  public OutWeb write(String value)
   {
     return delegate().write(value);
   }
 
   @Override
-  public OutWeb<Buffer> write(char[] buffer, int offset, int length)
+  public OutWeb write(char[] buffer, int offset, int length)
   {
     return delegate().write(buffer, offset, length);
   }
 
   @Override
-  public OutWeb<Buffer> flush()
+  public OutWeb flush()
   {
     return delegate().flush();
   }
@@ -103,6 +99,18 @@ public class RequestWrapper implements RequestWebSpi
   public OutputStream output()
   {
     return delegate().output();
+  }
+
+  @Override
+  public OutWeb push(OutFilterWeb filter)
+  {
+    return delegate().push(filter);
+  }
+
+  @Override
+  public Credits credits()
+  {
+    return delegate().credits();
   }
 
   @Override
@@ -172,7 +180,7 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
-  public Map<String, List<String>> queryMap()
+  public MultiMap<String,String> queryMap()
   {
     return delegate().queryMap();
   }
@@ -288,6 +296,12 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
+  public Services services()
+  {
+    return delegate().services();
+  }
+
+  @Override
   public ServiceRef service(String address)
   {
     return delegate().service(address);
@@ -303,6 +317,12 @@ public class RequestWrapper implements RequestWebSpi
   public <X> X service(Class<X> type, String id)
   {
     return delegate().service(type, id);
+  }
+
+  @Override
+  public BytesFactory buffers()
+  {
+    return delegate().buffers();
   }
 
   @Override

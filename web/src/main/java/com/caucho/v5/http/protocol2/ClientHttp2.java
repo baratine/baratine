@@ -40,11 +40,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.thread.ThreadPool;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.SocketSystem;
 import com.caucho.v5.io.StreamImpl;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.ssl.OpenSSLClientFactory;
 import com.caucho.v5.util.L10N;
 
@@ -67,8 +67,8 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   private Path _logPathOut;
   
   private SocketBar _socket;
-  private ReadBuffer _is;
-  private WriteBuffer _os;
+  private ReadStream _is;
+  private WriteStream _os;
   private long _socketTimeout;
   private int _window;
   
@@ -201,13 +201,13 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
     */
     outStream = sockStream;
     
-    ReadBuffer is = new ReadBuffer(inStream);
-    WriteBuffer os = new WriteBuffer(outStream);
+    ReadStream is = new ReadStream(inStream);
+    WriteStream os = new WriteStream(outStream);
     
     init(is, os);
   }
   
-  public void init(ReadBuffer is, WriteBuffer os)
+  public void init(ReadStream is, WriteStream os)
     throws IOException
   {
     /*

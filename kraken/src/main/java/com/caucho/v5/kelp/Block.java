@@ -53,7 +53,7 @@ class Block
   {
     _id = id;
     
-    _tBuf = TempBuffer.allocateLarge();
+    _tBuf = TempBuffer.createLarge();
     _buffer = _tBuf.buffer();
     
     assert(BLOCK_SIZE == _buffer.length);
@@ -97,7 +97,7 @@ class Block
   
   void close()
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     _tBuf = null;
     _buffer = null;
     

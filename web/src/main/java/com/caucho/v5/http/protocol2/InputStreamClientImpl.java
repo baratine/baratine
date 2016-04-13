@@ -188,8 +188,8 @@ public class InputStreamClientImpl extends InputStreamClient
         TempBuffer head = _head;
 
         if (head != null) {
-          TempBuffer next = head.getNext();
-          head.setNext(null);
+          TempBuffer next = head.next();
+          head.next(null);
           
           _head = next;
           
@@ -229,7 +229,7 @@ public class InputStreamClientImpl extends InputStreamClient
         notifyAll();
       }
       else {
-        _tail.setNext(tBuf);
+        _tail.next(tBuf);
         _tail = tBuf;
         
         notifyAll();

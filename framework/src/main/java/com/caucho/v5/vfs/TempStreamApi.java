@@ -34,7 +34,7 @@ public interface TempStreamApi {
   void write(byte[] buffer, int offset, int length, boolean isEnd)
     throws IOException;
 
-  ReadStream openRead() throws IOException;
+  ReadStreamOld openRead() throws IOException;
   
   void destroy();
 }

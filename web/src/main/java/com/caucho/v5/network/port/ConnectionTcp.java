@@ -41,10 +41,10 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.health.shutdown.Shutdown;
 import com.caucho.v5.io.ClientDisconnectException;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.StreamImpl;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.Friend;
 import com.caucho.v5.util.ModulePrivate;
@@ -72,8 +72,8 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   private final SocketBar _socket;
   private final ConnectionProtocol _protocol;
   
-  private ReadBuffer _readStream;
-  private WriteBuffer _writeStream;
+  private ReadStream _readStream;
+  private WriteStream _writeStream;
   
   private final PollControllerTcp _pollHandle;
   private final ClassLoader _loader;
@@ -106,10 +106,10 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     _socket = socket;
 
-    _writeStream = new WriteBuffer();
+    _writeStream = new WriteStream();
     _writeStream.reuseBuffer(true);
 
-    _readStream = new ReadBuffer();
+    _readStream = new ReadStream();
     _readStream.reuseBuffer(true);
 
     _connectionId = connId;
@@ -140,7 +140,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
    * WriteStream.
    */
   @Override
-  public final ReadBuffer readStream()
+  public final ReadStream readStream()
   {
     return _readStream;
   }
@@ -151,7 +151,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
    * WriteStream.
    */
   @Override
-  public final WriteBuffer writeStream()
+  public final WriteStream writeStream()
   {
     return _writeStream;
   }
@@ -1334,7 +1334,7 @@ System.out.println("REQ_COMT:");
       }
 
       try {
-        ReadBuffer readStream = readStream();
+        ReadStream readStream = readStream();
         
         if (readStream != null) {
           readStream.close();

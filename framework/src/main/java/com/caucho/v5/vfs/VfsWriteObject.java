@@ -31,7 +31,7 @@ package com.caucho.v5.vfs;
 import java.io.IOException;
 
 public interface VfsWriteObject {
-  void print(WriteStream os) throws IOException;
+  void print(WriteStreamOld os) throws IOException;
 }
 
 

@@ -31,7 +31,7 @@ package com.caucho.v5.kelp;
 
 import java.io.IOException;
 
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.Hex;
 
 /**
@@ -124,7 +124,7 @@ class PageLeafEntry implements Comparable<Object> {
   // checkpoint persistence
   //
 
-  void writeCheckpoint(WriteBuffer os)
+  void writeCheckpoint(WriteStream os)
       throws IOException
   {
     if (_code == BlockLeaf.REMOVE) {
@@ -134,7 +134,7 @@ class PageLeafEntry implements Comparable<Object> {
     _row.writeCheckpoint(os, _block.getBuffer(), _rowOffset);
   }
 
-  void writeDelta(WriteBuffer os)
+  void writeDelta(WriteStream os)
       throws IOException
   {
     switch (_code) {

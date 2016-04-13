@@ -125,10 +125,10 @@ public class ChannelOutHttp2
     if (_sendQueue != null) {
       TempBuffer ptr = _sendQueue;
       
-      for (; ptr.getNext() != null; ptr = ptr.getNext()) {
+      for (; ptr.next() != null; ptr = ptr.next()) {
       }
       
-      ptr.setNext(next);
+      ptr.next(next);
       
       _sendFlags = flags;
     }
@@ -159,7 +159,7 @@ public class ChannelOutHttp2
     while (ptr != null) {
       int credit = getSendCredits();
       
-      TempBuffer next = ptr.getNext();
+      TempBuffer next = ptr.next();
       
       int flags = tailFlags;
       

@@ -29,7 +29,7 @@
 
 package com.caucho.v5.util;
 
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -737,7 +737,7 @@ public class QDate {
   /**
    * Prints the date to a stream.
    */
-  public void printDate(WriteStream os)
+  public void printDate(WriteStreamOld os)
     throws IOException
   {
     os.print(DAY_NAMES[(int) (_dayOfEpoch % 7 + 11) % 7]);

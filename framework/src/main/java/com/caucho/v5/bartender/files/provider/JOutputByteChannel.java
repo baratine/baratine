@@ -68,7 +68,7 @@ public class JOutputByteChannel implements SeekableByteChannel
   @Override
   public int write(ByteBuffer src) throws IOException
   {
-    TempBuffer tempBuffer = TempBuffer.allocate();
+    TempBuffer tempBuffer = TempBuffer.create();
     byte[] buffer = tempBuffer.buffer();
 
     int remaining = src.remaining();

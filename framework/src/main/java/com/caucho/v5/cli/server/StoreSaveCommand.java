@@ -38,7 +38,7 @@ import com.caucho.v5.cli.baratine.ArgsCli;
 import com.caucho.v5.health.shutdown.ExitCode;
 import com.caucho.v5.io.StreamSource;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 public class StoreSaveCommand extends RemoteCommandBase
 {
@@ -95,7 +95,7 @@ public class StoreSaveCommand extends RemoteCommandBase
     }
 
     if (fileName == null) {
-      WriteStream out = args.envCli().getOut();
+      WriteStreamOld out = args.envCli().getOut();
       
       if (result != null) {
         try {
@@ -108,7 +108,7 @@ public class StoreSaveCommand extends RemoteCommandBase
       return ExitCode.OK;
     }
 
-    try (WriteStream out = VfsOld.lookup(fileName).openWrite()) {
+    try (WriteStreamOld out = VfsOld.lookup(fileName).openWrite()) {
       out.print(result);
 
       System.out.println("store dump was written to `"

@@ -35,7 +35,7 @@ import java.io.OutputStream;
 
 import com.caucho.v5.baratine.ServiceApi;
 import com.caucho.v5.bartender.files.FileServiceBind;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.vfs.TempStream;
 
 import io.baratine.files.BfsFileSync;
@@ -100,7 +100,7 @@ public class ProcFileBase
       TempStream ts = new TempStream();
       ts.openWrite();
 
-      WriteBuffer out = new WriteBuffer(ts);
+      WriteStream out = new WriteStream(ts);
 
       if (fillRead(out)) {
         out.close();
@@ -112,7 +112,7 @@ public class ProcFileBase
     }
   }
 
-  protected boolean fillRead(WriteBuffer out)
+  protected boolean fillRead(WriteStream out)
     throws IOException
   {
     return false;

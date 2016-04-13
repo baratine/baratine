@@ -219,7 +219,7 @@ public class MailService
       multipart.addBodyPart(textBodyPart);
       
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      TempBuffer tb = TempBuffer.allocate();
+      TempBuffer tb = TempBuffer.create();
       byte []buffer = tb.buffer();
       int len;
       

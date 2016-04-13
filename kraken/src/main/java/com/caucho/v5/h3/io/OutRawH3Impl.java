@@ -55,7 +55,7 @@ public class OutRawH3Impl implements OutRawH3
     Objects.requireNonNull(os);
     _os = os;
     
-    _tBuf = TempBuffer.allocate();
+    _tBuf = TempBuffer.create();
     _buffer = _tBuf.buffer();
     _length = _buffer.length;
   }

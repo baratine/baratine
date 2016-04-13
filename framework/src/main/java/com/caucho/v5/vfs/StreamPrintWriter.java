@@ -49,12 +49,12 @@ public class StreamPrintWriter extends PrintWriter
 
   private final static Writer _dummyWriter = new StringWriter();
 
-  private final WriteStream _out;
+  private final WriteStreamOld _out;
 
   /**
    * Creates a new PrintWriterImpl
    */
-  public StreamPrintWriter(WriteStream out)
+  public StreamPrintWriter(WriteStreamOld out)
   {
     super((Writer) _dummyWriter);
 
@@ -377,7 +377,7 @@ public class StreamPrintWriter extends PrintWriter
     }
   }
 
-  public WriteStream getWriteStream()
+  public WriteStreamOld getWriteStream()
   {
     return _out;
   }

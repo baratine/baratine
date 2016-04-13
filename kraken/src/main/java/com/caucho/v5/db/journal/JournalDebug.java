@@ -33,8 +33,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.Hex;
 
@@ -67,10 +67,10 @@ public class JournalDebug
     return this;
   }
 
-  public void debug(WriteBuffer out, Path path)
+  public void debug(WriteStream out, Path path)
     throws IOException
   {
-    try (ReadBuffer is = new ReadBuffer(Files.newInputStream(path))) {
+    try (ReadStream is = new ReadStream(Files.newInputStream(path))) {
       long length = Files.size(path);
       
       long magic = BitsUtil.readLong(is);

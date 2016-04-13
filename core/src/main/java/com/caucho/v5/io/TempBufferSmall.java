@@ -51,7 +51,7 @@ public class TempBufferSmall extends TempBuffer
   /**
    * Allocate a TempBuffer, reusing one if available.
    */
-  public static TempBufferSmall allocate()
+  public static TempBufferSmall create()
   {
     TempBufferSmall next = _freeList.allocate();
 

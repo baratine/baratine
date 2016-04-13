@@ -31,6 +31,8 @@ package com.caucho.v5.io;
 
 import java.io.IOException;
 
+import io.baratine.io.Bytes;
+
 /**
  * This is the service provider's interface for a stream supported by
  * the VFS.
@@ -199,6 +201,12 @@ public class StreamImpl
    */
   public void write(byte []buffer, int offset, int length, boolean isEnd)
     throws IOException
+  {
+    throw new UnsupportedOperationException(String.valueOf(this));
+  }
+  
+  public void write(Bytes buffer, boolean isEnd)
+      throws IOException
   {
     throw new UnsupportedOperationException(String.valueOf(this));
   }

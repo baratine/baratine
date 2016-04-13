@@ -232,39 +232,39 @@ public final class VfsOld
   public static ReadWritePair openReadWrite(InputStream is, OutputStream os)
   {
     VfsStreamOld s = new VfsStreamOld(is, os);
-    WriteStream writeStream = new WriteStream(s);
-    ReadStream readStream = new ReadStream(s);
+    WriteStreamOld writeStream = new WriteStreamOld(s);
+    ReadStreamOld readStream = new ReadStreamOld(s);
     return new ReadWritePair(readStream, writeStream);
   }
 
   /**
    * Creates new ReadStream from an InputStream
    */
-  public static ReadStream openRead(InputStream is)
+  public static ReadStreamOld openRead(InputStream is)
   {
-    if (is instanceof ReadStream)
-      return (ReadStream) is;
+    if (is instanceof ReadStreamOld)
+      return (ReadStreamOld) is;
     
     VfsStreamOld s = new VfsStreamOld(is, null);
-    return new ReadStream(s);
+    return new ReadStreamOld(s);
   }
 
-  public static ReadStream openRead(InputStream is, WriteStream ws)
+  public static ReadStreamOld openRead(InputStream is, WriteStreamOld ws)
   {
     VfsStreamOld s = new VfsStreamOld(is, null);
-    return new ReadStream(s);
+    return new ReadStreamOld(s);
   }
 
   /**
    * Creates a ReadStream from a Reader
    */
-  public static ReadStream openRead(Reader reader)
+  public static ReadStreamOld openRead(Reader reader)
   {
-    if (reader instanceof ReadStream.StreamReader)
-      return ((ReadStream.StreamReader) reader).getStream();
+    if (reader instanceof ReadStreamOld.StreamReader)
+      return ((ReadStreamOld.StreamReader) reader).getStream();
     
     ReaderWriterStream s = new ReaderWriterStream(reader, null);
-    ReadStream is = new ReadStream(s);
+    ReadStreamOld is = new ReadStreamOld(s);
     try {
       is.setEncoding("utf-8");
     } catch (Exception e) {
@@ -276,30 +276,30 @@ public final class VfsOld
   /**
    * Create a ReadStream from a string.  utf-8 is used as the encoding
    */
-  public static ReadStream openRead(String path)
+  public static ReadStreamOld openRead(String path)
     throws IOException
   {
     return VfsOld.lookup(path).openRead();
   }
 
-  public static ReadStream openString(String string)
+  public static ReadStreamOld openString(String string)
   {
     return com.caucho.v5.vfs.VfsStringReader.open(string);
   }
 
-  public static WriteStream openWrite(OutputStream os)
+  public static WriteStreamOld openWrite(OutputStream os)
   {
-    if (os instanceof WriteStream)
-      return ((WriteStream) os);
+    if (os instanceof WriteStreamOld)
+      return ((WriteStreamOld) os);
     
     VfsStreamOld s = new VfsStreamOld(null, os);
-    return new WriteStream(s);
+    return new WriteStreamOld(s);
   }
 
-  public static WriteStream openWrite(Writer writer)
+  public static WriteStreamOld openWrite(Writer writer)
   {
     ReaderWriterStream s = new ReaderWriterStream(null, writer);
-    WriteStream os = new WriteStream(s);
+    WriteStreamOld os = new WriteStreamOld(s);
     
     try {
       os.setEncoding("utf-8");
@@ -313,10 +313,10 @@ public final class VfsOld
    * Creates a write stream to a CharBuffer.  This is the standard way
    * to write to a string.
    */
-  public static WriteStream openWrite(CharBuffer cb)
+  public static WriteStreamOld openWrite(CharBuffer cb)
   {
     com.caucho.v5.vfs.VfsStringWriter s = new com.caucho.v5.vfs.VfsStringWriter(cb);
-    WriteStream os = new WriteStream(s);
+    WriteStreamOld os = new WriteStreamOld(s);
     
     try {
       os.setEncoding("utf-8");
@@ -326,7 +326,7 @@ public final class VfsOld
     return os;
   }
 
-  public static WriteStream openWrite(String path)
+  public static WriteStreamOld openWrite(String path)
     throws IOException
   {
     return lookup(path).openWrite();
@@ -357,7 +357,7 @@ public final class VfsOld
   }
   */
 
-  public static WriteStream openAppend(String path)
+  public static WriteStreamOld openAppend(String path)
     throws IOException
   {
     return lookup(path).openAppend();

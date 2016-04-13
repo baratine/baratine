@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.config.types.Bytes;
+import com.caucho.v5.config.types.BytesType;
 import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.log.PathHandler;
 import com.caucho.v5.log.PatternFormatter;
@@ -144,7 +144,7 @@ public class LogHandlerConfig
   /**
    * Sets the rollover-size
    */
-  public void setRolloverSize(Bytes size)
+  public void setRolloverSize(BytesType size)
   {
     getPathHandler().setRolloverSize(size);
   }

@@ -34,7 +34,7 @@ import java.io.IOException;
 /**
  * A WriteStream that writes to nothing.
  */
-public class NullWriteStream extends WriteStream {
+public class NullWriteStream extends WriteStreamOld {
   public boolean canWrite()
   {
     return true;

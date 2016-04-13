@@ -37,7 +37,7 @@ import java.time.Duration;
 import javax.annotation.PostConstruct;
 
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.config.types.Bytes;
+import com.caucho.v5.config.types.BytesType;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -52,7 +52,7 @@ public class RotateLog
   private String _archiveFormat;
   
   private Duration _rolloverPeriod;
-  private Bytes _rolloverSize;
+  private BytesType _rolloverSize;
   private int _rolloverCount = -1;
   
   private RotateStream _rotateStream;
@@ -110,7 +110,7 @@ public class RotateLog
   /**
    * Sets the rollover size.
    */
-  public void setRolloverSize(Bytes size)
+  public void setRolloverSize(BytesType size)
   {
     _rolloverSize = size;
   }
@@ -120,7 +120,7 @@ public class RotateLog
    */
   public void setRolloverSizeBytes(long size)
   {
-    _rolloverSize = new Bytes(size);
+    _rolloverSize = new BytesType(size);
   }
 
   /**

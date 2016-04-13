@@ -71,14 +71,15 @@ public class RouteApply implements RouteBaratine
     _predicate = predicate;
     
     //_service = serviceRef.pin(new WebServiceWrapper(service)).as(ServiceWeb.class);
-    _service = serviceRef.pin(service).as(ServiceWeb.class);
+    _service = serviceRef.pin(new ServiceWebStub(service))
+                         .as(ServiceWeb.class);
     _proxy = serviceRef.pin(new RequestProxyImpl()).as(RequestProxy.class);
     
     ArrayList<ServiceWeb> services = new ArrayList<ServiceWeb>();
     
     for (ServiceWeb filter : filtersBefore) {
       // XXX: filter might be proxy
-      filter = serviceRef.pin(filter).as(ServiceWeb.class);
+      filter = serviceRef.pin(new ServiceWebStub(filter)).as(ServiceWeb.class);
       
       services.add(filter);
     }

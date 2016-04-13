@@ -38,8 +38,8 @@ import java.util.logging.Formatter;
 import javax.annotation.PostConstruct;
 
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.config.types.Bytes;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.config.types.BytesType;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.log.impl.LogHandlerBase;
 import com.caucho.v5.log.impl.RotateLog;
 
@@ -55,7 +55,7 @@ public class PathHandler extends LogHandlerBase
   //private String _timestamp;
   //private TimestampFilter _timestampFilter;
 
-  private WriteBuffer _os;
+  private WriteStream _os;
 
   public PathHandler()
   {
@@ -122,7 +122,7 @@ public class PathHandler extends LogHandlerBase
   /**
    * Sets the rollover-size
    */
-  public void setRolloverSize(Bytes size)
+  public void setRolloverSize(BytesType size)
   {
     _pathLog.setRolloverSize(size);
   }
@@ -178,7 +178,7 @@ public class PathHandler extends LogHandlerBase
       
       super.init();
 
-      WriteBuffer os = _pathLog.getRotateStream().getStream();
+      WriteStream os = _pathLog.getRotateStream().getStream();
 
       /*
       if (_timestamp != null) {

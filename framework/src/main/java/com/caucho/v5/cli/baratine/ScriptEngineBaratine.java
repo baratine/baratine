@@ -43,7 +43,7 @@ import javax.script.ScriptException;
 import com.caucho.v5.cli.daemon.ArgsDaemon;
 import com.caucho.v5.cli.shell_old.EnvCliOld;
 import com.caucho.v5.vfs.TempStream;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Script engine for baratine server.
@@ -76,8 +76,8 @@ public class ScriptEngineBaratine extends AbstractScriptEngine
       
       TempStream tos = new TempStream();
       
-      try (WriteStream sOut = new WriteStream(tos)) {
-        WriteStream oldOut = _env.setOut(sOut);
+      try (WriteStreamOld sOut = new WriteStreamOld(tos)) {
+        WriteStreamOld oldOut = _env.setOut(sOut);
       
         try {
           argsCommand.doCommand();

@@ -36,7 +36,7 @@ import java.util.Collections;
 
 import com.caucho.v5.baratine.ServiceApi;
 import com.caucho.v5.bartender.files.FileServiceBind;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.DebugKelp;
 import com.caucho.v5.kraken.KrakenSystem;
 import com.caucho.v5.kraken.table.TableKraken;
@@ -102,7 +102,7 @@ public class ProcKrakenDebug extends ProcFileBase
   }
   
   @Override
-  protected boolean fillRead(WriteBuffer out)
+  protected boolean fillRead(WriteStream out)
     throws IOException
   {
     Path path = _tableManager.getStorePath();

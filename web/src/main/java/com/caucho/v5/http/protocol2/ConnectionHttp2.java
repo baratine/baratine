@@ -32,8 +32,8 @@ package com.caucho.v5.http.protocol2;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 
 /**
  * InputStreamHttp reads a single HTTP frame.
@@ -87,7 +87,7 @@ public class ConnectionHttp2
     return _outHttp;
   }
   
-  public void init(ReadBuffer is, WriteBuffer os)
+  public void init(ReadStream is, WriteStream os)
   {
     getOutHttp().init(os);
     getInHttp().init(is);
@@ -97,7 +97,7 @@ public class ConnectionHttp2
     _channelCount.set(1);
   }
   
-  public void init(ReadBuffer is)
+  public void init(ReadStream is)
   {
     getInHttp().init(is);
     
@@ -106,7 +106,7 @@ public class ConnectionHttp2
     _channelCount.set(1);
   }
   
-  public void init(WriteBuffer os)
+  public void init(WriteStream os)
   {
     getOutHttp().init(os);
     

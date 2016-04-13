@@ -40,25 +40,27 @@ import com.caucho.v5.network.port.ConnectionProtocol;
  */
 public interface RequestBaratine extends RequestWebSpi
 {
+  /*
   String uri();
 
   String method();
   
   String header(String key);
+  */
   
   // XXX: temp
-  Reader getReader();
+  //Reader getReader();
   
   /**
    * Starts duplex mode.
    */
   void upgrade(ConnectionProtocol conn);
 
-  String addressRemote();
+  //String addressRemote();
   //RequestBaratine status(int code);
   //RequestBaratine header(String key, String value);
   
-  RequestBaratine contentLength(long length);
+  //RequestBaratine contentLength(long length);
   
   //RequestBaratine write(String string);
   
@@ -70,7 +72,7 @@ public interface RequestBaratine extends RequestWebSpi
   }
   
   // XXX: temp
-  PrintWriter getWriter();
+  //PrintWriter getWriter();
 
   void requestProxy(RequestProxy proxy);
 

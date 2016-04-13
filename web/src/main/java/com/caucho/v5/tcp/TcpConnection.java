@@ -32,12 +32,12 @@ package com.caucho.v5.tcp;
 import java.io.IOException;
 import java.net.Socket;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.SocketSystem;
 import com.caucho.v5.io.SocketWrapperBar;
 import com.caucho.v5.io.StreamImpl;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 /**
  * Simplified tcp connection for testing.
@@ -46,8 +46,8 @@ public class TcpConnection
 {
   private SocketBar _socket;
   
-  private ReadBuffer _is;
-  private WriteBuffer _os;
+  private ReadStream _is;
+  private WriteStream _os;
   
   private TcpConnection(SocketBar socket)
     throws IOException
@@ -55,8 +55,8 @@ public class TcpConnection
     _socket = socket;
     StreamImpl stream = _socket.stream();
     
-    _is = new ReadBuffer(stream);
-    _os = new WriteBuffer(stream);
+    _is = new ReadStream(stream);
+    _os = new WriteStream(stream);
   }
   
   public static TcpConnection open(String address, 
@@ -85,7 +85,7 @@ public class TcpConnection
     _socket.setSoTimeout(timeout);
   }
 
-  public ReadBuffer inputStream()
+  public ReadStream inputStream()
   {
     return _is;
   }
@@ -113,7 +113,7 @@ public class TcpConnection
     return sb.toString();
   }
 
-  public WriteBuffer outputStream()
+  public WriteStream outputStream()
   {
     return _os;
   }

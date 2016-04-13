@@ -67,7 +67,6 @@ import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.inject.ParamInject;
-import io.baratine.service.Lookup;
 
 /**
  * The injection manager for a given environment.
@@ -107,7 +106,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     _scopeMap.put(Singleton.class, InjectScopeSingleton::new);
     _scopeMap.put(Factory.class, InjectScopeFactory::new);
       
-    _qualifierSet.add(Lookup.class);
+    // _qualifierSet.add(Lookup.class);
     
     _autoBindList.add(new ConvertAutoBind());
   }

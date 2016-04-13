@@ -245,26 +245,26 @@ abstract public class SocketBar implements Closeable
   abstract public StreamImpl stream()
     throws IOException;
 
-  public ReadBuffer getInputStream()
+  public ReadStream getInputStream()
     throws IOException
   {
     StreamImpl stream = stream();
     
     if (stream != null) {
-      return new ReadBuffer(stream);
+      return new ReadStream(stream);
     }
     else {
       return null;
     }
   }
 
-  public WriteBuffer getOutputStream()
+  public WriteStream getOutputStream()
     throws IOException
   {
     StreamImpl stream = stream();
     
     if (stream != null) {
-      return new WriteBuffer(stream);
+      return new WriteStream(stream);
     }
     else {
       return null;

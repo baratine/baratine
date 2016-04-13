@@ -39,7 +39,7 @@ import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.health.shutdown.ExitCode;
 import com.caucho.v5.io.StreamSource;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 public class BfsCatCommand extends BfsCommand
 {
@@ -80,7 +80,7 @@ public class BfsCatCommand extends BfsCommand
 
     StreamSource ss = files.getFile(path);
     
-    WriteStream out = args.getOut();
+    WriteStreamOld out = args.getOut();
 
     if (ss == null) {
       System.out.println(L.l("file does not exist: {0}", path));

@@ -50,7 +50,7 @@ public class TempOutputStream extends OutputStream
     
     TempBuffer tail = null;
     
-    for (; head != null; head = head.getNext()) {
+    for (; head != null; head = head.next()) {
       tail = head;
     }
     
@@ -67,10 +67,10 @@ public class TempOutputStream extends OutputStream
   public void write(int ch)
   {
     if (_tail == null) {
-      addBuffer(TempBuffer.allocate());
+      addBuffer(TempBuffer.create());
     }
     else if (_tail.buffer().length <= _tail.length()) {
-      addBuffer(TempBuffer.allocate());
+      addBuffer(TempBuffer.create());
     }
     
     int tailLength = _tail.length();
@@ -98,12 +98,12 @@ public class TempOutputStream extends OutputStream
 
     while (index < length) {
       if (tail == null) {
-        addBuffer(TempBuffer.allocate());
+        addBuffer(TempBuffer.create());
         tail = _tail;
         tailLength = tail.length();
       }
       else if (bufferSize <= tailLength) {
-        addBuffer(TempBuffer.allocate());
+        addBuffer(TempBuffer.create());
         tail = _tail;
         tailLength = tail.length();
       }
@@ -126,10 +126,10 @@ public class TempOutputStream extends OutputStream
 
   private void addBuffer(TempBuffer buf)
   {
-    buf.setNext(null);
+    buf.next(null);
     
     if (_tail != null) {
-      _tail.setNext(buf);
+      _tail.next(buf);
       _tail = buf;
     } else {
       _tail = buf;
@@ -234,7 +234,7 @@ public class TempOutputStream extends OutputStream
     TempBuffer head = _head;
     _head = null;
     
-    for (TempBuffer ptr = head; ptr != null; ptr = ptr.getNext()) {
+    for (TempBuffer ptr = head; ptr != null; ptr = ptr.next()) {
       os.write(ptr.buffer(), 0, ptr.length());
     }
     
@@ -248,7 +248,7 @@ public class TempOutputStream extends OutputStream
   {
     int length = 0;
 
-    for (TempBuffer ptr = _head; ptr != null; ptr = ptr.getNext()) {
+    for (TempBuffer ptr = _head; ptr != null; ptr = ptr.next()) {
       length += ptr.length();
     }
 
@@ -261,7 +261,7 @@ public class TempOutputStream extends OutputStream
     byte []data = new byte[len];
 
     int offset = 0;
-    for (TempBuffer ptr = _head; ptr != null; ptr = ptr.getNext()) {
+    for (TempBuffer ptr = _head; ptr != null; ptr = ptr.next()) {
       System.arraycopy(ptr.buffer(), 0, data, offset, ptr.length());
       offset += ptr.length();
     }
@@ -273,14 +273,14 @@ public class TempOutputStream extends OutputStream
   {
     TempBuffer ptr = _head;
 
-    for (; ptr != null && ptr.length() <= position; ptr = ptr.getNext()) {
+    for (; ptr != null && ptr.length() <= position; ptr = ptr.next()) {
       position -= ptr.length();
     }
 
     if (ptr == null)
       return;
 
-    for (; ptr != null && length >= 0; ptr = ptr.getNext()) {
+    for (; ptr != null && length >= 0; ptr = ptr.next()) {
       int sublen = Math.min(length, ptr.length() - position);
 
       byte []dataBuffer = ptr.buffer();
@@ -298,14 +298,14 @@ public class TempOutputStream extends OutputStream
   {
     TempBuffer ptr = _head;
 
-    for (; ptr != null && ptr.length() <= position; ptr = ptr.getNext()) {
+    for (; ptr != null && ptr.length() <= position; ptr = ptr.next()) {
       position -= ptr.length();
     }
 
     if (ptr == null)
       return;
 
-    for (; ptr != null && length >= 0; ptr = ptr.getNext()) {
+    for (; ptr != null && length >= 0; ptr = ptr.next()) {
       int sublen = Math.min(length, ptr.length() - position);
 
       byte []dataBuffer = ptr.buffer();

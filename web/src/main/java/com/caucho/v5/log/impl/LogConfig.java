@@ -38,7 +38,7 @@ import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.config.types.Bytes;
+import com.caucho.v5.config.types.BytesType;
 
 /**
  * Environment-specific configuration.
@@ -96,7 +96,7 @@ public class LogConfig
     _logHandlerConfig.setRolloverPeriod(period);
   }
 
-  public void setRolloverSize(Bytes bytes)
+  public void setRolloverSize(BytesType bytes)
   {
     _logHandlerConfig.setRolloverSize(bytes);
   }

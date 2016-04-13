@@ -32,7 +32,7 @@ package com.caucho.v5.http.protocol2;
 import java.io.IOException;
 import java.util.Objects;
 
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 
 
@@ -57,7 +57,7 @@ public class MessageDataCont extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteBuffer os, OutHttp out)
+  public void deliver(WriteStream os, OutHttp out)
     throws IOException
   {
     _stream.writeCont(out);

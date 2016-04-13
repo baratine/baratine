@@ -34,7 +34,7 @@ import java.io.IOException;
 import com.caucho.v5.baratine.ServiceApi;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.files.FileServiceBind;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 import io.baratine.files.BfsFileSync;
 import io.baratine.service.OnActive;
@@ -111,7 +111,7 @@ public class ProcKraken extends ProcFileBase
   }
   
   @Override
-  protected boolean fillRead(WriteBuffer out)
+  protected boolean fillRead(WriteStream out)
     throws IOException
   {
     out.println("[");

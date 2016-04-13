@@ -46,9 +46,9 @@ import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Version;
 import com.caucho.v5.vfs.PathImpl;
-import com.caucho.v5.vfs.ReadStream;
+import com.caucho.v5.vfs.ReadStreamOld;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 import io.baratine.service.Result;
 
@@ -119,7 +119,7 @@ public class PackageCommand extends CommandBase<ArgsCli>
     ArrayList<String> baratineJars = new ArrayList<>();
     HashSet<String> fileSet = new HashSet<>();
     
-    try (WriteStream out = outPath.openWrite()) {
+    try (WriteStreamOld out = outPath.openWrite()) {
       try (ZipOutputStream zOut = new ZipOutputStream(out)) {
         createManifest(zOut, fileSet);
         
@@ -150,14 +150,14 @@ public class PackageCommand extends CommandBase<ArgsCli>
     
     ZipEntry manifestEntry = new ZipEntry("META-INF/MANIFEST.MF");
     zOut.putNextEntry(manifestEntry);
-    try (WriteStream out = VfsOld.openWrite(zOut)) {
+    try (WriteStreamOld out = VfsOld.openWrite(zOut)) {
       out.setDisableCloseSource(true);
       writeManifest(out);
     }
     zOut.closeEntry();
   }
   
-  private void writeManifest(WriteStream out)
+  private void writeManifest(WriteStreamOld out)
     throws IOException
   {
     out.println("Manifest-Version: 1.0");
@@ -200,7 +200,7 @@ public class PackageCommand extends CommandBase<ArgsCli>
     
     jarList.add(jarPath);
     
-    try (ReadStream is = VfsOld.lookup(jarPath).openRead()) {
+    try (ReadStreamOld is = VfsOld.lookup(jarPath).openRead()) {
       try (ZipInputStream zIn = new ZipInputStream(is)) {
         ZipEntry entry;
         

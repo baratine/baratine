@@ -29,30 +29,41 @@
 
 package io.baratine.web;
 
-import io.baratine.io.Buffer;
-import io.baratine.pipe.Pipe;
-
 import java.io.OutputStream;
 import java.io.Writer;
 
-public interface OutWeb<T>
+import io.baratine.io.Bytes;
+import io.baratine.pipe.Credits;
+
+public interface OutWeb
 {
-  OutWeb<T> push(Pipe<Buffer> out);
+  OutWeb write(Bytes buffer);
+  OutWeb write(byte []buffer, int offset, int length);
   
-  OutWeb<T> write(Buffer buffer);
-  OutWeb<T> write(byte []buffer, int offset, int length);
+  OutWeb write(String value);
+  OutWeb write(char []buffer, int offset, int length);
   
-  OutWeb<T> write(String value);
-  OutWeb<T> write(char []buffer, int offset, int length);
-  
-  OutWeb<T> flush();
+  OutWeb flush();
   
   Writer writer();
   
   OutputStream output();
+
+  Credits credits();
+  OutWeb push(OutFilterWeb outFilter);
   
   void halt();
   void halt(HttpStatus status);
   
-  //void fallthru();
+  void fail(Throwable exn);
+  
+  public interface OutFilterWeb
+  {
+    void write(OutWeb out, Bytes buffer);
+    
+    default Credits credits(OutWeb out)
+    {
+      return out.credits();
+    }
+  }
 }

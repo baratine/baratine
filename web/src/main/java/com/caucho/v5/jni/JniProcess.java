@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.jni.JniUtil.JniLoad;
 import com.caucho.v5.util.HomeUtil;
@@ -59,7 +59,7 @@ public class JniProcess extends Process
   private int _pid = -1;
   private int _status = -1;
 
-  private ReadBuffer _is;
+  private ReadStream _is;
 
   public JniProcess()
   {
@@ -100,7 +100,7 @@ public class JniProcess extends Process
       
       stream = new JniFileStream(stdoutFd, true, false);
       
-      _is = new ReadBuffer(stream);
+      _is = new ReadStream(stream);
     } catch (Exception e) {
       throw ConfigException.wrap(e);
     }

@@ -75,7 +75,7 @@ public class OutWebSocket
   public OutWebSocket(OutputStream os)
     throws IOException
   {
-    this(os, TempBuffer.allocate().buffer());
+    this(os, TempBuffer.create().buffer());
   }
   
   public void setBatching(boolean isBatching)

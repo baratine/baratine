@@ -47,8 +47,8 @@ import com.caucho.v5.loader.NonScanDynamicClassLoader;
 import com.caucho.v5.util.CharBuffer;
 import com.caucho.v5.vfs.MemoryStream;
 import com.caucho.v5.vfs.PathImpl;
-import com.caucho.v5.vfs.ReadStream;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.ReadStreamOld;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 /**
  * Compiles Java source, returning the loaded class.
@@ -87,7 +87,7 @@ public class InternalCompilerTools extends AbstractJavaCompiler {
     throws JavaCompileException, IOException
   {
     MemoryStream tempStream = new MemoryStream();
-    WriteStream error = new WriteStream(tempStream);
+    WriteStreamOld error = new WriteStreamOld(tempStream);
 
     try {
       // String parent = javaPath.getParent().getNativePath();
@@ -158,7 +158,7 @@ public class InternalCompilerTools extends AbstractJavaCompiler {
         thread.setContextClassLoader(oldLoader);
       }
 
-      ReadStream read = tempStream.openReadAndSaveBuffer();
+      ReadStreamOld read = tempStream.openReadAndSaveBuffer();
       JavacErrorParser parser = new JavacErrorParser(this, path[0], _compiler.getEncoding());
 
       String errors = parser.parseErrors((InputStream) read, lineMap);

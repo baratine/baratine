@@ -42,10 +42,10 @@ import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.http.websocket.WebSocketBase;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.tcp.TcpConnection;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.L10N;
@@ -54,7 +54,7 @@ import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 import com.caucho.v5.websocket.io.WebSocketProtocolException;
 
-import io.baratine.io.Buffer;
+import io.baratine.io.Bytes;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.ServiceWebSocket;
 
@@ -94,10 +94,10 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   
   private String _origin;
 
-  private Pipe<Buffer> _onRead;
+  private Pipe<Bytes> _onRead;
   private SocketBar _socket;
   private TcpConnection _conn;
-  private WriteBuffer _os;
+  private WriteStream _os;
   private ServiceWebSocket<T,S> _service;
 
   /*
@@ -172,7 +172,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     else if (String.class.equals(valueType)) {
       readString((ServiceWebSocket) _service);
     }
-    else if (Buffer.class.equals(valueType)) {
+    else if (Bytes.class.equals(valueType)) {
       read((ServiceWebSocket) _service);
     }
     else {
@@ -315,8 +315,8 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     //_socketConn = new EndpointConnectionQSocket(s);
     //_socketConn.setIdleReadTimeout(600000);
 
-    ReadBuffer is = _conn.inputStream();
-    WriteBuffer os = _conn.outputStream();
+    ReadStream is = _conn.inputStream();
+    WriteStream os = _conn.outputStream();
     _os = os;
 
     String path = _path;
@@ -454,7 +454,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     }
   }
 
-  private void parseHeaders(ReadBuffer in)
+  private void parseHeaders(ReadStream in)
     throws IOException
   {
     String status = readln(in);
@@ -493,7 +493,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     }
   }
   
-  private String readln(ReadBuffer in)
+  private String readln(ReadStream in)
     throws IOException
   {
     StringBuilder sb = new StringBuilder();

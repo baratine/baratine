@@ -30,7 +30,7 @@
 package com.caucho.v5.javac;
 
 import com.caucho.v5.util.IntMap;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -39,13 +39,13 @@ import java.util.Iterator;
  * LineMapWriter writes the *.map files.
  */
 public class LineMapWriter {
-  private WriteStream _os;
+  private WriteStreamOld _os;
   private String _sourceType = "JSP";
 
   /**
    * Creates the writer.
    */
-  public LineMapWriter(WriteStream os)
+  public LineMapWriter(WriteStreamOld os)
   {
     _os = os;
   }

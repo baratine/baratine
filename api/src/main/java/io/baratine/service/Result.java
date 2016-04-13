@@ -46,8 +46,8 @@ import io.baratine.service.ResultImpl.ChainResultFunFutureExn;
 import io.baratine.service.ResultImpl.ResultJoinBuilder;
 
 /**
- * The Result callback for async service calls has a primary result filled by
- * <code>complete(value)</code> and an exception return filled by
+ * Result is a continuation callback for async service calls with a primary 
+ * result filled by  * <code>ok(value)</code> oran exception return filled by
  * <code>fail(exception)</code>
  *   
  * Since Result is designed as a lambda @FunctionalInterface interface,
@@ -56,14 +56,10 @@ import io.baratine.service.ResultImpl.ResultJoinBuilder;
  * For services that call other services, Results can be chained to simplify
  * return value processing.
  * 
- * Result resembles <a href="http://docs.oracle.com/javase/7/docs/api/java/nio/channels/CompletionHandler.html"><code>java.nio.channels.CompletionHandler</code></a>,
- * but does not require an attribute. 
- * <br ><br >
- * 
  * <br > <br >
  * Sample client usage:
  * <blockquote><pre>
- *    ServiceManager manager = ServiceManager.create().start();
+ *    Services services = Services.newManager().get();
  *    
  *    MyService service = manager.service(new MyServiceImpl())
  *                               .as(MyService.class);
@@ -90,7 +86,7 @@ import io.baratine.service.ResultImpl.ResultJoinBuilder;
  *    fork.onFail((x,e,r)-&gt;r.ok("fork-fail: " + x + " " + e));
  *    fork.join((x,r)-&gt;r.ok("fork-result: " + x));
  *    ...
- *    public class MyResultHandler implements Result &lt;MyDomainObject&gt; {
+ *    public class MyResultHandler implements Result&lt;MyDomainObject&gt; {
  *        ...
  *      &#64;Override
  *      public void handle(MyDomainObject value, Throwable exn)
@@ -198,7 +194,7 @@ public interface Result<T>
   }
   
   /**
-   * Create an empty Result that ignores the <code>complete</code>.
+   * Create an empty Result that ignores the <code>ok</code>.
    */
   static <T> Result<T> ignore()
   {
@@ -282,7 +278,7 @@ public interface Result<T>
    * {
    *   MyLeafService leaf = ...;
    *   
-   *   leaf.myLeaf(result.of((v,r)-&gt;r.complete("Leaf: " + v)));
+   *   leaf.myLeaf(result.of((v,r)-&gt;r.ok("Leaf: " + v)));
    * }
    * </code></pre>
    */

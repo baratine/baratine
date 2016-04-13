@@ -34,7 +34,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.util.ModulePrivate;
 import com.caucho.v5.websocket.io.CloseReason.CloseCodes;
 
@@ -66,7 +66,7 @@ public class InWebSocketReaderImpl
   // duplex callbacks
   //
 
-  public void init(ReadBuffer is)
+  public void init(ReadStream is)
     throws IOException
   {
     Objects.requireNonNull(is);

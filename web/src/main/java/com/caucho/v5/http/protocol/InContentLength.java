@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 
 import com.caucho.v5.io.ClientDisconnectException;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.StreamImpl;
 
 /**
@@ -41,12 +41,12 @@ import com.caucho.v5.io.StreamImpl;
 public class InContentLength extends StreamImpl
 {
   // the underlying stream
-  private ReadBuffer _next;
+  private ReadStream _next;
 
   // bytes available in the post contents
   private long _length;
 
-  void init(ReadBuffer next, long length)
+  void init(ReadStream next, long length)
   {
     _next = next;
     _length = length;

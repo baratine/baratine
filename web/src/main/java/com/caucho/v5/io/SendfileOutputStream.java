@@ -34,18 +34,21 @@ import java.io.IOException;
 /**
  * An OutputStream which supports sendfile and mmap.
  */
-public interface SendfileOutputStream {
-  public boolean isMmapEnabled();
+public interface SendfileOutputStream
+{
+  //public boolean isMmapEnabled();
   
   /*
   public void writeMmap(long mmapAddress, long mmapOffset, int mmapLength)
     throws IOException;
     */
   
+  /*
   public void writeMmap(long mmapAddress, 
                         long []mmapBlocks,
                         long mmapOffset, long mmapLength)
     throws IOException;
+    */
   
   public boolean isSendfileEnabled();
   

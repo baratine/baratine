@@ -32,7 +32,7 @@ package com.caucho.v5.http.protocol2;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 
 import io.baratine.service.ResultFuture;
 
@@ -52,7 +52,7 @@ public class MessageFlush extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteBuffer os, OutHttp outHttp)
+  public void deliver(WriteStream os, OutHttp outHttp)
     throws IOException
   {
     try {

@@ -33,7 +33,7 @@ import java.nio.file.Path;
 
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.config.ConfigException;
-import com.caucho.v5.config.types.Bytes;
+import com.caucho.v5.config.types.BytesType;
 import com.caucho.v5.http.log.AccessLog;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.subsystem.SystemManager;
@@ -221,7 +221,7 @@ public class HttpContainerBuilder // implements EnvironmentBean // , XmlSchemaBe
   }
   
   //@Configurable
-  public void setSendfileMinLength(Bytes bytes)
+  public void setSendfileMinLength(BytesType bytes)
   {
     _sendfileMinLength = (int) bytes.getBytes();
   }
@@ -239,7 +239,7 @@ public class HttpContainerBuilder // implements EnvironmentBean // , XmlSchemaBe
    * Sets the access log.
    */
   //@Configurable
-  public void setAccessLogBufferSize(Bytes bufferSizeBytes)
+  public void setAccessLogBufferSize(BytesType bufferSizeBytes)
   {
     int bufferSize = (int) bufferSizeBytes.getBytes();
     

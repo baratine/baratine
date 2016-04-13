@@ -52,7 +52,7 @@ import com.caucho.v5.bartender.pod.UpdatePod.UpdateNode;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.vfs.PathImpl;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 
 /**
@@ -298,7 +298,7 @@ public class PodsManagerServiceImpl implements PodsManagerService
   
   private void printClusterPodState(PathImpl path, PodState podState)
   {
-    try (WriteStream out = path.openWrite()) {
+    try (WriteStreamOld out = path.openWrite()) {
       PodBartender pod = podState.getPod();
       String podName = podState.getName();
       
@@ -382,7 +382,7 @@ public class PodsManagerServiceImpl implements PodsManagerService
     return false;
   }
   
-  private void printClusterPodNodeState(WriteStream out, 
+  private void printClusterPodNodeState(WriteStreamOld out, 
                                         PodState podState,
                                         String nodeId)
     throws IOException

@@ -42,14 +42,15 @@ import com.caucho.v5.http.dispatch.InvocationManager;
 import com.caucho.v5.http.dispatch.InvocationManagerBuilder;
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.HttpBufferStore;
-import com.caucho.v5.http.protocol.RequestFacade;
 import com.caucho.v5.io.ClientDisconnectException;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.loader.EnvironmentClassLoader;
+import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.FreeRing;
+import com.caucho.v5.web.webapp.RequestBaratine;
 
 public class HttpContainerBase<I extends Invocation> implements HttpContainer
 {
@@ -393,14 +394,14 @@ public class HttpContainerBase<I extends Invocation> implements HttpContainer
   */
 
   @Override
-  public RequestFacade newRequest(ConnectionHttp conn)
+  public ConnectionProtocol newRequest(ConnectionHttp conn)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
   public void sendRequestError(Throwable e, 
-                               RequestFacade requestFacade)
+                               RequestBaratine requestFacade)
       throws ClientDisconnectException
   {
     e.printStackTrace();

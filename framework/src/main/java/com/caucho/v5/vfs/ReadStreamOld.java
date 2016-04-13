@@ -58,7 +58,7 @@ import com.caucho.v5.util.CurrentTime;
  * Specialized applications, like servers, need the capability of recycling
  * streams.
  */
-public final class ReadStream extends InputStream
+public final class ReadStreamOld extends InputStream
     // implements LockableStream
 {
   public static int ZERO_COPY_SIZE = 1024;
@@ -87,7 +87,7 @@ public final class ReadStream extends InputStream
   /**
    * Creates an uninitialized stream. Use <code>init</code> to initialize.
    */
-  public ReadStream()
+  public ReadStreamOld()
   {
   }
 
@@ -96,7 +96,7 @@ public final class ReadStream extends InputStream
    *
    * @param source Underlying source for the stream.
    */
-  public ReadStream(StreamImpl source)
+  public ReadStreamOld(StreamImpl source)
   {
     init(source);
   }
@@ -138,7 +138,7 @@ public final class ReadStream extends InputStream
 
     if (source.canRead()) {
       if (_tempRead == null) {
-        _tempRead = TempBuffer.allocate();
+        _tempRead = TempBuffer.create();
         _readBuffer = _tempRead.buffer();
       }
     }
@@ -1449,7 +1449,7 @@ public final class ReadStream extends InputStream
 
   private static Logger log()
   {
-    return Logger.getLogger(ReadStream.class.getName());
+    return Logger.getLogger(ReadStreamOld.class.getName());
   }
 
   /**
@@ -1484,19 +1484,19 @@ public final class ReadStream extends InputStream
     public final int read()
       throws IOException
     {
-      return ReadStream.this.readChar();
+      return ReadStreamOld.this.readChar();
     }
 
     public final int read(char []cbuf, int off, int len)
       throws IOException
     {
-      return ReadStream.this.read(cbuf, off, len);
+      return ReadStreamOld.this.read(cbuf, off, len);
     }
 
     public boolean ready()
       throws IOException
     {
-      return ReadStream.this.available() > 0;
+      return ReadStreamOld.this.available() > 0;
     }
 
     public final void close()
@@ -1504,9 +1504,9 @@ public final class ReadStream extends InputStream
     {
     }
 
-    public ReadStream getStream()
+    public ReadStreamOld getStream()
     {
-      return ReadStream.this;
+      return ReadStreamOld.this;
     }
   }
 }

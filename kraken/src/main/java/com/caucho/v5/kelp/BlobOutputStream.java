@@ -130,7 +130,7 @@ class BlobOutputStream extends OutputStream
     _offset = 0;
 
     if (_tempBuffer == null) {
-      _tempBuffer = TempBuffer.allocate();
+      _tempBuffer = TempBuffer.create();
       _buffer = _tempBuffer.buffer();
       _bufferEnd = _buffer.length;
     }

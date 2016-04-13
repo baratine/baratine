@@ -39,7 +39,7 @@ import java.util.Objects;
 import com.caucho.v5.h3.InH3;
 import com.caucho.v5.h3.OutFactoryH3;
 import com.caucho.v5.h3.OutH3;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.StreamSource;
 import com.caucho.v5.kelp.Column.ColumnType;
 import com.caucho.v5.util.Crc64;
@@ -676,7 +676,7 @@ public final class RowCursor
   }
 
   // read journal
-  void readJournal(PageServiceImpl pageActor, ReadBuffer is)
+  void readJournal(PageServiceImpl pageActor, ReadStream is)
     throws IOException
   {
     _row.readJournal(pageActor, is, _data, 0, this);

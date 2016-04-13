@@ -42,7 +42,7 @@ import com.caucho.v5.io.StreamSource;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.PathImpl;
 import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStream;
+import com.caucho.v5.vfs.WriteStreamOld;
 
 import io.baratine.files.Status;
 
@@ -165,7 +165,7 @@ public class BfsGetCommand extends BfsCommand
 
     if (ss != null) {
       try (InputStream is = ss.getInputStream()) {
-        try (WriteStream os = dstPath.openWrite()) {
+        try (WriteStreamOld os = dstPath.openWrite()) {
           os.writeStream(is);
         }
         catch (FileNotFoundException e) {

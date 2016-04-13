@@ -31,41 +31,62 @@ package io.baratine.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 
 /**
  * Data buffer
  */
-public interface Buffer
+public interface Bytes
 {
   /**
    * Returns the current size of the buffer.
    */
   int length();
+
+  default boolean isDirect()
+  {
+    return false;
+  }
+  
+  default ByteBuffer direct()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
+  Bytes set(int pos, byte []buffer, int offset, int length);
   
   /**
    * adds bytes from the buffer
    */
-  Buffer addBytes(byte []buffer, int offset, int length);
+  Bytes write(byte []buffer, int offset, int length);
   
   /**
    * adds bytes from the buffer from a consumer
    */
-  Buffer addBytes(InputStream is);
+  Bytes write(InputStream is)
+    throws IOException;
   
   /**
    * gets bytes from the buffer
    */
-  Buffer getBytes(int pos, byte []buffer, int offset, int length);
+  Bytes get(int pos, byte []buffer, int offset, int length);
+  
+  int read(byte []buffer, int offset, int length);
 
-  static Buffer create(byte[] data)
+  default void read(ByteBuffer buffer)
   {
-    return new BufferImpl(data);
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
-  static Buffer create()
+  /*
+  default void allocate()
   {
-    return new BufferImpl();
+  }
+  */
+
+  default void free()
+  {
   }
   
   public interface InputStreamConsumer

@@ -35,7 +35,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.caucho.v5.http.dispatch.Invocation;
-import com.caucho.v5.http.protocol.RequestFacade;
+import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.network.port.StateConnection;
 
 import io.baratine.web.HttpStatus;
@@ -144,7 +144,7 @@ public class InvocationBaratine extends Invocation
    * @param request the http request facade
    * @param response the http response facade
    */
-  public StateConnection service(RequestFacade request)
+  public StateConnection service(ConnectionProtocol request)
   {
     RequestBaratine req = (RequestBaratine) request;
     //ResponseBaratine res = (ResponseBaratine) response;

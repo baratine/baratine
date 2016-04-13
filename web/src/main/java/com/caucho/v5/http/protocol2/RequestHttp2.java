@@ -30,15 +30,11 @@
 package com.caucho.v5.http.protocol2;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.thread.ThreadPool;
@@ -47,17 +43,19 @@ import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.dispatch.Invocation;
 import com.caucho.v5.http.protocol.OutResponseBase;
 import com.caucho.v5.http.protocol.ProtocolHttp;
-import com.caucho.v5.http.protocol.RequestFacade;
 import com.caucho.v5.http.protocol.RequestHttp;
 import com.caucho.v5.http.protocol.RequestHttpBase;
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.util.ByteArrayBuffer;
 import com.caucho.v5.util.CharBuffer;
 import com.caucho.v5.util.CharSegment;
 import com.caucho.v5.util.CurrentTime;
+import com.caucho.v5.web.webapp.RequestBaratine;
+
+import io.baratine.io.Bytes;
 
 /**
  * Handles requests for a HTTP 2 stream request.
@@ -241,7 +239,7 @@ public class RequestHttp2
     String path = new String (requestHttp.getUriBuffer(), 0, requestHttp.getUriLength());
     
     header(":path", path);
-    header(":scheme", requestHttp.getScheme());
+    header(":scheme", requestHttp.scheme());
     
     int headerSize = requestHttp.getHeaderSize();
     
@@ -306,9 +304,11 @@ public class RequestHttp2
   @Override
   public void dispatch()
   {
+    /*
     if (isSecure()) {
       getClientCertificate();
     }
+    */
 
     // setStartDate();
 
@@ -377,8 +377,8 @@ public class RequestHttp2
    * Initialize the read stream from the raw stream.
    */
   //@Override
-  public boolean initStream(ReadBuffer readStream,
-                            ReadBuffer rawStream)
+  public boolean initStream(ReadStream readStream,
+                            ReadStream rawStream)
     throws IOException
   {
     readStream.init(_inStream);
@@ -386,6 +386,7 @@ public class RequestHttp2
     return true;
   }
 
+  /*
   private void getClientCertificate()
   {
     RequestFacade request = null;//request();
@@ -425,6 +426,7 @@ public class RequestHttp2
       log.log(Level.FINE, e.toString(), e);
     }
   }
+  */
 
   protected boolean checkLogin()
   {
@@ -792,11 +794,11 @@ public class RequestHttp2
   {
     fillHeaders();
     
-    RequestFacade response = null;//request();
+    RequestBaratine response = null;//request();
     
     if (true) throw new UnsupportedOperationException();
 
-    int statusCode = response.getStatus();
+    int statusCode = 0; //response.getStatus();
 
     StringBuilder cb = _cb;
     
@@ -831,6 +833,7 @@ public class RequestHttp2
       removeHeader("ETag");
       removeHeader("Last-Modified");
     }
+    /*
     else if (response.isNoCache()) {
       removeHeader("ETag");
       removeHeader("Last-Modified");
@@ -840,6 +843,7 @@ public class RequestHttp2
     }
     else if (response.isPrivateCache())
       out.header("cache-control", "private");
+      */
 
     ArrayList<String> headerKeys = headerKeysOut();
     ArrayList<String> headerValues = headerValuesOut();
@@ -866,15 +870,15 @@ public class RequestHttp2
     }
     */
 
-    RequestFacade responseFacade = null;//request();
+    RequestBaratine responseFacade = null;//request();
     if (true) throw new UnsupportedOperationException();
 
     long now = CurrentTime.currentTime();
     
-    responseFacade.fillCookies(out);
+    // responseFacade.fillCookies(out);
 
-    String contentType = responseFacade.getContentTypeImpl();
-    String charEncoding = responseFacade.getCharacterEncodingImpl();
+    String contentType = null;//responseFacade.getContentTypeImpl();
+    String charEncoding = null;//responseFacade.getCharacterEncodingImpl();
 
     if (contentType != null) {
       if (charEncoding != null)
@@ -1001,14 +1005,8 @@ public class RequestHttp2
   }
 
   @Override
-  public boolean writeFirst(WriteBuffer out, TempBuffer head, long length,
-                            boolean isEnd)
-  {
-    return false;
-  }
-  
-  @Override
-  public boolean writeNext(WriteBuffer out, TempBuffer head, boolean isEnd)
+  public boolean write(WriteStream out, Bytes data,
+                       boolean isEnd)
   {
     return false;
   }

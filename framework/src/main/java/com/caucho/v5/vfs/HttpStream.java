@@ -79,8 +79,8 @@ class HttpStream extends StreamImpl {
   private Socket _s;
   private InputStream _is;
   private OutputStream _os;
-  private ReadStream _rs;
-  private WriteStream _ws;
+  private ReadStreamOld _rs;
+  private WriteStreamOld _ws;
 
   // The server's host name
   private String _host;

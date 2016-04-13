@@ -35,8 +35,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 import com.caucho.v5.baratine.InService;
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 
 /**
  * A row for the log store.
@@ -244,7 +244,7 @@ public final class Row {
   }
 
   void readJournal(PageServiceImpl pageActor, 
-                   ReadBuffer is, 
+                   ReadStream is, 
                    byte[] buffer, int offset,
                    RowCursor cursor)
     throws IOException
@@ -312,7 +312,7 @@ public final class Row {
   // checkpoint persistence
   //
 
-  void writeCheckpoint(WriteBuffer os, byte[] buffer, int offset)
+  void writeCheckpoint(WriteStream os, byte[] buffer, int offset)
     throws IOException
   {
     for (Column column : getColumns()) {
@@ -325,7 +325,7 @@ public final class Row {
    * 
    * Returns -1 if the data does not fit into the current block.
    */
-  int readCheckpoint(ReadBuffer is, 
+  int readCheckpoint(ReadStream is, 
                      byte[] blockBuffer,
                      int rowOffset,
                      int blobTail)

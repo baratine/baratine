@@ -73,7 +73,7 @@ public class ServerBase
 
   private final long _startTime;
 
-  private WaitForExitService2 _waitForExitService;
+  private WaitForExitService _waitForExitService;
   
   private AtomicBoolean _isClosed = new AtomicBoolean();
   
@@ -415,7 +415,7 @@ public class ServerBase
     try {
       thread.setContextClassLoader(_systemManager.getClassLoader());
       
-      _waitForExitService = new WaitForExitService2(this, 
+      _waitForExitService = new WaitForExitService(this, 
                                                     _systemManager);
 
       _waitForExitService.waitForExit();

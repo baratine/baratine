@@ -33,7 +33,7 @@ import java.io.IOException;
 
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.Page;
 import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.kelp.PageBlobImpl;
@@ -123,7 +123,7 @@ public class SegmentStream
     int saveSequence = blobPage.getWriteSequence();
     
     OutSegment sOut = openWriter(rwActor);
-    WriteBuffer out = sOut.out();
+    WriteStream out = sOut.out();
     
     try {
       int head = (int) out.getPosition();

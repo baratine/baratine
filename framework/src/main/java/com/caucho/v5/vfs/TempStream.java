@@ -94,10 +94,10 @@ public class TempStream extends StreamImpl
   {
     while (length > 0) {
       if (_tail == null) {
-        addBuffer(TempBuffer.allocate());
+        addBuffer(TempBuffer.create());
       }
       else if (_tail.buffer().length <= _tail.length()) {
-        addBuffer(TempBuffer.allocate());
+        addBuffer(TempBuffer.create());
       }
       
       TempBuffer tail = _tail;
@@ -114,10 +114,10 @@ public class TempStream extends StreamImpl
 
   private void addBuffer(TempBuffer buf)
   {
-    buf.setNext(null);
+    buf.next(null);
     
     if (_tail != null) {
-      _tail.setNext(buf);
+      _tail.next(buf);
       _tail = buf;
     } else {
       _tail = buf;
@@ -136,7 +136,7 @@ public class TempStream extends StreamImpl
   /**
    * Opens a read stream to the buffer.
    */
-  public ReadStream openRead()
+  public ReadStreamOld openRead()
     throws IOException
   {
     closeWrite();
@@ -146,7 +146,7 @@ public class TempStream extends StreamImpl
     _head = null;
     _tail = null;
     
-    return new ReadStream(read);
+    return new ReadStreamOld(read);
   }
 
   /**
@@ -154,7 +154,7 @@ public class TempStream extends StreamImpl
    *
    * @param free if true, frees the buffer as it's read
    */
-  public ReadStream openReadAndSaveBuffer()
+  public ReadStreamOld openReadAndSaveBuffer()
     throws IOException
   {
     closeWrite();
@@ -162,13 +162,13 @@ public class TempStream extends StreamImpl
     TempReadStream read = new TempReadStream(_head);
     read.setFreeWhenDone(false);
     
-    return new ReadStream(read);
+    return new ReadStreamOld(read);
   }
 
   /**
    * Opens a read stream to the buffer.
    */
-  public void openRead(ReadStream rs)
+  public void openRead(ReadStreamOld rs)
     throws IOException
   {
     closeWrite();
@@ -222,7 +222,7 @@ public class TempStream extends StreamImpl
   public void writeToStream(OutputStream os)
     throws IOException
   {
-    for (TempBuffer ptr = _head; ptr != null; ptr = ptr.getNext()) {
+    for (TempBuffer ptr = _head; ptr != null; ptr = ptr.next()) {
       os.write(ptr.buffer(), 0, ptr.length());
     }
   }
@@ -234,7 +234,7 @@ public class TempStream extends StreamImpl
   {
     int length = 0;
     
-    for (TempBuffer ptr = _head; ptr != null; ptr = ptr.getNext()) {
+    for (TempBuffer ptr = _head; ptr != null; ptr = ptr.next()) {
       length += ptr.length();
     }
 
@@ -267,11 +267,11 @@ public class TempStream extends StreamImpl
 
     TempBuffer ptr = _head;
 
-    for (; ptr != null; ptr = ptr.getNext()) {
-      TempBuffer newPtr = TempBuffer.allocate();
+    for (; ptr != null; ptr = ptr.next()) {
+      TempBuffer newPtr = TempBuffer.create();
       
       if (newStream._tail != null)
-        newStream._tail.setNext(newPtr);
+        newStream._tail.next(newPtr);
       else
         newStream._head = newPtr;
       newStream._tail = newPtr;

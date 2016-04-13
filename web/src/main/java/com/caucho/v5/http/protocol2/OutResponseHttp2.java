@@ -34,6 +34,8 @@ import java.util.Objects;
 import com.caucho.v5.http.protocol.OutResponseBase;
 import com.caucho.v5.io.TempBuffer;
 
+import io.baratine.io.Bytes;
+
 //public class OutResponseHttp2 extends OutResponseCache
 public class OutResponseHttp2 extends OutResponseBase
 {
@@ -67,14 +69,13 @@ public class OutResponseHttp2 extends OutResponseBase
    * they should be written.
    */
   @Override
-  protected TempBuffer flushData(TempBuffer head,
-                                 TempBuffer tail,
-                                 boolean isEnd)
+  protected void flush(Bytes data, boolean isEnd)
   {
     if (isClosed()) {
       throw new IllegalStateException();
     }
     
+    /*
     boolean isHeader = ! isCommitted();
     toCommitted();
     
@@ -97,6 +98,7 @@ public class OutResponseHttp2 extends OutResponseBase
     _request.getOutHttp().offer(message);
     
     return next;
+    */
   }
   
   //

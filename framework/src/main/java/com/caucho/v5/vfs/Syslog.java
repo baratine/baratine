@@ -28,7 +28,6 @@
 
 package com.caucho.v5.vfs;
 
-import com.caucho.v5.jni.JniFilePathImpl;
 import com.caucho.v5.jni.JniTroubleshoot;
 import com.caucho.v5.jni.JniUtil;
 import com.caucho.v5.jni.JniUtil.JniLoad;

@@ -51,7 +51,7 @@ public class TempBufferStandard extends TempBuffer
   /**
    * Allocate a TempBuffer, reusing one if available.
    */
-  public static TempBufferStandard allocate()
+  public static TempBufferStandard create()
   {
     TempBufferStandard next = _freeList.allocate();
 

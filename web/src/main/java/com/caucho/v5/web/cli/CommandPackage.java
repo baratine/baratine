@@ -239,7 +239,7 @@ public class CommandPackage extends CommandBase<ArgsBase>
   private long calculateCrc(InputStream is)
     throws IOException
   {
-    TempBuffer tBuf = TempBuffer.allocate();
+    TempBuffer tBuf = TempBuffer.create();
     byte []buffer = tBuf.buffer();
     
     long result = 0;

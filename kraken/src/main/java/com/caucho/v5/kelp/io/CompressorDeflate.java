@@ -36,9 +36,9 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-import com.caucho.v5.io.ReadBuffer;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.FreeList;
 
 /**
@@ -50,13 +50,13 @@ public class CompressorDeflate implements CompressorKelp
   private FreeList<Deflater> _freeDeflater = new FreeList<>(64);
   
   @Override
-  public OutputStream out(WriteBuffer os) throws IOException
+  public OutputStream out(WriteStream os) throws IOException
   {
     return new OutDeflater(os, allocateDeflater());
   }
   
   @Override
-  public InputStream in(ReadBuffer is, long offset, int length) throws IOException
+  public InputStream in(ReadStream is, long offset, int length) throws IOException
   {
     return new InInflater(is, allocateInflater(), offset, length);
   }
@@ -105,18 +105,18 @@ public class CompressorDeflate implements CompressorKelp
   
   private class OutDeflater extends OutputStream
   {
-    private WriteBuffer _os;
+    private WriteStream _os;
     private Deflater _deflater;
     private TempBuffer _tBuf;
     private byte []_buffer;
     private int _offset;
     
-    OutDeflater(WriteBuffer os, Deflater deflater)
+    OutDeflater(WriteStream os, Deflater deflater)
     {
       _os = os;
       _deflater = deflater;
       
-      _tBuf = TempBuffer.allocate();
+      _tBuf = TempBuffer.create();
       _buffer = _tBuf.buffer();
     }
     
@@ -168,7 +168,7 @@ public class CompressorDeflate implements CompressorKelp
       _os.flushBuffer();
     }
     
-    private void flushDeflater(Deflater deflater, WriteBuffer os)
+    private void flushDeflater(Deflater deflater, WriteStream os)
       throws IOException
     {
       while (true) {
@@ -221,7 +221,7 @@ public class CompressorDeflate implements CompressorKelp
   
   private class InInflater extends InputStream
   {
-    private ReadBuffer _is;
+    private ReadStream _is;
     private int _rawLength;
     
     private Inflater _inflater;
@@ -230,13 +230,13 @@ public class CompressorDeflate implements CompressorKelp
     private int _offset;
     private int _length;
     
-    InInflater(ReadBuffer is, Inflater inflater, long offset, int length)
+    InInflater(ReadStream is, Inflater inflater, long offset, int length)
       throws IOException
     {
       _is = is;
       _inflater = inflater;
       
-      _tBuf = TempBuffer.allocate();
+      _tBuf = TempBuffer.create();
       _buffer = _tBuf.buffer();
       
       _is.setPosition(offset);

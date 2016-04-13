@@ -31,7 +31,6 @@ package com.caucho.v5.http.protocol;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,17 +47,18 @@ import com.caucho.v5.http.dispatch.Invocation;
 import com.caucho.v5.http.protocol2.Http2Constants;
 import com.caucho.v5.http.protocol2.RequestProtocolHttp2;
 import com.caucho.v5.io.ClientDisconnectException;
-import com.caucho.v5.io.ReadBuffer;
-import com.caucho.v5.io.SocketBar;
+import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.io.WriteBuffer;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.port.ConnectionProtocol;
-import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.util.CharBuffer;
 import com.caucho.v5.util.CharSegment;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.web.CookieWeb;
+import com.caucho.v5.web.webapp.RequestBaratine;
+
+import io.baratine.io.Bytes;
 
 /**
  * Parses and holds request information for an HTTP request.
@@ -160,11 +160,13 @@ public class RequestHttp extends RequestHttpBase
 
   private boolean _isUpgrade;
 
-  private RequestFacade _request;
+  private RequestBaratine _request;
 
   private PendingFirst _pending;
 
   private final RequestHttpState _state;
+
+  private boolean _isFirst;
   
   // private HmuxRequest _hmuxRequest;
 
@@ -196,7 +198,7 @@ public class RequestHttp extends RequestHttpBase
     _serverHeaderBytes = ("\r\nServer: " + serverHeader).getBytes();
   }
   
-  public void init(RequestFacade request)
+  public void init(RequestBaratine request)
   {
     _request = request;
   }
@@ -641,6 +643,7 @@ public class RequestHttp extends RequestHttpBase
   /**
    * Initialize any special attributes.
    */
+  /*
   @Override
   protected void initAttributes(RequestFacade request)
   {
@@ -673,6 +676,7 @@ public class RequestHttp extends RequestHttpBase
       log.log(Level.FINER, e.toString(), e);
     }
   }
+  */
 
   //
   // stream management
@@ -709,7 +713,7 @@ public class RequestHttp extends RequestHttpBase
     throws IOException
   {
     try {
-      ReadBuffer is = conn().readStream();
+      ReadStream is = conn().readStream();
       
       if (! readRequest(is)) {
         clearRequest();
@@ -788,6 +792,7 @@ public class RequestHttp extends RequestHttpBase
     
     _inOffset = 0;
     _isChunkedIn = false;
+    _isFirst = true;
   }
 
   /**
@@ -797,7 +802,7 @@ public class RequestHttp extends RequestHttpBase
    *
    * @return true if the request is valid
    */
-  private boolean readRequest(ReadBuffer is)
+  private boolean readRequest(ReadStream is)
     throws IOException
   {
     // server/12o3 - default to 1.0 for error messages in request
@@ -1095,7 +1100,7 @@ public class RequestHttp extends RequestHttpBase
       return false;
     }
     
-    ReadBuffer is = conn().readStream();
+    ReadStream is = conn().readStream();
     
     int sublen = (int) Math.min(Integer.MAX_VALUE, inOffset);
     sublen = Math.min(sublen, is.availableBuffer());
@@ -1105,7 +1110,7 @@ public class RequestHttp extends RequestHttpBase
     }
     
     if (sublen <= TempBuffer.SMALL_SIZE) {
-      TempBuffer tBuf = TempBuffer.allocateSmall();
+      TempBuffer tBuf = TempBuffer.createSmall();
       
       int readlen = is.readAll(tBuf.buffer(), 0, sublen);
       
@@ -1121,7 +1126,7 @@ public class RequestHttp extends RequestHttpBase
       return true;
     }
     else if (sublen <= TempBuffer.SIZE) {
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
       
       int readlen = is.readAll(tBuf.buffer(), 0, sublen);
       
@@ -1138,7 +1143,7 @@ public class RequestHttp extends RequestHttpBase
     }
     else {
       // XXX: should allow multiple reads -- although Buffer will fix
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
       
       int readlen = is.readAll(tBuf.buffer(), 0, sublen);
       
@@ -1159,7 +1164,7 @@ public class RequestHttp extends RequestHttpBase
   private int readChunkHeader()
     throws IOException
   {
-    ReadBuffer is = conn().readStream();
+    ReadStream is = conn().readStream();
     int ch;
     
     if ((ch = is.read()) == '\r') {
@@ -1183,7 +1188,7 @@ public class RequestHttp extends RequestHttpBase
     return len;
   }
   
-  private int readChunkLen(ReadBuffer is, int ch)
+  private int readChunkLen(ReadStream is, int ch)
     throws IOException
   {
     int len = 0;
@@ -1226,7 +1231,7 @@ public class RequestHttp extends RequestHttpBase
       return false;
     }
     
-    ReadBuffer is = conn().readStream();
+    ReadStream is = conn().readStream();
     
     int sublen = (int) Math.min(Integer.MAX_VALUE, (contentLength - inOffset));
     sublen = Math.min(sublen, is.availableBuffer());
@@ -1236,7 +1241,7 @@ public class RequestHttp extends RequestHttpBase
     }
     
     if (sublen <= TempBuffer.SMALL_SIZE) {
-      TempBuffer tBuf = TempBuffer.allocateSmall();
+      TempBuffer tBuf = TempBuffer.createSmall();
       
       int readlen = is.read(tBuf.buffer(), 0, sublen);
       
@@ -1256,7 +1261,7 @@ public class RequestHttp extends RequestHttpBase
       return false;
     }
     else if (sublen <= TempBuffer.SIZE) {
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
       
       int readlen = is.read(tBuf.buffer(), 0, sublen);
       
@@ -1277,7 +1282,7 @@ public class RequestHttp extends RequestHttpBase
     }
     else {
       // XXX: should allow multiple reads -- although Buffer will fix
-      TempBuffer tBuf = TempBuffer.allocate();
+      TempBuffer tBuf = TempBuffer.create();
       
       int readlen = is.read(tBuf.buffer(), 0, sublen);
       
@@ -1365,7 +1370,7 @@ public class RequestHttp extends RequestHttpBase
   private boolean startHttp2()
     throws IOException
   {
-    ReadBuffer is = conn().readStream();
+    ReadStream is = conn().readStream();
 
     //int offset = is.getOffset();
     
@@ -1398,7 +1403,7 @@ public class RequestHttp extends RequestHttpBase
    *
    * @param s the input read stream
    */
-  private void parseHeaders(ReadBuffer s) throws IOException
+  private void parseHeaders(ReadStream s) throws IOException
   {
     int version = getVersion();
 
@@ -1549,7 +1554,7 @@ public class RequestHttp extends RequestHttpBase
     }
   }
   
-  private int fillUrlTail(ReadBuffer s, int readOffset,
+  private int fillUrlTail(ReadStream s, int readOffset,
                           int uriOffset)
     throws IOException
   {
@@ -1577,7 +1582,7 @@ public class RequestHttp extends RequestHttpBase
     return tail;
   }
   
-  private int fillHeaderTail(ReadBuffer s, int readOffset,
+  private int fillHeaderTail(ReadStream s, int readOffset,
                              int headerOffset)
     throws IOException
   {
@@ -1787,7 +1792,7 @@ public class RequestHttp extends RequestHttpBase
   
   boolean isChunked()
   {
-    return out().isChunkedEncoding();
+    return out().isChunked();
   }
 
   public boolean calculateChunkedEncoding()
@@ -1811,49 +1816,53 @@ public class RequestHttp extends RequestHttpBase
   }
   
   @Override
-  public boolean writeFirst(WriteBuffer out, 
-                         TempBuffer head, long length, boolean isEnd)
+  public boolean write(WriteStream out, 
+                       Bytes data,
+                       boolean isEnd)
   {
-    //RequestFacade request = request();
-    //System.out.println("WRI: " + head + " " + request);
-
     if (_state.isPrevCloseWrite()) {
-      return writeFirstImpl(out, head, length, isEnd);
+      return writeFirstImpl(out, data, isEnd);
     }
     else {
-      saveFirst(out, head, length, isEnd);
+      saveFirst(out, data, isEnd);
       
       return false;
     }
   }
   
-  private boolean writeFirstImpl(WriteBuffer out,
-                                 TempBuffer head, 
-                                 long length, 
+  private boolean writeFirstImpl(WriteStream out,
+                                 Bytes data,
                                  boolean isEnd)
    {
     try {
-      writeHeaders(out, isEnd ? length : -1);
-
-      if (head != null) {
-        if (isChunked()) {
+      int length = data != null ? data.length() : -1;
+      
+      if (_isFirst) {
+        _isFirst = false;
+        writeHeaders(out, isEnd ? length : -1);
+        
+        if (isChunked() && length > 0) {
           writeFirstChunk(out, length);
         }
-        
-        return writeNextImpl(out, head, isEnd);
       }
-      else {
-        if (isEnd && ! isKeepalive()) {
-          closeWrite();
-          // out.close();
+
+      if (data != null) {
+        out.write(data);
+      }
+      
+      if (isEnd) {
+        if (isChunked()) {
+          writeLastChunk(out);
+        }
+        
+        closeWrite();
+
+        if (! isKeepalive()) {
           return true;
         }
-        else if (isEnd) {
-          closeWrite();
-        }
-        
-        return false;
       }
+        
+      return false;
     } catch (Throwable e) {
       e.printStackTrace();
       log.log(Level.WARNING, e.toString(), e);
@@ -1861,77 +1870,6 @@ public class RequestHttp extends RequestHttpBase
       disconnect(out);
       
       return true;
-    }
-  }
-
-  @Override
-  public boolean writeNext(WriteBuffer out, TempBuffer head, boolean isEnd)
-  {
-    //RequestFacade request = request();
-
-    if (_state.isPrevCloseWrite()) {
-      return writeNextImpl(out, head, isEnd);
-    }
-    else {
-      saveNext(out, head, isEnd);
-      
-      return false;
-    }
-  }
-    
-  private boolean writeNextImpl(WriteBuffer out,
-                             TempBuffer head,
-                             boolean isEnd)
-  {
-    TempBuffer next;
-
-    try {
-      for (; head != null; head = next) {
-        next = head.getNext();
-
-        try {
-          out.write(head.buffer(), 0, head.length());
-        } catch (IOException e) {
-          log.log(Level.WARNING, e.toString(), e);
-        }
-
-        if (next != null) {
-          head.setNext(null);
-          head.freeSelf();
-        }
-        else if (! isEnd) {
-          head.freeSelf();
-        }
-      }
-
-      if (isEnd) {
-        if (isChunked()) {
-          writeLastChunk(out);
-        }
-
-        if (isKeepalive()) {
-          //out.flush();
-        }
-        else {
-          //out.close();
-          return true;
-        }
-        
-        //getConnection().proxy().requestWake();
-      }
-      else {
-        //out.flush();
-      }
-      
-      return false;
-    } catch (IOException e) {
-      log.log(Level.WARNING, e.toString(), e);
-      
-      return true;
-    } finally {
-      if (isEnd) {
-        closeWrite();
-      }
     }
   }
   
@@ -1950,19 +1888,11 @@ public class RequestHttp extends RequestHttpBase
     //_state.onCloseWrite(next());
   }
 
-  private void saveFirst(WriteBuffer out,
-                         TempBuffer head, 
-                         long length, 
+  private void saveFirst(WriteStream out,
+                         Bytes data,
                          boolean isEnd)
   {
-    _pending = new PendingFirst(out, head, length, isEnd);
-  }
-  
-  private void saveNext(WriteBuffer out,
-                        TempBuffer head, 
-                        boolean isEnd)
-  {
-    _pending.next(new PendingNext(out, head, isEnd));
+    _pending = new PendingFirst(out, data, isEnd);
   }
   
   @Override
@@ -2004,54 +1934,28 @@ public class RequestHttp extends RequestHttpBase
   
   private class PendingFirst extends Pending
   {
-    private WriteBuffer _out;
-    private TempBuffer _head;
-    private long _length;
+    private WriteStream _out;
+    private Bytes _data;
     private boolean _isEnd;
     
-    PendingFirst(WriteBuffer out,
-                 TempBuffer head,
-                 long length,
+    PendingFirst(WriteStream out,
+                 Bytes data,
                  boolean isEnd)
     {
       _out = out;
-      _head = head;
-      _length = length;
+      _data = data;
       _isEnd = isEnd;
     }
     
     @Override
     void write()
     {
-      writeFirstImpl(_out, _head, _length, _isEnd);
+      writeFirstImpl(_out, _data, _isEnd);
       writeNext();
     }
   }
   
-  private class PendingNext extends Pending
-  {
-    private WriteBuffer _out;
-    private TempBuffer _head;
-    private boolean _isEnd;
-    
-    PendingNext(WriteBuffer out,
-                 TempBuffer head,
-                 boolean isEnd)
-    {
-      _out = out;
-      _head = head;
-      _isEnd = isEnd;
-    }
-    
-    @Override
-    void write()
-    {
-      writeNextImpl(_out, _head, _isEnd);
-      writeNext();
-    }
-  }
-  
-  private void writeFirstChunk(WriteBuffer os, long length)
+  private void writeFirstChunk(WriteStream os, long length)
     throws IOException
   {
     os.write('\r');
@@ -2064,7 +1968,7 @@ public class RequestHttp extends RequestHttpBase
     os.write('\n');
   }
   
-  private void writeLastChunk(WriteBuffer os)
+  private void writeLastChunk(WriteStream os)
     throws IOException
   {
     os.write('\r');
@@ -2128,7 +2032,7 @@ public class RequestHttp extends RequestHttpBase
    * @return true if the data in the request should use chunked encoding.
    */
   //@Override
-  private void writeHeaders(WriteBuffer os, long length)
+  private void writeHeaders(WriteStream os, long length)
     throws IOException
   {
     int version = getVersion();
@@ -2418,7 +2322,7 @@ public class RequestHttp extends RequestHttpBase
     }
   }
 
-  private void writeCookies(WriteBuffer os) throws IOException
+  private void writeCookies(WriteStream os) throws IOException
   {
     ArrayList<CookieWeb> cookiesOut = cookiesOut();
 
@@ -2431,7 +2335,7 @@ public class RequestHttp extends RequestHttpBase
     }
   }
   
-  private void printCookie(WriteBuffer os, CookieWeb cookie)
+  private void printCookie(WriteStream os, CookieWeb cookie)
     throws IOException
   {
     os.print("\r\nSet-Cookie: ");
