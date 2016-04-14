@@ -224,7 +224,7 @@ public class JampMethodStandard extends JampMethodRest
                      String pathInfo)
     throws IOException
   {
-    JsonReader jIn = new JsonReader(req.body(Reader.class));
+    JsonReader jIn = null;//new JsonReader(req.body(Reader.class));
 
     if (jIn.peek() != InJson.Event.START_ARRAY) {
       req.halt(HttpStatus.FORBIDDEN);
@@ -260,7 +260,7 @@ public class JampMethodStandard extends JampMethodRest
       return;
     }
 
-    JsonReader jIn = new JsonReader(req.body(Reader.class));
+    JsonReader jIn = null;//new JsonReader(req.body(Reader.class));
 
     if (jIn.peek() != InJson.Event.START_ARRAY) {
       ServiceException exn = new ServiceExceptionIllegalArgument();

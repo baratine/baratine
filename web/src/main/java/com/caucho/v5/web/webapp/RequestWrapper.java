@@ -257,11 +257,13 @@ public class RequestWrapper implements RequestWebSpi
     return delegate().session(type);
   }
 
+  /*
   @Override
   public <X> X body(Class<X> type)
   {
     return delegate().body(type);
   }
+  */
 
   /*
   @Override

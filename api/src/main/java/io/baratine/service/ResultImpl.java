@@ -653,13 +653,13 @@ class ResultImpl
     }
   }
   
-  final static class ChainResult<T,U> implements Result<T>
+  final static class ChainResult<T,U,R extends Result<U>> implements Result<T>
   {
-    private Result<U> _next;
-    private BiConsumer<T,Result<U>> _consumer;
+    private R _next;
+    private BiConsumer<T,R> _consumer;
     
-    public ChainResult(Result<U> next,
-                       BiConsumer<T,Result<U>> consumer)
+    public ChainResult(R next,
+                       BiConsumer<T,R> consumer)
     {
       Objects.requireNonNull(next);
       _next = next;
@@ -700,17 +700,24 @@ class ResultImpl
     }
   }
   
-  final static class ChainResultAsync<T,U> extends ChainResultBase<T,U>
+  final static class ChainResultAsync<T,U,R extends Result<U>>
+    extends ChainResultBase<T,U>
   {
-    private BiConsumer<T,Result<U>> _consumer;
+    private BiConsumer<T,R> _consumer;
     
-    public ChainResultAsync(Result<U> next,
-                            BiConsumer<T,Result<U>> consumer)
+    public ChainResultAsync(R next,
+                            BiConsumer<T,R> consumer)
     {
       super(next);
       
       Objects.requireNonNull(consumer);
       _consumer = consumer;
+    }
+    
+    @Override
+    protected R delegate()
+    {
+      return (R) super.delegate();
     }
     
     @Override

@@ -31,6 +31,7 @@ package io.baratine.web;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
@@ -74,10 +75,12 @@ public interface RequestWeb extends OutWeb, Result<Object>
   ServiceRef session(String name);
   <X> X session(Class<X> type);
   
-  <X> X body(Class<X> type);
+  //<X> X body(Class<X> type);
 
   <X> void body(Class<X> type,
                 Result<X> result);
+
+  //<X> void body(Class<X> type, BiConsumer<X,RequestWeb> completion);
 
   //
   // response
@@ -140,6 +143,15 @@ public interface RequestWeb extends OutWeb, Result<Object>
   // buffers
   
   Buffers buffers();
+  
+  //
+  // chaining
+  //
+  
+  default <U> Result<U> then(BiConsumer<U,RequestWeb> after)
+  {
+    return Result.then(this, after);
+  }
   
   public interface SecureWeb
   {

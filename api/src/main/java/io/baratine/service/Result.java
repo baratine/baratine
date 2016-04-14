@@ -285,10 +285,34 @@ public interface Result<T>
   default <U> Result<U> of(BiConsumer<U,Result<T>> consumer)
   {
     if (isFuture()) {
-      return new ChainResultAsync<U,T>(this, consumer);
+      return new ChainResultAsync<U,T,Result<T>>(this, consumer);
     }
     else {
-      return new ChainResult<U,T>(this, consumer);
+      return new ChainResult<U,T,Result<T>>(this, consumer);
+    }
+  }
+  
+  /**
+   * Creates a chained result for calling an internal
+   * service from another service. The lambda expression will complete
+   * the original result.
+   * 
+   * <pre><code>
+   * void myMiddle(Result&lt;String&gt; result)
+   * {
+   *   MyLeafService leaf = ...;
+   *   
+   *   leaf.myLeaf(result.of((v,r)-&gt;r.ok("Leaf: " + v)));
+   * }
+   * </code></pre>
+   */
+  static <T,U,R extends Result<T>> Result<U> then(R result, BiConsumer<U,R> consumer)
+  {
+    if (result.isFuture()) {
+      return new ChainResultAsync<U,T,R>(result, consumer);
+    }
+    else {
+      return new ChainResult<U,T,R>(result, consumer);
     }
   }
   

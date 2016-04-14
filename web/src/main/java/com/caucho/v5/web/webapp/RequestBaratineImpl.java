@@ -480,8 +480,8 @@ public final class RequestBaratineImpl
     }
   }
 
-  @Override
-  public <X> X body(Class<X> type)
+  //@Override
+  private <X> X body(Class<X> type)
   {
     Objects.requireNonNull(type);
     
