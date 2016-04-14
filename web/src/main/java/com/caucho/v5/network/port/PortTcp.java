@@ -45,12 +45,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.thread.IdleThreadLauncher;
 import com.caucho.v5.amp.thread.ThreadPool;
-import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.health.meter.ActiveMeter;
 import com.caucho.v5.health.meter.CountMeter;
 import com.caucho.v5.health.meter.MeterService;
@@ -59,9 +55,7 @@ import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.ServerSocketBar;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.SocketSystem;
-import com.caucho.v5.jni.OpenSSLFactory;
 import com.caucho.v5.lifecycle.Lifecycle;
-import com.caucho.v5.network.ssl.SSLFactoryJsse;
 import com.caucho.v5.util.Alarm;
 import com.caucho.v5.util.AlarmListener;
 import com.caucho.v5.util.CurrentTime;
@@ -80,25 +74,13 @@ public class PortTcp implements PortSocket
   private static final Logger log
     = Logger.getLogger(PortTcp.class.getName());
 
-  private static final int ACCEPT_IDLE_MIN = 4;
-  private static final int ACCEPT_IDLE_MAX = 64;
-
-  private static final int ACCEPT_THROTTLE_LIMIT = 1024;
-  private static final long ACCEPT_THROTTLE_SLEEP_TIME = 0;
-
   private static final int KEEPALIVE_MAX = 65536;
-
-  private static final CountMeter _throttleDisconnectMeter
-    = MeterService.createCountMeter("Caucho|Port|Throttle Disconnect Count");
 
   private static final CountMeter _keepaliveMeter
     = MeterService.createCountMeter("Caucho|Port|Keepalive Count");
 
   private static final ActiveMeter _keepaliveThreadMeter
     = MeterService.createActiveMeter("Caucho|Port|Keepalive Thread");
-
-  private static final ActiveMeter _suspendMeter
-    = MeterService.createActiveMeter("Caucho|Port|Request Suspend");
 
   private final AtomicInteger _connectionCount;
   private final AtomicLong _connectionSequence;
@@ -146,8 +128,6 @@ public class PortTcp implements PortSocket
 
   private int _acceptListenBacklog = 4000;
 
-  private int _connectionMax = 1024 * 1024;
-
   private int _keepaliveMax = -1;
 
   private long _keepaliveTimeMax = 10 * 60 * 1000L;
@@ -160,9 +140,6 @@ public class PortTcp implements PortSocket
   private long _socketTimeout = 120 * 1000L;
 
   private long _suspendReaperTimeout = 60000L;
-  private long _suspendTimeMax = 600 * 1000L;
-  // after for 120s start checking for EOF on comet requests
-  private long _suspendCloseTimeMax = 120 * 1000L;
 
   private long _requestTimeout = -1;
 
@@ -171,11 +148,6 @@ public class PortTcp implements PortSocket
   private boolean _isTcpCork;
 
   private boolean _isEnableJni = true;
-
-  // The virtual host name
-  private String _virtualHost;
-
-  //private final AdminPortTcp _admin = new AdminPortTcp(this);
 
   // the server socket
   private ServerSocketBar _serverSocket;
@@ -200,21 +172,13 @@ public class PortTcp implements PortSocket
 
   // active requests that are closing after the request like an access-log
   // but should not trigger a new thread launch.
-  private final AtomicInteger _shutdownRequestCount = new AtomicInteger();
+  //private final AtomicInteger _shutdownRequestCount = new AtomicInteger();
 
   // reaper alarm for timed out comet requests
   private Alarm _suspendAlarm;
 
   // statistics
-
-  private final AtomicLong _lifetimeRequestCount = new AtomicLong();
-  private final AtomicLong _lifetimeKeepaliveCount = new AtomicLong();
-  private final AtomicLong _lifetimeKeepaliveSelectCount = new AtomicLong();
-  private final AtomicLong _lifetimeClientDisconnectCount = new AtomicLong();
-  private final AtomicLong _lifetimeRequestTime = new AtomicLong();
-  private final AtomicLong _lifetimeReadBytes = new AtomicLong();
-  private final AtomicLong _lifetimeWriteBytes = new AtomicLong();
-  private final AtomicLong _lifetimeThrottleDisconnectCount = new AtomicLong();
+  private final PortStats _stats = new PortStats(this);
 
   // total keepalive
   private AtomicInteger _keepaliveAllocateCount = new AtomicInteger();
@@ -227,25 +191,18 @@ public class PortTcp implements PortSocket
   // The port lifecycle
   private final Lifecycle _lifecycle = new Lifecycle();
 
-  private ServicesAmp _ampManager;
+  private ServicesAmp _services;
 
   private PortTcpBuilder _builder;
 
   public PortTcp(PortTcpBuilder builder)
   {
-    /*
-    if (CauchoUtil.is64Bit()) {
-      // on 64-bit machines we can use more threads before parking in nio
-      _keepalivePollThreadTimeout = 60000;
-    }
-    */
-    
     _builder = builder;
     
     _keepalivePollThreadTimeout = 60000;
     
-    _ampManager = builder.ampManager(); // AmpSystem.getCurrentManager();
-    Objects.requireNonNull(_ampManager);
+    _services = builder.ampManager(); // AmpSystem.getCurrentManager();
+    Objects.requireNonNull(_services);
     
     _protocol = builder.protocol();
     Objects.requireNonNull(_protocol);
@@ -276,17 +233,12 @@ public class PortTcp implements PortSocket
   }
   
   @Override
-  public ServicesAmp ampManager()
+  public ServicesAmp services()
   {
-    return _ampManager;
+    return _services;
   }
 
-  public String getDebugId()
-  {
-    return getUrl();
-  }
-
-  public ClassLoader classLoader()
+  ClassLoader classLoader()
   {
     return _classLoader;
   }
@@ -295,7 +247,7 @@ public class PortTcp implements PortSocket
    * Returns the protocol handler responsible for generating protocol-specific
    * ProtocolConnections.
    */
-  public Protocol protocol()
+  Protocol protocol()
   {
     return _protocol;
   }
@@ -347,80 +299,9 @@ public class PortTcp implements PortSocket
   }
 
   /**
-   * Gets the virtual host for IP-based virtual host.
-   */
-  public String getVirtualHost()
-  {
-    return _virtualHost;
-  }
-
-  /**
-   * Sets the SSL factory
-   */
-  public void setSSL(SSLFactory factory)
-  {
-    _sslFactory = factory;
-  }
-
-  /**
-   * Sets the SSL factory
-   */
-  //@Configurable
-  public SSLFactory createOpenssl()
-    throws ConfigException
-  {
-    OpenSSLFactory openSslFactory = new OpenSSLFactory();
-
-    if (protocol() != null) {
-      openSslFactory.setNextProtocols(protocol().nextProtocols());
-    }
-    
-    _sslFactory = openSslFactory;
-
-    return _sslFactory;
-  }
-
-  /**
-   * Sets the SSL factory
-   */
-  /*
-  public JsseSSLFactory createJsse()
-  {
-    // should probably check that openssl exists
-    return new JsseSSLFactory(_env, portName());
-  }
-  */
-
-  /**
-   * Sets the SSL factory
-   */
-  /*
-  public void setJsseSsl(JsseSSLFactory factory)
-  {
-    _sslFactory = factory;
-  }
-  */
-
-  /**
-   * Gets the SSL factory.
-   */
-  public SSLFactory getSSL()
-  {
-    return _sslFactory;
-  }
-
-  /**
-   * Returns true for ssl.
-   */
-  public boolean isSSL()
-  {
-    return _sslFactory != null;
-  }
-
-  /**
    * Return true for secure
    */
-  public boolean isSecure()
+  boolean isSecure()
   {
     return _isSecure || _sslFactory != null;
   }
@@ -430,90 +311,9 @@ public class PortTcp implements PortSocket
   //
 
   /**
-   * The minimum spare threads.
-   */
-  /*
-  public int getAcceptThreadMin()
-  {
-    return _connThreadPool.getIdleMin();
-  }
-  */
-
-  /**
-   * The maximum spare threads.
-   */
-  /*
-  public int getAcceptThreadMax()
-  {
-    return _connThreadPool.getIdleMax();
-  }
-  */
-
-  /*
-  //@Configurable
-  public void setPortThreadMax(int max)
-  {
-    int threadMax = ThreadPool.getThreadPool().getThreadMax();
-
-    if (threadMax < max) {
-      log.warning(L.l("<port-thread-max> value '{0}' should be less than <thread-max> value '{1}'",
-                      max, threadMax));
-    }
-
-    _connThreadPool.setThreadMax(max);
-  }
-  */
-
-  /*
-  public int getPortThreadMax()
-  {
-    return _connThreadPool.getThreadMax();
-  }
-  */
-
-    /**
-   * Sets the minimum spare idle timeout.
-   */
-  /*
-  //@Configurable
-  public void setAcceptThreadIdleTimeout(Duration timeout)
-    throws ConfigException
-  {
-    _connThreadPool.setIdleTimeout(timeout.toMillis());
-  }
-  */
-
-  /**
-   * Sets the minimum spare idle timeout.
-   */
-  /*
-  public long getAcceptThreadIdleTimeout()
-    throws ConfigException
-  {
-    return _connThreadPool.getIdleTimeout();
-  }
-  */
-
-  /**
-   * The operating system listen backlog
-   */
-  public int getAcceptListenBacklog()
-  {
-    return _acceptListenBacklog;
-  }
-
-  /**
-   * Gets the connection max.
-   */
-  public int getConnectionMax()
-  {
-    return _connectionMax;
-  }
-
-  /**
    * Returns the max time for a request.
    */
-  public long getRequestTimeout()
+  long getRequestTimeout()
   {
     return _requestTimeout;
   }
@@ -521,116 +321,22 @@ public class PortTcp implements PortSocket
   /**
    * Gets the read timeout for the accepted sockets.
    */
-  public long getSocketTimeout()
+  private long getSocketTimeout()
   {
     return _socketTimeout;
   }
 
-  /**
-   * Gets the tcp-no-delay property
-   */
-  public boolean isTcpNoDelay()
-  {
-    return _isTcpNoDelay;
-  }
-
-  /**
-   * Sets the tcp-no-delay property
-   */
-  //@Configurable
-  public void setTcpNoDelay(boolean tcpNoDelay)
-  {
-    _isTcpNoDelay = tcpNoDelay;
-  }
-
-  public boolean isTcpKeepalive()
-  {
-    return _isTcpKeepalive;
-  }
-
-  /**
-   * Gets the tcp-cork property
-   */
-  public boolean isTcpCork()
-  {
-    return _isTcpNoDelay;
-  }
-
-  /**
-   * Configures the throttle.
-   */
-  public long getThrottleConcurrentMax()
-  {
-    if (_throttle != null)
-      return _throttle.getMaxConcurrentRequests();
-    else
-      return -1;
-  }
-
-  public boolean isJniEnabled()
-  {
-    if (_serverSocket != null) {
-      return _serverSocket.isJni();
-    }
-    else {
-      return false;
-    }
-  }
-
-  private ThrottleSocket createThrottle()
-  {
-    if (_throttle == null) {
-      _throttle = new ThrottleSocketImpl();
-    }
-
-    return _throttle;
-  }
-
-  /**
-   * Gets the keepalive max.
-   */
-  public int getKeepaliveMax()
-  {
-    return _keepaliveMax;
-  }
-
-  /**
-   * Gets the keepalive max.
-   */
-  public long getKeepaliveConnectionTimeMax()
-  {
-    return _keepaliveTimeMax;
-  }
-
-  /**
-   * Gets the suspend max.
-   */
-  public long getSuspendTimeMax()
-  {
-    return _suspendTimeMax;
-  }
-
-  public long getKeepaliveTimeout()
+  long getKeepaliveTimeout()
   {
     return _keepaliveTimeout;
   }
 
-  public boolean isKeepaliveAsyncEnabled()
+  private boolean isKeepaliveAsyncEnabled()
   {
     return _isKeepaliveAsyncEnable;
   }
 
-  public long getKeepaliveSelectThreadTimeout()
-  {
-    return _keepalivePollThreadTimeout;
-  }
-
-  public long getKeepaliveThreadTimeout()
-  {
-    return _keepalivePollThreadTimeout;
-  }
-
-  public long getBlockingTimeoutForPoll()
+  private long getBlockingTimeoutForPoll()
   {
     long timeout = _keepalivePollThreadTimeout;
 
@@ -642,160 +348,19 @@ public class PortTcp implements PortSocket
       return timeout;
   }
 
-  public int pollMax()
-  {
-    if (getPollManager() != null)
-      return getPollManager().pollMax();
-    else
-      return -1;
-  }
-
-  /**
-   * Returns the thread launcher for the link.
-   */
-  /*
-  IdleThreadManager getThreadManager()
-  {
-    return _connThreadPool;
-  }
-  */
-
-  ThreadPool getThreadPool()
-  {
-    return _threadPool;
-  }
-
   //
   // statistics
   //
-
-  /**
-   * Returns the thread count.
-   */
-  /*
-  public int getThreadCount()
-  {
-    return _connThreadPool.getThreadCount();
-  }
-  */
-
-  /**
-   * Returns the active thread count.
-   */
-  /*
-  public int getActiveThreadCount()
-  {
-    return _connThreadPool.getThreadCount() - _connThreadPool.getIdleCount();
-  }
-  */
-
-  /**
-   * Returns the count of idle threads.
-   */
-  /*
-  public int getIdleThreadCount()
-  {
-    return _connThreadPool.getIdleCount();
-  }
-  */
-
-  /**
-   * Returns the count of start threads.
-   */
-  /*
-  public int getStartThreadCount()
-  {
-    return _connThreadPool.getStartingCount();
-  }
-  */
-
-  /**
-   * Returns the number of keepalive connections
-   */
-  public int getKeepaliveCount()
-  {
-    return _keepaliveAllocateCount.get();
-  }
-
-  public Lifecycle getLifecycleState()
-  {
-    return _lifecycle;
-  }
-
-  public boolean isAfterBind()
-  {
-    return _isBind.get();
-  }
+  
   /**
    * Returns true if the port is active.
    */
-  public boolean isActive()
+  boolean isActive()
   {
     return _lifecycle.isActive();
   }
 
-  /**
-   * Returns the active connections.
-   */
-  /*
-  public int getActiveConnectionCount()
-  {
-    return getActiveThreadCount();
-  }
-  */
-
-  /**
-   * Returns the keepalive connections.
-   */
-  public int getKeepaliveConnectionCount()
-  {
-    return getKeepaliveCount();
-  }
-
-  /**
-   * Returns the number of keepalive connections
-   */
-  public int getKeepaliveThreadCount()
-  {
-    return _keepaliveThreadCount.get();
-  }
-
-  /**
-   * Returns the number of connections in the select.
-   */
-  public int getSelectConnectionCount()
-  {
-    if (_pollManager != null)
-      return _pollManager.getSelectCount();
-    else
-      return -1;
-  }
-
-  /**
-   * Returns the server socket class name for debugging.
-   */
-  public String getServerSocketClassName()
-  {
-    ServerSocketBar ss = _serverSocket;
-
-    if (ss != null)
-      return ss.getClass().getName();
-    else
-      return null;
-  }
-
-  /**
-   * Initializes the port.
-   */
-  @PostConstruct
-  public void init()
-    throws ConfigException
-  {
-    if (! _lifecycle.toInit())
-      return;
-  }
-
-  public String getUrl()
+  String url()
   {
     if (_url == null) {
       StringBuilder url = new StringBuilder();
@@ -805,7 +370,7 @@ public class PortTcp implements PortSocket
       else
         url.append("unknown");
       
-      if (isSSL()) {
+      if (isSecure()) {
         url.append("s");
       }
       
@@ -855,7 +420,7 @@ public class PortTcp implements PortSocket
       _throttle = new ThrottleSocket();
     }
     
-    String protocolName = _protocol.name();
+    //String protocolName = _protocol.name();
     
     String ssl = _sslFactory != null ? "s" : "";
 
@@ -945,7 +510,7 @@ public class PortTcp implements PortSocket
     }
   }
 
-  public void postBind()
+  private void postBind()
   {
     if (_isPostBind.getAndSet(true)) {
       return;
@@ -1025,15 +590,10 @@ public class PortTcp implements PortSocket
     }
   }
 
-  public boolean isEnabled()
-  {
-    return _lifecycle.isActive();
-  }
-
   /**
    * Starts the port listening for new connections.
    */
-  public void enable()
+  private void enable()
   {
     if (_lifecycle.toActive()) {
       if (_serverSocket != null) {
@@ -1043,108 +603,17 @@ public class PortTcp implements PortSocket
   }
 
   /**
-   * Stops the port from listening for new connections.
-   */
-  public void disable()
-  {
-    if (_lifecycle.toStop()) {
-      if (_serverSocket != null)
-        _serverSocket.listen(0);
-
-      if (_port < 0) {
-      }
-      else if (_address != null)
-        log.info(_protocol.name() + " disabled "
-                 + _address + ":" + getLocalPort());
-      else
-        log.info(_protocol.name() + " disabled *:" + getLocalPort());
-    }
-  }
-
-  /**
-   * returns the connection info for jmx
-   */
-  /*
-  TcpConnectionInfo []getActiveConnections()
-  {
-    List<TcpConnectionInfo> infoList = new ArrayList<TcpConnectionInfo>();
-
-    ConnectionTcp[] connections = new ConnectionTcp[_activeConnectionSet.size()];
-    _activeConnectionSet.keySet().toArray(connections);
-
-    for (int i = 0 ; i < connections.length; i++) {
-      TcpConnectionInfo connInfo = connections[i].getConnectionInfo();
-      if (connInfo != null)
-        infoList.add(connInfo);
-    }
-
-    TcpConnectionInfo []infoArray = new TcpConnectionInfo[infoList.size()];
-    infoList.toArray(infoArray);
-
-    return infoArray;
-  }
-  */
-
-  /**
    * returns the select manager.
    */
-  public PollTcpManagerBase getPollManager()
+  PollTcpManagerBase pollManager()
   {
     return _pollManager;
   }
 
   /**
-   * Accepts a new connection.
-   */
-  /*
-  @Friend(ConnectionTcp.class)
-  boolean accept(QSocket socket)
-  {
-    try {
-      IdleThreadManager threadPool = getThreadManager();
-
-      while (! isClosed()) {
-        // Thread.interrupted();
-
-        if (_serverSocket.accept(socket)) {
-          // System.out.println("REMOTE: " + socket.getRemotePort() + " " + _serverSocket);
-          
-          if (threadPool.isThreadMax()
-              && ! isKeepaliveAsyncEnabled()
-              && threadPool.getIdleCount() <= 1) {
-            // System.out.println("CLOSED:");
-            _throttleDisconnectMeter.start();
-            _lifetimeThrottleDisconnectCount.incrementAndGet();
-            socket.close();
-          }
-          else if (_throttle.accept(socket)) {
-            if (! isClosed()) {
-              return true;
-            }
-            else {
-              socket.close();
-            }
-          }
-          else {
-            _throttleDisconnectMeter.start();
-            _lifetimeThrottleDisconnectCount.incrementAndGet();
-            socket.close();
-          }
-        }
-      }
-    } catch (Throwable e) {
-      if (_lifecycle.isActive() && log.isLoggable(Level.FINER))
-        log.log(Level.FINER, e.toString(), e);
-    }
-
-    return false;
-  }
-  */
-
-  /**
    * Returns the next unique connection sequence.
    */
-  public long nextConnectionSequence()
+  long nextConnectionSequence()
   {
     return _connectionSequence.incrementAndGet();
   }
@@ -1157,22 +626,6 @@ public class PortTcp implements PortSocket
     if (_throttle != null) {
       _throttle.close(socket);
     }
-  }
-
-  /**
-   * request threads in a shutdown, but not yet idle.
-   */
-  void requestShutdownBegin()
-  {
-    _shutdownRequestCount.incrementAndGet();
-  }
-
-  /**
-   * request threads in a shutdown, but not yet idle.
-   */
-  void requestShutdownEnd()
-  {
-    _shutdownRequestCount.decrementAndGet();
   }
 
   /**
@@ -1207,33 +660,9 @@ public class PortTcp implements PortSocket
    * When true, use the async manager to wait for reads rather than
    * blocking.
    */
-  public boolean isAsyncThrottle()
+  private boolean isAsyncThrottle()
   {
     return isKeepaliveAsyncEnabled();// && _connThreadPool.isThreadHigh();
-  }
-
-
-  /**
-   * Marks the keepalive allocation as starting.
-   * Only called from ConnectionState.
-   */
-  void keepaliveAllocate()
-  {
-    _keepaliveAllocateCount.incrementAndGet();
-  }
-
-  /**
-   * Marks the keepalive allocation as ending.
-   * Only called from ConnectionState.
-   */
-  void keepaliveFree()
-  {
-    int value = _keepaliveAllocateCount.decrementAndGet();
-
-    if (value < 0 && ! isClosed()) {
-      System.out.println("FAILED keep-alive; " + value);
-      Thread.dumpStack();
-    }
   }
 
   /**
@@ -1325,42 +754,6 @@ public class PortTcp implements PortSocket
   }
 
   /**
-   * Suspends the controller (for comet-style ajax)
-   *
-   * @return true if the connection was added to the suspend list
-   */
-  /*
-  @Friend(StateConnection.class)
-  void suspendAttach(ConnectionTcp conn)
-  {
-    _suspendMeter.start();
-
-    _suspendConnectionSet.add(conn);
-  }
-  */
-
-  /**
-   * Remove from suspend list.
-   */
-  /*
-  @Friend(StateConnection.class)
-  boolean suspendDetach(ConnectionTcp conn)
-  {
-    _suspendMeter.end();
-
-    return _suspendConnectionSet.remove(conn);
-  }
-  */
-
-  void duplexKeepaliveBegin()
-  {
-  }
-
-  void duplexKeepaliveEnd()
-  {
-  }
-
-  /**
    * Returns true if the port is closed.
    */
   public boolean isClosed()
@@ -1372,105 +765,17 @@ public class PortTcp implements PortSocket
   // statistics
   //
 
+  PortStats stats()
+  {
+    return _stats;
+  }
+  
   /**
    * Returns the number of connections
    */
-  public int getConnectionCount()
+  int getConnectionCount()
   {
     return _activeConnectionCount.get();
-  }
-
-  /**
-   * Returns the number of comet connections.
-   */
-  public int getSuspendCount()
-  {
-    // return _suspendConnectionSet.size();
-    return 0;
-  }
-
-  /**
-   * Returns the number of duplex connections.
-   */
-  public int getDuplexCount()
-  {
-    return 0;
-  }
-
-  void addLifetimeRequestCount()
-  {
-    _lifetimeRequestCount.incrementAndGet();
-  }
-
-  public long getLifetimeRequestCount()
-  {
-    return _lifetimeRequestCount.get();
-  }
-
-  void addLifetimeKeepaliveCount()
-  {
-    _keepaliveMeter.start();
-    _lifetimeKeepaliveCount.incrementAndGet();
-  }
-
-  public long getLifetimeKeepaliveCount()
-  {
-    return _lifetimeKeepaliveCount.get();
-  }
-
-  void addLifetimeKeepalivePollCount()
-  {
-    _lifetimeKeepaliveSelectCount.incrementAndGet();
-  }
-
-  public long getLifetimeKeepaliveSelectCount()
-  {
-    return _lifetimeKeepaliveSelectCount.get();
-  }
-
-  void addLifetimeClientDisconnectCount()
-  {
-    _lifetimeClientDisconnectCount.incrementAndGet();
-  }
-
-  public long getLifetimeClientDisconnectCount()
-  {
-    return _lifetimeClientDisconnectCount.get();
-  }
-
-  void addLifetimeRequestTime(long time)
-  {
-    _lifetimeRequestTime.addAndGet(time);
-  }
-
-  public long getLifetimeRequestTime()
-  {
-    return _lifetimeRequestTime.get();
-  }
-
-  void addLifetimeReadBytes(long bytes)
-  {
-    _lifetimeReadBytes.addAndGet(bytes);
-  }
-
-  public long getLifetimeReadBytes()
-  {
-    return _lifetimeReadBytes.get();
-  }
-
-  void addLifetimeWriteBytes(long bytes)
-  {
-    _lifetimeWriteBytes.addAndGet(bytes);
-  }
-
-  public long getLifetimeWriteBytes()
-  {
-    return _lifetimeWriteBytes.get();
-  }
-
-  long getLifetimeThrottleDisconnectCount()
-  {
-    return _lifetimeThrottleDisconnectCount.get();
   }
 
   /**
@@ -1544,7 +849,7 @@ public class PortTcp implements PortSocket
     
   }
 
-  public void ssl(SocketBar socket)
+  void ssl(SocketBar socket)
   {
     SSLFactory sslFactory = _sslFactory;
     
@@ -1699,21 +1004,7 @@ public class PortTcp implements PortSocket
     } catch (Throwable e) {
       log.log(Level.FINEST, e.toString(), e);
     }
-
   }
-
-  public String toURL()
-  {
-    return getUrl();
-  }
-
-  /*
-  @Override
-  protected String getThreadName()
-  {
-    return "resin-port-" + getAddress() + ":" + getPort();
-  }
-  */
   
   @Override
   public int hashCode()
@@ -1738,30 +1029,6 @@ public class PortTcp implements PortSocket
       return getClass().getSimpleName() + "[" + _url + "]";
     else
       return getClass().getSimpleName() + "[" + address() + ":" + port() + "]";
-  }
-
-  private class ConnectionThreadLauncher implements IdleThreadLauncher
-  {
-    @Override
-    public void launchChildThread(int id)
-    {
-      try {
-        ConnectionTcp conn = newConnection();
-        
-        System.out.println("NOOO:");
-        Thread.dumpStack();
-
-        conn.proxy().requestAccept();
-        /*
-          System.out.println("FAIL ACCEPT: " + conn);
-        }
-        */
-      } catch (RuntimeException e) {
-        throw e;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   private class SuspendReaper implements AlarmListener
@@ -1793,7 +1060,7 @@ public class PortTcp implements PortSocket
         for (int i = _suspendSet.size() - 1; i >= 0; i--) {
           ConnectionTcp conn = _suspendSet.get(i);
 
-          if (! conn.getState().isTimeoutCapable()) {
+          if (! conn.state().isTimeoutCapable()) {
             continue;
           }
           
@@ -1801,52 +1068,12 @@ public class PortTcp implements PortSocket
             _timeoutSet.add(conn);
             continue;
           }
-
-          long idleStartTime = conn.idleStartTime();
-
-          // check periodically for end of file
-          if (idleStartTime + _suspendCloseTimeMax < now
-              && conn.isIdle()
-              && conn.isReadEof()) {
-            _completeSet.add(conn);
-          }
         }
 
         for (int i = _timeoutSet.size() - 1; i >= 0; i--) {
           ConnectionTcp conn = _timeoutSet.get(i);
 
-          try {
-            if (conn.requestCometTimeout()) {
-              if (log.isLoggable(Level.FINE))
-                log.fine("suspend idle timeout " + conn);
-              
-            }
-          } catch (Exception e) {
-            log.log(Level.WARNING, conn + ": " + e.getMessage(), e);
-          }
-        }
-
-        for (int i = _completeSet.size() - 1; i >= 0; i--) {
-          ConnectionTcp conn = _completeSet.get(i);
-
-          if (log.isLoggable(Level.FINE))
-            log.fine(this + " async end-of-file " + conn);
-
-          try {
-            conn.requestCometComplete();
-          } catch (Exception e) {
-            log.log(Level.WARNING, conn + ": " + e.getMessage(), e);
-          }
-          /*
-          AsyncController async = conn.getAsyncController();
-
-          if (async != null)
-            async.complete();
-            */
-
-          // server/1lc2
-          // conn.wake();
-          // conn.destroy();
+          conn.requestTimeout();
         }
       } catch (Throwable e) {
         e.printStackTrace();

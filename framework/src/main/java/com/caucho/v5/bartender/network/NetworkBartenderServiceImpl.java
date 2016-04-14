@@ -321,7 +321,7 @@ public class NetworkBartenderServiceImpl
     */
     
     // port.setProtocol(_httpProtocol);
-    port.init();
+    //port.init();
     
     validateClusterServer(port, serverNet);
     

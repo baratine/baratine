@@ -272,12 +272,7 @@ public class RequestHttp extends RequestHttpBase
     if (_host != null)
       return _host;
 
-    String virtualHost = getConnection().getVirtualHost();
-    
-    if (virtualHost != null) {
-      _host = virtualHost;
-    }
-    else if (_uriHost.length() > 0) {
+    if (_uriHost.length() > 0) {
       _host = _uriHost;
     }
     else if ((_host = getForwardedHostHeader()) != null) {

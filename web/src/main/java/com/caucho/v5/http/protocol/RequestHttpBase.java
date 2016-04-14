@@ -589,61 +589,6 @@ public abstract class RequestHttpBase implements OutHttp
     return _xForwardedHostHeader;
   }
 
-  /**
-   * Returns the local server name.
-   */
-  public String getServerName()
-  {
-    String host = _conn.getVirtualHost();
-
-    /*
-    if (host == null && _invocation != null)
-      host = _invocation.getHostName();
-    */
-
-    CharSequence rawHost;
-    if (host == null && (rawHost = getHost()) != null) {
-      if (rawHost instanceof CharSegment) {
-        CharSegment cb = (CharSegment) rawHost;
-
-        char []buffer = cb.buffer();
-        int offset = cb.offset();
-        int length = cb.length();
-
-        for (int i = length - 1; i >= 0; i--) {
-          char ch = buffer[i + offset];
-
-          if ('A' <= ch && ch <= 'Z') {
-            buffer[i + offset] = (char) (ch + 'a' - 'A');
-          }
-        }
-
-        host = new String(buffer, offset, length);
-      }
-      else
-        return rawHost.toString().toLowerCase(Locale.ENGLISH);
-    }
-
-    if (host == null) {
-      return _conn.ipLocal().getHostName();
-    }
-
-    int p1 = host.lastIndexOf('/');
-    if (p1 < 0) {
-      p1 = 0;
-    }
-
-    int ipv6 = host.lastIndexOf(']');
-
-    int p = host.lastIndexOf(':');
-    if (p >= 0 && p1 < p && ! (ipv6 > 0 && p < ipv6)) {
-      return host.substring(p1, p);
-    }
-    else {
-      return host;
-    }
-  }
-
   protected CharSequence getHost()
   {
     return null;
@@ -654,10 +599,10 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public int getServerPort()
   {
-    String host = _conn.getVirtualHost();
+    String host = null;
 
     CharSequence rawHost;
-    if (host == null && (rawHost = getHost()) != null) {
+    if ((rawHost = getHost()) != null) {
       int length = rawHost.length();
       int i;
 
@@ -730,7 +675,7 @@ public abstract class RequestHttpBase implements OutHttp
   public int printRemoteAddr(byte []buffer, int offset)
     throws IOException
   {
-    int len = _conn.getRemoteAddress(buffer, offset, buffer.length - offset);
+    int len = _conn.addressRemote(buffer, offset, buffer.length - offset);
 
     return offset + len;
   }

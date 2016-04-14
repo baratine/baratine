@@ -91,7 +91,7 @@ public class Invocation implements Dependency
    * Returns the raw host from the protocol.  This may be different
    * from the canonical host name.
    */
-  public final String getHost()
+  public final String host()
   {
     return _rawHost;
   }

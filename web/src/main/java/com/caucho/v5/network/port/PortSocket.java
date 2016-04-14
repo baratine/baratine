@@ -36,5 +36,5 @@ import com.caucho.v5.amp.ServicesAmp;
  */
 public interface PortSocket
 {
-  ServicesAmp ampManager();
+  ServicesAmp services();
 }

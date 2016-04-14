@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -109,6 +110,7 @@ public final class RequestBaratineImpl
   private Result<Object> _bodyResult;
   private Object _bodyValue;
   private RequestProxy _requestProxy;
+  private HashMap<String, Object> _attributeMap;
 
   public RequestBaratineImpl(ConnectionHttp connHttp)
   {
@@ -384,8 +386,7 @@ public final class RequestBaratineImpl
   @Override
   public String host()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return invocation().host();
   }
 
   @Override
@@ -427,15 +428,21 @@ public final class RequestBaratineImpl
   @Override
   public <X> X attribute(Class<X> key)
   {
-    // TODO Auto-generated method stub
-    return null;
+    String name = key.getSimpleName();
+    
+    return (X) _attributeMap.get(name);
   }
 
   @Override
   public <X> void attribute(X value)
   {
-    // TODO Auto-generated method stub
-
+    if (_attributeMap == null) {
+      _attributeMap = new HashMap<>();
+    }
+    
+    String name = value.getClass().getSimpleName();
+    
+    _attributeMap.put(name, value);
   }
 
   @Override

@@ -31,7 +31,6 @@ package com.caucho.v5.network.port;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.security.cert.CertificateException;
@@ -43,10 +42,8 @@ import com.caucho.v5.health.shutdown.Shutdown;
 import com.caucho.v5.io.ClientDisconnectException;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
-import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.Friend;
 import com.caucho.v5.util.ModulePrivate;
 
 import io.baratine.service.ServiceRef;
@@ -125,7 +122,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     // _id = listener.getDebugId() + "-" + _idCount;
     _id = protocol.name() + "-" + _port.port() + "-" + _connectionId;
     
-    _inRef = port.ampManager().newService(this).name(_id).ref();
+    _inRef = port.services().newService(this).name(_id).ref();
     _connProxy = _inRef.as(ConnectionTcpProxy.class);
     
     _name = _id;
@@ -200,20 +197,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     return _port;
   }
 
-  /*
-  private QueueService<TaskConnection> getTaskQueue()
-  {
-    return getPort().getTaskQueue();
-  }
-  */
-
-  /*
-  private IdleThreadManager getThreadManager()
-  {
-    return port().getThreadManager();
-  }
-  */
-
   /**
    * Returns the request for the connection.
    */
@@ -221,31 +204,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     return _protocol;
   }
-
-  /**
-   * Returns the admin
-   */
-  /*
-  public TcpConnectionInfo getConnectionInfo()
-  {
-    TcpConnectionInfo connectionInfo = null;
-
-    if (isActive()) {
-      connectionInfo = new TcpConnectionInfo(getId(),
-                                             getThreadId(),
-                                             _port.getAddress(),
-                                             _port.getPort(),
-                                             getDisplayState(),
-                                             getRequestStartTime());
-      if (connectionInfo.hasRequest()) {
-        connectionInfo.setRemoteAddress(getRemoteHost());
-        connectionInfo.setUrl(getRequestUrl());
-      }
-    }
-
-    return connectionInfo;
-  }
-  */
 
   public String getRequestUrl()
   {
@@ -314,14 +272,9 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
    * Returns the state.
    */
   @Override
-  public StateConnection getState()
+  public StateConnection state()
   {
     return _state;
-  }
-  
-  public String getStateName()
-  {
-    return String.valueOf(getState());
   }
 
   public final boolean isIdle()
@@ -338,22 +291,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   }
 
   /**
-   * Returns true for active.
-   */
-  public boolean isRequestActive()
-  {
-    return isActive();
-  }
-
-  /*
-  @Override
-  public boolean isKeepaliveAllocated()
-  {
-    return _state.isKeepaliveAllocated();
-  }
-  */
-
-  /**
    * Returns true for closed.
    */
   public boolean isClosed()
@@ -366,34 +303,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     return _state.isDestroy();
   }
 
-  /*
-  @Override
-  public boolean isCometActive()
-  {
-    AsyncControllerTcp async = _async;
-
-    return (_state.isCometActive()
-            && async != null
-            && ! async.isCompleteRequested());
-  }
-  */
-
-  /*
-  public boolean isAsyncStarted()
-  {
-    return _stateRef.get().isAsyncStarted();
-  }
-  */
-
-  /*
-  public boolean isAsyncComplete()
-  {
-    AsyncControllerTcp async = _async;
-
-    return async != null && async.isCompleteRequested();
-  }
-  */
-
   //
   // port/socket information
   //
@@ -401,21 +310,11 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   /**
    * Returns the connection's socket
    */
+  @Override
   public SocketBar socket()
   {
     return _socket;
   }
-
-  /**
-   * Returns the local address of the socket.
-   */
-  /*
-  @Override
-  public InetAddress getLocalAddress()
-  {
-    return _socket.addressLocal();
-  }
-  */
   
   @Override
   public InetSocketAddress ipLocal()
@@ -430,17 +329,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   }
 
   /**
-   * Returns the local host name.
-   */
-  /*
-  @Override
-  public String getLocalHost()
-  {
-    return _socket.getLocalHost();
-  }
-  */
-
-  /**
    * Returns the socket's local TCP port.
    */
   @Override
@@ -448,17 +336,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     return _socket.portLocal();
   }
-
-  /**
-   * Returns the socket's remote address.
-   */
-  /*
-  @Override
-  public InetAddress getRemoteAddress()
-  {
-    return _socket.addressRemote();
-  }
-  */
 
   /**
    * Returns the socket's remote host name.
@@ -473,7 +350,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
    * Adds from the socket's remote address.
    */
   @Override
-  public int getRemoteAddress(byte []buffer, int offset, int length)
+  public int addressRemote(byte []buffer, int offset, int length)
   {
     return _socket.getRemoteAddress(buffer, offset, length);
   }
@@ -494,15 +371,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   public boolean isSecure()
   {
     return _socket.isSecure() || _port.isSecure();
-  }
-
-  /**
-   * Returns the virtual host.
-   */
-  @Override
-  public String getVirtualHost()
-  {
-    return port().getVirtualHost();
   }
 
   //
@@ -526,17 +394,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     return _socket.cipherSuite();
   }
-
-  /***
-   * Returns the key size.
-   */
-  /*
-  @Override
-  public int keySize()
-  {
-    return _socket.cipherBits();
-  }
-  */
 
   /**
    * Returns any client certificates.
@@ -596,55 +453,10 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     return _state.toString();
   }
 
-  /**
-   * Sets the user statistics state
-   */
-  /*
-  private void setStatState(String state)
-  {
-    // _displayState = state;
-  }
-  */
-
   @Override
   public ConnectionTcpProxy proxy()
   {
     return _connProxy;
-  }
-
-  //
-  // async/comet predicates
-  //
-
-  /**
-   * Poll the socket to test for an end-of-file for a comet socket.
-   */
-  @Friend(PortTcp.class)
-  boolean isReadEof()
-  {
-    SocketBar socket = _socket;
-
-    if (socket == null) {
-      return true;
-    }
-
-    try {
-      StreamImpl s = socket.stream();
-
-      return s.isEof();
-      /*
-      int len = s.getAvailable();
-
-      if (len > 0 || len == ReadStream.READ_TIMEOUT)
-        return false;
-      else
-        return true;
-        */
-    } catch (Exception e) {
-      log.log(Level.FINE, e.toString(), e);
-
-      return true;
-    }
   }
 
   //
@@ -725,121 +537,12 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   }
 
   /**
-   * Closes the controller.
-   */
-  void requestCometComplete()
-  {
-    /*
-    AsyncControllerTcp async = _async;
-
-    if (async != null) {
-      async.setCompleteRequested();
-    }
-    */
-
-    try {
-      requestWake();
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-    }
-  }
-
-  /**
-   * Closes the controller.
-   */
-  boolean requestCometTimeout()
-  {
-    /*
-    AsyncControllerTcp async = _async;
-
-    if (async != null) {
-      async.setTimeout();
-    }
-    */
-System.out.println("REQ_COMT:");
-/*
-    try {
-      if (_stateRef.get().toTimeoutWake(_stateRef)) {
-        offer(getConnectionTask());
-        return true;
-      }
-      // requestWake();
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-    }
-    */
-    
-    return false;
-    
-  }
-
-  /**
-   * Closes the connection()
-   */
-  /*
-  public final void requestClose()
-  {
-    if (_requestStateRef.get().toClose(_requestStateRef)) {
-      if (getLauncher().offerResumeTask(new CloseTask(this))) {
-        return;
-      }
-    }
-
-    requestDestroy();
-  }
-  */
-
-  /**
    * Destroys the connection()
    */
   @Override
   public final void requestDestroy()
   {
     destroy();
-    /*
-    if (_stateRef.get().toDestroyWake(_stateRef)) {
-      QueueService<TaskConnection> queue = getTaskQueue();
-
-      if (! getTaskQueue().offer(getConnectionTask())) {
-        destroy();
-      }
-
-      queue.wake();
-    }
-    else {
-      closeConnection();
-    }
-    */
-  }
-
-  /*
-  private void offer(TaskConnection task)
-  {
-    try {
-      QueueService<TaskConnection> queue = getTaskQueue();
-
-      if (! queue.offer(task, 120L, TimeUnit.SECONDS)) {
-        log.severe(L.l("Schedule failed for {0}", this));
-      }
-
-      queue.wake();
-
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-  */
-
-  @Override
-  public void requestShutdownBegin()
-  {
-    _port.requestShutdownBegin();
-  }
-
-  @Override
-  public void requestShutdownEnd()
-  {
-    _port.requestShutdownEnd();
   }
 
   //
@@ -910,18 +613,6 @@ System.out.println("REQ_COMT:");
           tailState = state;
           return tailState;
           
-          /*
-        case SUSPEND:
-          //ServiceRef.flushOutbox();
-          //state = toSuspend();
-          tailState = NextState.SLEEP;
-          return tailState;
-          
-        case SLEEP:
-          tailState = state;
-          return tailState;
-          */
-          
         case CLOSE_READ_A:
           state = closeRead();
           break;
@@ -966,7 +657,7 @@ System.out.println("REQ_COMT:");
     } catch (ClientDisconnectException e) {
     //  state = NextState.DESTROY;
       
-      _port.addLifetimeClientDisconnectCount();
+      _port.stats().addLifetimeClientDisconnectCount();
 
       if (log.isLoggable(Level.FINER)) {
         log.finer(dbgId() + e);
@@ -1083,11 +774,11 @@ System.out.println("REQ_COMT:");
 
     // _state = _state.toKeepalive(this);
 
-    PollTcpManagerBase pollManager = port.getPollManager();
+    PollTcpManagerBase pollManager = port.pollManager();
     
     // use poll manager if available
     if (pollManager == null) {
-      port().addLifetimeKeepaliveCount();
+      port().stats().addLifetimeKeepaliveCount();
 
       return threadPoll(timeout);
     }
@@ -1118,8 +809,8 @@ System.out.println("REQ_COMT:");
         log.finest(dbgId() + "keepalive (poll)");
       }
       
-      port().addLifetimeKeepaliveCount();
-      port().addLifetimeKeepalivePollCount();
+      port().stats().addLifetimeKeepaliveCount();
+      port().stats().addLifetimeKeepalivePollCount();
       
       return StateConnection.POLL;
     }
@@ -1251,57 +942,16 @@ System.out.println("REQ_COMT:");
     }
     */
   }
-
-  /*
-  private StateConnection toSuspend()
-  {
-    _idleStartTime = CurrentTime.getCurrentTime();
-    _idleExpireTime = _idleStartTime + _suspendTimeout;
-    
-    AtomicReference<RequestState> stateRef = _stateRef;
-    
-    if (stateRef.get().toSuspendSleep(stateRef)) {
-      return StateConnection.SLEEP;
-    }
-    else {
-      return stateRef.get().getNextState();
-    }
-  }
-  */
-
-  /*
-  private TaskConnection getConnectionTask()
-  {
-    return _connectionTask;
-  }
-  */
-
+  
   //
   // close operations
   //
-
-  /*
-  private void close()
-  {
-    setStatState(null);
-
-    closeConnection();
-  }
-  */
 
   /**
    * Closes the connection.
    */
   private void closeConnection()
   {
-    //StateConnection state = _state;
-    //_state = state.toClosed(this);
-
-    // if (state.isKeepalive() && _port.getPollManager() != null) {
-    // XXX: ka state
-    //_keepalive.destroy();
-    // _port.getPollManager().closeKeepalive(_keepalive);
-
     disconnect();
     
     
@@ -1487,7 +1137,7 @@ System.out.println("REQ_COMT:");
         _dbgId = (getClass().getSimpleName() + "[id=" + getId() + "] ");
         */
       if (_port != null) {
-        _dbgId = _port.getUrl() + '-' + id();
+        _dbgId = _port.url() + '-' + id();
       }
       else {
         _dbgId = getClass().getSimpleName() + '-' + id();
@@ -1512,7 +1162,7 @@ System.out.println("REQ_COMT:");
   public String toString()
   {
     return (getClass().getSimpleName()
-             + "[id=" + dbgId() + "," + _port.toURL()
+             + "[id=" + dbgId() + "," + _port.url()
              + ",seq=" + _connectionSequence
              + "," + _state
              + "]");

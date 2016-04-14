@@ -65,17 +65,7 @@ public interface ConnectionTcpApi
    */
   boolean isSecure();
   
-  StateConnection getState();
-  
-  /**
-   * Returns the static configured virtual host
-   */
-  String getVirtualHost();
-  
-  /**
-   * Returns the local address of the connection
-   */
-  //InetAddress getLocalAddress();
+  StateConnection state();
   
   /**
    * Returns the local address of the connection
@@ -88,19 +78,9 @@ public interface ConnectionTcpApi
   InetSocketAddress ipRemote();
   
   /**
-   * Returns the local host of the connection
-   */
-  //String getLocalHost();
-
-  /**
    * Returns the local port of the connection
    */
   int portLocal();
-
-  /**
-   * Returns the remote address of the connection
-   */
-  //InetAddress getRemoteAddress();
 
   /**
    * Returns the remote client's inet address.
@@ -110,7 +90,7 @@ public interface ConnectionTcpApi
   /**
    * Returns the remote address of the connection
    */
-  int getRemoteAddress(byte []buffer, int offset, int length);
+  int addressRemote(byte []buffer, int offset, int length);
 
   /**
    * Returns the remove port of the connection
@@ -130,11 +110,6 @@ public interface ConnectionTcpApi
    * Returns the cipher suite
    */
   String cipherSuite();
-  
-  /***
-   * Returns the key size.
-   */
-  //int keySize();
   
   /**
    * Returns any client certificates.
@@ -159,10 +134,6 @@ public interface ConnectionTcpApi
   void clientDisconnect();
 
   void disconnect();
-
-  String getStateName();
-
-  //boolean isWake();
 
   long getIdleTimeout();
   void setIdleTimeout(long timeout);

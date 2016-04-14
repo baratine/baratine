@@ -70,15 +70,6 @@ public enum StateConnection
     public boolean isPoll() { return true; }
   },
   
-  // suspend the connection until a wake
-  SLEEP {
-    @Override
-    public boolean isSuspend() { return true; }
-
-    @Override
-    public StateConnection toWake() { return ACTIVE; }
-  },
-  
   TIMEOUT {
   },
   
@@ -95,9 +86,6 @@ public enum StateConnection
   
   // close the connection
   CLOSE {
-    @Override
-    public boolean isAcceptAllowed() { return true; }
-
     @Override
     public boolean isClose() { return true; }
 
@@ -164,16 +152,6 @@ public enum StateConnection
   }
 
   public boolean isClose()
-  {
-    return false;
-  }
-
-  public boolean isAcceptAllowed()
-  {
-    return false;
-  }
-
-  public boolean isSuspend()
   {
     return false;
   }

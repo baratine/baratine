@@ -45,10 +45,6 @@ public interface ConnectionTcpProxy
   void requestTimeout();
   
   void requestCloseRead();
-
-  void requestShutdownBegin();
-
-  void requestShutdownEnd();
   
   void requestDestroy();
 }
