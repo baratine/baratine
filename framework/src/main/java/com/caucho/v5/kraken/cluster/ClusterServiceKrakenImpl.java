@@ -229,7 +229,7 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
       kelpManager.put(table.getTableKelp(), ss, putType, result);
     }
     else {
-      _tableManager.loadTable(tableKey, result.of((t,r)->kelpManager.put(t.getTableKelp(), ss, putType, r)));
+      _tableManager.loadTable(tableKey, result.then((t,r)->kelpManager.put(t.getTableKelp(), ss, putType, r)));
     }
   }
   

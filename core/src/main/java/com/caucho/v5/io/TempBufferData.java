@@ -50,10 +50,6 @@ public final class TempBufferData
    */
   TempBufferData(int size, FreeRing<TempBufferData> freeList)
   {
-    if (_debugCount.incrementAndGet() > 1000) {
-      Thread.dumpStack();
-    }
-    
     _buffer = new byte[size];
     _freeList = freeList;
   }

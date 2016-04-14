@@ -30,6 +30,7 @@
 package com.caucho.v5.amp.marshal;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -40,7 +41,7 @@ public class ResultImport extends Result.Wrapper<Object,Object>
   private final ModuleMarshal _marshal;
   private final ClassLoader _classLoader;
 
-  public ResultImport(Result delegate,
+  public ResultImport(ResultChain delegate,
                       ModuleMarshal marshal,
                       ClassLoader importLoader)
   {

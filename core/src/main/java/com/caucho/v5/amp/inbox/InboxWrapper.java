@@ -29,12 +29,8 @@
 
 package com.caucho.v5.amp.inbox;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Result;
-import io.baratine.stream.ResultStream;
-
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -43,6 +39,10 @@ import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.ResultChain;
+import io.baratine.stream.ResultStream;
 
 /**
  * Mailbox for an actor
@@ -115,7 +115,7 @@ abstract public class InboxWrapper implements InboxAmp
    */
   @Override
   public QueryRefAmp addQuery(String address,
-                              Result<?> result,
+                              ResultChain<?> result,
                               ClassLoader loader)
   {
     return delegate().addQuery(address, result, loader);

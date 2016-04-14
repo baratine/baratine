@@ -31,8 +31,9 @@ package com.caucho.v5.amp.stub;
 
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.Shim;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
+import io.baratine.service.Shim;
 
 /**
  * Counter/marker for handling multiple saves, e.g. with multiple resources.
@@ -44,7 +45,7 @@ class ResultShim<V,T> extends Result.Wrapper<V,V>
   private TransferAsset<T,V> _shim;
   private StubAmp _stub;
 
-  public ResultShim(Result<V> delegate, 
+  public ResultShim(ResultChain<V> delegate, 
                     StubAmp stub,
                     TransferAsset<T,V> shim)
   {

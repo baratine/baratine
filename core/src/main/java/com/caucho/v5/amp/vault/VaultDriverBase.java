@@ -55,6 +55,7 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.vault.Id;
 
 public class VaultDriverBase<ID,T>
@@ -165,6 +166,7 @@ public class VaultDriverBase<ID,T>
     if (method != null) {
       return method;
     }
+    
     throw new IllegalStateException(L.l("Unknown method {0}.{1} {2}",
                                         type.getSimpleName(),
                                         methodName,
@@ -308,7 +310,7 @@ public class VaultDriverBase<ID,T>
 
   private class MethodVaultCreate<S> implements MethodVault<S>
   {
-    private ServicesAmp _ampManager;
+    private ServicesAmp _services;
     private Supplier<String> _idGen;
     private String _methodName;
     private MethodAmp _method;
@@ -322,7 +324,7 @@ public class VaultDriverBase<ID,T>
       Objects.requireNonNull(idGen);
       Objects.requireNonNull(method);
       
-      _ampManager = ampManager;
+      _services = ampManager;
       _idGen = idGen;
       _methodName = method.getName();
       _paramTypes = MethodAmp.paramTypes(method);
@@ -345,11 +347,11 @@ public class VaultDriverBase<ID,T>
     {
       String id = _idGen.get();
 
-      ServiceRefAmp childRef = _ampManager.service(_prefix + id);
+      ServiceRefAmp childRef = _services.service(_prefix + id);
 
       long timeout = 10000L;
       
-      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_ampManager)) {
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_services)) {
         HeadersAmp headers = HeadersNull.NULL;
       
         QueryWithResultMessage_N<S> msg
@@ -431,7 +433,7 @@ public class VaultDriverBase<ID,T>
     
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp stub,
                       Object []args)
     {

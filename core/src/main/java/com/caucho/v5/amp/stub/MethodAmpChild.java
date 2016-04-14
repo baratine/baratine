@@ -29,11 +29,10 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-import io.baratine.stream.ResultStream;
-
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.QueryRefAmp;
+
+import io.baratine.service.ResultChain;
+import io.baratine.stream.ResultStream;
 
 /**
  * Abstract stream for an actor.
@@ -102,7 +101,7 @@ public class MethodAmpChild extends MethodAmpWrapper
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actorDeliver)
   {
     delegate().query(headers, result, _actorChild);
@@ -110,7 +109,7 @@ public class MethodAmpChild extends MethodAmpWrapper
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actorDeliver,
                     Object arg1)
   {
@@ -119,7 +118,7 @@ public class MethodAmpChild extends MethodAmpWrapper
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actorDeliver,
                     Object arg1,
                     Object arg2)
@@ -129,7 +128,7 @@ public class MethodAmpChild extends MethodAmpWrapper
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actorDeliver,
                     Object arg1,
                     Object arg2,
@@ -140,7 +139,7 @@ public class MethodAmpChild extends MethodAmpWrapper
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actorDeliver,
                     Object []args)
   {

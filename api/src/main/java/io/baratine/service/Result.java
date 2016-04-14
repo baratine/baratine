@@ -37,12 +37,6 @@ import java.util.function.Function;
 
 import io.baratine.function.TriConsumer;
 import io.baratine.service.ResultImpl.AdapterMake;
-import io.baratine.service.ResultImpl.ChainResult;
-import io.baratine.service.ResultImpl.ChainResultAsync;
-import io.baratine.service.ResultImpl.ChainResultFun;
-import io.baratine.service.ResultImpl.ChainResultFunExn;
-import io.baratine.service.ResultImpl.ChainResultFunFuture;
-import io.baratine.service.ResultImpl.ChainResultFunFutureExn;
 import io.baratine.service.ResultImpl.ResultJoinBuilder;
 
 /**
@@ -122,7 +116,7 @@ import io.baratine.service.ResultImpl.ResultJoinBuilder;
  * 
  */
 @FunctionalInterface
-public interface Result<T>
+public interface Result<T> extends ResultChain<T>
 {
   /**
    * Client handler for result values. The result will either contain
@@ -169,6 +163,7 @@ public interface Result<T>
    * 
    * @param result the result value
    */
+  @Override
   default void ok(T result)
   {
     try {
@@ -184,6 +179,7 @@ public interface Result<T>
    * 
    * @param exn the exception
    */
+  @Override
   default void fail(Throwable exn)
   {
     try {
@@ -213,10 +209,13 @@ public interface Result<T>
    * }
    * </code></pre>
    */
-  default <U extends T> Result<U> of()
+  /*
+  @Override
+  default <R extends T> Result<R> of()
   {
-    return of(x->x);
+    return of(this, x->x);
   }
+  */
 
   /**
    * Creates a composed result that will receive its completed value from
@@ -232,15 +231,17 @@ public interface Result<T>
    * }
    * </code></pre>
    */
+  /*
   default <U> Result<U> of(Function<U,T> fun)
   {
     if (isFuture()) {
-      return new ChainResultFunFuture<U,T>(this, fun);
+      return new ResultChainFunFuture<U,T>(this, fun);
     }
     else {
-      return new ChainResultFun<U,T>(this, fun);
+      return new ResultChainFun<U,T>(this, fun);
     }
   }
+    */
 
   /**
    * Creates a composed result that will receive its completed value from
@@ -257,8 +258,9 @@ public interface Result<T>
    * }
    * </code></pre>
    */
+  /*
   default <U> Result<U> of(Function<U,T> fun,
-                             BiConsumer<Throwable,Result<T>> exnHandler)
+                           BiConsumer<Throwable,Result<T>> exnHandler)
   {
     if (isFuture()) {
       return new ChainResultFunFutureExn<U,T>(this, fun, exnHandler);
@@ -267,6 +269,7 @@ public interface Result<T>
       return new ChainResultFunExn<U,T>(this, fun, exnHandler);
     }
   }
+  */
   
   /**
    * Creates a chained result for calling an internal
@@ -282,14 +285,17 @@ public interface Result<T>
    * }
    * </code></pre>
    */
-  default <U> Result<U> of(BiConsumer<U,Result<T>> consumer)
+  default <R> Result<R> then(BiConsumer<R,Result<T>> consumer)
   {
+    return ResultChain.then(this, consumer);
+    /*
     if (isFuture()) {
       return new ChainResultAsync<U,T,Result<T>>(this, consumer);
     }
     else {
       return new ChainResult<U,T,Result<T>>(this, consumer);
     }
+    */
   }
   
   /**
@@ -306,15 +312,17 @@ public interface Result<T>
    * }
    * </code></pre>
    */
+  /*
   static <T,U,R extends Result<T>> Result<U> then(R result, BiConsumer<U,R> consumer)
   {
     if (result.isFuture()) {
-      return new ChainResultAsync<U,T,R>(result, consumer);
+      return new ResultThenFuture<U,T,R>(result, consumer);
     }
     else {
-      return new ChainResult<U,T,R>(result, consumer);
+      return new ResultThen<U,T,R>(result, consumer);
     }
   }
+  */
   
   /**
    * Creates a Result as a pair of lambda consumers, one to process normal
@@ -377,6 +385,7 @@ public interface Result<T>
   // internal methods for managing future results
   //
 
+  /*
   default boolean isFuture()
   {
     return false;
@@ -391,6 +400,7 @@ public interface Result<T>
   {
     throw new IllegalStateException(getClass().getName());
   }
+  */
   
   public interface Fork<U,T>
   {
@@ -403,57 +413,11 @@ public interface Result<T>
     void join(BiConsumer<List<U>,Result<T>> combiner);
   }
   
-  abstract public class Wrapper<T,U> implements Result<T>
+  abstract public static class Wrapper<R,T> extends WrapperChain<R,T,ResultChain<T>>
   {
-    private final Result<U> _next;
-  
-    protected Wrapper(Result<U> next)
+    protected Wrapper(ResultChain<T> delegate)
     {
-      Objects.requireNonNull(next);
-      
-      _next = next;
-    }
-    
-    @Override
-    public boolean isFuture()
-    {
-      return _next.isFuture();
-    }
-    
-    abstract public void ok(T value);
-    
-    @Override
-    public <V> void completeFuture(Result<V> result, V value)
-    {
-      _next.completeFuture(result, value);
-    }
-    
-    @Override
-    public void completeFuture(T value)
-    {
-      ok(value);
-    }
-    
-    public final void handle(T value, Throwable exn)
-    {
-      throw new UnsupportedOperationException(getClass().getName());
-    }
-    
-    @Override
-    public void fail(Throwable exn)
-    {
-      delegate().fail(exn);
-    }
-    
-    protected Result<U> delegate()
-    {
-      return _next;
-    }
-  
-    @Override
-    public String toString()
-    {
-      return getClass().getSimpleName() + "[" + delegate() + "]";
+      super(delegate);
     }
   }
 }

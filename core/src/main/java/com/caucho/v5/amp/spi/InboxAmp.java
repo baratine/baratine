@@ -29,14 +29,14 @@
 
 package com.caucho.v5.amp.spi;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Cancel;
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 
 /**
@@ -93,7 +93,7 @@ public interface InboxAmp // extends OutboxContext<MessageAmp>
                            MethodAmp method);
 
   QueryRefAmp addQuery(String address, 
-                       Result<?> result, 
+                       ResultChain<?> result, 
                        ClassLoader loader);
   
   QueryRefAmp addQuery(String address, 

@@ -118,6 +118,7 @@ class RangeIteratorKelp implements Iterator<RowCursor>
       _isIncrementRequired = true;
       _indexCursor.setKey(_cursor);
 
+
       if ((! _isData || _cursor.isData()) && _predicate.test(_cursor)) {
         _isValid = true;
 

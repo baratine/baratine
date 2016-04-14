@@ -29,6 +29,7 @@
 
 package com.caucho.v5.ramp.db;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import com.caucho.v5.io.Vfs;
@@ -117,7 +118,6 @@ public class DatabaseServiceRamp implements DatabaseService
   @Override
   public void findOne(String sql, Result<Cursor> result, Object ...args)
   {
-    
     _kraken.query(sql).findOne(result, args);
   }
   
@@ -213,7 +213,7 @@ public class DatabaseServiceRamp implements DatabaseService
                     Object ...args)
   {
     _kraken.query(sql, 
-                        result.of((x,r)->{ x.watch(watch, r, args); }));
+                        result.then((x,r)->{ x.watch(watch, r, args); }));
   }
   
   /**

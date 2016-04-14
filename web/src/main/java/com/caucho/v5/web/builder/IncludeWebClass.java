@@ -610,7 +610,7 @@ class IncludeWebClass implements IncludeWebAmp
     public void evalAsync(RequestWeb request, Result<Object> result)
     {
       // XXX: multimap?
-      request.body(Form.class, result.of((map, r)->{
+      request.body(Form.class, result.then((map, r)->{
         _convert.convert(map.first(_paramName), (Result) r);
       }));
     }

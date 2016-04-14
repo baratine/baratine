@@ -29,9 +29,6 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionClosed;
-
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,12 +42,15 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.service.ResultChain;
+import io.baratine.service.ServiceExceptionClosed;
+
 /**
  * Handles the context for an actor, primarily including its
  * query map.
  */
 public class QueryMessageBase<T> extends MethodMessageBase
-  implements Result<T>
+  implements ResultChain<T>
 {
   private static final Logger log = Logger.getLogger(QueryMessageBase.class.getName());
   private static final L10N L = new L10N(QueryMessageBase.class);
@@ -165,7 +165,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
     return _value;
   }
   
-  protected final Throwable getException()
+  protected final Throwable fail()
   {
     return _replyError;
   }
@@ -188,6 +188,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
     _state.fail(this, exn);
   }
   
+  /*
   @Override
   public final void handle(T value, Throwable exn)
   {
@@ -198,6 +199,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       ok(value);
     }
   }
+  */
 
   @Override
   public final void offer(long timeout)
@@ -232,11 +234,11 @@ public class QueryMessageBase<T> extends MethodMessageBase
     }
   }
   
-  protected final void sendReplyAsync(Result<T> result)
+  protected final void sendReplyAsync(ResultChain<T> result)
   {
     _state = State.CLOSED;
     
-    Throwable exn = getException();
+    Throwable exn = fail();
     
     if (exn != null) {
       result.fail(exn);

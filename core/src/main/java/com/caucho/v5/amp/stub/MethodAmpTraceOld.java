@@ -29,13 +29,13 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
+
+import io.baratine.service.ResultChain;
 
 /**
  * debugging messages
@@ -68,7 +68,7 @@ public class MethodAmpTraceOld extends MethodAmpBase
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {

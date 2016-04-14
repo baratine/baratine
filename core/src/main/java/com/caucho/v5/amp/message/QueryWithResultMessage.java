@@ -41,6 +41,7 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -48,11 +49,12 @@ import io.baratine.service.Result;
  */
 public class QueryWithResultMessage<T>
   extends QueryMessageBase<T>
+  implements Result<T>
 {
   private static final Logger log 
     = Logger.getLogger(QueryWithResultMessage.class.getName());
   
-  private final Result<T> _result;
+  private final ResultChain<T> _result;
   
   /*
   public QueryWithResultMessage(ServiceRefAmp serviceRef,
@@ -72,7 +74,7 @@ public class QueryWithResultMessage<T>
                                 ServiceRefAmp serviceRef,
                                 MethodAmp method,
                                 long expires,
-                                Result<T> result)
+                                ResultChain<T> result)
   {
     super(outboxCaller, serviceRef, method, expires);
     
@@ -86,7 +88,7 @@ public class QueryWithResultMessage<T>
                                 ServiceRefAmp serviceRef,
                                 MethodAmp method,
                                 long expires,
-                                Result<T> result)
+                                ResultChain<T> result)
   {
     super(outboxCaller, headers, serviceRef, method, expires);
     
@@ -100,13 +102,13 @@ public class QueryWithResultMessage<T>
   @Override
   public boolean isFuture()
   {
-    Result<T> result = _result;
+    ResultChain<T> result = _result;
     
     return result.isFuture() && getMethod().isDirect();
   }
   
   @Override
-  public <U> void completeFuture(Result<U> result, U value)
+  public <U> void completeFuture(ResultChain<U> result, U value)
   {
     _result.completeFuture(result, value);
   }
@@ -202,7 +204,7 @@ public class QueryWithResultMessage<T>
   @Override
   protected void offerResult(long timeout)
   {
-    Result<T> result = _result;
+    ResultChain<T> result = _result;
     
     if (result.isFuture()) {
       sendReplyAsync(result);
@@ -221,7 +223,7 @@ public class QueryWithResultMessage<T>
   @Override
   protected boolean invokeFail(StubAmp stubDeliver)
   {
-    return stubDeliver.fail(_result, getException());
+    return stubDeliver.fail(_result, fail());
   }
   
   protected String getLocation()
@@ -229,6 +231,12 @@ public class QueryWithResultMessage<T>
     return null;
   }
 
+  @Override
+  public void handle(T value, Throwable fail) throws Exception
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
   @Override
   public String toString()
   {
@@ -258,5 +266,4 @@ public class QueryWithResultMessage<T>
         + "]");
     
   }
-  
 }

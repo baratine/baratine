@@ -42,7 +42,7 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
+import io.baratine.service.ResultChain;
 
 /**
  * StubAmp marshals message calls to a service implementation.
@@ -104,7 +104,7 @@ public interface StubAmp
    * The journal uses this to skip its own completion, leaving the processing
    * for the main stub.
    */
-  default <T> boolean ok(Result<T> result, T value)
+  default <T> boolean ok(ResultChain<T> result, T value)
   {
     result.ok(value);
     
@@ -117,7 +117,7 @@ public interface StubAmp
    * The journal uses this to skip its own completion, leaving the processing
    * for the main stub.
    */
-  default boolean fail(Result<?> result, Throwable exn)
+  default boolean fail(ResultChain<?> result, Throwable exn)
   {
     result.fail(exn);
     

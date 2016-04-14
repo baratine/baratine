@@ -29,16 +29,15 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.Result;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
-import com.caucho.v5.amp.remote.GatewayReply;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.ResultChain;
 
 /**
  * Handle to an amp instance.
@@ -73,9 +72,9 @@ public class QueryGatewayReadMessage_N
   }
   
   @Override
-  public <U> void completeFuture(Result<U> result, U value)
+  public <U> void completeFuture(ResultChain<U> result, U value)
   {
-    _gatewayReply.completeAsync(result, value);
+    _gatewayReply.completeFuture(result, value);
   }
   
   @Override
@@ -107,7 +106,7 @@ public class QueryGatewayReadMessage_N
       headers = HeadersNull.NULL;
     }
     
-    _gatewayReply.queryFail(headers, _qid, getException());
+    _gatewayReply.queryFail(headers, _qid, fail());
     
     return true;
   }

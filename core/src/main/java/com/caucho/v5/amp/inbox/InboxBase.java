@@ -31,8 +31,8 @@ package com.caucho.v5.amp.inbox;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.WorkerDeliver;
 import com.caucho.v5.amp.message.OnInitMessage;
 import com.caucho.v5.amp.message.QueryMap;
@@ -44,7 +44,7 @@ import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 
 import io.baratine.service.Cancel;
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 
 /**
@@ -127,7 +127,7 @@ abstract public class InboxBase
    */
   @Override
   public QueryRefAmp addQuery(String address, 
-                              Result<?> result,
+                              ResultChain<?> result,
                               ClassLoader loaderCaller)
   {
     return queryMap().addQuery(address, result, loaderCaller);

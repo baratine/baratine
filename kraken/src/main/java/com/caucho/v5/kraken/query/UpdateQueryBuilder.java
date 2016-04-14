@@ -137,7 +137,7 @@ public class UpdateQueryBuilder extends QueryBuilderKraken
       result.ok(build(table));
     }
     else {
-      _tableManager.loadTable(_tableName, result.of(t->build(t)));
+      _tableManager.loadTable(_tableName, result.of(this::build));
     }
   }
     

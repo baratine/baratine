@@ -31,6 +31,7 @@ package com.caucho.v5.ramp.vault;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseServiceSync;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
@@ -146,7 +148,7 @@ public class VaultDriverDataImpl<ID, T>
   }
 
   @Override
-  public void load(ID id, T entity, Result<Boolean> result)
+  public void load(ID id, T entity, ResultChain<Boolean> result)
   {
     if (log.isLoggable(Level.FINER)) {
       log.finer(L.l("loading entity {0} for id {1}",
@@ -195,7 +197,7 @@ public class VaultDriverDataImpl<ID, T>
   }
 
   @Override
-  public void save(ID id, T entity, Result<Void> result)
+  public void save(ID id, T entity, ResultChain<Void> result)
   {
     if (log.isLoggable(Level.FINER)) {
       log.finer("saving entity " + entity);
@@ -207,7 +209,9 @@ public class VaultDriverDataImpl<ID, T>
   }
 
   @Override
-  public void findOne(String[] fields, Object[] values, Result<ID> result)
+  public void findOne(String[] fields, 
+                      Object[] values, 
+                      Result<ID> result)
   {
     String sql = getSelectPkSql(fields);
 
@@ -219,6 +223,7 @@ public class VaultDriverDataImpl<ID, T>
                             Object[] values, 
                             Result<Cursor> result)
   {
+    
     _db.findOne(sql, result, values);
   }
 
@@ -230,6 +235,7 @@ public class VaultDriverDataImpl<ID, T>
     _db.findAll(sql, result, values);
   }
 
+  @Override
   public void findOne(String where, Object[] values, Result<ID> result)
   {
     String sql = getSelectPkSql(where);
@@ -247,7 +253,8 @@ public class VaultDriverDataImpl<ID, T>
 
 
   @Override
-  public void findAllIds(String where, Object[] values, Result<List<ID>> result)
+  public void findAllIds(String where, Object[] values, 
+                         Result<List<ID>> result)
   {
     String sql = getSelectPkSql(where);
 
@@ -257,7 +264,7 @@ public class VaultDriverDataImpl<ID, T>
   @Override
   public <X> void findValueList(String sql,
                                 Object[] values,
-                                Result<List<X>> result)
+                                ResultChain<List<X>> result)
   {
     Iterable<Cursor> rows = _db.findAll(sql, values);
 
@@ -609,7 +616,7 @@ public class VaultDriverDataImpl<ID, T>
       = new MethodParserVault(this, _entityInfo, method);
 
     FindQueryVault<?,?,V> query = parser.parse();
-    
+
     if (query != null) {
       return query;
     }

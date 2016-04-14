@@ -377,7 +377,7 @@ public final class KrakenImpl implements Kraken
   {
     QueryBuilderKraken query = QueryParserKraken.parse(this, sql);
       
-    query.build(result.of((q,r)->q.exec(r, params)));
+    query.build(result.then((q,r)->q.exec(r, params)));
   }
 
   /**
@@ -388,7 +388,7 @@ public final class KrakenImpl implements Kraken
     QueryBuilderKraken query = QueryParserKraken.parse(this, sql);
       
     return _services.run(10, TimeUnit.SECONDS,
-                    result->query.build(result.of((q,r)->q.exec(r, params))));
+                    result->query.build(result.then((q,r)->q.exec(r, params))));
   }
 
   public void findOne(String sql, Object []args, Result<Cursor> result)
@@ -405,7 +405,7 @@ public final class KrakenImpl implements Kraken
       
       // if table is not loaded, load it first, then execute query
       _tableService.loadTable(tableName,
-                              result.of((t,r)->buildAndFindOne(builder, args, r)));
+                              result.then((t,r)->buildAndFindOne(builder, args, r)));
       
       return;
     }
@@ -417,7 +417,7 @@ public final class KrakenImpl implements Kraken
                                Object []args,
                                Result<Cursor> result)
   {
-    builder.build(result.of((query,r)->query.findOne(r, args)));
+    builder.build(result.then((query,r)->query.findOne(r, args)));
   }
   
   /**
@@ -436,7 +436,7 @@ public final class KrakenImpl implements Kraken
       String tableName = builder.getTableName();
       
       _tableService.loadTable(tableName,
-                              result.of((t,r)->findAll(builder.build(), args, r)));
+                              result.then((t,r)->findAll(builder.build(), args, r)));
       return;
     }
   }

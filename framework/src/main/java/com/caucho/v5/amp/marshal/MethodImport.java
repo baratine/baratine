@@ -37,7 +37,7 @@ import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -115,7 +115,7 @@ public class MethodImport extends MethodAmpBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {

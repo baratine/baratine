@@ -417,7 +417,7 @@ public class KelpManager
     }
     else {
       _db.loadTable(tableKey, 
-                    result.of((t,r)->getLocalImpl(t, tableKey, key, version, r)));
+                    result.then((t,r)->getLocalImpl(t, tableKey, key, version, r)));
     }
   }
   

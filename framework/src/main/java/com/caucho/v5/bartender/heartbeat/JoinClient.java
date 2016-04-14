@@ -29,10 +29,6 @@
 
 package com.caucho.v5.bartender.heartbeat;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultFuture;
-import io.baratine.service.Result.Fork;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,6 +41,9 @@ import java.util.logging.Logger;
 import com.caucho.v5.baratine.client.ServiceManagerClient;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.hamp.ClientBartenderFactory;
+
+import io.baratine.service.Result;
+import io.baratine.service.Result.Fork;
 
 /**
  * Handles pinging the remote IP interface of the servers the internal
@@ -323,7 +322,9 @@ class JoinClient
     }
   }
   
-  private class JoinServerResult extends Result.Wrapper<UpdateRackHeartbeat, UpdateRackHeartbeat> {
+  private class JoinServerResult
+    extends Result.Wrapper<UpdateRackHeartbeat, UpdateRackHeartbeat>
+  {
     private final ServiceManagerClient _client;
     private final Consumer<UpdateRackHeartbeat> _consumer;
     

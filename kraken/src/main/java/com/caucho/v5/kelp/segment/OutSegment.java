@@ -476,7 +476,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
         = new ArrayList<>(_fsyncListeners);
       _fsyncListeners.clear();
       
-      Result<Boolean> resultNext = result.of((v,r)->
+      Result<Boolean> resultNext = result.then((v,r)->
         afterDataFsync(r, _position, fsyncType, fsyncListeners));
         
       if (_isDirty || ! fsyncType.isSchedule()) {
@@ -508,7 +508,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     try {
       completeHeaders(position);
       
-      Result<Boolean> cont = result.of((v,r)->
+      Result<Boolean> cont = result.then((v,r)->
         afterHeaderFsync(r, fsyncType, listeners));
 
       if (fsyncType.isSchedule()) {

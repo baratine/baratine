@@ -29,10 +29,9 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.QueryRefAmp;
+
+import io.baratine.service.ResultChain;
 
 /**
  * Abstract stream for an actor.
@@ -70,7 +69,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor)
   {
     delegate().query(headers, result, actor);
@@ -80,7 +79,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object a1)
   {
@@ -91,7 +90,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object a1,
                     Object a2)
@@ -103,7 +102,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object a1,
                     Object a2,
@@ -116,18 +115,18 @@ public class FilterMethodModify extends MethodAmpWrapper
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
-                    StubAmp actor,
+                    ResultChain<?> result,
+                    StubAmp stub,
                     Object []args)
   {
-    delegate().query(headers, result, actor, args);
-    
-    setModified(actor);
+    delegate().query(headers, result, stub, args);
+
+    setModified(stub);
   }
   
-  private void setModified(StubAmp actor)
+  private void setModified(StubAmp stub)
   {
-    actor.onModify();
+    stub.onModify();
     
     /*
     if (actor instanceof ActorSkeletonResource) {

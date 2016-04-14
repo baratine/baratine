@@ -29,14 +29,17 @@
 
 package io.baratine.pipe;
 
+import java.util.function.BiConsumer;
+
 import io.baratine.pipe.PipeStatic.PipeInResultImpl;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * {@code ResultInPipe} returns a pipe subscription.
  */
 @FunctionalInterface
-public interface ResultPipeIn<T> extends Result<Void>
+public interface ResultPipeIn<T> extends ResultChain<Void>
 {
   //
   // caller/subscriber side
@@ -59,12 +62,30 @@ public interface ResultPipeIn<T> extends Result<Void>
   void handle(T next, Throwable fail, boolean ok);
   
   @Override
+  default void ok(Void value)
+  {
+  }
+  
+  @Override
+  default void fail(Throwable exn)
+  {
+    handle(null, exn, false);
+  }
+  
+  default <R> Result<R> then(BiConsumer<R,ResultPipeIn<T>> consumer)
+  {
+    return ResultChain.then(this, consumer);
+  }
+  
+  /*
+  @Override
   default void handle(Void ok, Throwable fail)
   {
     if (fail != null) {
       handle(null, fail, false);
     }
   }
+  */
   
   /**
    * The prefetch size.

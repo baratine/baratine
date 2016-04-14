@@ -32,8 +32,8 @@ package com.caucho.v5.amp.remote;
 import java.lang.reflect.AnnotatedType;
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
@@ -45,7 +45,7 @@ import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.bartender.pod.PodRef;
 import com.caucho.v5.inject.type.AnnotatedTypeClass;
 
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 
 /**
@@ -187,7 +187,7 @@ public class StubLink extends StubAmpBase
     // getActorOut().onShutdown(mode);
   }
 
-  protected QueryRefAmp createQueryChain(Result<?> result)
+  protected QueryRefAmp createQueryChain(ResultChain<?> result)
   {
     // long timeout = 0;
     
@@ -275,7 +275,7 @@ public class StubLink extends StubAmpBase
 
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp actor,
                       Object []args)
     {

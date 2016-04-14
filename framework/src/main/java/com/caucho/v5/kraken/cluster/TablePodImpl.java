@@ -459,7 +459,7 @@ public final class TablePodImpl implements TablePod
       return;
     }
 
-    proxy.findOne(result.of((x,r)->onFindOneKey(x,r)),
+    proxy.findOne(result.then((x,r)->onFindOneKey(x,r)),
                   getTable().getTableKey(), sql, args);
     //rowNode.invoke(new GetStreamContext(_table.getKey(), key, result));
   }
@@ -479,7 +479,7 @@ public final class TablePodImpl implements TablePod
 
     //proxy.findAll(new FindAllKeyResult(result), getTable().getTableKey(), sql, args);
     
-    proxy.findAll(result.of((x,r)->onFindAllKey(x,r)),
+    proxy.findAll(result.then((x,r)->onFindAllKey(x,r)),
                   getTable().getTableKey(), sql, args);
     //rowNode.invoke(new GetStreamContext(_table.getKey(), key, result));
   }
@@ -784,7 +784,7 @@ public final class TablePodImpl implements TablePod
     public void invoke(ClusterServiceKraken service)
     {
       _count++;
-      service.remove(_tableKey, _rowKey, _version, _result.of((x,r)->onResult(r)));
+      service.remove(_tableKey, _rowKey, _version, _result.then((x,r)->onResult(r)));
     }
 
     @Override

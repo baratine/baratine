@@ -76,9 +76,6 @@ public class PortTcp implements PortSocket
 
   private static final int KEEPALIVE_MAX = 65536;
 
-  private static final CountMeter _keepaliveMeter
-    = MeterService.createCountMeter("Caucho|Port|Keepalive Count");
-
   private static final ActiveMeter _keepaliveThreadMeter
     = MeterService.createActiveMeter("Caucho|Port|Keepalive Thread");
 

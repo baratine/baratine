@@ -31,16 +31,14 @@ package com.caucho.v5.amp.vault;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.stub.MethodAmp;
 
 import io.baratine.db.Cursor;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
@@ -54,12 +52,12 @@ public interface VaultDriver<ID,T>
     return false;
   }
 
-  default void load(ID id, T entity, Result<Boolean> result)
+  default void load(ID id, T entity, ResultChain<Boolean> result)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }
 
-  default void save(ID id, T entity, Result<Void> result)
+  default void save(ID id, T entity, ResultChain<Void> result)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }
@@ -100,7 +98,7 @@ public interface VaultDriver<ID,T>
 
   default <X> void findValueList(String sql,
                                  Object[] values,
-                                 Result<List<X>> result)
+                                 ResultChain<List<X>> result)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }

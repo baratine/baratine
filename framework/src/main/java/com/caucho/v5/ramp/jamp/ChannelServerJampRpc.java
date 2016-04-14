@@ -29,9 +29,6 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import io.baratine.service.Result;
-import io.baratine.service.ResultFuture;
-
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,8 +37,8 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.inbox.OutboxAmpBase;
 import com.caucho.v5.amp.remote.ChannelServer;
 import com.caucho.v5.amp.remote.GatewayReply;
@@ -53,6 +50,9 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.ResultChain;
+import io.baratine.service.ResultFuture;
 
 /**
  * Channel for jamp-rpc.
@@ -372,7 +372,7 @@ public class ChannelServerJampRpc implements ChannelServer
     }
     
     @Override
-    public <V> void completeAsync(Result<V> result, V value)
+    public <V> void completeFuture(ResultChain<V> result, V value)
     {
       _future.completeFuture(result, value);
     }

@@ -41,14 +41,14 @@ import javax.inject.Provider;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.StubClass;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpBean;
 import com.caucho.v5.amp.stub.StubAmpBeanBase;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.convert.ConvertException;
 import com.caucho.v5.util.L10N;
 
@@ -56,6 +56,7 @@ import io.baratine.convert.Convert;
 import io.baratine.inject.Key;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.vault.Id;
 import io.baratine.vault.IdAsset;
 
@@ -248,16 +249,16 @@ public class StubVault extends StubClass
 
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp actor,
                       Object[] args)
     {
       _driver.findOne(_fields,
                       args,
-                      result.of((id, r) -> getEntity(id, r)));
+                      ResultChain.then(result, this::getEntity));
     }
 
-    public void getEntity(Object id, Result result)
+    public void getEntity(Object id, ResultChain<?> result)
     {
       if (id == null) {
         result.ok(null);
@@ -268,7 +269,7 @@ public class StubVault extends StubClass
         Object obj = _ampManager.service(_address + '/' + id)
                                 .as(api);
 
-        result.ok(obj);
+        ((Result) result).ok(obj);
       }
     }
   }
@@ -293,7 +294,7 @@ public class StubVault extends StubClass
 
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp actor,
                       Object arg1)
     {

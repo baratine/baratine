@@ -29,15 +29,15 @@
 
 package com.caucho.v5.amp.journal;
 
-import io.baratine.service.Result;
-
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpWrapper;
+import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.ResultChain;
 
 /**
  * Sender for an actor ref.
@@ -94,7 +94,7 @@ public final class MethodJournal extends MethodAmpWrapper
 
   @Override
   public void query(HeadersAmp headers, 
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object[] args)
   {

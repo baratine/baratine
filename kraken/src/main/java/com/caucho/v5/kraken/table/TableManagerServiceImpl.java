@@ -363,7 +363,7 @@ public class TableManagerServiceImpl implements TableManagerService
     TablePod tablePod = _metaTable.getTablePod();
 
     tablePod.findByName(tableName,
-                        result.of(this::loadTableByKey));
+                        result.then(this::loadTableByKey));
   }
 
   @Override
@@ -384,7 +384,7 @@ public class TableManagerServiceImpl implements TableManagerService
 
     TablePod tablePod = _metaTable.getTablePod();
     
-    tablePod.get(tableKey, result.of((x,r)->loadTableLocal(tableKey,r)));
+    tablePod.get(tableKey, result.then((x,r)->loadTableLocal(tableKey,r)));
   }
   
   /**
@@ -407,7 +407,7 @@ public class TableManagerServiceImpl implements TableManagerService
     RowCursor cursor = _metaTable.getTableKelp().cursor();
     cursor.setBytes(1, tableKey, 0);
     
-    _metaTable.getTableKelp().get(cursor, result.of((v,r)->loadTableLocalImpl(tableKey, cursor, v, r)));
+    _metaTable.getTableKelp().get(cursor, result.then((v,r)->loadTableLocalImpl(tableKey, cursor, v, r)));
   }
   
   private void loadTableLocalImpl(byte []tableKey,

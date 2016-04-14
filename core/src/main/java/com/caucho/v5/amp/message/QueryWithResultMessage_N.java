@@ -29,14 +29,14 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.Result;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.ResultChain;
 
 /**
  * Handle to an amp instance.
@@ -46,7 +46,7 @@ public class QueryWithResultMessage_N<V> extends QueryWithResultMessage<V>
   private final Object []_args;
 
   public QueryWithResultMessage_N(OutboxAmp outbox,
-                                  Result<V> result,
+                                  ResultChain<V> result,
                                   long timeout,
                                   ServiceRefAmp serviceRef,
                                   MethodAmp method,
@@ -59,7 +59,7 @@ public class QueryWithResultMessage_N<V> extends QueryWithResultMessage<V>
   
   public QueryWithResultMessage_N(OutboxAmp outbox,
                                   HeadersAmp headers,
-                                  Result<V> result,
+                                  ResultChain<V> result,
                                   long timeout,
                                   ServiceRefAmp serviceRef,
                                   MethodAmp method,

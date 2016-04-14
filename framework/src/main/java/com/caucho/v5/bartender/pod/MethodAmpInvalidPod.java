@@ -29,17 +29,17 @@
 
 package com.caucho.v5.bartender.pod;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionNotFound;
-
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.http.pod.PodApp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.ResultChain;
+import io.baratine.service.ServiceExceptionNotFound;
 
 /**
  * Sender for an actor ref.
@@ -76,7 +76,7 @@ public final class MethodAmpInvalidPod extends MethodAmpBase
 
   @Override
   public void query(HeadersAmp headers, 
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object[] args)
   {

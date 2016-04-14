@@ -200,7 +200,7 @@ public final class ResultFuture<T> implements Result<T>
   }
 
   @Override
-  public <U> void completeFuture(Result<U> chain, U chainValue)
+  public <U> void completeFuture(ResultChain<U> chain, U chainValue)
   {
     _chain = (Result) chain;
     _chainValue = chainValue;

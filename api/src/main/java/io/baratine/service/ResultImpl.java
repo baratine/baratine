@@ -178,7 +178,7 @@ class ResultImpl
     }
     
     @Override
-    public <V> void completeFuture(Result<V> result, V value)
+    public <V> void completeFuture(ResultChain<V> result, V value)
     {
       _chain = (Result) result;
       _chainValue = value;
@@ -653,12 +653,13 @@ class ResultImpl
     }
   }
   
-  final static class ChainResult<T,U,R extends Result<U>> implements Result<T>
+  final static class ResultThen<T,U,R extends ResultChain<U>>
+    implements Result<T>
   {
     private R _next;
     private BiConsumer<T,R> _consumer;
     
-    public ChainResult(R next,
+    public ResultThen(R next,
                        BiConsumer<T,R> consumer)
     {
       Objects.requireNonNull(next);
@@ -700,25 +701,27 @@ class ResultImpl
     }
   }
   
-  final static class ChainResultAsync<T,U,R extends Result<U>>
-    extends ChainResultBase<T,U>
+  final static class ResultThenFuture<T,U,R extends ResultChain<U>>
+    extends ResultChainBase<T,U,R>
   {
     private BiConsumer<T,R> _consumer;
     
-    public ChainResultAsync(R next,
-                            BiConsumer<T,R> consumer)
+    public ResultThenFuture(R next,
+                           BiConsumer<T,R> after)
     {
       super(next);
       
-      Objects.requireNonNull(consumer);
-      _consumer = consumer;
+      Objects.requireNonNull(after);
+      _consumer = after;
     }
     
+    /*
     @Override
     protected R delegate()
     {
       return (R) super.delegate();
     }
+    */
     
     @Override
     public boolean isFuture()
@@ -733,7 +736,7 @@ class ResultImpl
     }
     
     @Override
-    public <V> void completeFuture(Result<V> result, V value)
+    public <V> void completeFuture(ResultChain<V> result, V value)
     {
       delegate().completeFuture(result, value);
     }
@@ -757,12 +760,13 @@ class ResultImpl
    * Chained Result using a function to map the returned value to 
    * the Result.
    */
-  static class ChainResultFun<T,U> extends ChainResultBase<T,U>
+  static class ResultChainFun<R,T,C extends ResultChain<T>>
+    extends ResultChainBase<R,T,C>
   {
-    private Function<T,U> _fun;
+    private Function<R,T> _fun;
     
-    public ChainResultFun(Result<U> next,
-                          Function<T,U> fun)
+    public ResultChainFun(C next,
+                          Function<R,T> fun)
     {
       super(next);
       
@@ -777,10 +781,10 @@ class ResultImpl
     }
   
     @Override
-    public void ok(T value)
+    public void ok(R value)
     {
       try {
-        U nextValue = _fun.apply(value);
+        T nextValue = _fun.apply(value);
 
         delegate().ok(nextValue);
       } catch (Throwable e) {
@@ -793,13 +797,14 @@ class ResultImpl
    * Chained Result using a function to map the returned value to 
    * the Result.
    */
-  static class ChainResultFunExn<T,U> extends ChainResultFun<T,U>
+  static class ChainResultFunExn<R,T,C extends ResultChain<T>>
+    extends ResultChainFun<R,T,C>
   {
-    private BiConsumer<Throwable,Result<U>> _exnHandler;
+    private BiConsumer<Throwable,C> _exnHandler;
     
-    public ChainResultFunExn(Result<U> next,
-                             Function<T,U> fun,
-                             BiConsumer<Throwable,Result<U>> exnHandler)
+    public ChainResultFunExn(C next,
+                             Function<R,T> fun,
+                             BiConsumer<Throwable,C> exnHandler)
     {
       super(next, fun);
       
@@ -818,27 +823,29 @@ class ResultImpl
     }
   }
   
-  abstract static class ChainResultBase<T,U> extends Result.Wrapper<T,U>
+  abstract static class ResultChainBase<R,T,C extends ResultChain<T>>
+    extends Result.WrapperChain<R,T,C>
   {
-    public ChainResultBase(Result<U> next)
+    public ResultChainBase(C next)
     {
       super(next);
     }
     
     @Override
-    public abstract void ok(T value);
+    public abstract void ok(R value);
   }
   
   /**
    * Chained Result using a function to map the returned value to 
    * the Result.
    */
-  static class ChainResultFunFuture<T,U> extends ChainResultBase<T,U>
+  static class ResultChainFunFuture<R,T,C extends ResultChain<T>>
+    extends ResultChainBase<R,T,C>
   {
-    private Function<T,U> _fun;
+    private Function<R,T> _fun;
     
-    public ChainResultFunFuture(Result<U> next,
-                                Function<T,U> fun)
+    public ResultChainFunFuture(C next,
+                                Function<R,T> fun)
     {
       super(next);
       
@@ -853,18 +860,18 @@ class ResultImpl
     }
   
     @Override
-    public void ok(T value)
+    public void ok(R value)
     {
       completeFuture(value);
     }
     
     @Override
-    public void completeFuture(T value)
+    public void completeFuture(R value)
     {
       // Object oldContext = beginAsyncContext();
       
       try {
-        U nextValue = _fun.apply(value);
+        T nextValue = _fun.apply(value);
         
         delegate().completeFuture(nextValue);
       } catch (Throwable e) {
@@ -879,13 +886,14 @@ class ResultImpl
    * Chained Result using a function to map the returned value to 
    * the Result.
    */
-  static class ChainResultFunFutureExn<T,U> extends ChainResultFunFuture<T,U>
+  static class ChainResultFunFutureExn<R,T,C extends ResultChain<T>>
+    extends ResultChainFunFuture<R,T,C>
   {
-    private BiConsumer<Throwable,Result<U>> _exnHandler;
+    private BiConsumer<Throwable,C> _exnHandler;
     
-    public ChainResultFunFutureExn(Result<U> next,
-                             Function<T,U> fun,
-                             BiConsumer<Throwable,Result<U>> exnHandler)
+    public ChainResultFunFutureExn(C next,
+                                   Function<R,T> fun,
+                                   BiConsumer<Throwable,C> exnHandler)
     {
       super(next, fun);
       

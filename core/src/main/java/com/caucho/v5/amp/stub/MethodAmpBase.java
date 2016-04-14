@@ -30,13 +30,14 @@
 package com.caucho.v5.amp.stub;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceExceptionMethodNotFound;
 import io.baratine.stream.ResultStream;
 
@@ -132,7 +133,7 @@ public class MethodAmpBase implements MethodAmp
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor)
   {
     query(headers, result, actor, new Object[] {});
@@ -140,7 +141,7 @@ public class MethodAmpBase implements MethodAmp
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object arg1)
   {
@@ -149,7 +150,7 @@ public class MethodAmpBase implements MethodAmp
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object arg1,
                     Object arg2)
@@ -159,7 +160,7 @@ public class MethodAmpBase implements MethodAmp
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object arg1,
                     Object arg2,
@@ -170,7 +171,7 @@ public class MethodAmpBase implements MethodAmp
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {
@@ -227,6 +228,33 @@ public class MethodAmpBase implements MethodAmp
     throw new UnsupportedOperationException(getClass().getName());
   }
   */
+  
+  @Override
+  public int hashCode()
+  {
+    return name().hashCode();
+  }
+  
+  @Override
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof MethodAmp)) {
+      return false;
+    }
+    else if (obj == this) {
+      return true;
+    }
+    
+    MethodAmp method = (MethodAmp) obj;
+    
+    if (! name().equals(method.name())) {
+      return false;
+    }
+    
+    System.out.println("ZOP: " + this + " " + method);
+    
+    return Arrays.equals(parameters(), method.parameters());
+  }
 
   @Override
   public String toString()

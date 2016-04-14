@@ -323,7 +323,7 @@ public class HeartbeatImpl
     // _timer.runAfter(_heartbeatTask, 0, TimeUnit.SECONDS);
     
     _joinClient.start(x->updateRack(x), 
-                      result.of((count,r)->onJoinComplete(count,r)));
+                      result.then((count,r)->onJoinComplete(count,r)));
   }
   
   public void stop()

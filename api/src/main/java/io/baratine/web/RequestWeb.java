@@ -37,10 +37,11 @@ import io.baratine.config.Config;
 import io.baratine.inject.Injector;
 import io.baratine.io.Buffers;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 
-public interface RequestWeb extends OutWeb, Result<Object>
+public interface RequestWeb extends OutWeb, ResultChain<Object>
 {
   String protocol();
   String version();
@@ -80,6 +81,12 @@ public interface RequestWeb extends OutWeb, Result<Object>
   <X> void body(Class<X> type,
                 Result<X> result);
 
+  default <X> void bodyThen(Class<X> type,
+                            BiConsumer<X,RequestWeb> after)
+  {
+    body(type, then(after));
+  }
+
   //<X> void body(Class<X> type, BiConsumer<X,RequestWeb> completion);
 
   //
@@ -109,6 +116,7 @@ public interface RequestWeb extends OutWeb, Result<Object>
   
   void redirect(String address);
 
+  /*
   @Override
   default void handle(Object value, Throwable exn)
   {
@@ -119,6 +127,7 @@ public interface RequestWeb extends OutWeb, Result<Object>
       ok(value);
     }
   }
+  */
   
   //
   // resources
@@ -150,7 +159,7 @@ public interface RequestWeb extends OutWeb, Result<Object>
   
   default <U> Result<U> then(BiConsumer<U,RequestWeb> after)
   {
-    return Result.then(this, after);
+    return ResultChain.then(this, after);
   }
   
   public interface SecureWeb

@@ -33,7 +33,7 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * {@code @Copy Result} wrapper to properly handle the result.
@@ -67,7 +67,7 @@ class MethodStubResultCopy<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub)
   {
     delegate().query(headers, new ResultShim(result, stub, shim()), 
@@ -76,7 +76,7 @@ class MethodStubResultCopy<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                      StubAmp stub,
                      Object arg1)
   {
@@ -86,7 +86,7 @@ class MethodStubResultCopy<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object arg1,
                     Object arg2)
@@ -97,7 +97,7 @@ class MethodStubResultCopy<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object arg1,
                     Object arg2,
@@ -109,7 +109,7 @@ class MethodStubResultCopy<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object []args)
   {

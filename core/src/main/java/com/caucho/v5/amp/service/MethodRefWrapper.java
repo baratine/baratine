@@ -42,6 +42,7 @@ import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.spi.Headers;
 import io.baratine.stream.ResultStream;
 
@@ -170,7 +171,7 @@ abstract public class MethodRefWrapper implements MethodRefAmp
 
   @Override
   public <T> void query(Headers headers,
-                        Result<T> cb,
+                        ResultChain<T> cb,
                         Object... args)
   {
     delegate().query(headers, cb, args);
@@ -178,7 +179,7 @@ abstract public class MethodRefWrapper implements MethodRefAmp
 
   @Override
   public <T> void query(Headers headers,
-                        Result<T> cb, 
+                        ResultChain<T> cb, 
                         long timeout, TimeUnit timeUnit,
                         Object... args)
   {

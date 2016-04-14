@@ -129,7 +129,7 @@ public class PipeInMessage<T>
   protected boolean invokeFail(StubAmp actorDeliver)
   {
     //System.out.println("Missing Fail:" + this);
-    _result.fail(getException());
+    _result.fail(fail());
 
     return true;
   }

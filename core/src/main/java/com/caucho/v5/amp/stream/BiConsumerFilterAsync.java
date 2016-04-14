@@ -54,7 +54,7 @@ public class BiConsumerFilterAsync<S,T> implements BiConsumerAsync<S,T>
   @Override
   public void accept(S s, T t, Result<Void> result)
   {
-    _test.test(t, result.of((x,r)->{ if (Boolean.TRUE.equals(x)) { 
+    _test.test(t, result.then((x,r)->{ if (Boolean.TRUE.equals(x)) { 
                                          _next.accept(s, t, r); 
                                        } else {
                                          r.ok(null);

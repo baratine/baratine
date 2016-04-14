@@ -54,6 +54,6 @@ public class ConsumerMapAsync<U,T> implements ConsumerAsync<U>
   @Override
   public void accept(U u, Result<Void> result)
   {
-    _map.apply(u, result.of((x,r)->_next.accept(x, r)));
+    _map.apply(u, result.then((x,r)->_next.accept(x, r)));
   }
 }

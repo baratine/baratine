@@ -29,15 +29,15 @@
 
 package com.caucho.v5.amp.service;
 
-import io.baratine.service.Result;
-import io.baratine.spi.Headers;
-
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.ResultChain;
+import io.baratine.spi.Headers;
 
 /**
  * Sender for an actor ref.
@@ -62,7 +62,7 @@ public final class MethodRefException extends MethodRefError
   
   @Override
   public <T> void query(Headers headers,
-                        Result<T> cb, 
+                        ResultChain<T> cb, 
                         long timeout, TimeUnit timeUnit,
                         Object... args)
   {

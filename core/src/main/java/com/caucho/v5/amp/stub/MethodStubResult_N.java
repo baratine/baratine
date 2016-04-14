@@ -43,6 +43,7 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;
 import io.baratine.stream.ResultStream;
@@ -63,7 +64,7 @@ class MethodStubResult_N extends MethodStubBase
 
   //private Class<?>[] _paramTypesCl;
 
-  MethodStubResult_N(ServicesAmp ampManager,
+  MethodStubResult_N(ServicesAmp services,
                      Method method)
     throws IllegalAccessException
   {
@@ -72,12 +73,12 @@ class MethodStubResult_N extends MethodStubBase
     _method = method;
     _name = method.getName();
     
-    _methodHandle = initMethodHandle(ampManager, method);
+    _methodHandle = initMethodHandle(services, method);
   }
   
   protected Class<?> getResultClass()
   {
-    return Result.class;
+    return ResultChain.class;
   }
   
   protected Method method()
@@ -142,12 +143,12 @@ class MethodStubResult_N extends MethodStubBase
     Class<?> resultClass = getResultClass();
     
     for (int i = 0; i < paramTypes.length; i++) {
-      if (resultClass.equals(paramTypes[i])) {
+      if (resultClass.isAssignableFrom(paramTypes[i])) {
         return i;
       }
     }
     
-    throw new IllegalStateException();
+    throw new IllegalStateException(String.valueOf(resultClass));
   }
   
   @Override
@@ -183,7 +184,7 @@ class MethodStubResult_N extends MethodStubBase
       ArrayList<ParameterAmp> paramTypeList = new ArrayList<>();
 
       for (int i = 0; i < paramClasses.length; i++) {
-        if (Result.class.isAssignableFrom(paramClasses[i].rawClass())) {
+        if (ResultChain.class.isAssignableFrom(paramClasses[i].rawClass())) {
           continue;
         }
         else if (ResultStream.class.isAssignableFrom(paramClasses[i].rawClass())) {
@@ -225,7 +226,7 @@ class MethodStubResult_N extends MethodStubBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {
@@ -281,9 +282,12 @@ class MethodStubResult_N extends MethodStubBase
     sb.append(getClass().getSimpleName())
       .append("[").append(_name);
     
-    for (ParameterAmp param : _paramTypes) {
-      sb.append(",").append(param.rawClass().getSimpleName());
+    if (_paramTypes != null) {
+      for (ParameterAmp param : _paramTypes) {
+        sb.append(",").append(param.rawClass().getSimpleName());
+      }
     }
+    
     sb.append("]");
     
     return sb.toString();

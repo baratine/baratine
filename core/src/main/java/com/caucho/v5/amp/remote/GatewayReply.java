@@ -29,10 +29,10 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.Result;
-import io.baratine.stream.ResultStream;
-
 import com.caucho.v5.amp.spi.HeadersAmp;
+
+import io.baratine.service.ResultChain;
+import io.baratine.stream.ResultStream;
 
 /**
  * Interface for a reply to a gateway query.
@@ -61,7 +61,7 @@ public interface GatewayReply
 
   boolean isAsync();
   
-  default <U> void completeAsync(Result<U> result, U value)
+  default <U> void completeFuture(ResultChain<U> result, U value)
   {
     System.err.println("INVALID_ASYNC: " + this);
     //Thread.dumpStack();

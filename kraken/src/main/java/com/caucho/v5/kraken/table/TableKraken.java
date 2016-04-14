@@ -427,7 +427,7 @@ public class TableKraken
     }
     else {
       getTablePod().get(cursor.getKey(),
-                        result.of((v,r)->getResult(v, cursor, r)));
+                        result.then((v,r)->getResult(v, cursor, r)));
     }
   }
   

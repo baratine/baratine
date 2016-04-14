@@ -67,6 +67,7 @@ import io.baratine.service.OnLookup;
 import io.baratine.service.OnSave;
 import io.baratine.service.Pin;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ResultFuture;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceException;
@@ -225,12 +226,6 @@ public class StubClass
       return;
     }
     
-    addMethods(cl.getSuperclass());
-    
-    for (Class<?> api : cl.getInterfaces()) {
-      addMethods(api);
-    }
-    
     for (Method method : cl.getDeclaredMethods()) {
       if (Modifier.isStatic(method.getModifiers())) {
         continue;
@@ -322,6 +317,12 @@ public class StubClass
       
       addMethod(method.getName(), createPlainMethod(method));
     }
+    
+    addMethods(cl.getSuperclass());
+    
+    for (Class<?> api : cl.getInterfaces()) {
+      addMethods(api);
+    }
   }
   
   private void addMethod(String methodName, MethodAmp stubMethod)
@@ -332,7 +333,7 @@ public class StubClass
       methods = new ArrayList<>();
       _stubMethodMap.put(methodName, methods);
     }
-    
+
     if (! methods.contains(stubMethod)) {
       methods.add(stubMethod);
     }
@@ -459,7 +460,9 @@ public class StubClass
     }
     */
     
-    return createMethod(method);
+    MethodAmp methodAmp = createMethod(method);
+    
+    return methodAmp;
   }
     
   protected MethodAmp createMethod(Method method)
@@ -467,6 +470,7 @@ public class StubClass
     MethodAmp methodAmp = createMethodBase(method);
     
     if (method.isAnnotationPresent(Modify.class)) {
+
       methodAmp = new FilterMethodModify(methodAmp);
     }
     
@@ -560,7 +564,7 @@ public class StubClass
                               Parameter result)
   {
     Class<?> api = TypeRef.of(result.getParameterizedType())
-                          .to(Result.class)
+                          .to(ResultChain.class)
                           .param(0)
                           .rawClass();
     
@@ -632,7 +636,7 @@ public class StubClass
     int paramLen = params.length;
     
     for (int i = 0; i < paramLen; i++) {
-      if (resultClass.equals(params[i].getType())) {
+      if (resultClass.isAssignableFrom(params[i].getType())) {
         return params[i];
       }
     }
@@ -655,7 +659,7 @@ public class StubClass
     return _isLifecycleAware;
   }
   
-  public void onActive(StubAmp actor, Result<? super Boolean> result)
+  public void onActive(StubAmp actor, ResultChain<? super Boolean> result)
   {
     try {
       MethodAmp onActive = _onActive;

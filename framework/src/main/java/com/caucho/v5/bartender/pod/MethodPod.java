@@ -53,6 +53,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceExceptionUnavailable;
 import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
@@ -177,7 +178,7 @@ public class MethodPod implements MethodAmp
 
   @Override
   public void query(HeadersAmp headers, 
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object[] args)
   {
@@ -451,7 +452,7 @@ public class MethodPod implements MethodAmp
   {
     void send(HeadersAmp headers, StubAmp actor, Object []args);
     
-    void query(HeadersAmp headers, Result<?> result, StubAmp actor, Object []args);
+    void query(HeadersAmp headers, ResultChain<?> result, StubAmp actor, Object []args);
     
     <T> void stream(HeadersAmp headers, 
                     ResultStream<T> queryRef,
@@ -480,7 +481,7 @@ public class MethodPod implements MethodAmp
     
     @Override
     public void query(HeadersAmp headers, 
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp actor,
                       Object []args)
     {
@@ -571,7 +572,7 @@ public class MethodPod implements MethodAmp
     
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result, 
+                      ResultChain<?> result, 
                       StubAmp actor,
                       Object []args)
     {

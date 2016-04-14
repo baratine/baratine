@@ -32,6 +32,7 @@ package com.caucho.v5.amp.stub;
 import com.caucho.v5.amp.ServiceRefAmp;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * Counter/marker for handling multiple saves, e.g. with multiple resources.
@@ -40,7 +41,7 @@ class ResultPin<V> extends Result.Wrapper<V,V>
 {
   private final Class<V> _api;
   
-  public ResultPin(Result<V> delegate, Class<V> api)
+  public ResultPin(ResultChain<V> delegate, Class<V> api)
   {
     super(delegate);
     

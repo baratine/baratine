@@ -40,13 +40,14 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.HeadersAmp;
+import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubClass;
-import com.caucho.v5.amp.stub.MethodAmpBase;
 
 import io.baratine.service.OnLoad;
 import io.baratine.service.OnSave;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.vault.Id;
 
 /**
@@ -162,7 +163,7 @@ public class StubClassAsset extends StubClass
     
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp actor)
     {
       Object bean = actor.bean();
@@ -197,7 +198,7 @@ public class StubClassAsset extends StubClass
     
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp actor)
     {
       Object bean = actor.bean();

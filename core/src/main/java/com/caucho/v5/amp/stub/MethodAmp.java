@@ -38,6 +38,7 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 
 
@@ -127,14 +128,14 @@ public interface MethodAmp
   //
   
   default void query(HeadersAmp headers,
-                     Result<?> result,
+                     ResultChain<?> result,
                      StubAmp actor)
   {
     query(headers, result, actor, new Object[0]);
   }
   
   default void query(HeadersAmp headers,
-                     Result<?> result,
+                     ResultChain<?> result,
                      StubAmp actor,
                      Object arg1)
   {
@@ -142,7 +143,7 @@ public interface MethodAmp
   }
   
   default void query(HeadersAmp headers,
-                     Result<?> result,
+                     ResultChain<?> result,
                      StubAmp actor,
                      Object arg1,
                      Object arg2)
@@ -151,7 +152,7 @@ public interface MethodAmp
   }
   
   default void query(HeadersAmp headers,
-                     Result<?> result,
+                     ResultChain<?> result,
                      StubAmp actor,
                      Object arg1,
                      Object arg2,
@@ -161,7 +162,7 @@ public interface MethodAmp
   }
   
   void query(HeadersAmp headers,
-             Result<?> result,
+             ResultChain<?> result,
              StubAmp actor,
              Object []args);
   
@@ -194,6 +195,7 @@ public interface MethodAmp
     
     for (Class<?> param : targetMethod.getParameterTypes()) {
       if (Result.class.equals(param)
+          || ResultChain.class.equals(param)
           || ResultStream.class.equals(param)
           || ResultPipeIn.class.equals(param)
           || ResultPipeOut.class.equals(param)) {

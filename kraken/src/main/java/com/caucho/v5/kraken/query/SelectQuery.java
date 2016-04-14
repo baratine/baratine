@@ -265,7 +265,7 @@ public class SelectQuery extends SelectQueryBase
                           RowCursor cursor,
                           Object []args)
   {
-    _selectQueryLocal.getDirect(result.of((v,r)->findAfterLocal(r, cursor, args, v)),
+    _selectQueryLocal.getDirect(result.then((v,r)->findAfterLocal(r, cursor, args, v)),
                                 cursor, args);
                                 
     //_table.get(cursor, result.from((v,r)->findAfterLocal(r, cursor, args, v)));
@@ -304,7 +304,7 @@ public class SelectQuery extends SelectQueryBase
     TablePod tablePod = _table.getTablePod();
     
     tablePod.getIfUpdate(cursor.getKey(), version,
-                         result.of((table,r)->_selectQueryLocal.findOne(r, args)));
+                         result.then((table,r)->_selectQueryLocal.findOne(r, args)));
   }
   
   private void findOneCluster(Result<Cursor> result, Object []args)
@@ -463,7 +463,7 @@ public class SelectQuery extends SelectQueryBase
           //FindOneReduceResult subResult
           //  = new FindOneReduceResult(_result, _servers, server, _args);
         
-          tablePod.findOne(of((key,r)->reduceResult(key, server)), 
+          tablePod.findOne(then((key,r)->reduceResult(key, server)), 
                            server, getSql(), _args);
         }
       }

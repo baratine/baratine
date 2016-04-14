@@ -29,23 +29,23 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.Result;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryMessageBase;
-import com.caucho.v5.amp.remote.GatewayReply;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
+import io.baratine.service.Result;
+
 /**
  * Handle to an amp instance.
  */
 public class StreamGatewayMessage_N
-  extends QueryMessageBase
+  extends QueryMessageBase<Object>
+  implements Result<Object>
 {
   private final GatewayReply _gatewayReply;
   private final long _qid;
@@ -126,8 +126,14 @@ public class StreamGatewayMessage_N
       headers = HeadersNull.NULL;
     }
     
-    _gatewayReply.queryFail(headers, _qid, getException());
+    _gatewayReply.queryFail(headers, _qid, fail());
     
     return true;
+  }
+
+  @Override
+  public void handle(Object value, Throwable fail) throws Exception
+  {
+    throw new UnsupportedOperationException(getClass().getName());
   }
 }

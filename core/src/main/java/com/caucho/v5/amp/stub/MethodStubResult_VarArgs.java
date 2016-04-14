@@ -40,6 +40,7 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceExceptionIllegalArgument;
 import io.baratine.stream.ResultStream;
 
@@ -136,7 +137,7 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {

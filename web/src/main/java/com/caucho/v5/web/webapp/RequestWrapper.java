@@ -113,11 +113,13 @@ public class RequestWrapper implements RequestWebSpi
     return delegate().credits();
   }
 
+  /*
   @Override
   public void handle(Object value, Throwable fail)
   {
     throw new IllegalStateException(getClass().getName());
   }
+  */
 
   @Override
   public String protocol()

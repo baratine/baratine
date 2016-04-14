@@ -33,7 +33,7 @@ import java.lang.annotation.Annotation;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 
 /**
@@ -145,7 +145,7 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub)
   {
     delegate().query(headers, result, stub);
@@ -153,7 +153,7 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                      StubAmp stub,
                      Object arg1)
   {
@@ -162,7 +162,7 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object arg1,
                     Object arg2)
@@ -172,7 +172,7 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object arg1,
                     Object arg2,
@@ -183,7 +183,7 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object []args)
   {
@@ -201,6 +201,28 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
                            Object []args)
   {
     delegate().stream(headers, result, actor, args);
+  }
+  
+  @Override
+  public int hashCode()
+  {
+    return delegate().hashCode();
+  }
+  
+  @Override
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof MethodAmp)) {
+      return false;
+    }
+    
+    if (obj instanceof MethodAmpWrapper) {
+      MethodAmpWrapper wrapper = (MethodAmpWrapper) obj;
+      
+      return delegate().equals(wrapper.delegate());
+    }
+    
+    return delegate().equals(obj);
   }
 
   @Override

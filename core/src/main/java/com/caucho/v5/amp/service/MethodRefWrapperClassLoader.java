@@ -29,14 +29,14 @@
 
 package com.caucho.v5.amp.service;
 
-import io.baratine.service.Result;
-import io.baratine.spi.Headers;
-import io.baratine.stream.ResultStream;
-
 import java.util.concurrent.TimeUnit;
 
 import com.caucho.v5.amp.message.MessageWrapperClassLoader;
 import com.caucho.v5.amp.spi.MessageAmp;
+
+import io.baratine.service.ResultChain;
+import io.baratine.spi.Headers;
+import io.baratine.stream.ResultStream;
 
 /**
  * Sender for an actor ref.
@@ -72,7 +72,7 @@ abstract public class MethodRefWrapperClassLoader extends MethodRefWrapper
 
   @Override
   public <T> void query(Headers headers,
-                        Result<T> result,
+                        ResultChain<T> result,
                         Object... args)
   {
     Thread thread = Thread.currentThread();
@@ -89,7 +89,7 @@ abstract public class MethodRefWrapperClassLoader extends MethodRefWrapper
 
   @Override
   public <T> void query(Headers headers,
-                        Result<T> cb, 
+                        ResultChain<T> cb, 
                         long timeout, TimeUnit timeUnit,
                         Object... args)
   {

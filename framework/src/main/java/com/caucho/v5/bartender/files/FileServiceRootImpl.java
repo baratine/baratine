@@ -481,7 +481,7 @@ public class FileServiceRootImpl
     boolean isWaitForPut = isWaitForPut(options);
     
     openReadCursor(srcPath, 
-                   result.of((c,r)->copyAfterRead(c, dstPath, r, isWaitForPut)));
+                   result.then((c,r)->copyAfterRead(c, dstPath, r, isWaitForPut)));
   }
 
   @Direct
@@ -493,7 +493,7 @@ public class FileServiceRootImpl
     boolean isWaitForPut = isWaitForPut(options);
     
     openReadCursor(srcPath, 
-                   result.of((c,r)->renameAfterRead(c, srcPath, dstPath, r, isWaitForPut)));
+                   result.then((c,r)->renameAfterRead(c, srcPath, dstPath, r, isWaitForPut)));
   }
   
   private void renameAfterRead(Cursor cursor,
@@ -507,7 +507,7 @@ public class FileServiceRootImpl
       return;
     }
     
-    copyAfterRead(cursor, dstPath, result.of((x,r)->remove(srcPath, r)), true);
+    copyAfterRead(cursor, dstPath, result.then((x,r)->remove(srcPath, r)), true);
   }
   
   private void copyAfterRead(Cursor cursor,
@@ -560,7 +560,7 @@ public class FileServiceRootImpl
 
   public void remove(String path, Result<Boolean> result)
   {
-    _fileDelete.exec(result.of((x,r)->deleteResult(path, r)),
+    _fileDelete.exec(result.then((x,r)->deleteResult(path, r)),
                      getParentHash(path), 
                      getPathKey(path),
                      hash(path));
@@ -625,7 +625,7 @@ public class FileServiceRootImpl
       listQueryImpl(path, result);
     }
     else {
-      openReadFile(path, result.of((is,r)->readList(path, is, r)));
+      openReadFile(path, result.then((is,r)->readList(path, is, r)));
     }
 
     //_dirList.findAll(result.from(cursorIter->listResult(cursorIter, path)), 

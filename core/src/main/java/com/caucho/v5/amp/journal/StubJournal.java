@@ -29,8 +29,6 @@
 
 package com.caucho.v5.amp.journal;
 
-import io.baratine.service.Result;
-
 import java.util.Objects;
 
 import com.caucho.v5.amp.deliver.QueueDeliver;
@@ -42,6 +40,9 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpBase;
 import com.caucho.v5.amp.thread.ThreadPool;
+
+import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * Journaling stub
@@ -215,13 +216,13 @@ public final class StubJournal extends StubAmpBase
   */
   
   @Override
-  public <T> boolean ok(Result<T> result, T value)
+  public <T> boolean ok(ResultChain<T> result, T value)
   {
     return false;
   }
   
   @Override
-  public boolean fail(Result<?> result, Throwable exn)
+  public boolean fail(ResultChain<?> result, Throwable exn)
   {
     result.fail(exn);
     

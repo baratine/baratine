@@ -524,7 +524,7 @@ public class TableKelp
                       EnvKelp whereKelp, 
                       Result<RowCursor> result)
   {
-    _tableService.flush(result.of((x,r)->findOneImpl(minCursor, maxCursor, whereKelp, result)));
+    _tableService.flush(result.then((x,r)->findOneImpl(minCursor, maxCursor, whereKelp, result)));
   }
   
   public void findOneImpl(RowCursor minCursor, 

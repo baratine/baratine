@@ -42,7 +42,7 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 
 /**
@@ -166,34 +166,34 @@ public class MethodAmpAdapter implements MethodAmp
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, StubAmp actor)
+  public void query(HeadersAmp headers, ResultChain<?> result, StubAmp actor)
   {
     _methodRef.query(headers, result);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, StubAmp actor,
+  public void query(HeadersAmp headers, ResultChain<?> result, StubAmp actor,
                     Object arg1)
   {
     _methodRef.query(headers, result, arg1);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, StubAmp actor,
+  public void query(HeadersAmp headers, ResultChain<?> result, StubAmp actor,
                     Object arg1, Object arg2)
   {
     _methodRef.query(headers, result, arg1, arg2);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, StubAmp actor,
+  public void query(HeadersAmp headers, ResultChain<?> result, StubAmp actor,
                     Object arg1, Object arg2, Object arg3)
   {
     _methodRef.query(headers, result, arg1, arg2, arg3);
   }
 
   @Override
-  public void query(HeadersAmp headers, Result<?> result, StubAmp actor,
+  public void query(HeadersAmp headers, ResultChain<?> result, StubAmp actor,
                     Object[] args)
   {
     _methodRef.query(headers, result, args);

@@ -216,13 +216,13 @@ abstract class MethodStubBase extends MethodAmpBase
   @Override
   public boolean equals(Object obj)
   {
-    if (! (obj instanceof MethodStubBase)) {
+    if (! (obj instanceof MethodAmp)) {
       return false;
     }
     
-    MethodStubBase method = (MethodStubBase) obj;
+    MethodAmp method = (MethodAmp) obj;
     
-    if (! _method.getName().equals(method._method.getName())) {
+    if (! name().equals(method.name())) {
       return false;
     }
     

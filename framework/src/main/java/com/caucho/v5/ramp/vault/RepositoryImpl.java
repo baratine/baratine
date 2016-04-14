@@ -134,7 +134,7 @@ public class RepositoryImpl<ID, T>
                                        id));
 
     _db.findOne(getSelectOneSql(),
-                result.of((c, r) -> readObject(c, id, r)),
+                result.then((c, r) -> readObject(c, id, r)),
                 _idDesc.toParam(id));
   }
 

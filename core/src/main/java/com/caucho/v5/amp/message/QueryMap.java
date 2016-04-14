@@ -29,11 +29,6 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionClosed;
-import io.baratine.stream.ResultStream;
-
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
@@ -43,6 +38,11 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.ResultChain;
+import io.baratine.service.ServiceExceptionClosed;
+import io.baratine.stream.ResultStream;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -83,7 +83,7 @@ public final class QueryMap
   }
   
   public QueryRefAmp addQuery(String address, 
-                              Result<?> result, 
+                              ResultChain<?> result, 
                               ClassLoader loader)
   {
     String from = address; // _inbox.getAddress();

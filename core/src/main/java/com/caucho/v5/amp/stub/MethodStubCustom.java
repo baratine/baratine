@@ -29,10 +29,10 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
+
+import io.baratine.service.ResultChain;
 
 /**
  * Custom actor method.
@@ -78,7 +78,7 @@ class MethodStubCustom extends MethodAmpBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {

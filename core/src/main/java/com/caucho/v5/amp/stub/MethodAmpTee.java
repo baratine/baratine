@@ -36,7 +36,7 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 
 
@@ -202,7 +202,7 @@ public class MethodAmpTee implements MethodAmp
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor)
   {
     delegate().query(headers, result, actor);
@@ -212,7 +212,7 @@ public class MethodAmpTee implements MethodAmp
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object arg1)
   {
@@ -223,7 +223,7 @@ public class MethodAmpTee implements MethodAmp
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object arg1,
                     Object arg2)
@@ -235,7 +235,7 @@ public class MethodAmpTee implements MethodAmp
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object arg1,
                     Object arg2,
@@ -248,7 +248,7 @@ public class MethodAmpTee implements MethodAmp
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {

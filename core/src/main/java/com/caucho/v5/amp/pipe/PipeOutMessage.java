@@ -180,7 +180,8 @@ public class PipeOutMessage<T>
   @Override
   protected boolean invokeFail(StubAmp actorDeliver)
   {
-    _result.fail(getException());
+    fail().printStackTrace();;
+    _result.fail(fail());
 
     return true;
   }

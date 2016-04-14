@@ -49,6 +49,6 @@ public class AccumAccumulatorAsync<T,U>
   {
     _accum.apply(accum.get(), 
                  value, 
-                 result.of((x,r)->{ accum.set(x); result.ok(null); }));
+                 result.then((x,r)->{ accum.set(x); result.ok(null); }));
   }
 }

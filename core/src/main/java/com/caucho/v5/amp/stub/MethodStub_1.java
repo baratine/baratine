@@ -29,8 +29,6 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -41,6 +39,9 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
+
+import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * Creates MPC skeletons and stubs.
@@ -143,7 +144,7 @@ class MethodStub_1 extends MethodStubBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp workerActor,
                     Object arg1)
   {
@@ -167,7 +168,7 @@ class MethodStub_1 extends MethodStubBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor)
   {
     query(headers, result, actor, null);
@@ -175,7 +176,7 @@ class MethodStub_1 extends MethodStubBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object arg1,
                     Object arg2)
@@ -185,7 +186,7 @@ class MethodStub_1 extends MethodStubBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object arg1,
                     Object arg2,
@@ -196,7 +197,7 @@ class MethodStub_1 extends MethodStubBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {

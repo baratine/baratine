@@ -33,7 +33,7 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 
 /**
  * Pin the result callback to the service.
@@ -61,7 +61,7 @@ class MethodStubResultPin<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub)
   {
     delegate().query(headers, new ResultPin(result, _api),
@@ -70,7 +70,7 @@ class MethodStubResultPin<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                      StubAmp stub,
                      Object arg1)
   {
@@ -80,7 +80,7 @@ class MethodStubResultPin<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object arg1,
                     Object arg2)
@@ -91,7 +91,7 @@ class MethodStubResultPin<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object arg1,
                     Object arg2,
@@ -103,7 +103,7 @@ class MethodStubResultPin<T,V> extends MethodAmpWrapper
   
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp stub,
                     Object []args)
   {

@@ -34,8 +34,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.message.QueryWithResultMessage_N;
 import com.caucho.v5.amp.message.ResultStreamAmp;
@@ -51,6 +51,7 @@ import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.spi.Headers;
 import io.baratine.stream.ResultStream;
 
@@ -145,7 +146,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
 
   @Override
   public <T> void query(Headers headers,
-                        Result<T> result,
+                        ResultChain<T> result,
                         Object... args)
   {
     long timeout = 15000;
@@ -161,7 +162,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
 
   @Override
   public <T> void query(Headers headers,
-                        Result<T> result, 
+                        ResultChain<T> result, 
                         long timeout, TimeUnit timeUnit,
                         Object... args)
   {

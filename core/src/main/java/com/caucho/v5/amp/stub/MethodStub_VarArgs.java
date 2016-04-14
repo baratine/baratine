@@ -29,9 +29,6 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceException;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
@@ -42,6 +39,10 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
+import io.baratine.service.ServiceException;
 
 /**
  * Creates MPC skeletons and stubs.
@@ -135,7 +136,7 @@ class MethodStub_VarArgs extends MethodStubBase
 
   @Override
   public void query(HeadersAmp headers,
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object []args)
   {

@@ -29,7 +29,6 @@
 
 package com.caucho.v5.ramp.events;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,7 +47,7 @@ import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Cancel;
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceRef;
 
 /**
@@ -246,7 +245,7 @@ class EventNodeAsset extends StubAmpBase
 
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp stub,
                       Object []args)
     {

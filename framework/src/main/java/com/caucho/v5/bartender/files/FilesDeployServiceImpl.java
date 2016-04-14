@@ -126,8 +126,8 @@ public class FilesDeployServiceImpl
 
     //copyFileImpl(src, dest, result);
 
-    getStatus(src, result.of((statusSrc,r) -> {
-        getStatus(dest, r.of((statusDest,r2) -> {
+    getStatus(src, result.then((statusSrc,r) -> {
+        getStatus(dest, r.then((statusDest,r2) -> {
            copyFile(statusSrc, statusDest, r2);
         }));
     }));
@@ -191,8 +191,8 @@ public class FilesDeployServiceImpl
 
   private void copyAllImpl(String src, String dest, Result<Boolean> result)
   {
-    getStatus(src, result.of((statusSrc,r) -> {
-        getStatus(dest, r.of((statusDest,r2) -> {
+    getStatus(src, result.then((statusSrc,r) -> {
+        getStatus(dest, r.then((statusDest,r2) -> {
             copyAllImpl(statusSrc, statusDest, r2);
         }));
     }));
@@ -244,7 +244,7 @@ public class FilesDeployServiceImpl
 
     String dir = dest;
 
-    list(src, result.of((files,r) -> {
+    list(src, result.then((files,r) -> {
         copyFilesToDir(files, 0, dir, r);
     }));
   }
@@ -253,7 +253,7 @@ public class FilesDeployServiceImpl
                               Result<Boolean> result)
   {
     if (index < files.length) {
-      copyAllImpl(files[index], dir, result.of((isSuccessful,r) -> {
+      copyAllImpl(files[index], dir, result.then((isSuccessful,r) -> {
           copyFilesToDir(files, index + 1, dir, r);
       }));
     }
@@ -267,7 +267,7 @@ public class FilesDeployServiceImpl
     // XXX: need admin logging
     log.info("moveFile " + src + " to " + dest);
 
-    getFile(src, result.of((stream,r) -> {
+    getFile(src, result.then((stream,r) -> {
         putFile(dest, stream);
         removeFile(src, (isDeleted,e) -> r.handle(isDeleted, e));
     }));
@@ -278,9 +278,9 @@ public class FilesDeployServiceImpl
     // XXX: need admin logging
     log.info("moveAll " + src + " to " + dest);
 
-    getStatus(dest, result.of((Status status,Result<Boolean> r) -> {
+    getStatus(dest, result.then((Status status,Result<Boolean> r) -> {
         if (status.getType() == Status.FileType.NULL) {
-          copyAllImpl(src, dest, r.of((isSuccessful,r2) -> {
+          copyAllImpl(src, dest, r.then((isSuccessful,r2) -> {
               removeAll(src, r2);
           }));
         }

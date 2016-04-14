@@ -131,7 +131,7 @@ public class PageServiceImpl implements PageService
   @Override
   public void start(Result<TableKelp> result)
   {
-    loadImpl(result.of((t,r)->afterStart(r)));
+    loadImpl(result.then((t,r)->afterStart(r)));
   }
   
   private void loadImpl(Result<Void> result)
@@ -156,7 +156,7 @@ public class PageServiceImpl implements PageService
     DatabaseServiceKelp database = _table.getDatabase().getDatabaseService();
     
     database.addTableImpl(_table.getName(), _table, 
-                          result.of((t,r)->afterAddTable(t,r)));
+                          result.then((t,r)->afterAddTable(t,r)));
   }
   
   private void afterAddTable(TableKelp table, Result<TableKelp> result)

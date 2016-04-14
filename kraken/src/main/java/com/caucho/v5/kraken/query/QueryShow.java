@@ -65,7 +65,7 @@ public class QueryShow extends QueryKraken
                    Object ...params)
   {
     _kraken.loadTable(_tableName, 
-                            result.of((table,r)->execQuery(r,table,params)));
+                            result.then((table,r)->execQuery(r,table,params)));
   }
   
   private void execQuery(Result<Object> result,

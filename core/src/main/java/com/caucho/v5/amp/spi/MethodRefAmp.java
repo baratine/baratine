@@ -39,6 +39,7 @@ import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.spi.Headers;
 import io.baratine.stream.ResultStream;
 
@@ -116,10 +117,10 @@ public interface MethodRefAmp // extends MethodRef
   
   void send(Headers headers, Object ...args);
   
-  <T> void query(Headers headers, Result<T> result, Object ...args);
+  <T> void query(Headers headers, ResultChain<T> result, Object ...args);
   
   <T> void query(Headers headers, 
-                 Result<T> result, 
+                 ResultChain<T> result, 
                  long timeout, 
                  TimeUnit unit, 
                  Object ...args);

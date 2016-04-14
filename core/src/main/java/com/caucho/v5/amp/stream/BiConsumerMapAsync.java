@@ -54,6 +54,6 @@ public class BiConsumerMapAsync<S,U,T> implements BiConsumerAsync<S,U>
   @Override
   public void accept(S s, U u, Result<Void> result)
   {
-    _map.apply(u, result.of((x,r)->{ _next.accept(s, x, r); }));
+    _map.apply(u, result.then((x,r)->{ _next.accept(s, x, r); }));
   }
 }

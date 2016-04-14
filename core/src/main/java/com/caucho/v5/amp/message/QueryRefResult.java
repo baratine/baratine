@@ -29,9 +29,9 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.Result;
-
 import com.caucho.v5.amp.spi.HeadersAmp;
+
+import io.baratine.service.ResultChain;
 
 /**
  * Handles the context for an actor, primarily including its
@@ -39,12 +39,12 @@ import com.caucho.v5.amp.spi.HeadersAmp;
  */
 public class QueryRefResult extends QueryRefBase
 {
-  private Result<?> _result;
+  private ResultChain<?> _result;
   
   QueryRefResult(String from, 
                  long id, 
                  ClassLoader loaderCaller,
-                 Result<?> result)
+                 ResultChain<?> result)
   {
     super(from, id, loaderCaller);
     
@@ -54,7 +54,7 @@ public class QueryRefResult extends QueryRefBase
   @Override
   public void complete(HeadersAmp headers, Object value)
   {
-    ((Result) _result).ok(value);
+    ((ResultChain) _result).ok(value);
   }
   
   @Override

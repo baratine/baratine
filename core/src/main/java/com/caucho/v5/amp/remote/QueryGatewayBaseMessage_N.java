@@ -37,11 +37,14 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
+import io.baratine.service.Result;
+
 /**
  * Handle to an amp instance.
  */
 public class QueryGatewayBaseMessage_N
   extends QueryMessageBase<Object>
+  implements Result<Object>
 {
   private final Object []_args;
 
@@ -71,19 +74,9 @@ public class QueryGatewayBaseMessage_N
                        _args);
   }
 
-  /*
   @Override
-  protected void onCompleted(HeadersAmp headers,
-                             ActorAmp actor,
-                             Object value)
+  public void handle(Object value, Throwable fail) throws Exception
   {
+    throw new UnsupportedOperationException(getClass().getName());
   }
-
-  @Override
-  protected void onFailed(HeadersAmp headers,
-                          ActorAmp actor,
-                          Throwable exn)
-  {
-  }
-  */
 }

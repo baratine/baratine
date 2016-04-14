@@ -51,6 +51,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.inject.Key;
 import io.baratine.service.OnLookup;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.vault.Id;
 
 /**
@@ -177,7 +178,7 @@ public class StubClassSessionVault<T> extends StubClass
 
     @Override
     public void query(HeadersAmp headers,
-                      Result<?> result,
+                      ResultChain<?> result,
                       StubAmp stub,
                       Object arg1)
     {

@@ -29,12 +29,12 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceExceptionMethodNotFound;
-import io.baratine.service.ServiceExceptionNotFound;
-
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.ResultChain;
+import io.baratine.service.ServiceExceptionMethodNotFound;
+import io.baratine.service.ServiceExceptionNotFound;
 
 /**
  * Sender for an actor ref.
@@ -67,7 +67,7 @@ public final class MethodAmpNull extends MethodAmpBase
 
   @Override
   public void query(HeadersAmp headers, 
-                    Result<?> result,
+                    ResultChain<?> result,
                     StubAmp actor,
                     Object[] args)
   {

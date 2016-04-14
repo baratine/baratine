@@ -42,7 +42,7 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceExceptionUnavailable;
 import io.baratine.spi.Headers;
 
@@ -167,7 +167,7 @@ public class MethodRefPod extends MethodRefBase
 
   @Override
   public <T> void query(Headers headers,
-                        Result<T> result, 
+                        ResultChain<T> result, 
                         long timeout, TimeUnit timeUnit,
                         Object... args)
   {

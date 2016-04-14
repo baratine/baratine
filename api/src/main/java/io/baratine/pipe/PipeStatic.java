@@ -464,11 +464,13 @@ class PipeStatic<T>
       throw new IllegalStateException(getClass().getName());
     }
 
+    /*
     @Override
     public void handle(Void value, Throwable fail)
     {
       throw new IllegalStateException();
     }
+    */
 
     @Override
     public PipeInBuilder<T> ok(Consumer<Void> onOkSubscription)

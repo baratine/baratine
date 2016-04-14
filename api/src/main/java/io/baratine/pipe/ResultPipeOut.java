@@ -29,7 +29,8 @@
 
 package io.baratine.pipe;
 
-import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
+import io.baratine.service.ServiceException;
 
 /**
  * {@code OutStream} is a source of a pipe to write.
@@ -38,8 +39,10 @@ import io.baratine.service.Result;
  * </code></pre>
  */
 @FunctionalInterface
-public interface ResultPipeOut<T> extends Result<Pipe<T>>
+public interface ResultPipeOut<T> extends ResultChain<Pipe<T>>
 {  
+  void handle(Pipe<T> pipe, Throwable exn) throws Exception;
+  
   /**
    * The prefetch size.
    * 
@@ -69,5 +72,29 @@ public interface ResultPipeOut<T> extends Result<Pipe<T>>
   default void capacity(int capacity)
   {
     throw new UnsupportedOperationException(getClass().getName());
+  }
+  
+  @Override
+  default void ok(Pipe<T> pipe)
+  {
+    try {
+      handle(pipe, null);
+    } catch (Throwable e) {
+      fail(e);
+    }
+  }
+  
+  @Override
+  default void fail(Throwable exn)
+  {
+    try {
+      handle(null, exn);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Error e) {
+      throw e;
+    } catch (Throwable e) {
+      throw ServiceException.createAndRethrow(e);
+    }
   }
 }

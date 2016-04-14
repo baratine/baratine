@@ -30,6 +30,7 @@
 package com.caucho.v5.ramp.vault;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -63,7 +64,7 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
   @Override
   public String toString()
   {
-    return FindQueryVault.class.getSimpleName() + '[' + _where + ']';
+    return getClass().getSimpleName() + '[' + _where + ']';
   }
 
   public static class KeyResult<ID,T,V> extends FindQueryVault<ID,T,V>

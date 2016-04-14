@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 
 import com.caucho.v5.amp.ServiceRefAmp;
@@ -107,9 +108,9 @@ class ValidateProxy
       return;
     }
     
-    ArrayList<Class<?>> proxyParams = parameters(method);
-    Class<?> []paramTypes = new Class<?>[proxyParams.size()];
-    proxyParams.toArray(paramTypes);
+    //ArrayList<Class<?>> proxyParams = parameters(method);
+    Class<?> []paramTypes = MethodAmp.paramTypes(method);
+    //proxyParams.toArray(paramTypes);
     
     MethodAmp methodAmp = _stub.method(method.getName(), paramTypes);
     
@@ -117,7 +118,7 @@ class ValidateProxy
       throw error("{0}.{1}{2} is an unknown method in {3}",
                   proxyClassName(), 
                   method.getName(),
-                  toString(proxyParams),
+                  toString(paramTypes),
                   stubClassName(_stub));
     }
     
@@ -129,28 +130,28 @@ class ValidateProxy
     }
     
     
-    if (params.length != proxyParams.size()) {
+    if (params.length != paramTypes.length) {
       throw error("{0}.{1}{2} doesn't match {3}.{4}{5}",
                   proxyClassName(),
                   method.getName(),
-                  toString(proxyParams),
+                  toString(paramTypes),
                   stubClassName(_stub),
                   method.getName(),
                   toString(params));
     }
   }
   
-  private String toString(ArrayList<Class<?>> params)
+  private String toString(Class<?> []paramTypes)
   {
     StringBuilder sb = new StringBuilder();
     
     sb.append("(");
-    for (int i = 0; i < params.size(); i++) {
+    for (int i = 0; i < paramTypes.length; i++) {
       if (i != 0) {
         sb.append(",");
       }
       
-      sb.append(params.get(i).getSimpleName());
+      sb.append(paramTypes[i].getSimpleName());
     }
     sb.append(")");
     
@@ -186,6 +187,7 @@ class ValidateProxy
     return typeRef.rawClass().getSimpleName();
   }
 
+  /*
   private ArrayList<Class<?>> parameters(Method method)
   {
     ArrayList<Class<?>> params = new ArrayList<>();
@@ -198,6 +200,7 @@ class ValidateProxy
     
     return params;
   }
+  */
   
   private String proxyClassName()
   {
