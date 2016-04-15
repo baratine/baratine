@@ -129,7 +129,13 @@ class IncludeWebClass implements IncludeWebAmp
       builder.websocket(path)
              .to((Class) _type);
 
-      log.config("@WebSocket" + " " + path + " to " + _type.getDeclaringClass().getSimpleName());
+      Class<?> type = _type;
+
+      if (type.getDeclaringClass() != null) {
+        type = type.getDeclaringClass();
+      }
+
+      log.config("@WebSocket" + " " + path + " to " + type.getSimpleName());
       
       return;
     }
