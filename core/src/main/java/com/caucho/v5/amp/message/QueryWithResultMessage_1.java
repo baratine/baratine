@@ -92,7 +92,7 @@ public class QueryWithResultMessage_1<V>
       
       actorDeliver.load(actorMessage, this)
                   .query(actorDeliver, actorMessage,
-                         getMethod(),
+                         method(),
                          getHeaders(),
                          this,
                          _arg1);

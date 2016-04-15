@@ -373,7 +373,7 @@ public class ClassGeneratorService<T>
       String methodName = method.getName();
       
       jClass.createField(getMethodFieldName(methodName),
-                         TransferAsset.class)
+                         ShimConverter.class)
             .setAccessFlags(Modifier.PRIVATE);
       
       Class<?> transferClass = transferClass(method);
@@ -393,13 +393,13 @@ public class ClassGeneratorService<T>
       
       code.invokestatic(TransferUtil.class,
                         "transferGet",
-                        TransferAsset.class,
+                        ShimConverter.class,
                         Class.class,
                         Class.class);
 
       code.putField(jClass.getThisClass(),
                     getMethodFieldName(methodName),
-                    TransferAsset.class);
+                    ShimConverter.class);
     }
 
     code.addReturn();
@@ -468,11 +468,11 @@ public class ClassGeneratorService<T>
     code.pushObjectVar(0);
     code.getField(jClass.getThisClass(),
                   getMethodFieldName(methodName),
-                  TransferAsset.class);
+                  ShimConverter.class);
      
     code.pushObjectVar(0);
     
-    code.invoke(TransferAsset.class,
+    code.invoke(ShimConverter.class,
                 "toTransfer",
                 Object.class,
                 Object.class);

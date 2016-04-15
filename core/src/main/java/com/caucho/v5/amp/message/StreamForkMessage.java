@@ -116,7 +116,7 @@ public class StreamForkMessage<T>
   public final void invoke(InboxAmp inbox, StubAmp actorDeliver)
   {
     try {
-      MethodAmp method = getMethod();
+      MethodAmp method = method();
     
       StubAmp actorMessage = serviceRef().stub();
 
@@ -224,7 +224,7 @@ public class StreamForkMessage<T>
     }
     
     return (getClass().getSimpleName()
-        + "[" + getMethod().name()
+        + "[" + method().name()
         + ",to=" + toAddress
         + ",result=" + callbackName
         + "]");

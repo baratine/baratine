@@ -68,7 +68,7 @@ public class QueryGatewayBaseMessage_N
 
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,
-                       getMethod(),
+                       method(),
                        getHeaders(),
                        this,
                        _args);

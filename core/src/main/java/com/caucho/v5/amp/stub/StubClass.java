@@ -37,7 +37,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -72,7 +71,6 @@ import io.baratine.service.ResultFuture;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
-import io.baratine.service.Shim;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
 
@@ -493,11 +491,15 @@ public class StubClass
         else {
           methodStub = new MethodStubResult_N(services(), method);
         }
-        
+    
+        /*
         if (result.isAnnotationPresent(Shim.class)) {
           return createCopyShim(methodStub, result);
         }
-        else if (result.isAnnotationPresent(Pin.class)) {
+        else
+        */
+        
+        if (result.isAnnotationPresent(Pin.class)) {
           return createPin(methodStub, result);
         }
         else {
@@ -549,16 +551,18 @@ public class StubClass
     }
   }
   
+  /*
   private MethodAmp createCopyShim(MethodAmp delegate,
                                    Parameter result)
   {
     TypeRef resultRef = TypeRef.of(result.getParameterizedType());
     TypeRef transferRef = resultRef.to(Result.class).param(0);
     
-    TransferAsset<?,?> shim = new TransferAsset(_type, transferRef.rawClass());
+    ShimConverter<?,?> shim = new ShimConverter(_type, transferRef.rawClass());
     
     return new MethodStubResultCopy(delegate, shim);
   }
+  */
   
   private MethodAmp createPin(MethodAmp delegate,
                               Parameter result)

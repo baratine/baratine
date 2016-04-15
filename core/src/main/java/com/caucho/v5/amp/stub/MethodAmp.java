@@ -165,6 +165,8 @@ public interface MethodAmp
              ResultChain<?> result,
              StubAmp actor,
              Object []args);
+
+  Object shim(Object value);
   
   //
   // map-reduce/stream methods

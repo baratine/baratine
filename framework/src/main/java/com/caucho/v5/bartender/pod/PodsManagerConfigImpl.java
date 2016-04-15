@@ -238,7 +238,7 @@ class PodsManagerConfigImpl
    */
   private void updateBfsPath()
   {
-    _bfsPath.list(Result.onOk(list->updateBfsPath(list)));
+    _bfsPath.list(Result.on(list->updateBfsPath(list)));
   }
 
   /**

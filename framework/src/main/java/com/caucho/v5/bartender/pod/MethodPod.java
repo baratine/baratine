@@ -191,6 +191,12 @@ public class MethodPod implements MethodAmp
     }
   }
   
+  @Override
+  public Object shim(Object value)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
   /**
    * stream call with fork/join to all nodes in the pod.
    */

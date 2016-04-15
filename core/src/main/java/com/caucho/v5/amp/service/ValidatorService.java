@@ -31,18 +31,14 @@ package com.caucho.v5.amp.service;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-import com.caucho.v5.amp.stub.TransferAsset;
-import com.caucho.v5.amp.vault.VaultException;
+import com.caucho.v5.amp.stub.ShimConverter;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
-import io.baratine.service.ServiceException;
-import io.baratine.service.Shim;
 import io.baratine.vault.Vault;
 
 /**
@@ -168,6 +164,7 @@ public class ValidatorService
   
   private void serviceMethod(Class<?> serviceClass, Method method)
   {
+    /*
     for (Parameter param : method.getParameters()) {
       if (param.getType().equals(Result.class)) {
         if (param.isAnnotationPresent(Shim.class)) {
@@ -175,8 +172,10 @@ public class ValidatorService
         }
       }
     }
+    */
   }
   
+  /*
   private void shimResult(Class<?> serviceClass, Method method, Parameter param)
   {
     TypeRef valueRef = TypeRef.of(param.getParameterizedType())
@@ -186,7 +185,7 @@ public class ValidatorService
     Class<?> valueClass = valueRef.rawClass();
     
     try {
-      new TransferAsset<>(serviceClass, valueClass);
+      new ShimConverter<>(serviceClass, valueClass);
     } catch (VaultException e) {
       throw error(e,
                   "{0}.{1}: {2}",
@@ -201,6 +200,7 @@ public class ValidatorService
                   e.toString());
     }
   }
+  */
   
   private boolean abstractGetTransfer(Class<?> serviceClass,
                                       Method method)
@@ -243,7 +243,7 @@ public class ValidatorService
     Class<?> transferClass = transferRef.rawClass();
     
     // transfer asset does its own validation
-    new TransferAsset<>(serviceClass, transferClass);
+    new ShimConverter<>(serviceClass, transferClass);
     
     return true;
   }

@@ -65,6 +65,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.ShimConverter;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpSystem;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
@@ -76,6 +77,7 @@ import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.convert.Convert;
 import io.baratine.inject.Key;
 import io.baratine.service.Api;
 import io.baratine.service.QueueFullHandler;
@@ -107,6 +109,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   //private final InboxFactoryAmp _inboxFactory;
   private final ProxyFactoryAmp _proxyFactory;
   private final StubClassFactoryAmp _stubFactory;
+  private final ShimFactory _shims = new ShimFactory();
   private final JournalFactoryAmp _journalFactory;
   // private final ContextSessionFactory _channelFactory;
   
@@ -750,6 +753,12 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     
     return newServiceRef;
   }
+  
+  @Override
+  public <R> ClassValue<Convert<?,R>> shims(Class<R> type)
+  {
+    return (ClassValue) _shims.get(type);
+  }
 
   /*
   @Override
@@ -998,6 +1007,30 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
                                             message));
       
     }
+  }
+  
+  private class ShimFactory extends ClassValue<ClassValue<Convert<?,?>>>
+  {
+    @Override
+    protected ClassValue<Convert<?, ?>> computeValue(Class<?> type)
+    {
+      return new ShimFactoryClass<>(type);
+    }
+  }
+  
+  private class ShimFactoryClass<T> extends ClassValue<Convert<?,?>>
+  {
+    private Class<T> _targetType;
     
+    ShimFactoryClass(Class<T> targetType)
+    {
+      _targetType = targetType;
+    }
+
+    @Override
+    protected Convert<?, ?> computeValue(Class<?> type)
+    {
+      return new ShimConverter<>(type, _targetType);
+    }
   }
 }

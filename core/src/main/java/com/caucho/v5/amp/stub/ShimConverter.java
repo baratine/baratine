@@ -39,14 +39,15 @@ import com.caucho.v5.convert.bean.FieldBean;
 import com.caucho.v5.convert.bean.FieldBeanFactory;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.convert.Convert;
 import io.baratine.vault.Id;
 
 /**
  * Copies to and from a transfer object.
  */
-public class TransferAsset<T,S>
+public class ShimConverter<T,S> implements Convert<T,S>
 {
-  private static final L10N L = new L10N(TransferAsset.class);
+  private static final L10N L = new L10N(ShimConverter.class);
   
   private Class<T> _assetType;
   private Class<S> _transferType;
@@ -54,7 +55,7 @@ public class TransferAsset<T,S>
   private FieldCopy<T,S> []_toAsset;
   private FieldCopy<T,S> []_toTransfer;
 
-  public TransferAsset(Class<T> beanType,
+  public ShimConverter(Class<T> beanType,
                        Class<S> transferType)
   {
     Objects.requireNonNull(beanType);
@@ -233,6 +234,12 @@ public class TransferAsset<T,S>
     } catch (Exception e) {
       throw new VaultException(e);
     }
+  }
+  
+  @Override
+  public S convert(T asset)
+  {
+    return toTransfer(asset);
   }
   
   private RuntimeException error(String msg, Object ...args)

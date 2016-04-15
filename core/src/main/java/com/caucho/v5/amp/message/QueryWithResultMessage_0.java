@@ -80,7 +80,7 @@ public class QueryWithResultMessage_0<V>
 
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,
-                       getMethod(),
+                       method(),
                        getHeaders(),
                        this);
   }

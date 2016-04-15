@@ -601,7 +601,7 @@ public final class KrakenImpl implements Kraken
       String tableName = builder.getTableName();
       
       _tableService.loadTable(tableName,
-                              Result.onOk(t->builder.build().map(method, args)));
+                              Result.on(t->builder.build().map(method, args)));
     }
   }
   

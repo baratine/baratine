@@ -198,6 +198,12 @@ public class MethodAmpAdapter implements MethodAmp
   {
     _methodRef.query(headers, result, args);
   }
+  
+  @Override
+  public Object shim(Object value)
+  {
+    return _methodRef.method().shim(value);
+  }
 
   /*
   @Override

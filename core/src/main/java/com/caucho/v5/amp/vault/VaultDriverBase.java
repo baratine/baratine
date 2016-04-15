@@ -47,7 +47,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.TransferAsset;
+import com.caucho.v5.amp.stub.ShimConverter;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.convert.bean.FieldBean;
 import com.caucho.v5.convert.bean.FieldBeanFactory;
@@ -234,7 +234,7 @@ public class VaultDriverBase<ID,T>
                                       vaultMethod));
       }
       
-      TransferAsset<T,?> transfer = new TransferAsset<>(_assetClass, params[0]);
+      ShimConverter<T,?> transfer = new ShimConverter<>(_assetClass, params[0]);
       
       TypeRef resultRef = TypeRef.of(vaultMethod.getGenericParameterTypes()[1]);
       TypeRef valueRef = resultRef.to(Result.class).param(0);
@@ -419,10 +419,10 @@ public class VaultDriverBase<ID,T>
 
   private class MethodAmpCreateDTO<S> extends MethodAmpBase
   {
-    private TransferAsset<T,S> _transfer;
+    private ShimConverter<T,S> _transfer;
     private FieldBean<T> _idField;
     
-    MethodAmpCreateDTO(TransferAsset<T,S> transfer,
+    MethodAmpCreateDTO(ShimConverter<T,S> transfer,
                        FieldBean<T> idField)
     {
       Objects.requireNonNull(transfer);

@@ -97,7 +97,7 @@ public class StreamGatewayMessage_N
 
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,
-                       getMethod(),
+                       method(),
                        getHeaders(),
                        this,
                        _args);

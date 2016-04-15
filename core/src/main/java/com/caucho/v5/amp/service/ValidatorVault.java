@@ -38,7 +38,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
-import com.caucho.v5.amp.stub.TransferAsset;
+import com.caucho.v5.amp.stub.ShimConverter;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
@@ -140,7 +140,7 @@ class ValidatorVault
       }
 
       try {
-        new TransferAsset<>(assetClass, typeClass);
+        new ShimConverter<>(assetClass, typeClass);
       } catch (Exception e) {
         throw error(e,
                     "{0}.{1}: {2}",
@@ -192,7 +192,7 @@ class ValidatorVault
         continue;
       }
 
-      new TransferAsset<>(assetClass, typeClass);
+      new ShimConverter<>(assetClass, typeClass);
     }
   }
   
@@ -319,7 +319,7 @@ class ValidatorVault
     Class<?> transferClass = transferRef.rawClass();
     
     // transfer asset does its own validation
-    new TransferAsset<>(serviceClass, transferClass);
+    new ShimConverter<>(serviceClass, transferClass);
     
     return true;
   }

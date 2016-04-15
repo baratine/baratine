@@ -179,6 +179,12 @@ public class MethodAmpBase implements MethodAmp
                                 L.l("'{0}' is an undefined method for {1}",
                                     this, actor)));
   }
+  
+  @Override
+  public Object shim(Object value)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
 
   @Override
   public <T> void stream(HeadersAmp headers,

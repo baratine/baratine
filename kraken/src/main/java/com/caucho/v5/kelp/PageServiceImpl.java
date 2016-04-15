@@ -493,7 +493,7 @@ public class PageServiceImpl implements PageService
       int writeSequence = page.nextWriteSequence();
       _table.getReadWrite().writeBlobPage(page,
                                           writeSequence,
-                                          Result.onOk(x->page.afterDataFlush(this, writeSequence)));
+                                          Result.on(x->page.afterDataFlush(this, writeSequence)));
 
       return pid;
     } finally {

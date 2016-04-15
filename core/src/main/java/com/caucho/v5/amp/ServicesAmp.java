@@ -45,6 +45,7 @@ import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 
+import io.baratine.convert.Convert;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
@@ -122,6 +123,8 @@ public interface ServicesAmp extends Services, LookupAmp
   ProxyFactoryAmp proxyFactory();
   
   StubClassFactoryAmp stubFactory();
+
+  <T> ClassValue<Convert<?, T>> shims(Class<T> resultType);
   
   // StubAmp createStub(Object bean, ServiceConfig config);
   

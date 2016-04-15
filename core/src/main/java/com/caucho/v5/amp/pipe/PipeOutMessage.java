@@ -87,7 +87,7 @@ public class PipeOutMessage<T>
   public final void invokeQuery(InboxAmp inbox, StubAmp stubDeliver)
   {
     try {
-      MethodAmp method = getMethod();
+      MethodAmp method = method();
     
       StubAmp stubMessage = serviceRef().stub();
 
@@ -202,7 +202,7 @@ public class PipeOutMessage<T>
     }
     
     return (getClass().getSimpleName()
-        + "[" + getMethod().name()
+        + "[" + method().name()
         + ",to=" + toAddress
         + ",result=" + callbackName
         + "]");

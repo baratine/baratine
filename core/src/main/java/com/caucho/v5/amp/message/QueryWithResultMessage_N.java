@@ -80,7 +80,7 @@ public class QueryWithResultMessage_N<V> extends QueryWithResultMessage<V>
     // XXX: baratine/9230
     actorDeliver.load(actorMessage, this)
                 .query(actorDeliver, actorMessage,
-                       getMethod(),
+                       method(),
                        getHeaders(),
                        this,
                        _args);

@@ -759,7 +759,7 @@ public final class PageLeafImpl extends PageLeaf
       readWrite.writePage(newPage, sOut,
                           oldSequence, saveLength, saveTail,
                           sequenceWrite,
-                          Result.onOk(x->newPage.afterDataFlush(pageServiceImpl, sequenceWrite)));
+                          Result.on(x->newPage.afterDataFlush(pageServiceImpl, sequenceWrite)));
     }
     else {
       int sequenceWrite = nextWriteSequence();
@@ -769,7 +769,7 @@ public final class PageLeafImpl extends PageLeaf
       readWrite.writePage(this, sOut,
                           oldSequence, saveLength, saveTail,
                           sequenceWrite,
-                          Result.onOk(x->afterDataFlush(pageServiceImpl, sequenceWrite)));
+                          Result.on(x->afterDataFlush(pageServiceImpl, sequenceWrite)));
 
       //write(db, pageActor, sOut, saveLength);
       /*

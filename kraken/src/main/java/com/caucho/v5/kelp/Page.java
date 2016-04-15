@@ -367,7 +367,7 @@ abstract public class Page
     int sequenceWrite = nextWriteSequence();
     
     readWrite.writePage(this, sOut, oldSequence, saveLength, tail, sequenceWrite,
-                        Result.onOk(x->{ afterDataFlush(tableServiceImpl, sequenceWrite); }));
+                        Result.on(x->{ afterDataFlush(tableServiceImpl, sequenceWrite); }));
   }
   
   /**

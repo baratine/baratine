@@ -85,7 +85,7 @@ public final class SendMessage_1 extends MethodMessageBase
     
     load.send(actorDeliver,
                actorMessage,
-               getMethod(),
+               method(),
                getHeaders(),
                _arg1);
   }

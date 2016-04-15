@@ -44,6 +44,7 @@ import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 
+import io.baratine.convert.Convert;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
@@ -196,6 +197,12 @@ abstract public class ServiceManagerAmpWrapper implements ServicesAmp
                                 String path)
   {
     return delegate().pin(context, listener, path);
+  }
+
+  @Override
+  public <R> ClassValue<Convert<?,R>> shims(Class<R> type)
+  {
+    return delegate().shims(type);
   }
 
   /*

@@ -104,7 +104,7 @@ public final class SendMessage_N extends MethodMessageBase
     actorDeliver.load(actorMessage, this)
                 .send(actorDeliver,
                       actorMessage,
-                      getMethod(),
+                      method(),
                       getHeaders(),
                       _args);
   }

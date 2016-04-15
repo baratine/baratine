@@ -1043,12 +1043,12 @@ public class FileServiceRootImpl
   
   private void updateDir(String dirName)
   {
-    listQueryImpl(dirName, Result.onOk(list->updateDirList(dirName, list)));
+    listQueryImpl(dirName, Result.on(list->updateDirList(dirName, list)));
   }
   
   private void updateDirList(String dirName, List<String> list)
   {
-    openReadFile(dirName, Result.onOk(is->updateDirFile(dirName, list, is)));
+    openReadFile(dirName, Result.on(is->updateDirFile(dirName, list, is)));
   }
   
   private void updateDirFile(String dirName, 
@@ -1379,7 +1379,7 @@ public class FileServiceRootImpl
         file.onChange();
       }
       
-      _fileName.findOneDirect(Result.onOk(c->onFileChange(c)),
+      _fileName.findOneDirect(Result.on(c->onFileChange(c)),
                               getParentHash(key),
                               getPathKey(key),
                               getHash(key));
@@ -1394,7 +1394,7 @@ public class FileServiceRootImpl
         file.onChange();
       }
       
-      _fileName.findOneDirect(Result.onOk(c->onFileChange(c)),
+      _fileName.findOneDirect(Result.on(c->onFileChange(c)),
                               getParentHash(key),
                               getPathKey(key),
                               getHash(key));

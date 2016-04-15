@@ -297,7 +297,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
   public String toString()
   {
     return (getClass().getSimpleName()
-             + "[" + getMethod().name()
+             + "[" + method().name()
              + ",to=" + inboxTarget().serviceRef().address()
              + ",state=" + getState()
              + "]");

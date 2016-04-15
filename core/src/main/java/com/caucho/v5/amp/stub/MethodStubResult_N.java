@@ -34,6 +34,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -41,7 +42,9 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
+import com.caucho.v5.inject.type.TypeRef;
 
+import io.baratine.convert.Convert;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceException;
@@ -61,6 +64,11 @@ class MethodStubResult_N extends MethodStubBase
   private final MethodHandle _methodHandle;
   
   private ParameterAmp []_paramTypes;
+  private Class<?> _returnType;
+
+  private ClassValue<Convert<?, ?>> _shimMap;
+
+  private ServicesAmp _services;
 
   //private Class<?>[] _paramTypesCl;
 
@@ -69,6 +77,8 @@ class MethodStubResult_N extends MethodStubBase
     throws IllegalAccessException
   {
     super(method);
+    
+    _services = services;
     
     _method = method;
     _name = method.getName();
@@ -172,7 +182,28 @@ class MethodStubResult_N extends MethodStubBase
   @Override
   public Class<?> getReturnType()
   {
-    return Object.class;
+    if (_returnType == null) {
+      for (Parameter param : _method.getParameters()) {
+        if (ResultChain.class.isAssignableFrom(param.getType())) {
+          TypeRef typeRef = TypeRef.of(param.getParameterizedType());
+          TypeRef resultRef = typeRef.to(ResultChain.class);
+          TypeRef returnRef = resultRef.param(0); 
+          
+          if (returnRef != null) {
+            _returnType = returnRef.rawClass();
+          }
+          else {
+            _returnType = Object.class;
+          }
+        }
+      }
+      
+      if (_returnType == null) {
+        _returnType = Object.class;
+      }
+    }
+    
+    return _returnType;
   }
   
   @Override
@@ -272,6 +303,33 @@ class MethodStubResult_N extends MethodStubBase
 
       result.fail(e);
     }
+  }
+  
+  @Override
+  public Object shim(Object value)
+  {
+    if (value == null) {
+      return null;
+    }
+    
+    ClassValue<Convert<?,?>> shimMap = shimMap();
+    
+    Convert convert = shimMap.get(value.getClass());
+    
+    return convert.convert(value);
+  }
+  
+  private ClassValue<Convert<?,?>> shimMap()
+  {
+    ClassValue<Convert<?,?>> shimMap = _shimMap;
+    
+    if (shimMap == null) {
+      Class<?> resultType = getReturnType();
+      
+      shimMap = _shimMap = (ClassValue) _services.shims(resultType);
+    }
+    
+    return shimMap;
   }
 
   @Override

@@ -257,6 +257,12 @@ public class MethodAmpTee implements MethodAmp
     tee().query(headers, result, actor, args);
   }
   
+  @Override
+  public Object shim(Object value)
+  {
+    return delegate().shim(value);
+  }
+  
   //
   // map-reduce methods
   //

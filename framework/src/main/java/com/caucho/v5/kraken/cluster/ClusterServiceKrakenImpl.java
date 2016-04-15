@@ -364,7 +364,7 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
                        String serverId)
   {
     _tableManager.loadTable(tableKey, 
-                            Result.onOk(table->addWatchImpl(table, tableKey, key, serverId)));
+                            Result.on(table->addWatchImpl(table, tableKey, key, serverId)));
   }
   
   private void addWatchImpl(TableKraken table,

@@ -323,6 +323,12 @@ public class MethodAmpTrace implements MethodAmp
     delegate().query(headers, result, actor, args);
   }
   
+  @Override
+  public Object shim(Object value)
+  {
+    return delegate().shim(value);
+  }
+  
   private void traceQuery(String traceId,
                           HeadersAmp headers, 
                           StubAmp actor,

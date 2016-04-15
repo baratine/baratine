@@ -94,7 +94,7 @@ public class PipeInMessage<T>
   public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
   {
     try {
-      MethodAmp method = getMethod();
+      MethodAmp method = method();
     
       StubAmp actorMessage = serviceRef().stub();
 
@@ -197,7 +197,7 @@ public class PipeInMessage<T>
     }
     
     return (getClass().getSimpleName()
-        + "[" + getMethod().name()
+        + "[" + method().name()
         + ",to=" + toAddress
         + ",result=" + callbackName
         + "]");

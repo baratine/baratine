@@ -97,6 +97,12 @@ public class QueryWithResultMessage<T>
     _result = result;
   }
   
+  @Override
+  public void shim(Object value)
+  {
+    ok((T) method().shim(value));
+  }
+  
   /* baratine/11h0, baratine/119d */
   /* XXX: Issues with async/future that are chained */
   @Override
@@ -104,7 +110,7 @@ public class QueryWithResultMessage<T>
   {
     ResultChain<T> result = _result;
     
-    return result.isFuture() && getMethod().isDirect();
+    return result.isFuture() && method().isDirect();
   }
   
   @Override
@@ -155,7 +161,7 @@ public class QueryWithResultMessage<T>
   @Override
   protected void offerQuery(long timeout)
   {
-    MethodAmp method = getMethod();
+    MethodAmp method = method();
     
     if (method.isDirect() && serviceRef().stub().isStarted()) {
       try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
@@ -258,7 +264,7 @@ public class QueryWithResultMessage<T>
     }
     
     return (getClass().getSimpleName()
-        + "[" + getMethod().name()
+        + "[" + method().name()
         + ",to=" + toAddress
         + ",state=" + getState()
         + ",result=" + callbackName

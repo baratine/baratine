@@ -190,6 +190,17 @@ public interface Result<T> extends ResultChain<T>
   }
   
   /**
+   * Returns a copied transfer object based on the value.
+   * 
+   * Shim preserves encapsulation by isolating service objects from
+   * the outside callers.
+   */
+  default void shim(Object value)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
+  /**
    * Create an empty Result that ignores the <code>ok</code>.
    */
   static <T> Result<T> ignore()
@@ -344,19 +355,21 @@ public interface Result<T> extends ResultChain<T>
     return new AdapterMake<T>(result, exn);
   }
 
-  static <T> Result<T> onOk(Consumer<T> consumer)
+  static <T> Result<T> on(Consumer<T> consumer)
   {
     Objects.requireNonNull(consumer);
     
     return new ResultImpl.ResultBuilder<>(consumer, null);
   }
 
+  /*
   static <T> Builder<T> onFail(Consumer<Throwable> fail)
   {
     Objects.requireNonNull(fail);
     
     return new ResultImpl.ResultBuilder<>(null, fail);
   }
+  */
   
   interface Builder<U>
   {

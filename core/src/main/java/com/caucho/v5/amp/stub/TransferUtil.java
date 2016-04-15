@@ -34,9 +34,9 @@ package com.caucho.v5.amp.stub;
  */
 public class TransferUtil
 {
-  public static <T,S> TransferAsset<T,S> transferGet(Class<T> assetType,
+  public static <T,S> ShimConverter<T,S> transferGet(Class<T> assetType,
                                                      Class<S> transferType)
   {
-    return new TransferAsset<>(assetType, transferType);
+    return new ShimConverter<>(assetType, transferType);
   }
 }
