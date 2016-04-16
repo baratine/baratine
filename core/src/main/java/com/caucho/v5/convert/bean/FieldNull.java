@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Baratine; if not, write to the
- *
+ * 
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
@@ -27,27 +27,37 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.spi;
+package com.caucho.v5.convert.bean;
 
-import com.caucho.v5.amp.stub.StubAmp;
+import java.lang.reflect.Field;
+import java.util.Objects;
 
 /**
- * State/dispatch for a loadable actor.
+ * dummy field setter to ignore assignment.
  */
-public class LoadStateLoadBase implements LoadStateAmp
+public class FieldNull<T> extends FieldBase<T>
 {
-  public static final LoadStateLoadBase LOAD = new LoadStateLoadBase();
+  private static final Field FIELD_NULL;
   
-  @Override
-  public LoadStateAmp load(StubAmp actor,
-                        InboxAmp inbox,
-                        MessageAmp msg)
+  @SuppressWarnings("unused")
+  private Object _null;
+  
+  public FieldNull()
   {
-    return this;
+    super(FIELD_NULL);
   }
-
-  @Override
-  public void onModify(StubAmp  actorAmpBase)
-  {
+  
+  static {
+    Field fieldNull = null;
+    
+    for (Field field : FieldNull.class.getFields()) {
+      if (field.getName().equals("_null")) {
+        fieldNull = field;
+      }
+    }
+    
+    Objects.requireNonNull(fieldNull);
+    
+    FIELD_NULL = fieldNull;
   }
 }

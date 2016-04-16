@@ -34,7 +34,7 @@ import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
@@ -58,7 +58,7 @@ public class StubAmpMultiWorker extends StubAmpStateBase
   }
   
   @Override
-  public LoadState createLoadState()
+  public LoadStateAmp createLoadState()
   {
     //return new LoadStateMultiWorker();
     return LoadStateActorAmp.NEW;
@@ -138,7 +138,7 @@ public class StubAmpMultiWorker extends StubAmpStateBase
   }
   
   @Override
-  public LoadState load(StubAmp actorMessage, MessageAmp msg)
+  public LoadStateAmp load(StubAmp actorMessage, MessageAmp msg)
   {
     return delegate().load(msg);
   }

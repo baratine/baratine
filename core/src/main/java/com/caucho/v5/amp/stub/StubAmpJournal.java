@@ -33,7 +33,7 @@ import java.lang.reflect.AnnotatedType;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.LoadStateLoadBase;
 import com.caucho.v5.amp.spi.MessageAmp;
 
@@ -83,7 +83,7 @@ public class StubAmpJournal extends StubAmpBase
   }
   
   @Override
-  public LoadState load(MessageAmp msg)
+  public LoadStateAmp load(MessageAmp msg)
   {
     // return _actor.load(msg, actor);
     StubAmp actorMain = _stubMain;

@@ -38,7 +38,7 @@ import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.LoadStateNull;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -59,7 +59,7 @@ public class StubAmpBase implements StubAmp
   private static final AnnotatedType _annotatedTypeObject
     = new AnnotatedTypeClass(Object.class);
   
-  private LoadState _loadState;
+  private LoadStateAmp _loadState;
   
   protected StubAmpBase()
   {
@@ -72,12 +72,12 @@ public class StubAmpBase implements StubAmp
   }
   
   @Override
-  public LoadState loadState()
+  public LoadStateAmp loadState()
   {
     return _loadState;
   }
   
-  public LoadState createLoadState()
+  public LoadStateAmp createLoadState()
   {
     return LoadStateLoad.LOAD;
   }
@@ -213,7 +213,7 @@ public class StubAmpBase implements StubAmp
   }
   
   @Override
-  public LoadState load(StubAmp actorMessage, MessageAmp msg)
+  public LoadStateAmp load(StubAmp actorMessage, MessageAmp msg)
   {
     return actorMessage.loadState().load(actorMessage, 
                                          msg.inboxTarget(), 
@@ -221,19 +221,19 @@ public class StubAmpBase implements StubAmp
   }
   
   @Override
-  public LoadState load(MessageAmp msg)
+  public LoadStateAmp load(MessageAmp msg)
   {
     return _loadState.load(this, msg.inboxTarget(), msg);
   }
   
   // @Override
-  public LoadState load(InboxAmp inbox, MessageAmp msg)
+  public LoadStateAmp load(InboxAmp inbox, MessageAmp msg)
   {
     return _loadState.load(this, inbox, msg);
   }
   
   @Override
-  public LoadState loadReplay(InboxAmp inbox, MessageAmp msg)
+  public LoadStateAmp loadReplay(InboxAmp inbox, MessageAmp msg)
   {
     return _loadState.loadReplay(this, inbox, msg);
   }
@@ -263,7 +263,7 @@ public class StubAmpBase implements StubAmp
     return true;
   }
   
-  public void setLoadState(LoadState loadState)
+  public void setLoadState(LoadStateAmp loadState)
   {
     _loadState = loadState;
     if (loadState instanceof LoadStateNull) {
@@ -400,11 +400,11 @@ public class StubAmpBase implements StubAmp
     }
   }
   
-  private static class LoadStateLoad implements LoadState {
+  private static class LoadStateLoad implements LoadStateAmp {
     private static final LoadStateLoad LOAD = new LoadStateLoad();
     
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -412,7 +412,7 @@ public class StubAmpBase implements StubAmp
     }
     
     @Override
-    public LoadState loadReplay(StubAmp actor,
+    public LoadStateAmp loadReplay(StubAmp actor,
                                 InboxAmp inbox,
                                 MessageAmp msg)
     {

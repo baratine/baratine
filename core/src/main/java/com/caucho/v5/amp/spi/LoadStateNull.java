@@ -39,14 +39,14 @@ import io.baratine.stream.ResultStream;
 /**
  * State/dispatch for a loadable actor.
  */
-public class LoadStateNull implements LoadState
+public class LoadStateNull implements LoadStateAmp
 {
   public LoadStateNull()
   {
   }
   
   @Override
-  public LoadState load(StubAmp actor,
+  public LoadStateAmp load(StubAmp actor,
                         InboxAmp inbox,
                         MessageAmp msg)
   {

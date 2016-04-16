@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.LoadStateNull;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -50,11 +50,11 @@ import io.baratine.stream.ResultStream;
 /**
  * Baratine actor skeleton
  */
-public enum LoadStateActorAmp implements LoadState
+public enum LoadStateActorAmp implements LoadStateAmp
 {
   NEW {
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -69,7 +69,7 @@ public enum LoadStateActorAmp implements LoadState
     }
 
     @Override
-    public LoadState loadReplay(StubAmp actor,
+    public LoadStateAmp loadReplay(StubAmp actor,
                                 InboxAmp inbox,
                                 MessageAmp msg)
     {
@@ -99,7 +99,7 @@ public enum LoadStateActorAmp implements LoadState
 
   INIT {
     @Override
-    public LoadState load(StubAmp actor, 
+    public LoadStateAmp load(StubAmp actor, 
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -128,7 +128,7 @@ public enum LoadStateActorAmp implements LoadState
 
   INIT_REPLAY {
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -164,7 +164,7 @@ public enum LoadStateActorAmp implements LoadState
 
   INIT_REPLAY_ACTIVE {
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -192,7 +192,7 @@ public enum LoadStateActorAmp implements LoadState
 
   REPLAY {
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -214,7 +214,7 @@ public enum LoadStateActorAmp implements LoadState
     }
 
     @Override
-    public LoadState loadReplay(StubAmp actor,
+    public LoadStateAmp loadReplay(StubAmp actor,
                                 InboxAmp inbox,
                                 MessageAmp msg)
     {
@@ -240,7 +240,7 @@ public enum LoadStateActorAmp implements LoadState
 
   REPLAY_MODIFY {
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -262,7 +262,7 @@ public enum LoadStateActorAmp implements LoadState
     }
 
     @Override
-    public LoadState loadReplay(StubAmp actor, 
+    public LoadStateAmp loadReplay(StubAmp actor, 
                                 InboxAmp inbox,
                                 MessageAmp msg)
     {
@@ -290,7 +290,7 @@ public enum LoadStateActorAmp implements LoadState
 
   REPLAY_ACTIVE {
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -309,7 +309,7 @@ public enum LoadStateActorAmp implements LoadState
     }
 
     @Override
-    public LoadState loadReplay(StubAmp actor,
+    public LoadStateAmp loadReplay(StubAmp actor,
                                 InboxAmp inbox,
                                 MessageAmp msg)
     {
@@ -319,7 +319,7 @@ public enum LoadStateActorAmp implements LoadState
 
   LOAD {
     @Override
-    public LoadState load(StubAmp actor, 
+    public LoadStateAmp load(StubAmp actor, 
                           InboxAmp inbox, 
                           MessageAmp msg)
     {
@@ -339,7 +339,7 @@ public enum LoadStateActorAmp implements LoadState
     }
 
     @Override
-    public LoadState loadReplay(StubAmp actor,
+    public LoadStateAmp loadReplay(StubAmp actor,
                                 InboxAmp inbox,
                                 MessageAmp msg)
     {
@@ -349,7 +349,7 @@ public enum LoadStateActorAmp implements LoadState
 
   ACTIVE {
     @Override
-    public LoadState load(StubAmp actor, 
+    public LoadStateAmp load(StubAmp actor, 
                           InboxAmp inbox, 
                           MessageAmp msg)
     {
@@ -399,7 +399,7 @@ public enum LoadStateActorAmp implements LoadState
 
   PENDING {
     @Override
-    public LoadState load(StubAmp actor, 
+    public LoadStateAmp load(StubAmp actor, 
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -411,7 +411,7 @@ public enum LoadStateActorAmp implements LoadState
     }
 
     @Override
-    public LoadState loadReplay(StubAmp actor,
+    public LoadStateAmp loadReplay(StubAmp actor,
                                 InboxAmp inbox,
                                 MessageAmp msg)
     {
@@ -425,7 +425,7 @@ public enum LoadStateActorAmp implements LoadState
 
   FAIL {
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -441,7 +441,7 @@ public enum LoadStateActorAmp implements LoadState
 
   DESTROY {
     @Override
-    public LoadState load(StubAmp actor, 
+    public LoadStateAmp load(StubAmp actor, 
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -582,7 +582,7 @@ public enum LoadStateActorAmp implements LoadState
   }
 
   @Override
-  public LoadState load(StubAmp actor,
+  public LoadStateAmp load(StubAmp actor,
                         InboxAmp inbox,
                         MessageAmp msg)
   {
@@ -590,7 +590,7 @@ public enum LoadStateActorAmp implements LoadState
   }
 
   @Override
-  public LoadState loadReplay(StubAmp actor, 
+  public LoadStateAmp loadReplay(StubAmp actor, 
                               InboxAmp inbox,
                               MessageAmp msg)
   {
@@ -626,7 +626,7 @@ public enum LoadStateActorAmp implements LoadState
   }
   
   
-  private static LoadState onInitImpl(StubAmp actor, 
+  private static LoadStateAmp onInitImpl(StubAmp actor, 
                                       InboxAmp inbox,
                                       MessageAmp msg, 
                                       LoadStateActorAmp nextState)
@@ -643,7 +643,7 @@ public enum LoadStateActorAmp implements LoadState
     return pending.onPendingNext(actorBean, msg);
   }
 
-  private static LoadState onLoadImpl(StubAmp actor,
+  private static LoadStateAmp onLoadImpl(StubAmp actor,
                                       InboxAmp inbox,
                                       MessageAmp msg, 
                                       LoadStateActorAmp nextState)
@@ -660,7 +660,7 @@ public enum LoadStateActorAmp implements LoadState
     return pending.onPendingNext(actorBean, msg);
   }
 
-  private static LoadState onActiveImpl(StubAmp actor, 
+  private static LoadStateAmp onActiveImpl(StubAmp actor, 
                                         InboxAmp inbox,
                                         MessageAmp msg, 
                                         LoadStateActorAmp nextState)
@@ -677,7 +677,7 @@ public enum LoadStateActorAmp implements LoadState
     return pending.onPendingNext(actorBean, msg);
   }
   
-  private static class LoadStatePending implements LoadState, Result<Object>
+  private static class LoadStatePending implements LoadStateAmp, Result<Object>
   {
     private LoadStateActorAmp _nextState;
     private ActorAmpState _actor;
@@ -708,7 +708,7 @@ public enum LoadStateActorAmp implements LoadState
     }
     
     @Override
-    public LoadState load(StubAmp actor,
+    public LoadStateAmp load(StubAmp actor,
                           InboxAmp inbox,
                           MessageAmp msg)
     {
@@ -720,7 +720,7 @@ public enum LoadStateActorAmp implements LoadState
     }
 
     @Override
-    public LoadState loadReplay(StubAmp actor, 
+    public LoadStateAmp loadReplay(StubAmp actor, 
                                 InboxAmp inbox, 
                                 MessageAmp msg)
     {
@@ -790,7 +790,7 @@ public enum LoadStateActorAmp implements LoadState
       }
     }
     
-    public LoadState onPendingNext(ActorAmpState actorBean, MessageAmp msg)
+    public LoadStateAmp onPendingNext(ActorAmpState actorBean, MessageAmp msg)
     {
       if (_isComplete) {
         actorBean.setLoadState(getNextState());

@@ -37,7 +37,7 @@ import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
@@ -228,11 +228,11 @@ public interface StubAmp
 
   StubAmp worker(StubAmp stubMessage);
 
-  LoadState load(StubAmp stubMessage, MessageAmp msg);
-  LoadState load(MessageAmp msg);
-  LoadState load(InboxAmp inbox, MessageAmp msg);
-  LoadState loadReplay(InboxAmp inbox, MessageAmp msg);
-  LoadState loadState();
+  LoadStateAmp load(StubAmp stubMessage, MessageAmp msg);
+  LoadStateAmp load(MessageAmp msg);
+  LoadStateAmp load(InboxAmp inbox, MessageAmp msg);
+  LoadStateAmp loadReplay(InboxAmp inbox, MessageAmp msg);
+  LoadStateAmp loadState();
 
   default void onLru(ServiceRefAmp serviceRef)
   {

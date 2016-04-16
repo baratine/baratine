@@ -42,6 +42,9 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.vault.IdAssetGenerator;
+import com.caucho.v5.convert.bean.FieldBase;
+import com.caucho.v5.convert.bean.FieldNull;
+import com.caucho.v5.convert.bean.FieldObject;
 import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.kraken.info.TableInfo;
@@ -49,8 +52,10 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.db.Cursor;
+import io.baratine.service.ServiceException;
 import io.baratine.vault.Asset;
 import io.baratine.vault.IdAsset;
+import io.baratine.vault.LoadStateAsset;
 
 class EntityInfo<ID,T>
 {
@@ -67,6 +72,8 @@ class EntityInfo<ID,T>
   private final String _tableName;
   
   private final FieldInfo<T,?>[] _fields;
+  private final FieldBase<T> _fieldState;
+  
   private Class<T> _type;
   
   private boolean _isDocument;
@@ -103,6 +110,7 @@ class EntityInfo<ID,T>
     }
     
     _fields = introspect();
+    _fieldState = introspectLoadState();
   }
   
   private FieldInfo<T,?> []introspect()
@@ -195,6 +203,17 @@ class EntityInfo<ID,T>
     _idGen = idGen;
     
     return fieldsArray;
+  }
+  
+  private FieldBase<T> introspectLoadState()
+  {
+    for (Field field : _type.getDeclaredFields()) {
+      if (field.getType().equals(LoadStateAsset.class)) {
+        return new FieldObject<>(field);
+      }
+    }
+    
+    return new FieldNull<>();
   }
 
   private boolean isIdTypeMatch(Class<?> repIdType, Class<?> idType)
@@ -416,6 +435,28 @@ class EntityInfo<ID,T>
     return head.toString();
   }
 
+  public String deleteSql()
+  {
+    StringBuilder sql = new StringBuilder();
+    
+    sql.append("delete from ").append(tableName());
+    
+    sql.append(" where ");
+
+    FieldInfo<T,?>[] fields = getFields();
+    boolean isFirst = true;
+
+    for (int i = 0; i < fields.length; i++) {
+      FieldInfo<T,?> field = fields[i];
+
+      if (field.isId()) {
+        sql.append(field.columnName()).append(" = ?");
+      }
+    }
+    
+    return sql.toString();
+  }
+
   public Object[] saveValues(T entity)
   {
     Object []values = new Object[_saveColumns];
@@ -484,17 +525,24 @@ class EntityInfo<ID,T>
   }
 
   public void load(Cursor cursor, T entity)
-    throws IllegalAccessException
   {
-    Objects.requireNonNull(cursor);
-    Objects.requireNonNull(entity);
+    try {
+      Objects.requireNonNull(cursor);
+      Objects.requireNonNull(entity);
     
-    load(cursor, entity, false);
+      load(cursor, entity, false);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw ServiceException.createAndRethrow(e);
+    }
   }
 
   private void load(Cursor cursor, T bean, boolean isInitId)
     throws IllegalAccessException
   {
+    _fieldState.setObject(bean, LoadStateAsset.LOADED);
+    
     int index = 0;
     for (int i = 0; i < _fields.length; i++) {
       FieldInfo<T,?> field = _fields[i];
@@ -519,6 +567,34 @@ class EntityInfo<ID,T>
           field.setValueFromDocument(bean, docMap);
         }
       }
+    }
+  }
+
+  public void loadFail(T entity)
+  {
+    Objects.requireNonNull(entity);
+
+    _fieldState.setObject(entity, LoadStateAsset.UNLOADED);
+  }
+
+  public boolean isDeleting(T entity)
+  {
+    LoadStateAsset state = (LoadStateAsset) _fieldState.getObject(entity);
+    
+    return state != null && state == LoadStateAsset.DELETING;
+  }
+
+  public void delete(T entity)
+  {
+    LoadStateAsset state = (LoadStateAsset) _fieldState.getObject(entity);
+    
+    if (state == null) {
+    }
+    else if (state == LoadStateAsset.DELETING) {
+      _fieldState.setObject(entity, LoadStateAsset.DELETED);
+    }
+    else {
+      throw new IllegalStateException(state.toString());
     }
   }
 

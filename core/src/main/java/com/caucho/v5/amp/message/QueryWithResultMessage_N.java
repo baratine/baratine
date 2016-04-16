@@ -71,15 +71,15 @@ public class QueryWithResultMessage_N<V> extends QueryWithResultMessage<V>
   }
 
   @Override
-  public final void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
+  public final void invokeQuery(InboxAmp inbox, StubAmp stubDeliver)
   {
-    StubAmp actorMessage = serviceRef().stub();
+    StubAmp stubMessage = serviceRef().stub();
 
     // actorDeliver.load(actorService, message)
     //             .query(actorDeliver, actorService, ...)
     // XXX: baratine/9230
-    actorDeliver.load(actorMessage, this)
-                .query(actorDeliver, actorMessage,
+    stubDeliver.load(stubMessage, this)
+                .query(stubDeliver, stubMessage,
                        method(),
                        getHeaders(),
                        this,

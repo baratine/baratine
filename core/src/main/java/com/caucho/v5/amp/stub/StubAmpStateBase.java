@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 
 import io.baratine.service.Result;
@@ -52,7 +52,7 @@ public class StubAmpStateBase extends StubAmpBase implements ActorAmpState
   private PendingMessages _pendingMessages;
   
   @Override
-  public LoadState createLoadState()
+  public LoadStateAmp createLoadState()
   {
     return LoadStateActorAmp.NEW;
   }

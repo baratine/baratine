@@ -39,7 +39,7 @@ import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
@@ -75,7 +75,7 @@ public class StubAmpTrace implements ActorAmpState
   }
   
   @Override
-  public LoadState loadState()
+  public LoadStateAmp loadState()
   {
     return delegate().loadState();
   }
@@ -217,25 +217,25 @@ public class StubAmpTrace implements ActorAmpState
   }
   
   @Override
-  public LoadState load(StubAmp actorMessage, MessageAmp msg)
+  public LoadStateAmp load(StubAmp actorMessage, MessageAmp msg)
   {
     return delegate().load(actorMessage, msg);
   }
   
   @Override
-  public LoadState load(MessageAmp msg)
+  public LoadStateAmp load(MessageAmp msg)
   {
     return delegate().load(msg);
   }
   
   @Override
-  public LoadState load(InboxAmp inbox, MessageAmp msg)
+  public LoadStateAmp load(InboxAmp inbox, MessageAmp msg)
   {
     return delegate().load(inbox, msg);
   }
   
   @Override
-  public LoadState loadReplay(InboxAmp inbox, MessageAmp msg)
+  public LoadStateAmp loadReplay(InboxAmp inbox, MessageAmp msg)
   {
     return delegate().loadReplay(inbox, msg);
   }
@@ -336,7 +336,7 @@ public class StubAmpTrace implements ActorAmpState
   }
 
   @Override
-  public void setLoadState(LoadState state)
+  public void setLoadState(LoadStateAmp state)
   {
     delegateState().setLoadState(state);
   }

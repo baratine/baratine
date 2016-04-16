@@ -36,7 +36,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.message.QueryWithResultMessage;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -91,7 +91,7 @@ public class PipeOutMessage<T>
     
       StubAmp stubMessage = serviceRef().stub();
 
-      LoadState load = stubDeliver.load(stubMessage, this);
+      LoadStateAmp load = stubDeliver.load(stubMessage, this);
       
       load.outPipe(stubDeliver, stubMessage,
                    method,

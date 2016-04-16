@@ -80,11 +80,12 @@ public class VaultDriverDataImpl<ID, T>
   @Inject
   private TableManagerVault _schemaManager;
 
-  private String _saveSql;
   private String _loadSql;
+  private String _saveSql;
+  private String _deleteSql;
 
   private IdReader<ID> _idReader;
-  private ServicesAmp _ampManager;
+  private ServicesAmp _services;
   private TableInfo _tableInfo;
 
   public VaultDriverDataImpl(ServicesAmp ampManager,
@@ -100,9 +101,9 @@ public class VaultDriverDataImpl<ID, T>
     _entityClass = entityClass;
     _idClass = idClass;
 
-    _ampManager = ServicesAmp.current();
+    _services = ServicesAmp.current();
 
-    _db = _ampManager.service("bardb:///")
+    _db = _services.service("bardb:///")
                      .as(DatabaseServiceSync.class);
 
     Objects.requireNonNull(_db);
@@ -134,6 +135,7 @@ public class VaultDriverDataImpl<ID, T>
     
     _saveSql = _entityInfo.saveSql();
     _loadSql = _entityInfo.loadSql();
+    _deleteSql = _entityInfo.deleteSql();
   }
   
   EntityInfo<ID,T> entityInfo()
@@ -172,40 +174,53 @@ public class VaultDriverDataImpl<ID, T>
   {
     if (cursor == null) {
       if (log.isLoggable(Level.FINEST)) {
-        log.finest(L.l("{0} cursor is null", _entityInfo));
+        log.finest(L.l("{0} load returned null", _entityInfo));
       }
+      
+      _entityInfo.loadFail(entity);
 
       return false;
     }
     else {
-      try {
-        // T t = _entityDesc.readObject(c, false);
-        _entityInfo.load(cursor, entity);
-        // _entityDesc.setPk(t, id);
+      _entityInfo.load(cursor, entity);
 
-        if (log.isLoggable(Level.FINER)) {
-          log.finer("loaded " + entity);
-        }
-
-        return true;
-      } catch (ReflectiveOperationException e) {
-        e.printStackTrace();
-        //TODO log.log()
-        throw ServiceException.createAndRethrow(e);
+      if (log.isLoggable(Level.FINER)) {
+        log.finer("loaded " + entity);
       }
+
+      return true;
     }
   }
 
   @Override
   public void save(ID id, T entity, ResultChain<Void> result)
   {
+    if (_entityInfo.isDeleting(entity)) {
+      delete(id, entity, result);
+      return;
+    }
+    
     if (log.isLoggable(Level.FINER)) {
       log.finer("saving entity " + entity);
     }
 
     Object[] values = _entityInfo.saveValues(entity);
+    _db.exec(_saveSql, Result.ignore(), values);
+    
+    result.ok(null);
+  }
 
-    _db.exec(_saveSql, result.of(o -> { return null; }), values);
+  private void delete(ID id, T entity, ResultChain<Void> result)
+  {
+    if (log.isLoggable(Level.FINER)) {
+      log.finer("deleting entity " + entity);
+    }
+
+    _db.exec(_deleteSql, Result.ignore(), _entityInfo.id().toParam(id));
+    
+    _entityInfo.delete(entity);
+    
+    result.ok(null);
   }
 
   @Override
@@ -284,7 +299,7 @@ public class VaultDriverDataImpl<ID, T>
       return null;
     }
 
-    ServiceRef ref = _ampManager.service(toAddress(id));
+    ServiceRef ref = _services.service(toAddress(id));
 
     return ref.as(_entityClass);
   }
@@ -296,7 +311,7 @@ public class VaultDriverDataImpl<ID, T>
       return null;
     }
 
-    ServiceRefAmp ref = (ServiceRefAmp) _ampManager.service(toAddress(id));
+    ServiceRefAmp ref = (ServiceRefAmp) _services.service(toAddress(id));
 
     return ref;
   }
@@ -420,7 +435,7 @@ public class VaultDriverDataImpl<ID, T>
   {
     String address = _entityInfo.generateAddress(id);
 
-    return _ampManager.service(address).as(_entityClass);
+    return _services.service(address).as(_entityClass);
   }
 
   /**

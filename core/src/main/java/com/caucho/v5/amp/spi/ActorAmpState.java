@@ -50,7 +50,7 @@ public interface ActorAmpState extends StubAmp
   boolean isJournalReplay();
   void queuePendingReplayMessage(MessageAmp msg);
   void queuePendingMessage(MessageAmp msg);
-  void setLoadState(LoadState state);
+  void setLoadState(LoadStateAmp state);
   void deliverPendingMessages(InboxAmp inbox);
   void deliverPendingReplay(InboxAmp inbox);
   boolean onSaveStartImpl(Result<Boolean> addBean);

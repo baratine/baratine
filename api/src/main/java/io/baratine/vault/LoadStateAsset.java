@@ -24,30 +24,63 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.amp.spi;
-
-import com.caucho.v5.amp.stub.StubAmp;
+package io.baratine.vault;
 
 /**
- * State/dispatch for a loadable actor.
+ * Asset load state. Used by assets to communicate with the Vault driver
+ * about asset loading.
+ * 
+ * Assets with a "state" field and AssetState type are injected
+ * with the correct state.
  */
-public class LoadStateLoadBase implements LoadStateAmp
+public enum LoadStateAsset
 {
-  public static final LoadStateLoadBase LOAD = new LoadStateLoadBase();
+  UNKNOWN {
+    
+  },
+  // after @OnLoad, but the load had no data
+  UNLOADED {
+    
+  },
+  LOADED {
+    @Override
+    public void requireLoad() {}
+    
+    @Override
+    public LoadStateAsset create()
+    {
+      throw new IllegalStateException(toString());
+    }
+  },
+  DELETING,
+  DELETED;
   
-  @Override
-  public LoadStateAmp load(StubAmp actor,
-                        InboxAmp inbox,
-                        MessageAmp msg)
+  /**
+   * Require the asset to be loaded.
+   */
+  public void requireLoad()
   {
-    return this;
+    throw new IllegalStateException(toString());
+  }
+  
+  /**
+   * Creates an asset.
+   * 
+   * Throws an IllegalStateException if the asset is already loaded.
+   */
+  public LoadStateAsset create()
+  {
+    return LOADED;
   }
 
-  @Override
-  public void onModify(StubAmp  actorAmpBase)
+  /**
+   * Marks the object at to be deleted in the next @OnState.
+   */
+  public LoadStateAsset delete()
   {
+    return DELETING;
   }
 }

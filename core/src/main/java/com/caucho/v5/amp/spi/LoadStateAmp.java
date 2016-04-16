@@ -44,13 +44,13 @@ import io.baratine.stream.ResultStream;
 /**
  * State/dispatch for a loadable actor.
  */
-public interface LoadState
+public interface LoadStateAmp
 {
-  LoadState load(StubAmp actor,
+  LoadStateAmp load(StubAmp actor,
                  InboxAmp inbox,
                  MessageAmp msg);
   
-  default LoadState loadReplay(StubAmp actor,
+  default LoadStateAmp loadReplay(StubAmp actor,
                                InboxAmp inbox,
                                MessageAmp msg)
   {

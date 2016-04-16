@@ -46,17 +46,19 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
-import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.ShimConverter;
+import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.convert.bean.FieldBean;
 import com.caucho.v5.convert.bean.FieldBeanFactory;
+import com.caucho.v5.convert.bean.FieldNull;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.vault.Id;
+import io.baratine.vault.LoadStateAsset;
 
 public class VaultDriverBase<ID,T>
   implements VaultDriver<ID,T>
@@ -74,6 +76,7 @@ public class VaultDriverBase<ID,T>
   private String _prefix;
   
   private FieldBean<T> _idField;
+  private FieldBean<T> _stateField;
 
   public VaultDriverBase(ServicesAmp ampManager,
                          Class<T> assetClass,
@@ -96,6 +99,7 @@ public class VaultDriverBase<ID,T>
     _prefix = address + "/";
     
     _idField = introspectId(assetClass);
+    _stateField = introspectState(assetClass);
     
     if (_idField == null && ! Void.class.equals(idClass)) {
       throw new VaultException(L.l("Missing @Id for asset '{0}'",
@@ -121,6 +125,25 @@ public class VaultDriverBase<ID,T>
         return FieldBeanFactory.get(field);
       }
       else if (field.getName().equals("_id")) {
+        return FieldBeanFactory.get(field);
+      }
+    }
+    
+    return introspectId(assetClass.getSuperclass());
+  }
+  
+  private FieldBean<T> introspectState(Class<?> assetClass)
+  {
+    if (assetClass == null) {
+      return new FieldNull<>();
+    }
+    
+    for (Field field : assetClass.getDeclaredFields()) {
+      if (Modifier.isStatic(field.getModifiers())) {
+        continue;
+      }
+      
+      if (field.getType().equals(LoadStateAsset.class)) {
         return FieldBeanFactory.get(field);
       }
     }
@@ -242,10 +265,10 @@ public class VaultDriverBase<ID,T>
       MethodAmp methodAmp;
    
       if (valueRef.rawClass().equals(_idField.field().getType())) {
-        methodAmp = new MethodAmpCreateDTO<>(transfer, _idField);
+        methodAmp = new MethodAmpCreateDTO<>(transfer, _idField, _stateField);
       }
       else {
-        methodAmp = new MethodAmpCreateDTO<>(transfer, null);
+        methodAmp = new MethodAmpCreateDTO<>(transfer, null, _stateField);
       }
     
       return new MethodVaultCreateDTO<S>(_ampManager, idGen, 
@@ -272,6 +295,10 @@ public class VaultDriverBase<ID,T>
   {
     try {
       return _assetClass.getMethod(source.getName(), source.getParameterTypes());
+    } catch (NoSuchMethodException e) {
+      log.log(Level.ALL, e.toString(), e);
+      
+      return null;
     } catch (Exception e) {
       log.log(Level.FINER, e.toString(), e);
       
@@ -421,14 +448,18 @@ public class VaultDriverBase<ID,T>
   {
     private ShimConverter<T,S> _transfer;
     private FieldBean<T> _idField;
+    private FieldBean<T> _stateField;
     
     MethodAmpCreateDTO(ShimConverter<T,S> transfer,
-                       FieldBean<T> idField)
+                       FieldBean<T> idField,
+                       FieldBean<T> stateField)
     {
       Objects.requireNonNull(transfer);
+      Objects.requireNonNull(stateField);
       
       _transfer = transfer;
       _idField = idField;
+      _stateField = stateField;
     }
     
     @Override
@@ -442,8 +473,14 @@ public class VaultDriverBase<ID,T>
       
       Objects.requireNonNull(asset);
       Objects.requireNonNull(transfer);
+
+      LoadStateAsset state = (LoadStateAsset) _stateField.getObject(asset);
       
       _transfer.toAsset(asset, transfer);
+      
+      if (state != null) {
+        _stateField.setObject(asset, state.create());
+      }
       
       stub.onModify();
       

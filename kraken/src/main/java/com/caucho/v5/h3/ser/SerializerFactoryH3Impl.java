@@ -66,7 +66,14 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
       return (SerializerH3Amp) MAP;
     }
     else if (Enum.class.isAssignableFrom(type)) {
-      return new SerializerH3Enum(type);
+      Class<?> parent = type.getEnclosingClass();
+      
+      if (parent != null && Enum.class.isAssignableFrom(parent)) {
+        return new SerializerH3Enum(parent);
+      }
+      else {
+        return new SerializerH3Enum(type);
+      }
     }
     else if (type.isArray()) {
       throw new UnsupportedOperationException(String.valueOf(type));

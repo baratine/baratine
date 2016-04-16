@@ -34,7 +34,7 @@ import java.util.Objects;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -75,7 +75,7 @@ public final class StubJournal extends StubAmpBase
   }
   
   @Override
-  public LoadState loadState()
+  public LoadStateAmp loadState()
   {
     return _loadState;
   }
@@ -95,13 +95,13 @@ public final class StubJournal extends StubAmpBase
   */
   
   @Override
-  public LoadState load(StubAmp actorMessage, MessageAmp msg)
+  public LoadStateAmp load(StubAmp actorMessage, MessageAmp msg)
   {
     return loadState();
   }
   
   @Override
-  public LoadState load(MessageAmp msg)
+  public LoadStateAmp load(MessageAmp msg)
   {
     return loadState();
   }

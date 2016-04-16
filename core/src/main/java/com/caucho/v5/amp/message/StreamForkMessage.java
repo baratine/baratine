@@ -35,7 +35,7 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadState;
+import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -120,7 +120,7 @@ public class StreamForkMessage<T>
     
       StubAmp actorMessage = serviceRef().stub();
 
-      LoadState load = actorDeliver.load(actorMessage, this);
+      LoadStateAmp load = actorDeliver.load(actorMessage, this);
     
       load.stream(actorDeliver, actorMessage,
                   method,
