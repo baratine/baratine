@@ -146,7 +146,7 @@ abstract public class SocketBar implements Closeable
    */
   abstract public int portRemote();
 
-  public void setTcpNoDelay(boolean value)
+  public void tcpNoDelay(boolean value)
     throws SocketException
   {
   }

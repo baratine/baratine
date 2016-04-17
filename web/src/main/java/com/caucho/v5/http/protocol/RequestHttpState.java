@@ -63,31 +63,36 @@ public class RequestHttpState implements ConnectionProtocol
   
   private InvocationBaratine _invocation;
 
-  private RequestUpgrade _upgrade;
+  //private RequestUpgrade _upgrade;
   
   private StateHttpEnum _state = StateHttpEnum.IDLE;
   
   //private RequestHttpState _next;
   //private RequestHttpState _prev;
   private long _sequenceRead;
-  private long _sequence;
+  //private long _sequence;
 
   public RequestHttpState(ProtocolHttp protocolHttp)
   {
     Objects.requireNonNull(protocolHttp);
     
+    _requestHttp = createRequest(protocolHttp);
+    
+    //ProtocolHttp protocolHttp)
+    //Objects.requireNonNull(protocolHttp);
+    
       // _connHttp = connHttp;
     
-    _requestHttp = new RequestHttp(protocolHttp, this);
+    //_requestHttp = new RequestHttp(protocolHttp, this);
     //if (true) throw new UnsupportedOperationException();
     
     //RequestHttpBase requestHttp = null;
     //_requestHttp = requestHttp;
   }
   
-  public static String dorp()
+  protected RequestHttpBase createRequest(ProtocolHttp protocolHttp)
   {
-    return "dorp";
+    return new RequestHttp(protocolHttp, this);
   }
 
   public void init(ConnectionHttp connHttp)
@@ -206,10 +211,15 @@ public class RequestHttpState implements ConnectionProtocol
         
         _state = _state.toIdle();
         
-        connHttp().requestComplete(this, false);
-        connHttp().protocol().requestFree(this);
-        
-        return StateConnection.CLOSE;
+        if (connHttp().request() == this) {
+          connHttp().requestComplete(this, false);
+          connHttp().protocol().requestFree(this);
+          return StateConnection.CLOSE;
+        }
+        else {
+          connHttp().protocol().requestFree(this);
+          return StateConnection.READ;
+        }
       }
       
       // sequence used for write ordering 
@@ -228,7 +238,8 @@ public class RequestHttpState implements ConnectionProtocol
       
       StateConnection nextState = _invocation.service(_request);
       
-      ServiceRef.flushOutboxAndExecuteLast();
+      //ServiceRef.flushOutboxAndExecuteLast();
+      ServiceRef.flushOutbox();
       
       if (! _state.isBodyComplete()) {
         return StateConnection.READ;
@@ -472,7 +483,7 @@ public class RequestHttpState implements ConnectionProtocol
     InvocationBaratine invocation = _invocation;
     
     if (invocation != null) {
-      return getClass().getSimpleName() + "[" + invocation.getURI() + "]";
+      return getClass().getSimpleName() + "[" + invocation.uri() + "]";
     }
     else {
       return getClass().getSimpleName() + "[null]";

@@ -142,7 +142,7 @@ public class SocketChannelWrapperBar extends SocketBar
   }
   
   @Override
-  public void setTcpNoDelay(boolean isNoDelay)
+  public void tcpNoDelay(boolean isNoDelay)
     throws SocketException
   {
     try {

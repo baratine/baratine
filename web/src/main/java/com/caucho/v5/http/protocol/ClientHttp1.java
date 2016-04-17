@@ -154,7 +154,7 @@ public class ClientHttp1 implements AutoCloseable
       socket.setSoTimeout((int) _socketTimeout);
     }
     
-    socket.setTcpNoDelay(true);
+    socket.tcpNoDelay(true);
     
     StreamImpl sockStream = _socket.stream();
     

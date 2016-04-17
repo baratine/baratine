@@ -32,7 +32,6 @@ package com.caucho.v5.http.protocol;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.network.port.ConnectionTcp;
 
 import io.baratine.io.Buffer;
@@ -65,6 +64,7 @@ class OutHttpProxyImpl implements OutHttpProxy
                     Buffer buffer, 
                     boolean isEnd)
   {
+    System.out.println("WR: " + out);
     if (out.canWrite(_connHttp.sequenceWrite() + 1)) {
       _isClose = out.write(conn().writeStream(), buffer, isEnd);
       

@@ -43,12 +43,12 @@ public class SettingsHttp
     return _streamConcurrentMax;
   }
   
-  public int getInitialWindowSize()
+  public int initialWindowSize()
   {
     return _initialWindowSize;
   }
 
-  public void setInitialWindowSize(int window)
+  public void initialWindowSize(int window)
   {
     if (window <= 0) {
       throw new IllegalArgumentException(String.valueOf(window));

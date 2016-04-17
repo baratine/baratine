@@ -80,19 +80,19 @@ public class ChannelFlowHttp2
     _sendCredit += credit;
   }
 
-  public void onData(int length, ConnectionHttp2 conn, int streamId)
+  public void onData(int length, ConnectionHttp2Int conn, int streamId)
   {
     addReceive(length);
     
     int credit = getReceiveCredit();
     
-    int window = conn.getInHttp().getSettings().getInitialWindowSize();
+    int window = conn.inHttp().getSettings().initialWindowSize();
     int delta = window - credit;
     
     if (delta >= 8192 || window <= 2 * delta) {
       addReceiveCredit(delta);
       
-      conn.getOutHttp().flow(streamId, delta);
+      conn.outHttp().flow(streamId, delta);
     }
   }
   

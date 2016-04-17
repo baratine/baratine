@@ -27,13 +27,11 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.vfs;
+package com.caucho.v5.io;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.io.OutputStream;
 import java.util.Objects;
-
-import com.caucho.v5.io.StreamImpl;
 
 /**
  * This is the service provider's interface for a stream supported by
@@ -42,10 +40,10 @@ import com.caucho.v5.io.StreamImpl;
 public class StreamImplTee extends StreamImpl
 {
   private StreamImpl _delegate;
-  private StreamImpl _logStream;
+  private OutputStream _logStream;
   
   public StreamImplTee(StreamImpl delegate,
-                       StreamImpl logStream)
+                       OutputStream logStream)
   {
     Objects.requireNonNull(delegate);
     Objects.requireNonNull(logStream);
@@ -59,7 +57,7 @@ public class StreamImplTee extends StreamImpl
     return _delegate;
   }
   
-  public StreamImpl getLogStream()
+  public OutputStream logStream()
   {
     return _logStream;
   }
@@ -129,7 +127,7 @@ public class StreamImplTee extends StreamImpl
     int sublen = getDelegate().read(buffer, offset, length);
     
     if (sublen > 0) {
-      getLogStream().write(buffer, offset, sublen, false);
+      logStream().write(buffer, offset, sublen);
     }
     
     return sublen;
@@ -151,7 +149,7 @@ public class StreamImplTee extends StreamImpl
     int sublen = getDelegate().readTimeout(buffer, offset, length, 0);
     
     if (sublen > 0) {
-      getLogStream().write(buffer, offset, sublen, false);
+      logStream().write(buffer, offset, sublen);
     }
     
     return sublen;
@@ -174,7 +172,7 @@ public class StreamImplTee extends StreamImpl
     int sublen = getDelegate().readTimeout(buffer, offset, length, timeout);
     
     if (sublen > 0) {
-      getLogStream().write(buffer, offset, sublen, false);
+      logStream().write(buffer, offset, sublen);
     }
     return sublen;
   }
@@ -247,7 +245,7 @@ public class StreamImplTee extends StreamImpl
   {
       getDelegate().write(buffer, offset, length, isEnd);
       
-      getLogStream().write(buffer, offset, length, false);
+      logStream().write(buffer, offset, length);
   }
 
   /**
@@ -310,7 +308,7 @@ public class StreamImplTee extends StreamImpl
   {
     getDelegate().flushBuffer();
     
-    getLogStream().flushBuffer();
+    logStream().flush();
   }
 
   /**
@@ -321,7 +319,7 @@ public class StreamImplTee extends StreamImpl
   {
     getDelegate().flush();
     
-    getLogStream().flush();
+    logStream().flush();
   }
 
   /**
@@ -332,7 +330,7 @@ public class StreamImplTee extends StreamImpl
   {
     getDelegate().flushToDisk();
     
-    getLogStream().flush();
+    logStream().flush();
   }
 
   /**
@@ -464,7 +462,7 @@ public class StreamImplTee extends StreamImpl
   {
     getDelegate().closeWrite();
     
-    getLogStream().close();
+    logStream().close();
   }
   
   /**
@@ -484,6 +482,6 @@ public class StreamImplTee extends StreamImpl
   {
     getDelegate().close();
     
-    getLogStream().close();
+    logStream().close();
   }
 }

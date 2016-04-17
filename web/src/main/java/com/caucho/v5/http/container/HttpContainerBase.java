@@ -204,7 +204,7 @@ public class HttpContainerBase<I extends Invocation> implements HttpContainer
   /**
    * Gets the server header.
    */
-  public String getServerHeader()
+  public String serverHeader()
   {
     return _serverHeader;
   }

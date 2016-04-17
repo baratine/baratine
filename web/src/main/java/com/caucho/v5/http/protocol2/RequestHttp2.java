@@ -40,20 +40,23 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.health.shutdown.Shutdown;
 import com.caucho.v5.http.container.HttpContainer;
-import com.caucho.v5.http.dispatch.Invocation;
 import com.caucho.v5.http.protocol.OutResponseBase;
 import com.caucho.v5.http.protocol.ProtocolHttp;
 import com.caucho.v5.http.protocol.RequestHttp;
 import com.caucho.v5.http.protocol.RequestHttpBase;
+import com.caucho.v5.http.protocol.RequestHttpState;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.port.ConnectionTcp;
+import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.ByteArrayBuffer;
 import com.caucho.v5.util.CharBuffer;
 import com.caucho.v5.util.CharSegment;
 import com.caucho.v5.util.CurrentTime;
+import com.caucho.v5.web.webapp.InvocationBaratine;
 import com.caucho.v5.web.webapp.RequestBaratine;
+import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
 import io.baratine.io.Buffer;
 
@@ -99,7 +102,7 @@ public class RequestHttp2
 
   private String _scheme;
 
-  private Invocation _invocation;
+  private InvocationBaratine _invocation;
 
   private AtomicReference<StateRequest> _stateRef = new AtomicReference<>(StateRequest.ACTIVE);
   
@@ -109,22 +112,26 @@ public class RequestHttp2
 
   private InStreamImpl _inStream;
 
-  private final RequestProtocolHttp2 _protocolHttp2 ;
+  private final ConnectionHttp2 _connHttp2 ;
 
   private final ChannelHttp2 _channel;
 
   private final StringBuilder _cb = new StringBuilder();
 
+  private ConnectionTcp _connTcp;
+
   public RequestHttp2(ProtocolHttp httpProtocol,
                       ConnectionTcp conn,
                       HttpContainer httpContainer,
-                      RequestProtocolHttp2 protocol)
+                      ConnectionHttp2 connHttp)
   {
     super(httpProtocol); //, conn, null); // XXX: null should be connHttp
 
-    _protocolHttp2 = protocol;
+    System.out.println("REQ: " + this);
+    _connHttp2 = connHttp;
     _httpContainer = httpContainer;
-
+    
+    _connTcp = conn;
     //_errorManager = new ErrorPageManager(httpContainer);
 
     _uri = new ByteArrayBuffer();
@@ -149,6 +156,10 @@ public class RequestHttp2
     _channel = new ChannelHttp2(this);
     
     _inStream = new InStreamImpl();
+    
+    init(connHttp);
+    
+    System.out.println("CNN: " + connHttp());
   }
   /*
   @Override
@@ -160,7 +171,17 @@ public class RequestHttp2
   @Override
   public boolean isSecure()
   {
-    return getConnection().socket().isSecure();
+    return connTcp().isSecure();
+  }
+  
+  private ConnectionTcp connTcp()
+  {
+    return _connTcp;
+  }
+  
+  private ConnectionHttp2 connHttp2()
+  {
+    return _connHttp2;
   }
   
   /*
@@ -211,8 +232,9 @@ public class RequestHttp2
     return getChannel().getId();
   }
 
-  public void init(RequestProtocolHttp2 reqHttp)
+  public void init(ConnectionHttp2 reqHttp)
   {
+    //super.init(reqHttp);
     // _streamId = streamId;
     // _conn = conn;
     // _outHttp = outHttp; // reqHttp.getOut();
@@ -230,8 +252,8 @@ public class RequestHttp2
   
   public void fillUpgrade(RequestHttp requestHttp)
   {
-    header(":method", requestHttp.getMethod());
-    String host = requestHttp.getHeader("Host");
+    header(":method", requestHttp.method());
+    String host = requestHttp.header("Host");
     if (host != null) {
       header(":authority", host);
     }
@@ -245,7 +267,7 @@ public class RequestHttp2
     
     for (int i = 0; i < headerSize; i++) {
       String key = requestHttp.getHeaderKey(i).toString();
-      String value = requestHttp.getHeader(key);
+      String value = requestHttp.header(key);
       
       header(key, value);
     }
@@ -326,14 +348,38 @@ public class RequestHttp2
       // startRequest();
       // startInvocation();
     
-      _invocation = getInvocation(getHost(),
+      _invocation = invocation(getHost(),
                                  _uri.getBuffer(), _uri.getLength());
 
-      //request().setInvocation(_invocation);
-      if (true) throw new UnsupportedOperationException();
+      System.out.println("CONN: " + connHttp2());
+      System.out.println("  PRO: " + connHttp2().protocol());
+      RequestHttpState reqState = connHttp2().newRequestHttp();
+      System.out.println("  REQ: " + reqState.requestHttp());
+      RequestBaratineImpl request = (RequestBaratineImpl) connHttp2().protocol().newRequest(connHttp2());
       
-      // XXX: needs to be throttled
-      ThreadPool.current().execute(this);
+      request.init(reqState);
+      reqState.onAccept();
+      
+      //request.init(this);
+      
+      /*
+      if (_state.isBodyComplete()) {
+        _request.bodyComplete();
+      }
+      else if (! requestHttp().isUpgrade()) {
+        _requestHttp.readBodyChunk();
+      }
+      */
+      request.bodyComplete();
+      
+      
+      
+      StateConnection nextState = _invocation.service(request);
+      System.out.println("INV: " + _invocation);
+      //request().setInvocation(_invocation);
+      
+      //// XXX: needs to be throttled
+      //ThreadPool.current().execute(this);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -487,7 +533,7 @@ public class RequestHttp2
    * Returns the header.
    */
   @Override
-  public String getMethod()
+  public String method()
   {
     return _method;
   }
@@ -533,7 +579,7 @@ public class RequestHttp2
    * Returns the header.
    */
   @Override
-  public String getHeader(String key)
+  public String header(String key)
   {
     CharSegment buf = getHeaderBuffer(key);
     if (buf != null)
@@ -755,7 +801,7 @@ public class RequestHttp2
   public void closeDispatch()
   {
     if (_stateRef.get().closeDispatch(_stateRef)) {
-      _protocolHttp2.freeRequest(this);
+      _connHttp2.freeRequest(this);
     }
   }
 
@@ -763,7 +809,7 @@ public class RequestHttp2
   public void closeChannel()
   {
     if (_stateRef.get().closeChannel(_stateRef)) {
-      _protocolHttp2.freeRequest(this);
+      _connHttp2.freeRequest(this);
     }
   }
   @Override
@@ -916,7 +962,12 @@ public class RequestHttp2
     
     String id;
     
-    id = http.getServerDisplayName();
+    if (http != null) {
+      id = http.getServerDisplayName();
+    }
+    else {
+      id = "";
+    }
     
     int streamId = 0;
 

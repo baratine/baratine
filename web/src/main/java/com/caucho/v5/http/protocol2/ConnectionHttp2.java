@@ -29,185 +29,179 @@
 
 package com.caucho.v5.http.protocol2;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.IOException;
+import java.util.Objects;
 
-import com.caucho.v5.io.ReadStream;
-import com.caucho.v5.io.WriteStream;
+import com.caucho.v5.http.container.HttpContainer;
+import com.caucho.v5.http.protocol.ConnectionHttp;
+import com.caucho.v5.http.protocol.ProtocolHttp;
+import com.caucho.v5.http.protocol.RequestHttp;
+import com.caucho.v5.io.SocketBar;
+import com.caucho.v5.network.port.ConnectionTcp;
+import com.caucho.v5.network.port.StateConnection;
+import com.caucho.v5.util.FreeRing;
+
 
 /**
- * InputStreamHttp reads a single HTTP frame.
+ * Duplex connection handler for HTTP.
  */
-public class ConnectionHttp2
+public class ConnectionHttp2 extends ConnectionHttp
+  implements InHttpHandler
 {
-  private final InHttp _inHttp;
-  private final OutHttp _outHttp;
-  private final PeerHttp _peer;
+  private final ProtocolHttp _httpProtocol;
+  private final HttpContainer _httpContainer;
+  private final ConnectionHttp2Int _conn;
+  private ConnectionTcp _connTcp;
   
-  private ChannelFlowHttp2 _channel0;
-  
-  private ConcurrentHashMap<Integer,ChannelHttp2> _channelMap
-    = new ConcurrentHashMap<>();
-    
-  private AtomicInteger _channelCount = new AtomicInteger();
-  private InHttpHandler _inHandler;
-  
-  public ConnectionHttp2(InHttpHandler handler, PeerHttp peer)
+  private FreeRing<RequestHttp2> _freeRequest = new FreeRing<>(8);
+
+  public ConnectionHttp2(ProtocolHttp protocolHttp,
+                         HttpContainer httpContainer,
+                         ConnectionTcp connTcp)
   {
-    _inHandler = handler;
+    super(protocolHttp, connTcp, 0);
     
-    _inHttp = new InHttp(this, handler);
-    _outHttp = new OutHttp(this, peer);
+    Objects.requireNonNull(protocolHttp);
+    Objects.requireNonNull(httpContainer);
+    Objects.requireNonNull(connTcp);
     
-    _channel0 = new ChannelFlowHttp2();
+    _httpProtocol = protocolHttp;
+    _httpContainer = httpContainer;
+    _connTcp = connTcp;
     
-    _peer = peer;
+    _conn = new ConnectionHttp2Int(this, PeerHttp.SERVER);
+  }
+  
+  OutHttp getOut()
+  {
+    return _conn.outHttp();
   }
 
-  /**
-   * Constructor for testing.
-   */
-  public ConnectionHttp2(PeerHttp peer)
+  // @Override
+  public void onStart() throws IOException
   {
-    this(new DummyHandler(), peer);
-  }
-  
-  public PeerHttp getPeer()
-  {
-    return _peer;
+    _conn.init(_connTcp.readStream(), _connTcp.writeStream());
+    
+    InHttp inHttp = _conn.inHttp();
+    OutHttp outHttp = _conn.outHttp();
+    
+    inHttp.readSettings();
+    outHttp.updateSettings(inHttp.peerSettings());
+    outHttp.writeSettings(inHttp.getSettings());
+    outHttp.flush();
   }
 
-  public InHttp getInHttp()
+  public void onStartUpgrade(RequestHttp requestHttp)
+    throws IOException
   {
-    return _inHttp;
+    InHttp inHttp = _conn.inHttp();
+    OutHttp outHttp = _conn.outHttp();
+
+    System.out.println("START-UPGRADE: " + this);
+    if (true) throw new UnsupportedOperationException();
+    //inHttp.init(_connTcp.getReadStream());
+    outHttp.init(_connTcp.writeStream());
+    
+    // _inHttp.readSettings(); // settings from request
+    
+    outHttp.updateSettings(inHttp.peerSettings());
+    outHttp.writeSettings(inHttp.getSettings());
+    outHttp.flush();
+
+    boolean isEndStream = true;
+    
+    InRequest inRequest = inHttp.openInitialHeader(isEndStream);
+    
+    RequestHttp2 reqHttp2 = (RequestHttp2) inRequest;
+    
+    reqHttp2.fillUpgrade(requestHttp);
+    
+    reqHttp2.dispatch();
+  }
+  
+  public ConnectionTcp connTcp()
+  {
+    return _connTcp;
+  }
+  
+  public SocketBar socket()
+  {
+    return connTcp().socket();
   }
 
-  public OutHttp getOutHttp()
+  @Override
+  public StateConnection service() throws IOException
   {
-    return _outHttp;
-  }
-  
-  public void init(ReadStream is, WriteStream os)
-  {
-    getOutHttp().init(os);
-    getInHttp().init(is);
-    
-    _channel0.init();
-    
-    _channelCount.set(1);
-  }
-  
-  public void init(ReadStream is)
-  {
-    getInHttp().init(is);
-    
-    _channel0.init();
-    
-    _channelCount.set(1);
-  }
-  
-  public void init(WriteStream os)
-  {
-    getOutHttp().init(os);
-    
-    _channel0.init();
-    
-    _channelCount.set(1);
-  }
-  
-  public ChannelFlowHttp2 getChannelZero()
-  {
-    return _channel0;
-  }
-  
-  public ChannelHttp2 getChannel(int streamId)
-  {
-    return _channelMap.get(streamId);
-  }
-  
-  public void putChannel(int streamId, ChannelHttp2 channel)
-  {
-    if (_channelCount.get() == 0) {
-      throw new IllegalStateException();
+    System.out.println("SERVICE: " + this);
+    if (! _conn.inHttp().onDataAvailable()) {
+      return StateConnection.CLOSE;
     }
-    
-    _channelMap.put(streamId, channel);
-    
-    if (_channelCount.get() == 0) {
-      throw new IllegalStateException();
+    else if (_conn.isClosed()) {
+      return StateConnection.CLOSE;
     }
-    
-    _channelCount.incrementAndGet();
-  }
-
-  public void onStreamOutClose()
-  {
-    InHttp inHttp = _inHttp;
-    
-    if (inHttp != null) {
-      if (inHttp.onCloseStream() <= 0) {
-        _outHttp.close();
-      }
-    }
-  }
-  
-  void onReadGoAway()
-  {
-    _channelCount.decrementAndGet();
-
-    if (isClosed()) {
-      _outHttp.close();
-      //_inHandler.onGoAway();
-    }
-  }
-  
-  void onWriteGoAway()
-  {
-    _inHandler.onGoAway();
-  }
-
-  void closeStream(int streamId)
-  {
-    _channelMap.remove(streamId);
-    _channelCount.decrementAndGet();
-    
-    if (isClosed()) {
-      _outHttp.close();
-      //_inHandler.onGoAway();
+    else {
+      return StateConnection.READ;
     }
   }
 
-  public boolean isClosed()
+  /*
+  @Override
+  public void onCloseRead()
   {
-    return _channelCount.get() == 0;
-  }
+    super.onCloseRead();
 
-  /**
-   * Called when the socket read is complete.
-   */
-  public void closeRead()
-  {
+    _conn.closeRead();
   }
-
-  public void closeWrite()
+  
+  @Override
+  public void onCloseConnection()
   {
+    super.onCloseConnection();
     
   }
 
-  /**
-   * Dummy handler for QA.
-   */
-  private static class DummyHandler implements InHttpHandler {
-    @Override
-    public InRequest newRequest()
-    {
-      return null;
-    }
+  @Override
+  public void onTimeout()
+  {
+    // System.out.println("TIMEOUT: " + context);
+  }
+  */
 
-    @Override
-    public void onGoAway()
-    {
+  @Override
+  public InRequest newInRequest()
+  {
+    RequestHttp2 request = _freeRequest.allocate();
+    
+    if (request == null) {
+      request = new RequestHttp2(_httpProtocol,
+                                 connTcp(),
+                                 _httpContainer,
+                                 this);
     }
     
+    //OutChannelHttp2 stream = request.getStreamOut();
+    //stream.init(streamId, _outHttp);
+    
+    request.init(this); // , _outHttp);
+    
+    return request;
+  }
+  
+  void freeRequest(RequestHttp2 request)
+  {
+    _freeRequest.free(request);
+  }
+
+  /*
+  public OutChannelHttp2 getStream()
+  {
+    return _stream;
+  }
+  */
+  
+  @Override
+  public void onGoAway()
+  {
+    // try { Thread.sleep(1000); } catch (Exception e) {}
   }
 }

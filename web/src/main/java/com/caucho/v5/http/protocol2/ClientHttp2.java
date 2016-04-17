@@ -30,8 +30,8 @@
 package com.caucho.v5.http.protocol2;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -44,10 +44,12 @@ import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.SocketSystem;
 import com.caucho.v5.io.StreamImpl;
+import com.caucho.v5.io.StreamImplTee;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.ssl.OpenSSLClientFactory;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
 
 /**
@@ -58,13 +60,13 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   private static final L10N L = new L10N(ClientHttp2.class);
   private static final Logger log = Logger.getLogger(ClientHttp2.class.getName());
   
-  private final ConnectionHttp2 _conn;
+  private final ConnectionHttp2Int _conn;
   
   private InHttp _inHttp;
   private OutHttp _outHttp;
   
-  private Path _logPathIn;
-  private Path _logPathOut;
+  private OutputStream _logIn;
+  private OutputStream _logOut;
   
   private SocketBar _socket;
   private ReadStream _is;
@@ -87,20 +89,20 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   
   public ClientHttp2()
   {
-    _conn = new ConnectionHttp2(this, PeerHttp.CLIENT);
+    _conn = new ConnectionHttp2Int(this, PeerHttp.CLIENT);
   
-    _inHttp = _conn.getInHttp();
-    _outHttp = _conn.getOutHttp();
+    _inHttp = _conn.inHttp();
+    _outHttp = _conn.outHttp();
   }
   
-  public void setLogOut(Path logOutPath)
+  public void logOut(OutputStream logOut)
   {
-    _logPathOut = logOutPath;
+    _logOut = logOut;
   }
   
-  public void setLogIn(Path logInPath)
+  public void logIn(OutputStream logIn)
   {
-    _logPathIn = logInPath;
+    _logIn = logIn;
   }
   
   public void setSocketTimeout(long ms)
@@ -170,36 +172,26 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
       socket.setSoTimeout((int) _socketTimeout);
     }
     
-    socket.setTcpNoDelay(true);
+    socket.tcpNoDelay(true);
     
     StreamImpl sockStream = _socket.stream();
     
     StreamImpl inStream;
     StreamImpl outStream;
     
-    /*
-    if (_logPathIn != null) {
-      StreamImpl logIn = _logPathIn.openWriteImpl();
-      
-      inStream = new StreamImplTee(sockStream, logIn);
+    if (_logIn != null) {
+      inStream = new StreamImplTee(sockStream, _logIn);
     }
     else {
       inStream = sockStream;
     }
-    */
-    inStream = sockStream;
 
-    /*
-    if (_logPathOut != null) {
-      StreamImpl logOut = _logPathOut.openWriteImpl();
-      
-      outStream = new StreamImplTee(sockStream, logOut);
+    if (_logOut != null) {
+      outStream = new StreamImplTee(sockStream, _logOut);
     }
     else {
       outStream = sockStream;
     }
-    */
-    outStream = sockStream;
     
     ReadStream is = new ReadStream(inStream);
     WriteStream os = new WriteStream(outStream);
@@ -214,9 +206,9 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
     _is = is;
     _os = os;
     */
-    if (true) throw new UnsupportedOperationException();
     
     _conn.init(is);
+    _conn.init(os);
     
     if (_window > 0) {
       _inHttp.setWindow(_window);
@@ -231,9 +223,27 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
       throw new IOException(L.l("Invalid settings on h2 handshake"));
     }
     
-    _outHttp.updateSettings(_inHttp.getPeerSettings());
+    _outHttp.updateSettings(_inHttp.peerSettings());
     
     ThreadPool.current().schedule(new TaskClientHttp(_inHttp));
+  }
+  
+  public void get(String path, Result<InputStreamClient> result)
+  {
+    if (_socket == null) {
+      throw new IllegalStateException(L.l("No connection available"));
+    }
+    
+    InRequestClient request = new InRequestClient(this, result);
+    
+    HashMap<String,String> headers = null;
+    
+    FlagsHttp flags = FlagsHttp.END_STREAM;
+    
+    MessageRequestClientHttp2 msg
+      = new MessageRequestClientHttp2("GET", "localhost", path, headers, request, flags);
+    
+    offer(msg);
   }
   
   public InputStreamClient get(String path)
@@ -245,16 +255,7 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
     
     ResultFuture<InputStreamClient> future = new ResultFuture<>();
     
-    InRequestClient request = new InRequestClient(this, future);
-    
-    HashMap<String,String> headers = null;
-    
-    FlagsHttp flags = FlagsHttp.END_STREAM;
-    
-    MessageRequestClientHttp2 msg
-      = new MessageRequestClientHttp2("GET", "localhost", path, headers, request, flags);
-    
-    offer(msg);
+    get(path, future);
     
     return future.get(10, TimeUnit.SECONDS);
   }
@@ -309,7 +310,7 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   }
 
   @Override
-  public InRequest newRequest()
+  public InRequest newInRequest()
   {
     return new InRequestClient(this, null);
   }
@@ -431,7 +432,7 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
     return true;
   }
 
-  ConnectionHttp2 getConnection()
+  ConnectionHttp2Int getConnection()
   {
     return _conn;
   }

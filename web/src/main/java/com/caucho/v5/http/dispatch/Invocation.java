@@ -170,7 +170,7 @@ public class Invocation implements Dependency
    * Returns the URI after normalization, e.g. character escaping,
    * URL session, and query string.
    */
-  public final String getURI()
+  public final String uri()
   {
     return _uri;
   }

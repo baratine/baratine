@@ -66,6 +66,7 @@ import com.caucho.v5.util.ClockCurrent;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.LruCache;
 import com.caucho.v5.web.CookieWeb;
+import com.caucho.v5.web.webapp.InvocationBaratine;
 import com.caucho.v5.web.webapp.RequestBaratine;
 import com.caucho.v5.web.webapp.WriterUtf8;
 
@@ -703,14 +704,14 @@ public abstract class RequestHttpBase implements OutHttp
 
   abstract public String getProtocol();
 
-  abstract public String getMethod();
+  abstract public String method();
 
   /**
    * Returns the named header.
    *
    * @param key the header key
    */
-  abstract public String getHeader(String key);
+  abstract public String header(String key);
 
   protected boolean isUpgrade()
   {
@@ -750,7 +751,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public CharSegment getHeaderBuffer(String name)
   {
-    String value = getHeader(name);
+    String value = header(name);
 
     if (value != null)
       return new CharBuffer(value);
@@ -915,7 +916,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public Enumeration<String> getHeaders(String name)
   {
-    String value = getHeader(name);
+    String value = header(name);
     
     if (value == null) {
       return Collections.emptyEnumeration();
@@ -937,7 +938,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public void getHeaderBuffers(String name, ArrayList<CharSegment> resultList)
   {
-    String value = getHeader(name);
+    String value = header(name);
 
     if (value != null)
       resultList.add(new CharBuffer(value));
@@ -1000,7 +1001,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public String contentType()
   {
-    return getHeader("Content-Type");
+    return header("Content-Type");
   }
 
   /**
@@ -1096,7 +1097,7 @@ public abstract class RequestHttpBase implements OutHttp
   /**
    * Returns the cookies from the browser
    */
-  public CookieWeb []getCookies()
+  public CookieWeb []cookies()
   {
     return fillCookies();
 
@@ -1367,7 +1368,7 @@ public abstract class RequestHttpBase implements OutHttp
     }
   }
 
-  protected Invocation getInvocation(CharSequence host,
+  protected InvocationBaratine invocation(CharSequence host,
                                      byte []uri,
                                      int uriLength)
     throws IOException
@@ -1376,9 +1377,10 @@ public abstract class RequestHttpBase implements OutHttp
                         host, getServerPort(),
                         uri, uriLength);
 
-    InvocationManager<?> server = http().getInvocationManager();
+    InvocationManager<InvocationBaratine> server
+      = (InvocationManager) http().getInvocationManager();
 
-    Invocation invocation = server.getInvocation(_invocationKey);
+    InvocationBaratine invocation = server.getInvocation(_invocationKey);
 
     if (invocation != null) {
       //return invocation.getRequestInvocation(_requestFacade);

@@ -39,7 +39,7 @@ public class ChannelHttp2
 {
   private final InRequest _request;
   
-  private ConnectionHttp2 _conn;
+  private ConnectionHttp2Int _conn;
   private int _streamId;
   
   private final ChannelInHttp2 _inChannel;
@@ -63,14 +63,14 @@ public class ChannelHttp2
     return _streamId;
   }
 
-  public void init(ConnectionHttp2 conn, int streamId)
+  public void init(ConnectionHttp2Int conn, int streamId)
   {
     Objects.requireNonNull(conn);
     
     _conn = conn;
     _streamId = streamId;
     
-    _outChannel.init(streamId, conn.getOutHttp());
+    _outChannel.init(streamId, conn.outHttp());
     _inChannel.init(conn, streamId);
     
     if (_stateRef.get().toActive(_stateRef)) {

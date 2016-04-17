@@ -92,5 +92,5 @@ public interface HttpContainer
 
   ClassLoader classLoader();
 
-  String getServerHeader();
+  String serverHeader();
 }

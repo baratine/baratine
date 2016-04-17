@@ -36,7 +36,7 @@ import com.caucho.v5.io.ReadStream;
  */
 public class InHttpServer extends InHttp
 {
-  public InHttpServer(ConnectionHttp2 conn, 
+  public InHttpServer(ConnectionHttp2Int conn, 
                       InHttpHandler inHandler)
   {
     super(conn, inHandler);

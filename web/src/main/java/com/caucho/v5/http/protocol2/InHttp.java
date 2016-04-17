@@ -49,7 +49,7 @@ public class InHttp
   private static final Logger log = Logger.getLogger(InHttp.class.getName());
   private static final L10N L = new L10N(InHttp.class);
 
-  private final ConnectionHttp2 _conn;
+  private final ConnectionHttp2Int _conn;
   private final InHttpHandler _inHandler;
   
   private SettingsHttp _settings = new SettingsHttp();
@@ -65,7 +65,7 @@ public class InHttp
   
   private boolean _isGoAway;
 
-  public InHttp(ConnectionHttp2 conn, 
+  public InHttp(ConnectionHttp2Int conn, 
                 InHttpHandler inHandler)
   {
     Objects.requireNonNull(conn);
@@ -93,14 +93,14 @@ public class InHttp
     return _settings;
   }
   
-  public SettingsHttp getPeerSettings()
+  public SettingsHttp peerSettings()
   {
     return _peerSettings;
   }
 
   public void setWindow(int window)
   {
-    _settings.setInitialWindowSize(window);
+    _settings.initialWindowSize(window);
   }
   
   void init(ReadStream is)
@@ -124,7 +124,7 @@ public class InHttp
       
     _openStream.set(1);
     _isGoAway = false;
-    _peerSettings.setInitialWindowSize(64 * 1024);
+    _peerSettings.initialWindowSize(64 * 1024);
   }
   
   public boolean onDataAvailable()
@@ -222,10 +222,10 @@ public class InHttp
   {
     ReadStream is = _is;
     
-    int length = BitsUtil.readInt16(is);
+    int length = BitsUtil.readInt24(is);
     int type = is.read();
     int flags = is.read();
-    
+
     int streamId = BitsUtil.readInt(is);
     
     if (streamId < 0) {
@@ -248,20 +248,18 @@ public class InHttp
   private boolean readSettings(ReadStream is, int length)
     throws IOException
   {
-    if (length % 5 != 0) {
+    if (length % 6 != 0) {
       error("Invalid settings length {0}", length);
       return false;
     }
     
-    int count = length / 5;
-    
-    for (int i = 0; i < count; i++) {
-      int code = is.read() & 0xff;
+    for (int i = 0; i < length; i += 6) {
+      int code = BitsUtil.readInt16(is);
       int value = BitsUtil.readInt(is);
       
       switch (code) {
       case Http2Constants.SETTINGS_INITIAL_WINDOW_SIZE:
-        _peerSettings.setInitialWindowSize(value);
+        _peerSettings.initialWindowSize(value);
         break;
       }
     }
@@ -293,7 +291,7 @@ public class InHttp
       return true;
     }
     
-    channel.getOutChannel().addSendCredit(_conn.getOutHttp(), credit);
+    channel.getOutChannel().addSendCredit(_conn.outHttp(), credit);
     
     return true;
   }
@@ -459,11 +457,11 @@ public class InHttp
     
     int streamId = 1;
     
-    InRequest request = _inHandler.newRequest();
+    InRequest request = _inHandler.newInRequest();
     
     ChannelHttp2 channel = request.getChannel(); // new InChannelHttp2(_conn, streamId, request);
     
-    channel.getInChannel().addReceiveCredit(_settings.getInitialWindowSize());
+    channel.getInChannel().addReceiveCredit(_settings.initialWindowSize());
 
     channel.init(_conn, streamId);
     
@@ -502,7 +500,7 @@ public class InHttp
       request = channel.getRequest();
     }
     else {
-      request = _inHandler.newRequest();
+      request = _inHandler.newInRequest();
     }
     
     // _conn, streamId);
@@ -519,7 +517,7 @@ public class InHttp
     
     channel.onHeader(streamId);
     
-    channel.getInChannel().addReceiveCredit(_settings.getInitialWindowSize());
+    channel.getInChannel().addReceiveCredit(_settings.initialWindowSize());
     
     request.dispatch();
     
@@ -547,7 +545,7 @@ public class InHttp
     return getClass().getSimpleName() + "[" + _conn + "]";
   }
   
-  private static class DummyConnection extends ConnectionHttp2
+  private static class DummyConnection extends ConnectionHttp2Int
   {
     protected DummyConnection(InHttpHandler handler)
     {

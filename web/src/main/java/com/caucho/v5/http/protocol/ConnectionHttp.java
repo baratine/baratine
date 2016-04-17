@@ -231,8 +231,9 @@ public class ConnectionHttp implements ConnectionProtocol
           //return NextState.CLOSE;
         }
         */
-
+      System.out.println("RQS: " + request);
       StateConnection next = request.service();
+      System.out.println(" NEXT: " + next);
       
       if (next != StateConnection.CLOSE) {
         return next;

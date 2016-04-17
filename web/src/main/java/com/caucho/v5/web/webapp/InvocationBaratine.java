@@ -72,7 +72,7 @@ public class InvocationBaratine extends Invocation
       return path;
     }
     else {
-      return getURI();
+      return uri();
     }
   }
 

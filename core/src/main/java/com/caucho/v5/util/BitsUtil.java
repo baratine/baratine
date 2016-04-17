@@ -119,6 +119,14 @@ public class BitsUtil
     os.write(value >> 0);
   }
   
+  public static void writeInt24(OutputStream os, int value)
+    throws IOException
+  {
+    os.write(value >> 16);
+    os.write(value >> 8);
+    os.write(value >> 0);
+  }
+  
   public static void writeInt16(OutputStream os, int value)
     throws IOException
   {
@@ -169,6 +177,22 @@ public class BitsUtil
            + (d1 << 16)
            + (d2 << 8)
            + (d3 << 0));
+  }
+  
+  public static int readInt24(InputStream is)
+    throws IOException
+  {
+    int d0 = is.read();
+    int d1 = is.read();
+    int d2 = is.read();
+    
+    if (d2 < 0) {
+      return d2;
+    }
+    
+    return ((d0 << 16)
+           + (d1 << 8)
+           + (d2 << 0));
   }
   
   public static int readInt16(InputStream is)

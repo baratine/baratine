@@ -93,7 +93,7 @@ class TcpStream extends StreamImpl {
     _s.setSoTimeout((int) socketTimeout);
 
     if (isNoDelay) {
-      _s.setTcpNoDelay(true);
+      _s.tcpNoDelay(true);
     }
 
     try {
@@ -164,7 +164,7 @@ class TcpStream extends StreamImpl {
     else if (name.equals("no-delay")) {
       try {
         if (Boolean.TRUE.equals(value)) {
-          _s.setTcpNoDelay(true);
+          _s.tcpNoDelay(true);
         }
       } catch (SocketException e) {
         log.log(Level.FINER, e.toString(), e);

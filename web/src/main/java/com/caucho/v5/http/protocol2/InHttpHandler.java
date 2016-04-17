@@ -34,7 +34,7 @@ package com.caucho.v5.http.protocol2;
  */
 public interface InHttpHandler
 {
-  InRequest newRequest();
+  InRequest newInRequest();
 
   /**
    * Called when all stream are closed.

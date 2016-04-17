@@ -141,7 +141,7 @@ public class SocketWrapperBar extends SocketBar
   }
   
   @Override
-  public void setTcpNoDelay(boolean isNoDelay)
+  public void tcpNoDelay(boolean isNoDelay)
     throws SocketException
   {
     _s.setTcpNoDelay(isNoDelay);

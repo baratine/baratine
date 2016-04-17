@@ -60,7 +60,7 @@ public class InvocationRouterWebApp implements InvocationRouter<InvocationBarati
     
     String prefix = _webApp.getWebAppPath();
     
-    String uri = invocation.getURI();
+    String uri = invocation.uri();
     String uriRel = uri.substring(prefix.length());
     
     ArrayList<RouteBaratine> routeList = new ArrayList<>();

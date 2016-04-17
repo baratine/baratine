@@ -57,7 +57,7 @@ public class ChannelInHttp2 extends ChannelFlowHttp2
     return _streamId;
   }
 
-  void init(ConnectionHttp2 conn, int streamId)
+  void init(ConnectionHttp2Int conn, int streamId)
   {
     Objects.requireNonNull(conn);
     

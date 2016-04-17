@@ -164,20 +164,20 @@ public final class RequestBaratineImpl
   @Override
   public String method()
   {
-    return requestHttp().getMethod();
+    return requestHttp().method();
   }
 
   @Override
   public String header(String key)
   {
-    return requestHttp().getHeader(key);
+    return requestHttp().header(key);
   }
 
 
   @Override
   public String uri()
   {
-    return invocation().getURI();
+    return invocation().uri();
   }
 
   @Override
@@ -195,7 +195,7 @@ public final class RequestBaratineImpl
   @Override
   public String cookie(String key)
   {
-    for (CookieWeb cookie : requestHttp().getCookies()) {
+    for (CookieWeb cookie : requestHttp().cookies()) {
       if (cookie.name().equals(key)) {
         return cookie.value();
       }
@@ -699,6 +699,7 @@ public final class RequestBaratineImpl
     return this;
   }
 
+  /*
   public void next(Buffer data)
   {
     try {
@@ -709,6 +710,7 @@ public final class RequestBaratineImpl
       log.log(Level.WARNING, e.toString(), e);
     }
   }
+  */
 
   @Override
   public void ok(Object value)
@@ -1083,7 +1085,7 @@ public final class RequestBaratineImpl
     InvocationBaratine invocation = invocation();
 
     if (invocation != null) {
-      return getClass().getSimpleName() + "[" + invocation.getURI() + "]";
+      return getClass().getSimpleName() + "[" + invocation.uri() + "]";
     }
     else {
       return getClass().getSimpleName() + "[null]";

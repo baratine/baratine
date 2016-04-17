@@ -75,9 +75,9 @@ public class OutHttp implements AutoCloseable
 
   private PeerHttp _peer;
 
-  private ConnectionHttp2 _conn;
+  private ConnectionHttp2Int _conn;
 
-  public OutHttp(ConnectionHttp2 conn, PeerHttp peer)
+  public OutHttp(ConnectionHttp2Int conn, PeerHttp peer)
   {
     Objects.requireNonNull(conn);
     
@@ -89,7 +89,7 @@ public class OutHttp implements AutoCloseable
   
   public OutHttp(WriteStream os, PeerHttp peer)
   {
-    this(new ConnectionHttp2(peer), peer);
+    this(new ConnectionHttp2Int(peer), peer);
     
     init(os);
   }
@@ -128,12 +128,12 @@ public class OutHttp implements AutoCloseable
 
   public int getWindow()
   {
-    return _settings.getInitialWindowSize();
+    return _settings.initialWindowSize();
   }
 
   void updateSettings(SettingsHttp peerSettings)
   {
-    _settings.setInitialWindowSize(peerSettings.getInitialWindowSize());
+    _settings.initialWindowSize(peerSettings.initialWindowSize());
   }
   
   public void writeConnectionHeader()
@@ -213,10 +213,11 @@ public class OutHttp implements AutoCloseable
     throws IOException
   {
     int settingCount = 2;
-    int length = 5 * settingCount;
+    int length = 6 * settingCount;
     
     WriteStream os = _os;
     
+    os.write(length >> 16);
     os.write(length >> 8);
     os.write(length);
     os.write(Http2Constants.FRAME_SETTINGS);
@@ -224,11 +225,11 @@ public class OutHttp implements AutoCloseable
     
     BitsUtil.writeInt(os, 0);
     
-    os.write(Http2Constants.SETTINGS_MAX_CONCURRENT_STREAMS);
+    BitsUtil.writeInt16(os, Http2Constants.SETTINGS_MAX_CONCURRENT_STREAMS);
     BitsUtil.writeInt(os, settings.getMaxConcurrentStreams());
     
-    os.write(Http2Constants.SETTINGS_INITIAL_WINDOW_SIZE);
-    BitsUtil.writeInt(os, settings.getInitialWindowSize());
+    BitsUtil.writeInt16(os, Http2Constants.SETTINGS_INITIAL_WINDOW_SIZE);
+    BitsUtil.writeInt(os, settings.initialWindowSize());
   }
 
   /**

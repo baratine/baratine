@@ -49,6 +49,7 @@ public class ProtocolHttp implements Protocol
   private HttpContainer _http;
   private Protocol _extensionProtocol;
   private SystemManager _systemManager;
+  
   private String _serverHeader;
   
   private FreeList<RequestHttpState> _freeRequest = new FreeList<>(128);
@@ -76,7 +77,7 @@ public class ProtocolHttp implements Protocol
     _http = http;
     Objects.requireNonNull(http);
     
-    _serverHeader = http.getServerHeader();
+    _serverHeader = http.serverHeader();
   }
   
   @Override
@@ -95,9 +96,9 @@ public class ProtocolHttp implements Protocol
    * Create a HttpRequest object for the new thread.
    */
   @Override
-  public ConnectionProtocol newConnection(ConnectionTcp conn)
+  public ConnectionProtocol newConnection(ConnectionTcp connTcp)
   {
-    return new ConnectionHttp(this, conn, _sequence.incrementAndGet());
+    return new ConnectionHttp(this, connTcp, _sequence.incrementAndGet());
   }
   
   public String serverHeader()
@@ -135,7 +136,7 @@ public class ProtocolHttp implements Protocol
     }
   }
 
-  protected ConnectionProtocol newRequest(ConnectionHttp conn)
+  public ConnectionProtocol newRequest(ConnectionHttp conn)
   {
     HttpContainer http = http();
     

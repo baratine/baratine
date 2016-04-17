@@ -45,7 +45,7 @@ import com.caucho.v5.health.meter.MeterService;
 import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.dispatch.Invocation;
 import com.caucho.v5.http.protocol2.Http2Constants;
-import com.caucho.v5.http.protocol2.RequestProtocolHttp2;
+import com.caucho.v5.http.protocol2.ConnectionHttp2;
 import com.caucho.v5.io.ClientDisconnectException;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
@@ -233,7 +233,7 @@ public class RequestHttp extends RequestHttpBase
    * Returns the HTTP method (GET, POST, HEAD, etc.)
    */
   @Override
-  public String getMethod()
+  public String method()
   {
     if (_methodString == null) {
       CharSegment cb = getMethodBuffer();
@@ -287,7 +287,7 @@ public class RequestHttp extends RequestHttpBase
   /**
    * Returns the virtual host from the invocation
    */
-  private CharSequence getInvocationHost()
+  private CharSequence hostInvocation()
     throws IOException
   {
     if (_host != null) {
@@ -415,7 +415,7 @@ public class RequestHttp extends RequestHttpBase
    * Returns the header.
    */
   @Override
-  public String getHeader(String key)
+  public String header(String key)
   {
     CharSegment buf = getHeaderBuffer(key);
     
@@ -696,9 +696,9 @@ public class RequestHttp extends RequestHttpBase
       return null;
     }
 
-    CharSequence host = getInvocationHost();
+    CharSequence host = hostInvocation();
 
-    return getInvocation(host, _uri, _uriLength);
+    return invocation(host, _uri, _uriLength);
   }
 
   /**
@@ -1303,7 +1303,7 @@ public class RequestHttp extends RequestHttpBase
     long contentLength = contentLength();
 
     if (contentLength < 0 && HTTP_1_1 <= getVersion()
-        && getHeader("Transfer-Encoding") != null) {
+        && header("Transfer-Encoding") != null) {
       _isChunkedIn = true;
       
       return true;
@@ -1312,7 +1312,7 @@ public class RequestHttp extends RequestHttpBase
     else if (contentLength >= 0) {
       return true;
     }
-    else if (getMethod().equals("POST")) {
+    else if (method().equals("POST")) {
       _inOffset = Long.MAX_VALUE;
       
       throw new BadRequestException("POST requires content-length");
@@ -1335,23 +1335,23 @@ public class RequestHttp extends RequestHttpBase
   
   private boolean upgradeHttp2() throws IOException
   {
-    String connHeader = getHeader("Connection");
-    String upgradeHeader = getHeader("Upgrade");
+    String connHeader = header("Connection");
+    String upgradeHeader = header("Upgrade");
     
     if (! "h2-12".equals(upgradeHeader)
         || connHeader.indexOf("HTTP2-Settings") < 0) {
       return false;
     }
     
-    String settings = getHeader("HTTP2-Settings");
+    String settings = header("HTTP2-Settings");
     
     if (settings == null) {
       return false;
     }
     
-    RequestProtocolHttp2 handler;
+    ConnectionHttp2 handler;
     
-    handler = new RequestProtocolHttp2(protocolHttp(), 
+    handler = new ConnectionHttp2(protocolHttp(), 
                                      http(),
                                      getConnection());
     
@@ -1380,9 +1380,9 @@ public class RequestHttp extends RequestHttpBase
       return false;
     }
     
-    RequestProtocolHttp2 handler;
+    ConnectionHttp2 handler;
     
-    handler = new RequestProtocolHttp2(protocolHttp(), 
+    handler = new ConnectionHttp2(protocolHttp(), 
                                      http(),
                                      getConnection());
     
@@ -1796,7 +1796,7 @@ public class RequestHttp extends RequestHttpBase
     
     if (RequestHttp.HTTP_1_1 <= getVersion()
         && contentLengthOut() < 0
-        && ! getMethod().equalsIgnoreCase("HEAD")) {
+        && ! method().equalsIgnoreCase("HEAD")) {
       return true;
     }
     else {
