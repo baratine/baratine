@@ -34,11 +34,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Configures instance of Baratine used for running tests
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface ConfigurationBaratine
 {
+  /**
+   * Specifies working directory for Baratine
+   *
+   * @return
+   */
   String workDir() default "{java.io.tmpdir}";
 
+  /**
+   * Specifies initial value for Baratine clock. By default, Baratine clock will
+   * be set to system time.
+   *
+   * @return
+   */
   long testTime() default -1;
 }
