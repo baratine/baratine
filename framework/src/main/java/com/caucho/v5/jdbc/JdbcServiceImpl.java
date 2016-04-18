@@ -57,7 +57,6 @@ public class JdbcServiceImpl implements JdbcService
 
   private JdbcConnectionImpl _conn;
 
-
   @OnInit
   public void onInit(Result<Void> result)
   {
