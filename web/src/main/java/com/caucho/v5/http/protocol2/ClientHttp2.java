@@ -218,7 +218,7 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
     _outHttp.writeSettings(_inHttp.getSettings());
     _outHttp.flush();
     
-    // _inHttp.init(is);
+    //_inHttp.init(is);
     if (! _inHttp.readSettings()) {
       throw new IOException(L.l("Invalid settings on h2 handshake"));
     }

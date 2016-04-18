@@ -64,6 +64,8 @@ public class InHeader extends HeaderCommon implements AutoCloseable
   
   private int _streamId;
   
+  private int _staticTail;
+  
   private long _sequenceHead;
   private long _sequenceTail;
   
@@ -79,7 +81,9 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     _tableKeyMap.putAll(getTableKeyStatic());
     
     _tableEntryMap = new HashMap<>();
-    _tableEntryMap.putAll(getTableEntryStatic());
+    _tableEntryMap.putAll(tableEntryStatic());
+    
+    _staticTail = _tableKeyMap.size() + 1;
     
     _entries = new TableEntry[256];
     
@@ -224,7 +228,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
   private void addEntry(TableEntry entry)
   {
     long head = _sequenceHead;
-    entry.setSequence(head);
+    entry.sequence(head);
     entry.setReference(_sequenceReference + 1);
 
     _sequenceHead = head + 1;
@@ -232,7 +236,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     _tableEntryMap.put(entry, entry);
 
     if (entry.getNext() == null) {
-      _tableKeyMap.put(entry.getKey(), entry);
+      _tableKeyMap.put(entry.key(), entry);
     }
 
     _entries[(int) (head % _entries.length)] = entry;
@@ -257,9 +261,9 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     for (long ptr = _sequenceTail; ptr < _sequenceHead; ptr++) {
       TableEntry entry = _entries[(int) (ptr % _entries.length)];
       
-      if (entry.getReference() == reference) {
+      if (entry.reference() == reference) {
         entry.setReference(reference + 1);
-        request.header(entry.getKey(), entry.getValue());
+        request.header(entry.key(), entry.getValue());
       }
     }
   }
@@ -270,8 +274,12 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     int index = readInt(7, op);
     
     TableEntry entry = getEntry(index);
+    System.out.println("ENTRY: " + entry + " " + index);
     
-    if (entry.getReference() != _sequenceReference) {
+    request.header(entry.key(), entry.getValue());
+    System.out.println("HEAD: " + entry.key() + " " + entry.getValue()); 
+    /*
+    if (entry.reference() != _sequenceReference) {
       request.header(entry.getKey(), entry.getValue());
       
       if (entry.isStatic()) {
@@ -284,6 +292,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
       // index entries already in the reference is a deletion.
       entry.setReference(0);
     }
+    */
   }
   
   private String readKeyHeader(int index)
@@ -291,11 +300,17 @@ public class InHeader extends HeaderCommon implements AutoCloseable
   {
     TableEntry entry = getEntry(index);
 
-    return entry.getKey();
+    return entry.key();
   }
   
   private TableEntry getEntry(int index)
   {
+    if (index < _staticTail) {
+      return getEntryArrayStatic()[index];
+    }
+    
+    index -= _staticTail;
+    
     int length = (int) (_sequenceHead - _sequenceTail);
     
     if (length < index) {

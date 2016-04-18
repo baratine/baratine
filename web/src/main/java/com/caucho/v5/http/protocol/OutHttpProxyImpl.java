@@ -64,7 +64,6 @@ class OutHttpProxyImpl implements OutHttpProxy
                     Buffer buffer, 
                     boolean isEnd)
   {
-    System.out.println("WR: " + out);
     if (out.canWrite(_connHttp.sequenceWrite() + 1)) {
       _isClose = out.write(conn().writeStream(), buffer, isEnd);
       

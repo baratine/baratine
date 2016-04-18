@@ -40,7 +40,7 @@ import io.baratine.io.Buffer;
 public class OutResponseHttp2 extends OutResponseBase
 {
   private final RequestHttp2 _request;
-  private TempBuffer _tBuf;
+  //private TempBuffer _tBuf;
 
   OutResponseHttp2(RequestHttp2 request)
   {
@@ -49,8 +49,11 @@ public class OutResponseHttp2 extends OutResponseBase
     Objects.requireNonNull(request);
     
     _request = request;
+    
+    start();
   }
   
+  @Override
   public void start()
   {
     super.start();
@@ -60,10 +63,15 @@ public class OutResponseHttp2 extends OutResponseBase
   @Override
   public int bufferStart()
   {
-    return 8;
+    return 0;//9;
   }
   
-  
+  @Override
+  protected void fillChunkHeader(TempBuffer buf, int sublen)
+  {
+    
+  }
+
   /**
    * Writes data to the output. If the headers have not been written,
    * they should be written.
@@ -74,6 +82,8 @@ public class OutResponseHttp2 extends OutResponseBase
     if (isClosed()) {
       throw new IllegalStateException();
     }
+
+    _request.outProxy().write(_request, data, isEnd);
     
     /*
     boolean isHeader = ! isCommitted();

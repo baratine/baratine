@@ -40,6 +40,7 @@ import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.FreeList;
 import com.caucho.v5.util.Version;
+import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
 /**
  * ProtocolHttp manages the creation of http protocol connections.
@@ -52,7 +53,7 @@ public class ProtocolHttp implements Protocol
   
   private String _serverHeader;
   
-  private FreeList<RequestHttpState> _freeRequest = new FreeList<>(128);
+  private FreeList<RequestHttp> _freeRequest = new FreeList<>(128);
   
   private AtomicLong _sequence = new AtomicLong();
 
@@ -142,21 +143,18 @@ public class ProtocolHttp implements Protocol
     
     Objects.requireNonNull(http);
     
-    return http.newRequest(conn);
-  }
-  
-  protected RequestHttpState requestHttpAllocate()
-  {
-    RequestHttpState requestHttp = _freeRequest.allocate();
+    RequestHttp request = _freeRequest.allocate();
     
-    if (requestHttp == null) {
-      requestHttp = new RequestHttpState(this);
+    if (request == null) {
+      request = new RequestHttp(this);
     }
+
+    //request.init(conn);
     
-    return requestHttp;
+    return new RequestBaratineImpl(conn, request);
   }
   
-  protected void requestFree(RequestHttpState request)
+  protected void requestFree(RequestHttp request)
   {
     if (request != null) {
       _freeRequest.free(request);

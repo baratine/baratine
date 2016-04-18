@@ -46,6 +46,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   private HashMap<String,TableEntry> _tableKeyMap;
   private HashMap<TableEntry,TableEntry> _tableEntryMap;
     
+  private int _staticTail;
   private int _tableCapacity = 4096;
   
   private TableEntry []_entries;
@@ -82,7 +83,11 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     _tableKeyMap.putAll(getTableKeyStatic());
     
     _tableEntryMap = new HashMap<>();
-    _tableEntryMap.putAll(getTableEntryStatic());
+    _tableEntryMap.putAll(tableEntryStatic());
+    
+    _staticTail = _tableEntryMap.size() + 1;
+    _sequence = _staticTail;
+    _tailSequence = _sequence;
     
     _entries = new TableEntry[256];
     
@@ -147,7 +152,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     _headerOffset = offset;
     _buffer = buffer;
     
-    offset += 8;
+    offset += 9;
     
     if (_pad >= 256) {
       offset += 2;
@@ -174,7 +179,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     
     _state = state.onFlush();
     
-    return 8;
+    return 9;
   }
   
   public void closeHeaders()
@@ -193,7 +198,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     
     StateHeader state = _state;
     
-    int startOffset = headerOffset + 8;
+    int startOffset = headerOffset + 9;
     
     int len = offset - startOffset;
     int fillLen = 0;
@@ -236,12 +241,13 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
       _priorityWeight = -1;
     }
     
-    buffer[headerOffset + 0] = (byte) (len >> 8);
-    buffer[headerOffset + 1] = (byte) (len);
-    buffer[headerOffset + 2] = (byte) state.opcode();
-    buffer[headerOffset + 3] = (byte) flags;
+    buffer[headerOffset + 0] = (byte) (len >> 16);
+    buffer[headerOffset + 1] = (byte) (len >> 8);
+    buffer[headerOffset + 2] = (byte) (len);
+    buffer[headerOffset + 3] = (byte) state.opcode();
+    buffer[headerOffset + 4] = (byte) flags;
     
-    BitsUtil.writeInt(buffer, headerOffset + 4, _streamId);
+    BitsUtil.writeInt(buffer, headerOffset + 5, _streamId);
     
     WriteStream os = _os;
     
@@ -268,8 +274,9 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     if (entry != null) {
       int index = getIndex(entry);
       
-      if (entry.getReference() < _seqReference) {
-        writeKeyValue(0x80, index);
+      writeKeyValue(0x80, index);
+      /*
+      if (entry.reference() < _seqReference) {
 
         if (entry.isStatic()) {
           // static has a copy added
@@ -281,13 +288,14 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
         }
       }
       
-      if (entry.getReference() <= _seqReference) {
+      if (entry.reference() <= _seqReference) {
         if (! entry.isStatic()) {
           // XXX: Need to add
           entry.setReference(_seqReference + 1);
         }
         
       }
+      */
       
       return;
     }
@@ -304,13 +312,13 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   private void addEntry(TableEntry entry)
   {
     long seq = _sequence++;
-    entry.setSequence(seq);
+    entry.sequence(seq);
     entry.setReference(_seqReference + 1);
     
     _tableEntryMap.put(entry, entry);
     
     if (entry.getNext() == null) {
-      _tableKeyMap.put(entry.getKey(), entry);
+      _tableKeyMap.put(entry.key(), entry);
     }
     
     _entries[(int) (seq % _entries.length)] = entry;
@@ -417,7 +425,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     TableEntry entry = _tableKeyMap.get(key);
     
     if (entry != null
-        && (entry.isStatic() || _tailSequence <= entry.getSequence())) {
+        && (entry.isStatic() || _tailSequence <= entry.sequence())) {
       int index = getIndex(entry);
       
       writeInt(opcode, bits, index);
@@ -432,10 +440,10 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   private int getIndex(TableEntry entry)
   {
     if (entry.isStatic()) {
-      return (int) ((_sequence - _tailSequence) + entry.getSequence());
+      return (int) entry.sequence();
     }
     else {
-      return (int) (_sequence - entry.getSequence());
+      return (int) (_sequence - entry.sequence()) + _staticTail; // XXX: need mod
     }
   }
   
@@ -550,7 +558,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     for (long i = _tailSequence; i < _sequence; i++) {
       TableEntry entry = _entries[(int) (i % _entries.length)];
       
-      if (entry.getReference() == reference) {
+      if (entry.reference() == reference) {
         int index = getIndex(entry);
         write(0x80 + index);
       }

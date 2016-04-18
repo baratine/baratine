@@ -31,7 +31,6 @@ package com.caucho.v5.http.protocol;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 import com.caucho.v5.io.OutputStreamWithBuffer;
 import com.caucho.v5.io.TempBuffer;
@@ -46,8 +45,6 @@ public abstract class OutResponseBase
   extends OutputStreamWithBuffer
 {
   private static final L10N L = new L10N(OutResponseBase.class);
-  private static final Logger log
-    = Logger.getLogger(OutResponseBase.class.getName());
   
   private static final int SIZE = TempBuffer.SIZE;
   private static final int DEFAULT_SIZE = SIZE;

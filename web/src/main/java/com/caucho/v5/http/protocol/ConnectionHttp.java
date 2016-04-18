@@ -41,6 +41,7 @@ import com.caucho.v5.health.shutdown.ShutdownSystem;
 import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.network.port.StateConnection;
+import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
 /**
  * Handles a HTTP connection.
@@ -110,8 +111,8 @@ public class ConnectionHttp implements ConnectionProtocol
     ConnectionProtocol request = _request;
     
     if (request == null) {
-      //request = protocol().newRequest(this);
-      request = newRequestHttp();
+      request = protocol().newRequest(this);
+      //request = newRequestHttp();
       
       request.onAccept();
       
@@ -193,14 +194,15 @@ public class ConnectionHttp implements ConnectionProtocol
     */
   }
 
-  public RequestHttpState newRequestHttp()
+  /*
+  public RequestHttpWeb newRequestHttp()
   {
-    RequestHttpState request = protocol().requestHttpAllocate();
-    
-    request.init(this);
+    requestData = _protocol.http()..asdf;
+    RequestHttpWeb request = new RequestBaratineImpl(this);
     
     return request;
   }
+  */
 
   /**
    * Service a HTTP request.
@@ -231,9 +233,8 @@ public class ConnectionHttp implements ConnectionProtocol
           //return NextState.CLOSE;
         }
         */
-      System.out.println("RQS: " + request);
+
       StateConnection next = request.service();
-      System.out.println(" NEXT: " + next);
       
       if (next != StateConnection.CLOSE) {
         return next;
@@ -312,7 +313,7 @@ public class ConnectionHttp implements ConnectionProtocol
     return _sequenceWrite.get();
   }
 
-  public void requestComplete(RequestHttpState requestHttpState, 
+  public void requestComplete(RequestHttpWeb requestHttpState, 
                               boolean isKeepalive)
   {
     ConnectionProtocol oldRequest = _request;

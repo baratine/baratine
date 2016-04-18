@@ -77,7 +77,7 @@ public class MessageResponseHttp2 extends MessageHttp
     throws IOException
   {
     ChannelOutHttp2 stream = _request.getChannelOut();
-    int streamId = _request.getChannel().getId();
+    int streamId = _request.channel().getId();
     
     if (_isHeaders) {
       writeHeaders(outHttp);
@@ -107,7 +107,7 @@ public class MessageResponseHttp2 extends MessageHttp
   {
     OutHeader outHeader = outHttp.getOutHeader();
     
-    int streamId = _request.getStreamId();
+    int streamId = _request.streamId();
     
     FlagsHttp flags = getFlagsHttp();
     

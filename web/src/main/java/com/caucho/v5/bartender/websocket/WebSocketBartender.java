@@ -231,7 +231,7 @@ public class WebSocketBartender<T,S>
     
     // _fIs = fIs;
     
-    fIs.init(null, req.requestHttp().conn().readStream());
+    fIs.init(null, req.requestHttp().connTcp().readStream());
     
     frameInput(fIs);
 

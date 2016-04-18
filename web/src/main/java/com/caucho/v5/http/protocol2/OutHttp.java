@@ -47,6 +47,8 @@ import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.io.Buffer;
+
 /**
  * InputStreamHttp reads a single HTTP frame.
  */
@@ -230,6 +232,9 @@ public class OutHttp implements AutoCloseable
     
     BitsUtil.writeInt16(os, Http2Constants.SETTINGS_INITIAL_WINDOW_SIZE);
     BitsUtil.writeInt(os, settings.initialWindowSize());
+    
+    // XXX: check logic
+    _conn.channelZero().addReceiveCredit(settings.initialWindowSize());
   }
 
   /**
@@ -257,6 +262,7 @@ public class OutHttp implements AutoCloseable
       os.write(buffer, offset, length + 8);
     }
     else {
+      os.write((byte) (length >> 16)); 
       os.write((byte) (length >> 8)); 
       os.write((byte) (length));
       os.write(Http2Constants.FRAME_DATA);
@@ -267,6 +273,51 @@ public class OutHttp implements AutoCloseable
       if (length > 0) {
         os.write(buffer, offset, length);
       }
+    }
+    
+    if ((flags & Http2Constants.END_STREAM) != 0) {
+      closeWrite(streamId);
+    }
+  }
+
+  /**
+   * data (0)
+   */
+  void writeData(int streamId, Buffer buffer, int flags)
+    throws IOException
+  {
+    WriteStream os = _os;
+    
+    if (os == null) {
+      return;
+    }
+    
+    // ChannelHttp2 channel = _conn.getChannel(streamId);
+    
+    if (false) {//offset >= 8) {
+      /*
+      offset -= 8;
+      
+      BitsUtil.writeInt16(buffer, offset, length);
+      buffer[offset + 2] = Http2Constants.FRAME_DATA;
+      buffer[offset + 3]= (byte) flags;
+      BitsUtil.writeInt(buffer, offset + 4, streamId);
+      
+      os.write(buffer, offset, length + 8);
+      */
+    }
+    else {
+      int length = buffer.length();
+      
+      os.write((byte) (length >> 16)); 
+      os.write((byte) (length >> 8)); 
+      os.write((byte) (length));
+      os.write(Http2Constants.FRAME_DATA);
+      os.write(flags);
+      
+      BitsUtil.writeInt(os, streamId);
+      
+      buffer.read(os);
     }
     
     if ((flags & Http2Constants.END_STREAM) != 0) {
@@ -295,6 +346,7 @@ public class OutHttp implements AutoCloseable
     int length = 4;
     int flags = 0;
     
+    os.write((byte) (length >> 16)); 
     os.write((byte) (length >> 8)); 
     os.write((byte) (length));
     os.write(Http2Constants.FRAME_WINDOW_UPDATE);
@@ -316,6 +368,7 @@ public class OutHttp implements AutoCloseable
     int length = 0;
     int flags = 0;
     
+    os.write((byte) (length >> 16)); 
     os.write((byte) (length >> 8)); 
     os.write((byte) (length));
     os.write(Http2Constants.FRAME_BLOCKED);
@@ -342,6 +395,7 @@ public class OutHttp implements AutoCloseable
     
     int length = 8;
     
+    os.write((byte) (length >> 16)); 
     os.write((byte) (length >> 8)); 
     os.write((byte) (length));
     os.write(Http2Constants.FRAME_GOAWAY);
@@ -379,6 +433,7 @@ public class OutHttp implements AutoCloseable
     
     int length = 0;
     
+    os.write((byte) (length >> 16)); 
     os.write((byte) (length >> 8)); 
     os.write((byte) (length));
     os.write(Http2Constants.FRAME_BLOCKED);
@@ -394,6 +449,7 @@ public class OutHttp implements AutoCloseable
     
     int length = 4;
     
+    os.write((byte) (length >> 16)); 
     os.write((byte) (length >> 8)); 
     os.write((byte) (length));
     os.write(Http2Constants.FRAME_RST_STREAM);
@@ -423,6 +479,7 @@ public class OutHttp implements AutoCloseable
     
     int length = 5;
     
+    os.write((byte) (length >> 16)); 
     os.write((byte) (length >> 8)); 
     os.write((byte) (length));
     os.write(Http2Constants.FRAME_PRIORITY);

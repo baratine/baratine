@@ -36,10 +36,12 @@ import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.ProtocolHttp;
 import com.caucho.v5.http.protocol.RequestHttp;
+import com.caucho.v5.http.protocol.RequestHttpWeb;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.FreeRing;
+import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
 
 /**
@@ -54,6 +56,7 @@ public class ConnectionHttp2 extends ConnectionHttp
   private ConnectionTcp _connTcp;
   
   private FreeRing<RequestHttp2> _freeRequest = new FreeRing<>(8);
+  //private ConnectionHttp _connHttp;
 
   public ConnectionHttp2(ProtocolHttp protocolHttp,
                          HttpContainer httpContainer,
@@ -119,6 +122,7 @@ public class ConnectionHttp2 extends ConnectionHttp
     reqHttp2.dispatch();
   }
   
+  @Override
   public ConnectionTcp connTcp()
   {
     return _connTcp;
@@ -132,7 +136,6 @@ public class ConnectionHttp2 extends ConnectionHttp
   @Override
   public StateConnection service() throws IOException
   {
-    System.out.println("SERVICE: " + this);
     if (! _conn.inHttp().onDataAvailable()) {
       return StateConnection.CLOSE;
     }
@@ -173,18 +176,28 @@ public class ConnectionHttp2 extends ConnectionHttp
     RequestHttp2 request = _freeRequest.allocate();
     
     if (request == null) {
-      request = new RequestHttp2(_httpProtocol,
+      request = new RequestHttp2(_httpProtocol);
+      /*
                                  connTcp(),
                                  _httpContainer,
                                  this);
+                                 */
     }
     
+    RequestBaratineImpl requestWeb = new RequestBaratineImpl(this,
+                                                             request);
     //OutChannelHttp2 stream = request.getStreamOut();
     //stream.init(streamId, _outHttp);
     
-    request.init(this); // , _outHttp);
+    //request.init(this); // , _outHttp);
     
     return request;
+  }
+  
+  @Override
+  public void requestComplete(RequestHttpWeb request, boolean isKeepalive)
+  {
+    //super.requestComplete(request, true);
   }
   
   void freeRequest(RequestHttp2 request)

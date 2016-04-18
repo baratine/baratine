@@ -66,7 +66,7 @@ public class InRequestClient implements InRequest
     return _streamId;
   }
 
-  public ChannelHttp2 getChannel()
+  public ChannelHttp2 channel()
   {
     return _channel;
   }
@@ -98,7 +98,7 @@ public class InRequestClient implements InRequest
   @Override
   public void header(String key, String value)
   {
-    _is.addHeader(key, value);
+    _is.header(key, value);
   }
   
   /**

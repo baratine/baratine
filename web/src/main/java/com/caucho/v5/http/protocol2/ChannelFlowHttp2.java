@@ -88,7 +88,7 @@ public class ChannelFlowHttp2
     
     int window = conn.inHttp().getSettings().initialWindowSize();
     int delta = window - credit;
-    
+
     if (delta >= 8192 || window <= 2 * delta) {
       addReceiveCredit(delta);
       

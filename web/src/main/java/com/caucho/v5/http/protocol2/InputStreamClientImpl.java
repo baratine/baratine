@@ -67,8 +67,9 @@ public class InputStreamClientImpl extends InputStreamClient
     _streamId = streamId;
   }
   
-  void addHeader(String key, String value)
+  void header(String key, String value)
   {
+    System.out.println("HEADER: " + key + " " + value);
     if (_headers == null) {
       _headers = new HashMap<>();
     }
@@ -88,7 +89,8 @@ public class InputStreamClientImpl extends InputStreamClient
     return _status;
   }
   
-  public String getHeader(String key)
+  @Override
+  public String header(String key)
   {
     HashMap<String,String> headers = _headers;
     
@@ -100,6 +102,7 @@ public class InputStreamClientImpl extends InputStreamClient
     }
   }
   
+  @Override
   public Map<String,String> getHeaders()
   {
     return _headers;

@@ -85,7 +85,6 @@ class NodeTableContextPut extends NodeTableContext
   {
     StreamSource source = _ss;
 
-    System.out.println("NVOK: " + source);
     if (source == null) {
       service.put(_tableKey, null, _result);
       return;

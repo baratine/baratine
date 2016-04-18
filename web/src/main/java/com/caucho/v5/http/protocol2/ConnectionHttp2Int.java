@@ -115,7 +115,7 @@ public class ConnectionHttp2Int
     _channelCount.set(1);
   }
   
-  public ChannelFlowHttp2 getChannelZero()
+  public ChannelFlowHttp2 channelZero()
   {
     return _channel0;
   }

@@ -54,7 +54,7 @@ class HeaderCommon
     return _tableKeyStatic;
   }
 
-  protected Map<TableEntry,TableEntry> getTableEntryStatic()
+  protected Map<TableEntry,TableEntry> tableEntryStatic()
   {
     return _tableEntryStatic;
   }
@@ -351,7 +351,7 @@ class HeaderCommon
 
     public TableEntry(TableEntry next)
     {
-      update(0, next.getKey(), next.getValue());
+      update(0, next.key(), next.getValue());
       
       _next = next;
     }
@@ -361,12 +361,12 @@ class HeaderCommon
       update(sequence, key, value);
     }
 
-    public final long getSequence()
+    public final long sequence()
     {
       return _sequence;
     }
 
-    public final void setSequence(long sequence)
+    public final void sequence(long sequence)
     {
       _sequence = sequence;
     }
@@ -376,7 +376,7 @@ class HeaderCommon
       _reference = reference;
     }
 
-    public final long getReference()
+    public final long reference()
     {
       return _reference;
     }
@@ -400,7 +400,7 @@ class HeaderCommon
       _hashCode = key.hashCode() * 65521 + value.hashCode();
     }
 
-    public final String getKey()
+    public final String key()
     {
       return _key;
     }
@@ -412,7 +412,7 @@ class HeaderCommon
 
     public int getSize()
     {
-      return 32 + getKey().length() + getValue().length();
+      return 32 + key().length() + getValue().length();
     }
 
     @Override

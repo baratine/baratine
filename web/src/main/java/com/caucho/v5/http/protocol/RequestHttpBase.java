@@ -224,8 +224,8 @@ public abstract class RequestHttpBase implements OutHttp
 
   //private RequestFacade _requestFacade;
 
-  private ConnectionTcp _conn;
-  private ConnectionHttp _connHttp;
+  //private ConnectionTcp _conn;
+  //private ConnectionHttp _connHttp;
   
   private long _startTime;
   private long _expireTime;
@@ -324,6 +324,16 @@ public abstract class RequestHttpBase implements OutHttp
     _logBuffer = new LogBuffer(logSize, true);
   }
   
+  public void init(RequestBaratine requestWeb)
+  {
+    Objects.requireNonNull(requestWeb);
+  
+    _request = requestWeb;
+    
+    //_connHttp = _request.
+  }
+  
+  /*
   public void init(ConnectionHttp connHttp)
   {
     Objects.requireNonNull(connHttp);
@@ -331,62 +341,7 @@ public abstract class RequestHttpBase implements OutHttp
     _conn = connHttp.connTcp();
     _connHttp = connHttp;
   }
-  
-  public OutHttpProxy outProxy()
-  {
-    return _connHttp.outProxy();
-  }
-  
-  public ProtocolHttp protocolHttp()
-  {
-    return _protocolHttp;
-  }
-  
-  public ConnectionTcp conn()
-  {
-    return _conn;
-  }
-  
-  public ConnectionHttp connHttp()
-  {
-    return _connHttp;
-  }
-
-  public HttpContainer http()
-  {
-    if (_protocolHttp != null) {
-      return _protocolHttp.http();
-    }
-    else {
-      return null;
-    }
-  }
-
-  /**
-   * Returns the connection.
-   */
-  public final ConnectionTcp getConnection()
-  {
-    return _conn;
-  }
-
-  public final long connectionId()
-  {
-    return _conn.id();
-  }
-
-  /**
-   * returns the dispatch server.
-   */
-  public final InvocationManager getInvocationManager()
-  {
-    return http().getInvocationManager();
-  }
-
-  protected final CharBuffer getCharBuffer()
-  {
-    return _cb;
-  }
+  */
 
   /**
    * Prepare the Request object for a new request.
@@ -433,11 +388,67 @@ public abstract class RequestHttpBase implements OutHttp
     _isHeaderWritten = false;
 
     _isClosed = false;
-    _serverHeader = null;
+    _serverHeader = http().serverHeader();
     
     _isKeepalive = true;
   }
   
+  public RequestBaratine request()
+  {
+    return _request;
+  }
+  
+  public OutHttpProxy outProxy()
+  {
+    return connHttp().outProxy();
+  }
+  
+  public ProtocolHttp protocolHttp()
+  {
+    return _protocolHttp;
+  }
+  
+  public ConnectionHttp connHttp()
+  {
+    return request().connHttp();
+  }
+
+  /**
+   * Returns the connection.
+   */
+  public final ConnectionTcp connTcp()
+  {
+    return connHttp().connTcp();
+  }
+
+  public HttpContainer http()
+  {
+    if (_protocolHttp != null) {
+      return _protocolHttp.http();
+    }
+    else {
+      return null;
+    }
+  }
+
+  public final long connectionId()
+  {
+    return connTcp().id();
+  }
+
+  /**
+   * returns the dispatch server.
+   */
+  public final InvocationManager getInvocationManager()
+  {
+    return http().getInvocationManager();
+  }
+
+  protected final CharBuffer getCharBuffer()
+  {
+    return _cb;
+  }
+
   /*
   protected RequestFacade request()
   {
@@ -454,12 +465,14 @@ public abstract class RequestHttpBase implements OutHttp
   {
   }
 
-  public Invocation parseInvocation() throws IOException
+  public Invocation parseInvocation()
+    throws IOException
   {
     return null;
   }
 
-  public boolean readBodyChunk() throws IOException
+  public boolean readBodyChunk()
+    throws IOException
   {
     return false;
   }
@@ -526,9 +539,9 @@ public abstract class RequestHttpBase implements OutHttp
   }
   */
 
-  public abstract byte []getUriBuffer();
+  public abstract byte []uriBuffer();
 
-  public abstract int getUriLength();
+  public abstract int uriLength();
 
   /**
    * Returns true if client disconnects should be ignored.
@@ -550,8 +563,10 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public boolean isConnectionClosed()
   {
-    if (_conn != null)
-      return _conn.isClosed();
+    ConnectionTcp conn = connTcp();
+    
+    if (conn != null)
+      return conn.isClosed();
     else
       return false;
   }
@@ -571,7 +586,7 @@ public abstract class RequestHttpBase implements OutHttp
       log.log(Level.FINER, e.toString(), e);
     }
     
-    ConnectionTcp conn = _conn;
+    ConnectionTcp conn = connTcp();
 
     if (conn != null) {
       conn.clientDisconnect();
@@ -629,8 +644,9 @@ public abstract class RequestHttpBase implements OutHttp
       return isSecure() ? 443 : 80;
     }
 
-    if (host == null)
-      return _conn.portLocal();
+    if (host == null) {
+      return connTcp().portLocal();
+    }
 
     int p1 = host.lastIndexOf(':');
 
@@ -655,14 +671,17 @@ public abstract class RequestHttpBase implements OutHttp
   /**
    * Returns the local port.
    */
+  /*
   public int getLocalPort()
   {
     return _conn.portLocal();
   }
+  */
 
   /**
    * Returns the server's address.
    */
+  /*
   public String getLocalHost()
   {
     return _conn.ipLocal().getHostName();
@@ -680,19 +699,24 @@ public abstract class RequestHttpBase implements OutHttp
 
     return offset + len;
   }
+  */
 
+  /*
   public String remoteHost()
   {
     return _conn.addressRemote();
   }
+  */
 
   /**
    * Returns the local port.
    */
+  /*
   public int getRemotePort()
   {
     return _conn.portRemote();
   }
+  */
 
   /**
    * Returns the request's scheme.
@@ -880,7 +904,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   protected void handleConnectionClose()
   {
-    ConnectionTcp conn = _conn;
+    ConnectionTcp conn = connTcp();
 
     if (conn != null) {
       killKeepalive("client Connection: close");
@@ -1299,10 +1323,12 @@ public abstract class RequestHttpBase implements OutHttp
   /**
    * Returns true if the transport is secure.
    */
+  /*
   public boolean isTransportSecure()
   {
     return _conn.isSecure();
   }
+  */
 
   /*
   protected void initAttributes(RequestFacade facade)
@@ -1319,7 +1345,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public boolean isSecure()
   {
-    return _conn.isSecure();
+    return connTcp().isSecure();
   }
 
   /**
@@ -1477,7 +1503,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public void killKeepalive(String reason)
   {
-    ConnectionTcp conn = _conn;
+    ConnectionTcp conn = connTcp();
 
     _isKeepalive = false;
     /* XXX:
@@ -2635,7 +2661,7 @@ public abstract class RequestHttpBase implements OutHttp
 
   protected String dbgId()
   {
-    return "Tcp[" + _conn.id() + "] ";
+    return "Tcp[" + connTcp().id() + "] ";
   }
 
   static {
