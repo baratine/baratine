@@ -41,25 +41,24 @@ import io.baratine.io.Buffer;
 /**
  * API for handling the output stream.
  */
-public abstract class OutResponseBase 
+public abstract class OutHttpApp 
   extends OutputStreamWithBuffer
 {
-  private static final L10N L = new L10N(OutResponseBase.class);
+  private static final L10N L = new L10N(OutHttpApp.class);
   
   private static final int SIZE = TempBuffer.SIZE;
   private static final int DEFAULT_SIZE = SIZE;
 
   private State _state = State.START;
   
-  private final byte []_singleByteBuffer = new byte[1];
+  //private final byte []_singleByteBuffer = new byte[1];
 
   // head of the expandable buffer
-  private TempBuffer _head = TempBuffer.create();
-  private TempBuffer _tail;
+  private TempBuffer _tBuf;
 
-  private byte []_tailByteBuffer;
-  private int _tailByteLength;
-  private int _tailByteStart;
+  private byte []_buffer;
+  private int _offset;
+  private int _startOffset;
 
   // total buffer length
   private int _bufferCapacity;
@@ -136,11 +135,11 @@ public abstract class OutResponseBase
     
     _bufferCapacity = DEFAULT_SIZE;
     
-    _tail = _head;
+    _tBuf = TempBuffer.create();
     
-    _tailByteBuffer = _tail.buffer();
-    _tailByteStart = bufferStart();
-    _tailByteLength = _tailByteStart;
+    _buffer = _tBuf.buffer();
+    _startOffset = bufferStart();
+    _offset = _startOffset;
 
     _contentLength = 0;
   }
@@ -160,7 +159,7 @@ public abstract class OutResponseBase
   public byte []buffer()
     throws IOException
   {
-    return _tailByteBuffer;
+    return _buffer;
   }
 
   /**
@@ -170,7 +169,7 @@ public abstract class OutResponseBase
   public int offset()
     throws IOException
   {
-    return _tailByteLength;
+    return _offset;
   }
 
   /**
@@ -180,12 +179,12 @@ public abstract class OutResponseBase
   public void offset(int offset)
     throws IOException
   {
-    _tailByteLength = offset;
+    _offset = offset;
   }
 
   public long contentLength()
   {
-    return _contentLength + _tailByteLength - _tailByteStart;
+    return _contentLength + _offset - _startOffset;
   }
 
   /**
@@ -195,9 +194,19 @@ public abstract class OutResponseBase
   public void write(int ch)
     throws IOException
   {
-    _singleByteBuffer[0] = (byte) ch;
+    if (isClosed() || isHead()) {
+      return;
+    }
     
-    write(_singleByteBuffer, 0, 1);
+    int offset = _offset;
+    
+    if (SIZE <= offset) {
+      flushByteBuffer();
+      offset = _offset;
+    }
+
+    _buffer[offset++] = (byte) ch;
+    _offset = offset;
   }
 
   /**
@@ -210,12 +219,12 @@ public abstract class OutResponseBase
       return;
     }
 
-    int byteLength = _tailByteLength;
+    int byteLength = _offset;
     
     while (true) {
       int sublen = Math.min(length, SIZE - byteLength);
 
-      System.arraycopy(buffer, offset, _tailByteBuffer, byteLength, sublen);
+      System.arraycopy(buffer, offset, _buffer, byteLength, sublen);
       offset += sublen;
       length -= sublen;
       byteLength += sublen;
@@ -224,28 +233,18 @@ public abstract class OutResponseBase
         break;
       }
       
-      if (_bufferSize + byteLength < _bufferCapacity) {
-        _tail.length(byteLength);
-        TempBuffer tempBuf = TempBuffer.create();
-        _tail.next(tempBuf);
-        _tail = tempBuf;
-
-        _bufferSize += SIZE;
-        _tailByteBuffer = _tail.buffer();
-        byteLength = _tailByteStart;
-      }
-      else {
-        _tailByteLength = byteLength;
-        flushByteBuffer();
-        byteLength = _tailByteLength;
-      }
+      _offset = byteLength;
+      flushByteBuffer();
+      byteLength = _offset;
     }
 
-    _tailByteLength = byteLength;
+    _offset = byteLength;
   }
 
   public void write(Buffer data)
   {
+    System.out.println("WR2: " + data);
+    
     Objects.requireNonNull(data);
     
     int length = data.length();
@@ -280,23 +279,23 @@ public abstract class OutResponseBase
     
     if (_bufferCapacity <= SIZE
         || _bufferCapacity <= offset + _bufferSize) {
-      _tailByteLength = offset;
+      _offset = offset;
       flushByteBuffer();
 
       return buffer();
     }
     else {
-      _tail.length(offset);
+      _tBuf.length(offset);
       _bufferSize += offset;
 
       TempBuffer tempBuf = TempBuffer.create();
-      _tail.next(tempBuf);
-      _tail = tempBuf;
+      _tBuf.next(tempBuf);
+      _tBuf = tempBuf;
 
-      _tailByteBuffer = _tail.buffer();
-      _tailByteLength = _tailByteStart;
+      _buffer = _tBuf.buffer();
+      _offset = _startOffset;
 
-      return _tailByteBuffer;
+      return _buffer;
     }
   }
 
@@ -376,35 +375,39 @@ public abstract class OutResponseBase
    */
   private void flush(boolean isEnd)
   {
-    if (_tailByteStart == _tailByteLength && _bufferSize == 0) {
+    if (_startOffset == _offset && _bufferSize == 0) {
       if (! isCommitted() || isEnd) {
         flush(null, isEnd);
-        _tailByteStart = bufferStart();
-        _tailByteLength = _tailByteStart;
+        _startOffset = bufferStart();
+        _offset = _startOffset;
       }
       return;
     }
 
-    int sublen = _tailByteLength - _tailByteStart;
-    _tail.length(_tailByteLength);
-    _contentLength += _tailByteLength - _tailByteStart;
+    int sublen = _offset - _startOffset;
+    _tBuf.length(_offset);
+    _contentLength += _offset - _startOffset;
     _bufferSize = 0;
     
-    if (_tailByteStart > 0) {
-      fillChunkHeader(_tail, sublen);
+    if (_startOffset > 0) {
+      fillChunkHeader(_tBuf, sublen);
     }
     
-    flush(_head, isEnd);
-    _head = TempBuffer.create();
-    
-    _tailByteStart = bufferStart();
-    _tailByteLength = _tailByteStart;
+    flush(_tBuf, isEnd);
 
-    _tail = _head;
     if (! isEnd) {
-      _tail.length(_tailByteLength);
+      _tBuf = TempBuffer.create();
+    
+      _startOffset = bufferStart();
+      _offset = _startOffset;
+
+      _tBuf.length(_offset);
+      
+      _buffer = _tBuf.buffer();
     }
-    _tailByteBuffer = _tail.buffer();
+    else {
+      _tBuf = null;
+    }
   }
   
   protected void fillChunkHeader(TempBuffer buf, int sublen)

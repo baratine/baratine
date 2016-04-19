@@ -52,7 +52,7 @@ public class MessageFlush extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteStream os, OutHttp outHttp)
+  public void deliver(WriteStream os, OutHttp2 outHttp)
     throws IOException
   {
     try {

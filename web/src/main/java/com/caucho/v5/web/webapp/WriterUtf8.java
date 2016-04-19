@@ -34,6 +34,7 @@ import java.io.Writer;
 import java.util.Objects;
 
 import com.caucho.v5.io.OutputStreamWithBuffer;
+import com.caucho.v5.util.Utf8Util;
 
 
 /**
@@ -65,14 +66,14 @@ public final class WriterUtf8 extends Writer
       return;
     }
     
-    char []cBuf = buffer();
-    
     int cOffset = _cOffset;
+    
+    char[] buffer = buffer();
+    
+    buffer[cOffset++] = (char) ch;
     _cOffset = 0;
     
-    cBuf[cOffset] = (char) ch;
-    
-    write(cBuf, 0, cOffset + 1);
+    write(buffer, 0, cOffset);
   }
   
   @Override
@@ -190,10 +191,16 @@ public final class WriterUtf8 extends Writer
     int ch;
   
     OutputStreamWithBuffer os = _os;
+    byte []buffer = os.buffer();
+    int bOffset = os.offset();
+    
+    end = Math.min(end, offset + buffer.length - bOffset);
   
     for (; offset < end && (ch = value.charAt(offset)) < 0x80; offset++) {
-      os.write(ch);
+      buffer[bOffset++] = (byte) ch;
     }
+    
+    os.offset(bOffset);
     
     return offset;
   }

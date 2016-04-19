@@ -73,7 +73,7 @@ public class MessageResponseHttp2 extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteStream os, OutHttp outHttp)
+  public void deliver(WriteStream os, OutHttp2 outHttp)
     throws IOException
   {
     ChannelOutHttp2 stream = _request.getChannelOut();
@@ -102,7 +102,7 @@ public class MessageResponseHttp2 extends MessageHttp
     stream.writeCont(outHttp);
   }
   
-  private void writeHeaders(OutHttp outHttp)
+  private void writeHeaders(OutHttp2 outHttp)
     throws IOException
   {
     OutHeader outHeader = outHttp.getOutHeader();

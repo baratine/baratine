@@ -53,7 +53,7 @@ public class ProtocolHttp implements Protocol
   
   private String _serverHeader;
   
-  private FreeList<RequestHttp> _freeRequest = new FreeList<>(128);
+  private FreeList<RequestHttp1> _freeRequest = new FreeList<>(128);
   
   private AtomicLong _sequence = new AtomicLong();
 
@@ -143,10 +143,10 @@ public class ProtocolHttp implements Protocol
     
     Objects.requireNonNull(http);
     
-    RequestHttp request = _freeRequest.allocate();
+    RequestHttp1 request = _freeRequest.allocate();
     
     if (request == null) {
-      request = new RequestHttp(this);
+      request = new RequestHttp1(this);
     }
 
     //request.init(conn);
@@ -154,7 +154,7 @@ public class ProtocolHttp implements Protocol
     return new RequestBaratineImpl(conn, request);
   }
   
-  protected void requestFree(RequestHttp request)
+  protected void requestFree(RequestHttp1 request)
   {
     if (request != null) {
       _freeRequest.free(request);

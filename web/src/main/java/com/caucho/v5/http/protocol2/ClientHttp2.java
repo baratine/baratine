@@ -63,7 +63,7 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   private final ConnectionHttp2Int _conn;
   
   private InHttp _inHttp;
-  private OutHttp _outHttp;
+  private OutHttp2 _outHttp;
   
   private OutputStream _logIn;
   private OutputStream _logOut;

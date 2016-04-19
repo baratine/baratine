@@ -31,13 +31,13 @@ package com.caucho.v5.http.protocol2;
 
 import java.util.Objects;
 
-import com.caucho.v5.http.protocol.OutResponseBase;
+import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.io.TempBuffer;
 
 import io.baratine.io.Buffer;
 
 //public class OutResponseHttp2 extends OutResponseCache
-public class OutResponseHttp2 extends OutResponseBase
+public class OutResponseHttp2 extends OutHttpApp
 {
   private final RequestHttp2 _request;
   //private TempBuffer _tBuf;

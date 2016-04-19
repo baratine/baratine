@@ -54,26 +54,43 @@ class OutHttpProxyImpl implements OutHttpProxy
     _connHttp = conn;
   }
   
+  private ConnectionHttp connHttp()
+  {
+    return _connHttp;
+  }
+  
   private ConnectionTcp conn()
   {
     return _connHttp.connTcp();
   }
   
+  void start()
+  {
+    _isClose = false;
+  }
+  
   @Override
-  public void write(OutHttp out, 
+  public void write(OutHttpTcp out, 
                     Buffer buffer, 
                     boolean isEnd)
   {
-    if (out.canWrite(_connHttp.sequenceWrite() + 1)) {
-      _isClose = out.write(conn().writeStream(), buffer, isEnd);
+    boolean isClose = false;
+
+    if (out.canWrite(connHttp().sequenceWrite())) {
+      if (out.write(conn().writeStream(), buffer, isEnd)) {
+        isClose = isEnd;
+      }
       
       if (isEnd) {
+        connHttp().onWriteEnd();
         writePending();
       }
     }
     else {
       _pendingList.add(new PendingData(out, buffer, isEnd));
     }
+    
+    _isClose = isClose;
   }
 
   /*
@@ -103,30 +120,43 @@ class OutHttpProxyImpl implements OutHttpProxy
       for (int i = 0; i < _pendingList.size(); i++) {
         Pending pending = _pendingList.get(i);
         
-        if (pending.out().canWrite(_connHttp.sequenceWrite() + 1)) {
+        if (pending.out().canWrite(_connHttp.sequenceWrite())) {
+          _pendingList.remove(i--);
+          
           pending.write();
           
           if (pending.isEnd()) {
             isEnd = true;
           }
-          
-          _pendingList.remove(i--);
         }
       }
     } while (isEnd);
   }
 
   @Override
-  public void disconnect(OutHttp out)
+  public void disconnect(OutHttpTcp out)
   {
     out.disconnect(conn().writeStream());
+  }
+  
+  private boolean isClose()
+  {
+    if (_isClose) {
+      return true;
+    }
+    else if (connHttp().isCloseRead()) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
   
   @AfterBatch
   public void afterBatch()
   {
     try {
-      if (_isClose) {
+      if (isClose()) {
         conn().writeStream().close();
       }
       else {
@@ -141,16 +171,16 @@ class OutHttpProxyImpl implements OutHttpProxy
   
   abstract private class Pending
   {
-    private OutHttp _out;
+    private OutHttpTcp _out;
     private boolean _isEnd;
     
-    Pending(OutHttp out, boolean isEnd)
+    Pending(OutHttpTcp out, boolean isEnd)
     {
       _out = out;
       _isEnd = isEnd;
     }
     
-    OutHttp out()
+    OutHttpTcp out()
     {
       return _out;
     }
@@ -167,7 +197,7 @@ class OutHttpProxyImpl implements OutHttpProxy
   {
     private Buffer _data;
     
-    PendingData(OutHttp out,
+    PendingData(OutHttpTcp out,
                 Buffer data,
                 boolean isEnd)
     {
@@ -179,7 +209,7 @@ class OutHttpProxyImpl implements OutHttpProxy
     @Override
     void write()
     {
-      out().write(conn().writeStream(), _data, isEnd());
+      OutHttpProxyImpl.this.write(out(), _data, isEnd());
     }
   }
 }

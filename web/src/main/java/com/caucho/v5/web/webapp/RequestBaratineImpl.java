@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.http.protocol.ConnectionHttp;
-import com.caucho.v5.http.protocol.OutResponseBase;
+import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.http.protocol.RequestHttpBase;
 import com.caucho.v5.http.protocol.RequestHttpWeb;
 import com.caucho.v5.http.websocket.WebSocketBaratineImpl;
@@ -704,7 +704,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   public RequestBaratineImpl flush()
   {
     try {
-      OutResponseBase out = requestHttp().out();
+      OutHttpApp out = requestHttp().out();
 
       out.flush();
     } catch (Exception e) {
@@ -946,7 +946,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
 
     //RequestBaratineImpl reqNext = null;//next();
 
-    connHttp.onCloseWrite();
+    connHttp.onWriteEnd();
 
     /*
     if (reqNext != null) {

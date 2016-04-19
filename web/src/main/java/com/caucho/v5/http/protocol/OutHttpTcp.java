@@ -36,7 +36,7 @@ import io.baratine.io.Buffer;
 /**
  * Writer for http response, called in the writer service.
  */
-public interface OutHttp
+public interface OutHttpTcp
 {
   boolean canWrite(long sequence);
   

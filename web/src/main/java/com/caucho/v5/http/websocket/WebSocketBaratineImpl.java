@@ -40,9 +40,9 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.http.protocol.OutHttp;
+import com.caucho.v5.http.protocol.OutHttpTcp;
 import com.caucho.v5.http.protocol.OutHttpProxy;
-import com.caucho.v5.http.protocol.OutResponseBase;
+import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.port.StateConnection;
@@ -84,7 +84,7 @@ public class WebSocketBaratineImpl<T,S>
   
   //private char []_charBuf = new char[256];
 
-  private OutResponseBase _os;
+  private OutHttpApp _os;
 
   private RequestBaratine _request;
   private ServiceWebSocket<T,S> _service;
@@ -376,7 +376,6 @@ public class WebSocketBaratineImpl<T,S>
   @Override
   protected void send(TempBuffer tBuf)
   {
-    System.out.println("SEND: " + tBuf);
     _outProxy.write(_outWriter, tBuf, false);
   }
   
@@ -666,7 +665,7 @@ public class WebSocketBaratineImpl<T,S>
   }
   */
   
-  private class OutWebSocketWriter implements OutHttp
+  private class OutWebSocketWriter implements OutHttpTcp
   {
     @Override
     public boolean write(WriteStream out,

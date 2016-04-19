@@ -61,7 +61,7 @@ public class RequestHttpWeb implements ConnectionProtocol
 
   private StateHttpEnum _state = StateHttpEnum.IDLE;
   
-  private long _sequenceRead;
+  //private long _sequenceRead;
   private ConnectionHttp _connHttp;
 
   protected RequestHttpWeb(ConnectionHttp connHttp,
@@ -206,7 +206,7 @@ public class RequestHttpWeb implements ConnectionProtocol
       }
       
       // sequence used for write ordering 
-       _sequenceRead = connHttp().allocateSequence();
+       //_sequenceRead = connHttp().nextSequenceRead();
       
       if (_state.isBodyComplete()) {
         bodyComplete();
@@ -247,10 +247,12 @@ public class RequestHttpWeb implements ConnectionProtocol
   {
   }
   
+  /*
   long sequence()
   {
     return _sequenceRead;
   }
+  */
 
   public void upgrade(ConnectionProtocol upgrade)
   {
@@ -346,7 +348,7 @@ public class RequestHttpWeb implements ConnectionProtocol
     
     //RequestHttpState reqNext = next();
     
-    connHttp.onCloseWrite();
+    connHttp.onWriteEnd();
     
     _state = _state.toIdle();
     

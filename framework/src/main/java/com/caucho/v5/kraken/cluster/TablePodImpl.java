@@ -325,12 +325,6 @@ public final class TablePodImpl implements TablePod
       return;
     }
 
-    /*
-    System.out.println("START: " + index + " " + server.isUp()
-                       + " " + getTable().getName() + " peer:" + server
-                       + " self:" + BartenderSystem.getCurrentSelfServer());
-*/                       
-
     long now = CurrentTime.currentTime();
     
     long startupLastUpdateTime = _table.getStartupLastUpdateTime();

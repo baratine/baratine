@@ -44,10 +44,10 @@ public interface OutHttpProxy
    * @param data the chunk of data
    * @param isEnd true for the final result
    */
-  void write(OutHttp outHttp, Buffer data, boolean isEnd);
+  void write(OutHttpTcp outHttp, Buffer data, boolean isEnd);
   
   /**
    * Disconnect the connection
    */
-  void disconnect(OutHttp outHttp);
+  void disconnect(OutHttpTcp outHttp);
 }

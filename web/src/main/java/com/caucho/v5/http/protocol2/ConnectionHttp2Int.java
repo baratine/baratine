@@ -42,7 +42,7 @@ import com.caucho.v5.io.WriteStream;
 public class ConnectionHttp2Int
 {
   private final InHttp _inHttp;
-  private final OutHttp _outHttp;
+  private final OutHttp2 _outHttp;
   private final PeerHttp _peer;
   
   private ChannelFlowHttp2 _channel0;
@@ -62,7 +62,7 @@ public class ConnectionHttp2Int
     _inHandler = handler;
     
     _inHttp = new InHttp(this, handler);
-    _outHttp = new OutHttp(this, peer);
+    _outHttp = new OutHttp2(this, peer);
     
     _channel0 = new ChannelFlowHttp2();
     
@@ -92,7 +92,7 @@ public class ConnectionHttp2Int
     return _inHttp;
   }
 
-  public OutHttp outHttp()
+  public OutHttp2 outHttp()
   {
     return _outHttp;
   }

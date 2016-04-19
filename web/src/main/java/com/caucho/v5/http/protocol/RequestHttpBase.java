@@ -74,7 +74,7 @@ import com.caucho.v5.web.webapp.WriterUtf8;
  * Abstract request implementing methods common to the different
  * request implementations.
  */
-public abstract class RequestHttpBase implements OutHttp
+public abstract class RequestHttpBase implements OutHttpTcp
 {
   private static final Logger log
     = Logger.getLogger(RequestHttpBase.class.getName());
@@ -258,7 +258,7 @@ public abstract class RequestHttpBase implements OutHttp
   private final ArrayList<String> _footerKeys = new ArrayList<>();
   private final ArrayList<String> _footerValues = new ArrayList<>();
 
-  private OutResponseBase _responseStream;
+  private OutHttpApp _responseStream;
 
   private final LogBuffer _logBuffer;
 
@@ -577,7 +577,7 @@ public abstract class RequestHttpBase implements OutHttp
   public void clientDisconnect()
   {
     try {
-      OutResponseBase responseStream = _responseStream;
+      OutHttpApp responseStream = _responseStream;
       
       if (responseStream != null) {
         responseStream.close();
@@ -1524,6 +1524,7 @@ public abstract class RequestHttpBase implements OutHttp
     return _isKeepalive;
   }
 
+  /*
   public boolean isSuspend()
   {
     // return _conn != null && (_conn.isCometActive() || _conn.isDuplex());
@@ -1540,6 +1541,7 @@ public abstract class RequestHttpBase implements OutHttp
     // return _conn != null && _conn.isDuplex();
     return false;
   }
+  */
 
   /*
   protected HashMapImpl<String,String[]> getForm()
@@ -1642,14 +1644,14 @@ public abstract class RequestHttpBase implements OutHttp
     return _isClosed;
   }
   
-  abstract protected OutResponseBase createOut();
+  abstract protected OutHttpApp createOut();
 
   /**
    * Gets the response stream.
    */
-  public final OutResponseBase out()
+  public final OutHttpApp out()
   {
-    OutResponseBase stream = _responseStream;
+    OutHttpApp stream = _responseStream;
     
     if (stream == null) {
       stream = createOut();
@@ -1700,7 +1702,7 @@ public abstract class RequestHttpBase implements OutHttp
   
   public final void freeResponseStream()
   {
-    OutResponseBase responseStream = _responseStream;
+    OutHttpApp responseStream = _responseStream;
     _responseStream = null;
     
     //_responseOutputStream.init(null);
@@ -1711,7 +1713,7 @@ public abstract class RequestHttpBase implements OutHttp
     }
   }
   
-  protected void freeResponseStream(OutResponseBase stream)
+  protected void freeResponseStream(OutHttpApp stream)
   {
   }
 
@@ -2263,7 +2265,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public final boolean isOutCommitted()
   {
-    OutResponseBase stream = out();
+    OutHttpApp stream = out();
     
     if (stream.isCommitted()) {
       return true;
@@ -2299,7 +2301,7 @@ public abstract class RequestHttpBase implements OutHttp
    */
   public long contentLengthSent()
   {
-    OutResponseBase stream = _responseStream;
+    OutHttpApp stream = _responseStream;
     
     // stream can be null for duplex (websocket)
     if (stream != null) {
@@ -2644,7 +2646,7 @@ public abstract class RequestHttpBase implements OutHttp
   
   void closeResponse()
   {
-    OutResponseBase outResponse = _responseStream;
+    OutHttpApp outResponse = _responseStream;
     
     if (outResponse != null) {
       IoUtil.close(outResponse);

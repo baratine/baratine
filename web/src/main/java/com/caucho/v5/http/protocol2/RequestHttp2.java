@@ -41,9 +41,9 @@ import java.util.logging.Logger;
 import com.caucho.v5.health.shutdown.Shutdown;
 import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.protocol.ConnectionHttp;
-import com.caucho.v5.http.protocol.OutResponseBase;
+import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.http.protocol.ProtocolHttp;
-import com.caucho.v5.http.protocol.RequestHttp;
+import com.caucho.v5.http.protocol.RequestHttp1;
 import com.caucho.v5.http.protocol.RequestHttpBase;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
@@ -168,7 +168,7 @@ public class RequestHttp2
     initRequest();
   }
   
-  OutHttp outHttp()
+  OutHttp2 outHttp()
   {
     return channel().getOutChannel().getOutHttp();
   }
@@ -214,7 +214,7 @@ public class RequestHttp2
     */
   }
   
-  public void fillUpgrade(RequestHttp requestHttp)
+  public void fillUpgrade(RequestHttp1 requestHttp)
   {
     header(":method", requestHttp.method());
     String host = requestHttp.header("Host");
@@ -717,6 +717,7 @@ public class RequestHttp2
     // ignore for hmux
   }
 
+  /*
   @Override
   public boolean isSuspend()
   {
@@ -728,6 +729,7 @@ public class RequestHttp2
   {
     return false;
   }
+  */
 
   /**
    * Returns true if a valid HTTP request has started.
@@ -778,7 +780,7 @@ public class RequestHttp2
     }
   }
   @Override
-  protected OutResponseBase createOut()
+  protected OutHttpApp createOut()
   {
     return new OutResponseHttp2(this);
   }
@@ -816,7 +818,7 @@ public class RequestHttp2
       if (data != null) {
         ConnectionHttp2 conn = connHttp();
 
-        OutHttp out = conn.getOut();
+        OutHttp2 out = conn.getOut();
         
         out.writeData(streamId(), data,
                       isEnd ? Http2Constants.END_STREAM : 0);
@@ -835,7 +837,7 @@ public class RequestHttp2
   {
     ConnectionHttp2 conn = connHttp();
 
-    OutHttp out = conn.getOut();
+    OutHttp2 out = conn.getOut();
     
     OutHeader outHeader = out.getOutHeader();
     

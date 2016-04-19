@@ -35,7 +35,7 @@ import java.util.Objects;
 import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.ProtocolHttp;
-import com.caucho.v5.http.protocol.RequestHttp;
+import com.caucho.v5.http.protocol.RequestHttp1;
 import com.caucho.v5.http.protocol.RequestHttpWeb;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.network.port.ConnectionTcp;
@@ -80,7 +80,7 @@ public class ConnectionHttp2 extends ConnectionHttp
     _conn = new ConnectionHttp2Int(this, PeerHttp.SERVER);
   }
   
-  OutHttp getOut()
+  OutHttp2 getOut()
   {
     return _conn.outHttp();
   }
@@ -97,7 +97,7 @@ public class ConnectionHttp2 extends ConnectionHttp
     _conn.init(_connTcp.readStream(), _connTcp.writeStream());
     
     InHttp inHttp = _conn.inHttp();
-    OutHttp outHttp = _conn.outHttp();
+    OutHttp2 outHttp = _conn.outHttp();
     
     inHttp.readSettings();
     outHttp.updateSettings(inHttp.peerSettings());
@@ -105,11 +105,11 @@ public class ConnectionHttp2 extends ConnectionHttp
     outHttp.flush();
   }
 
-  public void onStartUpgrade(RequestHttp requestHttp)
+  public void onStartUpgrade(RequestHttp1 requestHttp)
     throws IOException
   {
     InHttp inHttp = _conn.inHttp();
-    OutHttp outHttp = _conn.outHttp();
+    OutHttp2 outHttp = _conn.outHttp();
 
     System.out.println("START-UPGRADE: " + this);
     if (true) throw new UnsupportedOperationException();

@@ -57,7 +57,7 @@ public class MessageDataCont extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteStream os, OutHttp out)
+  public void deliver(WriteStream os, OutHttp2 out)
     throws IOException
   {
     _stream.writeCont(out);

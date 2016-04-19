@@ -52,12 +52,12 @@ import io.baratine.io.Buffer;
 /**
  * InputStreamHttp reads a single HTTP frame.
  */
-public class OutHttp implements AutoCloseable
+public class OutHttp2 implements AutoCloseable
 {
-  private static final L10N L = new L10N(OutHttp.class);
+  private static final L10N L = new L10N(OutHttp2.class);
   
   private static final Logger log
-    = Logger.getLogger(OutHttp.class.getName());
+    = Logger.getLogger(OutHttp2.class.getName());
   
   private WriteStream _os;
   
@@ -79,7 +79,7 @@ public class OutHttp implements AutoCloseable
 
   private ConnectionHttp2Int _conn;
 
-  public OutHttp(ConnectionHttp2Int conn, 
+  public OutHttp2(ConnectionHttp2Int conn, 
                  PeerHttp peer)
   {
     Objects.requireNonNull(conn);
@@ -548,7 +548,7 @@ public class OutHttp implements AutoCloseable
     public void deliver(MessageHttp message, Outbox outbox)
     {
       try {
-        message.deliver(_os, OutHttp.this);
+        message.deliver(_os, OutHttp2.this);
       } catch (Exception e) {
         log.log(Level.FINER, e.toString(), e);
       }

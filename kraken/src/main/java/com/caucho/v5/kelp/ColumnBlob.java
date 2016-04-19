@@ -514,11 +514,6 @@ public class ColumnBlob extends Column
       int sublen = blobLength & ~LARGE_BLOB_MASK;
       
       os.write(rowBuffer, blobOffset, sublen);
-      
-      /*
-      System.out.println("WRITE: " + Hex.toHex(rowBuffer, rowOffset, 5) + " "
-        + Hex.toHex(rowBuffer, blobOffset, sublen));
-        */
     }
   }
 

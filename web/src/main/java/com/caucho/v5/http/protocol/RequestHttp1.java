@@ -63,12 +63,12 @@ import io.baratine.io.Buffer;
 /**
  * Parses and holds request information for an HTTP request.
  */
-public class RequestHttp extends RequestHttpBase
+public class RequestHttp1 extends RequestHttpBase
 {
-  private static final L10N L = new L10N(RequestHttp.class);
+  private static final L10N L = new L10N(RequestHttp1.class);
   
   private static final Logger log
-    = Logger.getLogger(RequestHttp.class.getName());
+    = Logger.getLogger(RequestHttp1.class.getName());
   
   public static final int HTTP_0_9 = 0x0009;
   public static final int HTTP_1_0 = 0x0100;
@@ -175,7 +175,7 @@ public class RequestHttp extends RequestHttpBase
    *
    * @param server the owning server.
    */
-  public RequestHttp(ProtocolHttp protocolHttp)
+  public RequestHttp1(ProtocolHttp protocolHttp)
   {
     super(protocolHttp);
     
@@ -197,6 +197,7 @@ public class RequestHttp extends RequestHttpBase
     _serverHeaderBytes = ("\r\nServer: " + serverHeader).getBytes();
   }
   
+  @Override
   public void init(RequestBaratine request)
   {
     super.init(request);
@@ -686,6 +687,8 @@ public class RequestHttp extends RequestHttpBase
 
         return false;
       }
+      
+      _sequence = connHttp().nextSequenceRead();
 
       if (log.isLoggable(Level.FINE)) {
         log.fine(_method + " "
@@ -1683,12 +1686,14 @@ public class RequestHttp extends RequestHttpBase
   // upgrade to duplex
   //
 
+  /*
   @Override
   public boolean isDuplex()
   {
     throw new UnsupportedOperationException();
     //return getRequestProtocol().isDuplex();
   }
+  */
   
   @Override
   public void startDuplex(ConnectionProtocol request)
@@ -1749,11 +1754,11 @@ public class RequestHttp extends RequestHttpBase
   }
 
   @Override
-  protected OutResponseBase createOut()
+  protected OutHttpApp createOut()
   {
     //RequestHttp request = (RequestHttp) getRequest();
 
-    return new OutResponseHttp(this);
+    return new OutHttpApp1(this);
   }
   
   boolean isChunked()
@@ -1765,7 +1770,7 @@ public class RequestHttp extends RequestHttpBase
   {
     //RequestFacade request = request();
     
-    if (RequestHttp.HTTP_1_1 <= getVersion()
+    if (RequestHttp1.HTTP_1_1 <= getVersion()
         && contentLengthOut() < 0
         && ! method().equalsIgnoreCase("HEAD")) {
       return true;
@@ -1776,9 +1781,9 @@ public class RequestHttp extends RequestHttpBase
   }
   
   @Override
-  public boolean canWrite(long sequence)
+  public boolean canWrite(long writeSequence)
   {
-    return sequence() <= sequence;
+    return sequence() <= writeSequence;
   }
   
   @Override
@@ -1786,13 +1791,15 @@ public class RequestHttp extends RequestHttpBase
                        Buffer data,
                        boolean isEnd)
   {
-    return writeFirstImpl(out, data, isEnd);
+    writeImpl(out, data, isEnd);
+    
+    return ! isKeepalive();
   }
   
-  private boolean writeFirstImpl(WriteStream out,
-                                 Buffer data,
-                                 boolean isEnd)
-   {
+  private boolean writeImpl(WriteStream out, 
+                            Buffer data,
+                            boolean isEnd)
+  {
     try {
       if (_isFirst) {
         _isFirst = false;
@@ -1909,7 +1916,7 @@ public class RequestHttp extends RequestHttpBase
     @Override
     void write()
     {
-      writeFirstImpl(_out, _data, _isEnd);
+      writeImpl(_out, _data, _isEnd);
       writeNext();
     }
   }
@@ -1997,7 +2004,7 @@ public class RequestHttp extends RequestHttpBase
     int version = getVersion();
     boolean debug = log.isLoggable(Level.FINE);
 
-    if (version < RequestHttp.HTTP_1_0) {
+    if (version < RequestHttp1.HTTP_1_0) {
       killKeepalive("http client version " + version);
       return;
     }
@@ -2007,7 +2014,7 @@ public class RequestHttp extends RequestHttpBase
     int statusCode = status();
     
     if (statusCode == 200) {
-      if (version < RequestHttp.HTTP_1_1) {
+      if (version < RequestHttp1.HTTP_1_1) {
         os.write(_http10ok, 0, _http10ok.length);
       }
       else {
@@ -2015,7 +2022,7 @@ public class RequestHttp extends RequestHttpBase
       }
     }
     else {
-      if (version < RequestHttp.HTTP_1_1) {
+      if (version < RequestHttp1.HTTP_1_1) {
         os.printLatin1("HTTP/1.0 ");
       }
       else {
@@ -2237,7 +2244,7 @@ public class RequestHttp extends RequestHttpBase
       }
     }
 
-    if (version < RequestHttp.HTTP_1_1) {
+    if (version < RequestHttp1.HTTP_1_1) {
       killKeepalive("http response version: " + version);
     }
     else {

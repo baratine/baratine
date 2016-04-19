@@ -33,17 +33,17 @@ import com.caucho.v5.io.TempBuffer;
 
 import io.baratine.io.Buffer;
 
-public class OutResponseHttp
-  extends OutResponseBase
+public class OutHttpApp1
+  extends OutHttpApp
 {
   private static final int CHUNK_HEADER = 8;
 
-  private RequestHttp _request;
+  private RequestHttp1 _request;
 
   private boolean _isChunked;
   private boolean _isHeaders;
 
-  OutResponseHttp(RequestHttp request)
+  OutHttpApp1(RequestHttp1 request)
   {
     //super(request);
 
