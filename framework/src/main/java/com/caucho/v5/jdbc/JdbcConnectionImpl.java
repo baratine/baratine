@@ -242,7 +242,7 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @Override
-  public void query(Result<ResultSetKraken> result, String sql, Object ... params)
+  public void query(Result<JdbcResultSet> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
@@ -261,13 +261,13 @@ public class JdbcConnectionImpl implements JdbcService
 
       boolean isResultSet = stmt.execute();
 
-      ResultSetKraken rs;
+      JdbcResultSet rs;
 
       if (isResultSet) {
-        rs = new ResultSetKraken(stmt.getResultSet());
+        rs = new JdbcResultSet(stmt.getResultSet());
       }
       else {
-        rs = new ResultSetKraken();
+        rs = new JdbcResultSet();
       }
 
       result.ok(rs);
@@ -285,7 +285,7 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @Override
-  public void queryBatch(Result<ResultSetKraken[]> result, String sql, Object[] ... paramsList)
+  public void queryBatch(Result<JdbcResultSet[]> result, String sql, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + toDebugSafe(sql));
@@ -294,7 +294,7 @@ public class JdbcConnectionImpl implements JdbcService
     testQueryBefore();
 
     PreparedStatement stmt = null;
-    ResultSetKraken[] resultList = new ResultSetKraken[paramsList.length];
+    JdbcResultSet[] resultList = new JdbcResultSet[paramsList.length];
 
     try {
       stmt = _conn.prepareStatement(sql);
@@ -302,7 +302,7 @@ public class JdbcConnectionImpl implements JdbcService
       for (int i = 0; i < paramsList.length; i++) {
         Object[] params = paramsList[i];
 
-        ResultSetKraken rs = query(stmt, params);
+        JdbcResultSet rs = query(stmt, params);
 
         resultList[i] = rs;
       }
@@ -322,7 +322,7 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @Override
-  public void queryBatch(Result<ResultSetKraken[]> result, String[] sqlList, Object[] ... paramsList)
+  public void queryBatch(Result<JdbcResultSet[]> result, String[] sqlList, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + sqlList.length);
@@ -331,7 +331,7 @@ public class JdbcConnectionImpl implements JdbcService
     testQueryBefore();
 
     PreparedStatement stmt = null;
-    ResultSetKraken[] resultList = new ResultSetKraken[sqlList.length];
+    JdbcResultSet[] resultList = new JdbcResultSet[sqlList.length];
 
     try {
       for (int i = 0; i < sqlList.length; i++) {
@@ -341,7 +341,7 @@ public class JdbcConnectionImpl implements JdbcService
 
         stmt = _conn.prepareStatement(sql);
 
-        ResultSetKraken rs = query(stmt, params);
+        JdbcResultSet rs = query(stmt, params);
 
         stmt.close();
 
@@ -362,7 +362,7 @@ public class JdbcConnectionImpl implements JdbcService
     result.ok(resultList);
   }
 
-  private ResultSetKraken query(PreparedStatement stmt, Object[] params)
+  private JdbcResultSet query(PreparedStatement stmt, Object[] params)
     throws SQLException
   {
     int i = 0;
@@ -374,10 +374,10 @@ public class JdbcConnectionImpl implements JdbcService
     boolean isResultSet = stmt.execute();
 
     if (isResultSet) {
-      return new ResultSetKraken(stmt.getResultSet());
+      return new JdbcResultSet(stmt.getResultSet());
     }
     else {
-      return new ResultSetKraken();
+      return new JdbcResultSet();
     }
   }
 
