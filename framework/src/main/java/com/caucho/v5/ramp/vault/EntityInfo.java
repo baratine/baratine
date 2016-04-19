@@ -55,7 +55,7 @@ import io.baratine.db.Cursor;
 import io.baratine.service.ServiceException;
 import io.baratine.vault.Asset;
 import io.baratine.vault.IdAsset;
-import io.baratine.vault.LoadStateAsset;
+import io.baratine.vault.StateAsset;
 
 class EntityInfo<ID,T>
 {
@@ -208,7 +208,7 @@ class EntityInfo<ID,T>
   private FieldBase<T> introspectLoadState()
   {
     for (Field field : _type.getDeclaredFields()) {
-      if (field.getType().equals(LoadStateAsset.class)) {
+      if (field.getType().equals(StateAsset.class)) {
         return new FieldObject<>(field);
       }
     }
@@ -541,7 +541,7 @@ class EntityInfo<ID,T>
   private void load(Cursor cursor, T bean, boolean isInitId)
     throws IllegalAccessException
   {
-    _fieldState.setObject(bean, LoadStateAsset.LOADED);
+    _fieldState.setObject(bean, StateAsset.LOADED);
     
     int index = 0;
     for (int i = 0; i < _fields.length; i++) {
@@ -574,24 +574,24 @@ class EntityInfo<ID,T>
   {
     Objects.requireNonNull(entity);
 
-    _fieldState.setObject(entity, LoadStateAsset.UNLOADED);
+    _fieldState.setObject(entity, StateAsset.UNLOADED);
   }
 
   public boolean isDeleting(T entity)
   {
-    LoadStateAsset state = (LoadStateAsset) _fieldState.getObject(entity);
+    StateAsset state = (StateAsset) _fieldState.getObject(entity);
     
-    return state != null && state == LoadStateAsset.DELETING;
+    return state != null && state == StateAsset.DELETING;
   }
 
   public void delete(T entity)
   {
-    LoadStateAsset state = (LoadStateAsset) _fieldState.getObject(entity);
+    StateAsset state = (StateAsset) _fieldState.getObject(entity);
     
     if (state == null) {
     }
-    else if (state == LoadStateAsset.DELETING) {
-      _fieldState.setObject(entity, LoadStateAsset.DELETED);
+    else if (state == StateAsset.DELETING) {
+      _fieldState.setObject(entity, StateAsset.DELETED);
     }
     else {
       throw new IllegalStateException(state.toString());

@@ -270,6 +270,9 @@ class ValidatorVault
       if (method.getName().startsWith("create")) {
         return true;
       }
+      else if (method.getName().startsWith("delete")) {
+        return true;
+      }
       else if (method.getName().startsWith("find")) {
         return true;
       }

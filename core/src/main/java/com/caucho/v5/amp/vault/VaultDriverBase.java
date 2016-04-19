@@ -58,7 +58,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.vault.Id;
-import io.baratine.vault.LoadStateAsset;
+import io.baratine.vault.StateAsset;
 
 public class VaultDriverBase<ID,T>
   implements VaultDriver<ID,T>
@@ -144,7 +144,7 @@ public class VaultDriverBase<ID,T>
         continue;
       }
       
-      if (field.getType().equals(LoadStateAsset.class)) {
+      if (field.getType().equals(StateAsset.class)) {
         return FieldBeanFactory.get(field);
       }
     }
@@ -171,6 +171,16 @@ public class VaultDriverBase<ID,T>
       }
       else {
         return newCreateMethodDTO(method);
+      }
+    }
+    else if (method.getName().startsWith("delete")) {
+      Method target = entityMethod(method);
+
+      if (target != null) {
+        return newDeleteMethod(target);
+      }
+      else {
+        return newDeleteMethodDTO(method);
       }
     }
     else {
@@ -273,6 +283,52 @@ public class VaultDriverBase<ID,T>
       }
     
       return new MethodVaultCreateDTO<S>(_ampManager, idGen, 
+                                        vaultMethod,
+                                        methodAmp);
+    } catch (Exception e) {
+      e.printStackTrace();;
+      throw new IllegalStateException(e);
+    }
+  }
+
+  private <S> MethodVault<S> newDeleteMethod(Method targetMethod)
+  {
+    Supplier<String> idGen = idSupplier();
+
+    try {
+      //targetMethod.setAccessible(true);
+      //MethodHandle targetHandle = MethodHandles.lookup().unreflect(targetMethod);
+
+      return new MethodVaultDelete<S>(_ampManager, targetMethod);
+    } catch (Exception e) {
+      e.printStackTrace();;
+      throw new IllegalStateException(e);
+    }
+  }
+  
+  private <S> MethodVault<S> newDeleteMethodDTO(Method vaultMethod)
+  {
+    try {
+      Class<?> []params = vaultMethod.getParameterTypes();
+      
+      if (params.length != 2) {
+        throw new ConfigException(L.l("'{0}' is an invalid vault delete.",
+                                      vaultMethod));
+      }
+      
+      TypeRef resultRef = TypeRef.of(vaultMethod.getGenericParameterTypes()[1]);
+      TypeRef valueRef = resultRef.to(Result.class).param(0);
+      
+      MethodAmp methodAmp;
+   
+      if (valueRef.rawClass().equals(_idField.field().getType())) {
+        methodAmp = new MethodAmpDeleteDTO<>(_idField, _stateField);
+      }
+      else {
+        methodAmp = new MethodAmpDeleteDTO<>(null, _stateField);
+      }
+    
+      return new MethodVaultDeleteDTO<S>(_ampManager,
                                         vaultMethod,
                                         methodAmp);
     } catch (Exception e) {
@@ -475,12 +531,157 @@ public class VaultDriverBase<ID,T>
       Objects.requireNonNull(asset);
       Objects.requireNonNull(transfer);
 
-      LoadStateAsset state = (LoadStateAsset) _stateField.getObject(asset);
+      StateAsset state = (StateAsset) _stateField.getObject(asset);
       
       _transfer.toAsset(asset, transfer);
       
       if (state != null) {
         _stateField.setObject(asset, state.create());
+      }
+      
+      stub.onModify();
+      
+      if (_idField != null) {
+        ((Result) result).ok(_idField.getObject(asset));
+      }
+      else {
+        result.ok(null);
+      }
+    }
+  }
+
+  private class MethodVaultDelete<S> implements MethodVault<S>
+  {
+    private ServicesAmp _services;
+    private String _methodName;
+    private MethodAmp _method;
+    private Class<?>[] _paramTypes;
+    
+    MethodVaultDelete(ServicesAmp ampManager,
+                      Method method)
+    {
+      Objects.requireNonNull(ampManager);
+      Objects.requireNonNull(method);
+      
+      _services = ampManager;
+      _methodName = method.getName();
+      _paramTypes = MethodAmp.paramTypes(method);
+    }
+    
+    private MethodAmp method(ServiceRefAmp childRef)
+    {
+      if (_method == null) {
+        // XXX:
+        Class<?> returnType = void.class;
+        
+        _method = childRef.method(_methodName, returnType, _paramTypes).method();
+      }
+      
+      return _method;
+    }
+    
+    @Override
+    public void invoke(Result<S> result, Object[] args)
+    {
+      System.out.println("DEL: " + this);
+      String id = String.valueOf(args[0]);
+
+      ServiceRefAmp childRef = _services.service(_prefix + id);
+
+      long timeout = 10000L;
+      
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_services)) {
+        HeadersAmp headers = HeadersNull.NULL;
+      
+        QueryWithResultMessage_N<S> msg
+        = new QueryWithResultMessage_N<>(outbox,
+                                         headers,
+                                         result, 
+                                         timeout, 
+                                         childRef,
+                                         method(childRef),
+                                         args);
+
+        msg.offer(timeout);
+      }
+    }
+  }
+
+  private class MethodVaultDeleteDTO<S> implements MethodVault<S>
+  {
+    private ServicesAmp _services;
+    private MethodAmp _method;
+    
+    MethodVaultDeleteDTO(ServicesAmp ampManager,
+                         Method method,
+                         MethodAmp methodAmp)
+    {
+      Objects.requireNonNull(ampManager);
+      Objects.requireNonNull(method);
+      Objects.requireNonNull(method);
+      
+      _services = ampManager;
+      _method = methodAmp;
+    }
+    
+    @Override
+    public void invoke(Result<S> result, Object[] args)
+    {
+      String id = String.valueOf(args[0]);
+      System.out.println("ID: " + id + " " + args[0]);
+
+      ServiceRefAmp childRef = _services.service(_prefix + id);
+
+      long timeout = 10000L;
+      
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_services)) {
+        HeadersAmp headers = HeadersNull.NULL;
+      
+        QueryWithResultMessage_N<S> msg
+        = new QueryWithResultMessage_N<>(outbox,
+                                         headers,
+                                         result, 
+                                         timeout, 
+                                         childRef,
+                                         _method,
+                                         args);
+
+        msg.offer(timeout);
+      }
+    }
+  }
+
+  private class MethodAmpDeleteDTO<S> extends MethodAmpBase
+  {
+    private FieldBean<T> _idField;
+    private FieldBean<T> _stateField;
+    
+    MethodAmpDeleteDTO(FieldBean<T> idField,
+                       FieldBean<T> stateField)
+    {
+      Objects.requireNonNull(stateField);
+      
+      _idField = idField;
+      _stateField = stateField;
+    }
+    
+    @Override
+    public void query(HeadersAmp headers,
+                      ResultChain<?> result,
+                      StubAmp stub,
+                      Object []args)
+    {
+      T asset = (T) stub.bean();
+      
+      Objects.requireNonNull(asset);
+
+      StateAsset state = (StateAsset) _stateField.getObject(asset);
+      
+      System.out.println("DEL0: " + state);
+
+      
+      if (state != null) {
+        _stateField.setObject(asset, state.delete());
       }
       
       stub.onModify();

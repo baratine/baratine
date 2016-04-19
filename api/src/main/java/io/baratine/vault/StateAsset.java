@@ -36,7 +36,7 @@ package io.baratine.vault;
  * Assets with a "state" field and AssetState type are injected
  * with the correct state.
  */
-public enum LoadStateAsset
+public enum StateAsset
 {
   UNKNOWN {
     
@@ -50,7 +50,7 @@ public enum LoadStateAsset
     public void requireLoad() {}
     
     @Override
-    public LoadStateAsset create()
+    public StateAsset create()
     {
       throw new IllegalStateException(toString());
     }
@@ -71,7 +71,7 @@ public enum LoadStateAsset
    * 
    * Throws an IllegalStateException if the asset is already loaded.
    */
-  public LoadStateAsset create()
+  public StateAsset create()
   {
     return LOADED;
   }
@@ -79,7 +79,7 @@ public enum LoadStateAsset
   /**
    * Marks the object at to be deleted in the next @OnState.
    */
-  public LoadStateAsset delete()
+  public StateAsset delete()
   {
     return DELETING;
   }
