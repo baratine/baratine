@@ -27,28 +27,35 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.http.protocol2;
-
-import java.io.IOException;
+package com.caucho.v5.http.protocol;
 
 import com.caucho.v5.io.WriteStream;
 
+import io.baratine.io.Buffer;
 
 /**
- * HeaderOut is the compression for the writer.
+ * Writer for http response, called in the writer service.
  */
-public class OutHeaderHuffmanRequest extends OutHeader
+public interface OutHttpTcp
 {
-  public OutHeaderHuffmanRequest(WriteStream os)
-  {
-    super(os);
-  }
+  boolean canWrite(long sequence);
   
-  @Override
-  protected int writeStringImpl(byte []buffer, int offset, 
-                                String value, int strlen)
-    throws IOException
-  {
-    return huffmanEncode(buffer, offset, value, getHuffmanTable());
-  }
+  /**
+   * Writes the first buffer for a http response. The first buffer
+   * will trigger the headers to be written.
+   * 
+   * If the request is not the final request, free the buffer.
+   * 
+   * @param buffer the temp buffer with data
+   * @param length the length of the data in the buffer
+   * @param isEnd true for the final result
+   */
+  boolean write(WriteStream out, 
+                Buffer data,
+                boolean isEnd);
+  
+  /**
+   * Disconnect the connection
+   */
+  void disconnect(WriteStream out);
 }

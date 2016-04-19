@@ -171,7 +171,6 @@ public class SegmentStream
       
       if (_isGc) {
         // GC requests fsync immediately to free segments quickly
-        //System.out.println("WRITE: " + sOut);
         sOut.fsync(Result.ignore());
       }
       else {

@@ -57,7 +57,7 @@ public class ChannelOutHttp2
   private int _sendOffset = FRAME_LENGTH;
   private int _sendFlags;
 
-  private OutHttp _outHttp;
+  private OutHttp2 _outHttp;
   
   public ChannelOutHttp2(ChannelHttp2 channel)
   {
@@ -71,7 +71,7 @@ public class ChannelOutHttp2
     _receiveLength += length;
   }
 
-  public void init(int streamId, OutHttp outHttp)
+  public void init(int streamId, OutHttp2 outHttp)
   {
     Objects.requireNonNull(outHttp);
     
@@ -89,7 +89,7 @@ public class ChannelOutHttp2
     _sendQueue = null;
   }
   
-  public OutHttp getOutHttp()
+  public OutHttp2 getOutHttp()
   {
     return _outHttp;
   }
@@ -104,7 +104,7 @@ public class ChannelOutHttp2
     _sendLength += length;
   }
   
-  public void addSendCredit(OutHttp out, int credit)
+  public void addSendCredit(OutHttp2 out, int credit)
   {
     _sendCredits += credit;
     
@@ -139,7 +139,7 @@ public class ChannelOutHttp2
     }
   }
 
-  void writeCont(OutHttp out)
+  void writeCont(OutHttp2 out)
     throws IOException
   {
     TempBuffer ptr = _sendQueue;

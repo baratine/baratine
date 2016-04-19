@@ -41,6 +41,7 @@ import com.caucho.v5.health.shutdown.ShutdownSystem;
 import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.network.port.StateConnection;
+import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
 /**
  * Handles a HTTP connection.
@@ -62,6 +63,7 @@ public class ConnectionHttp implements ConnectionProtocol
   private AtomicLong _sequenceRead = new AtomicLong();
   private AtomicLong _sequenceWrite = new AtomicLong();
   private AtomicLong _sequenceFlush = new AtomicLong();
+  private AtomicLong _sequenceClose = new AtomicLong();
 
   private AtomicBoolean _isClosePending = new AtomicBoolean();
 
@@ -110,8 +112,8 @@ public class ConnectionHttp implements ConnectionProtocol
     ConnectionProtocol request = _request;
     
     if (request == null) {
-      //request = protocol().newRequest(this);
-      request = newRequestHttp();
+      request = protocol().newRequest(this);
+      //request = newRequestHttp();
       
       request.onAccept();
       
@@ -187,20 +189,22 @@ public class ConnectionHttp implements ConnectionProtocol
       System.out.println("OLD_REQUEST: " + _request);
     }
     
+    _sequenceClose.set(-1);
     /*
     _request = protocol().newRequest(this);
     _request.onAccept();
     */
   }
 
-  public RequestHttpState newRequestHttp()
+  /*
+  public RequestHttpWeb newRequestHttp()
   {
-    RequestHttpState request = protocol().requestHttpAllocate();
-    
-    request.init(this);
+    requestData = _protocol.http()..asdf;
+    RequestHttpWeb request = new RequestBaratineImpl(this);
     
     return request;
   }
+  */
 
   /**
    * Service a HTTP request.
@@ -231,9 +235,8 @@ public class ConnectionHttp implements ConnectionProtocol
           //return NextState.CLOSE;
         }
         */
-      System.out.println("RQS: " + request);
+
       StateConnection next = request.service();
-      System.out.println(" NEXT: " + next);
       
       if (next != StateConnection.CLOSE) {
         return next;
@@ -264,10 +267,12 @@ public class ConnectionHttp implements ConnectionProtocol
       request.onCloseRead();
     }
     
-    if (_sequenceFlush.get() < _sequenceRead.get()) {
+    _sequenceClose.set(_sequenceRead.get());
+    
+    if (_sequenceWrite.get() < _sequenceClose.get()) {
       _isClosePending.set(true);
       
-      if (_sequenceFlush.get() < _sequenceRead.get()) {
+      if (_sequenceWrite.get() < _sequenceClose.get()) {
         return StateConnection.CLOSE_READ_S;
       }
       else {
@@ -279,6 +284,19 @@ public class ConnectionHttp implements ConnectionProtocol
     else {
       return StateConnection.CLOSE;
     }
+  }
+
+  public boolean isCloseRead()
+  {
+    long seqClose = _sequenceClose.get();
+    long seqWrite = _sequenceWrite.get();
+    
+    return seqClose > 0 && seqClose <= seqWrite;
+  }
+
+  public long sequenceClose()
+  {
+    return _sequenceClose.get();
   }
   
   @Override
@@ -302,9 +320,9 @@ public class ConnectionHttp implements ConnectionProtocol
     }
   }
   
-  public long allocateSequence()
+  public long nextSequenceRead()
   {
-    return _sequenceRead.incrementAndGet();
+    return _sequenceRead.getAndIncrement();
   }
 
   public long sequenceWrite()
@@ -312,17 +330,8 @@ public class ConnectionHttp implements ConnectionProtocol
     return _sequenceWrite.get();
   }
 
-  public void requestComplete(RequestHttpState requestHttpState, 
-                              boolean isKeepalive)
-  {
-    ConnectionProtocol oldRequest = _request;
-    Objects.requireNonNull(oldRequest);
-    
-    _request = null;
-  }
-
   //@Override
-  public void onCloseWrite()
+  public void onWriteEnd()
   {
     _sequenceWrite.incrementAndGet();
 
@@ -334,6 +343,15 @@ public class ConnectionHttp implements ConnectionProtocol
     */
   }
   
+  public void requestComplete(RequestHttpWeb requestHttpState, 
+                              boolean isKeepalive)
+  {
+    ConnectionProtocol oldRequest = _request;
+    Objects.requireNonNull(oldRequest);
+    
+    _request = null;
+  }
+
   public void onFlush()
   {
     _sequenceFlush.set(_sequenceWrite.get());

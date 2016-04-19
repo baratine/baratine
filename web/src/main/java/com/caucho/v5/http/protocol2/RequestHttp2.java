@@ -34,21 +34,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.health.shutdown.Shutdown;
 import com.caucho.v5.http.container.HttpContainer;
-import com.caucho.v5.http.protocol.OutResponseBase;
+import com.caucho.v5.http.protocol.ConnectionHttp;
+import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.http.protocol.ProtocolHttp;
-import com.caucho.v5.http.protocol.RequestHttp;
+import com.caucho.v5.http.protocol.RequestHttp1;
 import com.caucho.v5.http.protocol.RequestHttpBase;
-import com.caucho.v5.http.protocol.RequestHttpState;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
-import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.ByteArrayBuffer;
 import com.caucho.v5.util.CharBuffer;
@@ -56,7 +55,6 @@ import com.caucho.v5.util.CharSegment;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.web.webapp.InvocationBaratine;
 import com.caucho.v5.web.webapp.RequestBaratine;
-import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
 import io.baratine.io.Buffer;
 
@@ -98,7 +96,7 @@ public class RequestHttp2
 
   // private ErrorPageManager _errorManager;
 
-  private HttpContainer _httpContainer;
+  //private HttpContainer _httpContainer;
 
   private String _scheme;
 
@@ -112,26 +110,24 @@ public class RequestHttp2
 
   private InStreamImpl _inStream;
 
-  private final ConnectionHttp2 _connHttp2 ;
+  //private final ConnectionHttp2 _connHttp2 ;
 
   private final ChannelHttp2 _channel;
 
   private final StringBuilder _cb = new StringBuilder();
 
-  private ConnectionTcp _connTcp;
+  //private ConnectionTcp _connTcp;
 
-  public RequestHttp2(ProtocolHttp httpProtocol,
-                      ConnectionTcp conn,
-                      HttpContainer httpContainer,
-                      ConnectionHttp2 connHttp)
+  public RequestHttp2(ProtocolHttp httpProtocol)
   {
     super(httpProtocol); //, conn, null); // XXX: null should be connHttp
 
-    System.out.println("REQ: " + this);
+    /*
     _connHttp2 = connHttp;
     _httpContainer = httpContainer;
     
     _connTcp = conn;
+    */
     //_errorManager = new ErrorPageManager(httpContainer);
 
     _uri = new ByteArrayBuffer();
@@ -157,60 +153,28 @@ public class RequestHttp2
     
     _inStream = new InStreamImpl();
     
-    init(connHttp);
+    //init(connHttp);
     
-    System.out.println("CNN: " + connHttp());
-  }
-  /*
-  @Override
-  public ConnectionSocket getConnection()
-  {
-    return _conn.getConnection();
-  }
-  */
-  @Override
-  public boolean isSecure()
-  {
-    return connTcp().isSecure();
-  }
-  
-  private ConnectionTcp connTcp()
-  {
-    return _connTcp;
-  }
-  
-  private ConnectionHttp2 connHttp2()
-  {
-    return _connHttp2;
-  }
-  
-  /*
-  @Override
-  public ResponseHttp2 getResponse()
-  {
-    return (ResponseHttp2) super.getResponse();
-  }
-
-  @Override
-  public ResponseHttp2 createResponse()
-  {
-    return new ResponseHttp2(this);
-  }
-  */
-  
-  @Override
-  public HttpContainer http()
-  {
-    return _httpContainer;
-  }
-  
-  OutHttp getOutHttp()
-  {
-    return getChannel().getOutChannel().getOutHttp();
+    //System.out.println("CNN: " + connHttp());
+    //Thread.dumpStack();
   }
   
   @Override
-  public ChannelHttp2 getChannel()
+  public void init(RequestBaratine request)
+  {
+    super.init(request);;
+    //_request = request;
+    
+    initRequest();
+  }
+  
+  OutHttp2 outHttp()
+  {
+    return channel().getOutChannel().getOutHttp();
+  }
+  
+  @Override
+  public ChannelHttp2 channel()
   {
     return _channel;
   }
@@ -224,12 +188,12 @@ public class RequestHttp2
   @Override
   public ChannelInHttp2 getChannelIn()
   {
-    return getChannel().getInChannel();
+    return channel().getInChannel();
   }
 
-  public int getStreamId()
+  public int streamId()
   {
-    return getChannel().getId();
+    return channel().getId();
   }
 
   public void init(ConnectionHttp2 reqHttp)
@@ -250,7 +214,7 @@ public class RequestHttp2
     */
   }
   
-  public void fillUpgrade(RequestHttp requestHttp)
+  public void fillUpgrade(RequestHttp1 requestHttp)
   {
     header(":method", requestHttp.method());
     String host = requestHttp.header("Host");
@@ -258,7 +222,7 @@ public class RequestHttp2
       header(":authority", host);
     }
     
-    String path = new String (requestHttp.getUriBuffer(), 0, requestHttp.getUriLength());
+    String path = new String (requestHttp.uriBuffer(), 0, requestHttp.uriLength());
     
     header(":path", path);
     header(":scheme", requestHttp.scheme());
@@ -351,14 +315,15 @@ public class RequestHttp2
       _invocation = invocation(getHost(),
                                  _uri.getBuffer(), _uri.getLength());
 
-      System.out.println("CONN: " + connHttp2());
-      System.out.println("  PRO: " + connHttp2().protocol());
-      RequestHttpState reqState = connHttp2().newRequestHttp();
-      System.out.println("  REQ: " + reqState.requestHttp());
-      RequestBaratineImpl request = (RequestBaratineImpl) connHttp2().protocol().newRequest(connHttp2());
+      //System.out.println("CONN: " + connHttp2());
+      //System.out.println("  PRO: " + connHttp2().protocol());
+      RequestBaratine request = request();
+
+      request.invocation(_invocation);
+      //RequestBaratineImpl request = (RequestBaratineImpl) connHttp2().protocol().newRequest(connHttp2());
       
-      request.init(reqState);
-      reqState.onAccept();
+      //request.init(reqState);
+      request.onAccept();
       
       //request.init(this);
       
@@ -370,12 +335,12 @@ public class RequestHttp2
         _requestHttp.readBodyChunk();
       }
       */
-      request.bodyComplete();
+      request.onBodyComplete();
       
       
       
       StateConnection nextState = _invocation.service(request);
-      System.out.println("INV: " + _invocation);
+
       //request().setInvocation(_invocation);
       
       //// XXX: needs to be throttled
@@ -555,13 +520,13 @@ public class RequestHttp2
   }
 
   @Override
-  public final byte []getUriBuffer()
+  public final byte []uriBuffer()
   {
     return _uri.getBuffer();
   }
 
   @Override
-  public final int getUriLength()
+  public final int uriLength()
   {
     return _uri.getLength();
   }
@@ -752,6 +717,7 @@ public class RequestHttp2
     // ignore for hmux
   }
 
+  /*
   @Override
   public boolean isSuspend()
   {
@@ -763,6 +729,7 @@ public class RequestHttp2
   {
     return false;
   }
+  */
 
   /**
    * Returns true if a valid HTTP request has started.
@@ -789,9 +756,9 @@ public class RequestHttp2
     }
 
     if (id.equals(""))
-      return "server-" + getConnection().id();
+      return "server-" + connTcp().id();
     else
-      return "server-" + id + ":" + getConnection().id();
+      return "server-" + id + ":" + connTcp().id();
   }
   
   //
@@ -801,7 +768,7 @@ public class RequestHttp2
   public void closeDispatch()
   {
     if (_stateRef.get().closeDispatch(_stateRef)) {
-      _connHttp2.freeRequest(this);
+      // XXX:_connHttp2.freeRequest(this);
     }
   }
 
@@ -809,11 +776,11 @@ public class RequestHttp2
   public void closeChannel()
   {
     if (_stateRef.get().closeChannel(_stateRef)) {
-      _connHttp2.freeRequest(this);
+      // XXX:_connHttp2.freeRequest(this);
     }
   }
   @Override
-  protected OutResponseBase createOut()
+  protected OutHttpApp createOut()
   {
     return new OutResponseHttp2(this);
   }
@@ -835,16 +802,79 @@ public class RequestHttp2
   }
   */
   
+  @Override
+  public ConnectionHttp2 connHttp()
+  {
+    return (ConnectionHttp2) super.connHttp();
+  }
+
+  @Override
+  public boolean write(WriteStream os, Buffer data,
+                       boolean isEnd)
+  {
+    try {
+      writeHeaders(isEnd && data == null);
+      
+      if (data != null) {
+        ConnectionHttp2 conn = connHttp();
+
+        OutHttp2 out = conn.getOut();
+        
+        out.writeData(streamId(), data,
+                      isEnd ? Http2Constants.END_STREAM : 0);
+      }
+      
+      connTcp().writeStream().flush();
+      
+      return false;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
+  private void writeHeaders(boolean isEnd)
+    throws IOException
+  {
+    ConnectionHttp2 conn = connHttp();
+
+    OutHttp2 out = conn.getOut();
+    
+    OutHeader outHeader = out.getOutHeader();
+    
+    int streamId = streamId();
+    int pad = 0;
+    int priorityDependency = -1;
+    int priorityWeight = -1;
+    boolean priorityExclusive = false;
+    
+    FlagsHttp flags = isEnd ? FlagsHttp.END_STREAM : FlagsHttp.CONT_STREAM;
+    
+    outHeader.openHeaders(streamId,
+                          pad,
+                          priorityDependency,
+                          priorityWeight,
+                          priorityExclusive,
+                          flags);
+    
+    writeHeaders(outHeader);
+    
+    outHeader.closeHeaders();
+  }
+  
+  @Override
+  public boolean canWrite(long sequence)
+  {
+    return true;
+  }
+  
   void writeHeaders(OutHeader out)
     throws IOException
   {
     fillHeaders();
-    
-    RequestBaratine response = null;//request();
-    
-    if (true) throw new UnsupportedOperationException();
 
-    int statusCode = 0; //response.getStatus();
+    RequestBaratine request = request();
+    
+    int statusCode = 200; //response.getStatus();
 
     StringBuilder cb = _cb;
     
@@ -916,9 +946,6 @@ public class RequestHttp2
     }
     */
 
-    RequestBaratine responseFacade = null;//request();
-    if (true) throw new UnsupportedOperationException();
-
     long now = CurrentTime.currentTime();
     
     // responseFacade.fillCookies(out);
@@ -935,12 +962,8 @@ public class RequestHttp2
     
     String server = serverHeader();
     
-    if (server != null) {
-      out.header("server", server);
-    }
-    else {
-      out.header("server", "Resin/5.0");
-    }
+    Objects.requireNonNull(server);
+    out.header("server", server);
     
     byte []date = fillDateBuffer(now);
     int length = getDateBufferLength() - 4;
@@ -1053,18 +1076,5 @@ public class RequestHttp2
       throw new UnsupportedOperationException(toString());
     }
     
-  }
-
-  @Override
-  public boolean write(WriteStream out, Buffer data,
-                       boolean isEnd)
-  {
-    return false;
-  }
-  
-  @Override
-  public boolean canWrite(long sequence)
-  {
-    return true;
   }
 }

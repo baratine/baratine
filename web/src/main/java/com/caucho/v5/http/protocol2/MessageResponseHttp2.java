@@ -73,11 +73,11 @@ public class MessageResponseHttp2 extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteStream os, OutHttp outHttp)
+  public void deliver(WriteStream os, OutHttp2 outHttp)
     throws IOException
   {
     ChannelOutHttp2 stream = _request.getChannelOut();
-    int streamId = _request.getChannel().getId();
+    int streamId = _request.channel().getId();
     
     if (_isHeaders) {
       writeHeaders(outHttp);
@@ -102,12 +102,12 @@ public class MessageResponseHttp2 extends MessageHttp
     stream.writeCont(outHttp);
   }
   
-  private void writeHeaders(OutHttp outHttp)
+  private void writeHeaders(OutHttp2 outHttp)
     throws IOException
   {
     OutHeader outHeader = outHttp.getOutHeader();
     
-    int streamId = _request.getStreamId();
+    int streamId = _request.streamId();
     
     FlagsHttp flags = getFlagsHttp();
     

@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.http.protocol.OutResponseBase;
+import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.L10N;
@@ -90,7 +90,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   
   private char []_charBuf = new char[256];
 
-  private OutResponseBase _os;
+  private OutHttpApp _os;
 
   private RequestBaratine _request;
   

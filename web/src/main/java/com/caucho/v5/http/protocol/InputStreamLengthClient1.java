@@ -59,7 +59,7 @@ public class InputStreamLengthClient1 extends InputStreamClient
   }
   
   @Override
-  public String getHeader(String key)
+  public String header(String key)
   {
     return null;
   }

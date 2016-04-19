@@ -46,9 +46,9 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.http.protocol.ConnectionHttp;
-import com.caucho.v5.http.protocol.OutResponseBase;
+import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.http.protocol.RequestHttpBase;
-import com.caucho.v5.http.protocol.RequestHttpState;
+import com.caucho.v5.http.protocol.RequestHttpWeb;
 import com.caucho.v5.http.websocket.WebSocketBaratineImpl;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.type.TypeRef;
@@ -82,7 +82,7 @@ import io.baratine.web.ServiceWebSocket;
 /**
  * User facade for baratine http requests.
  */
-public final class RequestBaratineImpl 
+public final class RequestBaratineImpl extends RequestHttpWeb 
   implements RequestBaratine, ConnectionProtocol
 {
   private static final L10N L = new L10N(RequestBaratineImpl.class);
@@ -91,9 +91,9 @@ public final class RequestBaratineImpl
 
   //private static final String FORM_TYPE = "application/x-www-form-urlencoded";
 
-  private ConnectionHttp _connHttp;
+  //private ConnectionHttp _connHttp;
 
-  private RequestHttpState _requestState;
+  //private RequestHttpState _requestState;
 
   private List<ViewRef<?>> _views;
 
@@ -112,36 +112,48 @@ public final class RequestBaratineImpl
   private RequestProxy _requestProxy;
   private HashMap<String, Object> _attributeMap;
 
-  public RequestBaratineImpl(ConnectionHttp connHttp)
+  public RequestBaratineImpl(ConnectionHttp connHttp,
+                             RequestHttpBase request)
   {
-    Objects.requireNonNull(connHttp);
-    _connHttp = connHttp;
+    super(connHttp, request);
+    
+    request.init(this);
   }
 
+  /*
   public void init(RequestHttpState requestState)
   {
     _requestState = requestState;
   }
+  */
 
+  /*
   public ConnectionHttp connHttp()
   {
     return _connHttp;
   }
+  */
 
+  /*
   public RequestHttpBase requestHttp()
   {
     return requestState().requestHttp();
   }
+  */
 
+  /*
   public RequestHttpState requestState()
   {
     return _requestState;
   }
+  */
 
+  /*
   public InvocationBaratine invocation()
   {
     return requestState().invocation();
   }
+  */
 
   @Override
   public WebApp webApp()
@@ -314,11 +326,13 @@ public final class RequestBaratineImpl
   /**
    * Starts an upgrade of the HTTP request to a protocol on raw TCP.
    */
+  /*
   @Override
   public void upgrade(ConnectionProtocol upgrade)
   {
     _requestState.upgrade(upgrade);
   }
+  */
 
   /**
    * Starts an upgrade of the HTTP request to a protocol on raw TCP.
@@ -404,7 +418,8 @@ public final class RequestBaratineImpl
   @Override
   public MultiMap<String,String> queryMap()
   {
-    return invocation().queryMap();
+
+  return invocation().queryMap();
   }
 
   @Override
@@ -689,7 +704,7 @@ public final class RequestBaratineImpl
   public RequestBaratineImpl flush()
   {
     try {
-      OutResponseBase out = requestHttp().out();
+      OutHttpApp out = requestHttp().out();
 
       out.flush();
     } catch (Exception e) {
@@ -931,7 +946,7 @@ public final class RequestBaratineImpl
 
     //RequestBaratineImpl reqNext = null;//next();
 
-    connHttp.onCloseWrite();
+    connHttp.onWriteEnd();
 
     /*
     if (reqNext != null) {
@@ -967,6 +982,7 @@ public final class RequestBaratineImpl
   }
   */
 
+  /*
   @Override
   public StateConnection service()
   {
@@ -975,25 +991,6 @@ public final class RequestBaratineImpl
 
       //return StateConnection.CLOSE;
       return nextState;
-
-      /*
-      if (_invocation == null && getRequestHttp().parseInvocation()) {
-        if (_invocation == null) {
-          return NextState.CLOSE;
-        }
-        return _invocation.service(this, getResponse());
-      }
-      else
-      if (_upgrade != null) {
-        return _upgrade.service();
-      }
-      else if (_invocation != null) {
-        return _invocation.service(this);
-      }
-      else {
-        return StateConnection.CLOSE;
-      }
-      */
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
       e.printStackTrace();
@@ -1003,6 +1000,7 @@ public final class RequestBaratineImpl
       return StateConnection.CLOSE_READ_A;
     }
   }
+  */
 
   private StateConnection readBody()
   {
@@ -1045,8 +1043,8 @@ public final class RequestBaratineImpl
   // body callback
   //
 
-  //@Override
-  public void bodyChunk(TempBuffer tBuf)
+  @Override
+  public void onBodyChunk(TempBuffer tBuf)
   {
     if (_bodyHead == null) {
       _bodyHead = _bodyTail = tBuf;

@@ -606,7 +606,7 @@ public class BenchHttpCommand extends CommandBase<ArgsCli>
             for (int i = 0; countRequest < n && i < k; i++) {
               int status = -1;
 
-              try (InputStreamClient is = client.get(path)) {
+              try (InputStreamClient is = client.get(path).get()) {
                 status = is.getStatus();
 
                 switch (status) {

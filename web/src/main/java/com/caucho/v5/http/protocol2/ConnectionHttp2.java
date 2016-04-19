@@ -35,11 +35,13 @@ import java.util.Objects;
 import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.ProtocolHttp;
-import com.caucho.v5.http.protocol.RequestHttp;
+import com.caucho.v5.http.protocol.RequestHttp1;
+import com.caucho.v5.http.protocol.RequestHttpWeb;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.FreeRing;
+import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
 
 /**
@@ -49,11 +51,13 @@ public class ConnectionHttp2 extends ConnectionHttp
   implements InHttpHandler
 {
   private final ProtocolHttp _httpProtocol;
-  private final HttpContainer _httpContainer;
+  private final HttpContainer _http;
   private final ConnectionHttp2Int _conn;
   private ConnectionTcp _connTcp;
   
   private FreeRing<RequestHttp2> _freeRequest = new FreeRing<>(8);
+  //private ConnectionHttp _connHttp;
+  private boolean _isHuffman;
 
   public ConnectionHttp2(ProtocolHttp protocolHttp,
                          HttpContainer httpContainer,
@@ -66,15 +70,25 @@ public class ConnectionHttp2 extends ConnectionHttp
     Objects.requireNonNull(connTcp);
     
     _httpProtocol = protocolHttp;
-    _httpContainer = httpContainer;
+    _http = httpContainer;
     _connTcp = connTcp;
+    
+    _isHuffman = _http.config().get("server.http2.huffman", 
+                                             boolean.class, 
+                                             true);
     
     _conn = new ConnectionHttp2Int(this, PeerHttp.SERVER);
   }
   
-  OutHttp getOut()
+  OutHttp2 getOut()
   {
     return _conn.outHttp();
+  }
+  
+  @Override
+  public boolean isHeaderHuffman()
+  {
+    return _isHuffman;
   }
 
   // @Override
@@ -83,7 +97,7 @@ public class ConnectionHttp2 extends ConnectionHttp
     _conn.init(_connTcp.readStream(), _connTcp.writeStream());
     
     InHttp inHttp = _conn.inHttp();
-    OutHttp outHttp = _conn.outHttp();
+    OutHttp2 outHttp = _conn.outHttp();
     
     inHttp.readSettings();
     outHttp.updateSettings(inHttp.peerSettings());
@@ -91,11 +105,11 @@ public class ConnectionHttp2 extends ConnectionHttp
     outHttp.flush();
   }
 
-  public void onStartUpgrade(RequestHttp requestHttp)
+  public void onStartUpgrade(RequestHttp1 requestHttp)
     throws IOException
   {
     InHttp inHttp = _conn.inHttp();
-    OutHttp outHttp = _conn.outHttp();
+    OutHttp2 outHttp = _conn.outHttp();
 
     System.out.println("START-UPGRADE: " + this);
     if (true) throw new UnsupportedOperationException();
@@ -119,6 +133,7 @@ public class ConnectionHttp2 extends ConnectionHttp
     reqHttp2.dispatch();
   }
   
+  @Override
   public ConnectionTcp connTcp()
   {
     return _connTcp;
@@ -132,7 +147,6 @@ public class ConnectionHttp2 extends ConnectionHttp
   @Override
   public StateConnection service() throws IOException
   {
-    System.out.println("SERVICE: " + this);
     if (! _conn.inHttp().onDataAvailable()) {
       return StateConnection.CLOSE;
     }
@@ -173,18 +187,28 @@ public class ConnectionHttp2 extends ConnectionHttp
     RequestHttp2 request = _freeRequest.allocate();
     
     if (request == null) {
-      request = new RequestHttp2(_httpProtocol,
+      request = new RequestHttp2(_httpProtocol);
+      /*
                                  connTcp(),
                                  _httpContainer,
                                  this);
+                                 */
     }
     
+    RequestBaratineImpl requestWeb = new RequestBaratineImpl(this,
+                                                             request);
     //OutChannelHttp2 stream = request.getStreamOut();
     //stream.init(streamId, _outHttp);
     
-    request.init(this); // , _outHttp);
+    //request.init(this); // , _outHttp);
     
     return request;
+  }
+  
+  @Override
+  public void requestComplete(RequestHttpWeb request, boolean isKeepalive)
+  {
+    //super.requestComplete(request, true);
   }
   
   void freeRequest(RequestHttp2 request)

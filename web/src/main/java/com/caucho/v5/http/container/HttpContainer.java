@@ -38,6 +38,8 @@ import com.caucho.v5.http.protocol.HttpBufferStore;
 import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.web.webapp.RequestBaratine;
 
+import io.baratine.config.Config;
+
 public interface HttpContainer
 {
   /**
@@ -81,6 +83,8 @@ public interface HttpContainer
   void sendRequestError(Throwable e,
                         RequestBaratine requestFacade)
                         throws IOException;
+  
+  Config config();
 
   boolean isIgnoreClientDisconnect();
 

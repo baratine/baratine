@@ -56,7 +56,7 @@ public class MessageFlow extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteStream os, OutHttp outHttp)
+  public void deliver(WriteStream os, OutHttp2 outHttp)
     throws IOException
   {
     outHttp.writeFlow(_streamId, _credit);

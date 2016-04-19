@@ -7,6 +7,16 @@ model {
         cCompiler.args "-I/Library/Java/Home8/Include", "-I/Library/Java/Home8/Include/darwin"
       }
     }
+    
+    baratinessl(NativeLibrarySpec) {
+      binaries.all {
+        cCompiler.args "-I/Library/Java/Home8/Include",
+                       "-I/Library/Java/Home8/Include/darwin",
+                       "-I/usr/local/opt/openssl/include",
+                       "-L/usr/local/opt/openssl/lib"
+        linker.args "-L/usr/local/opt/openssl/lib", "-lssl", "-lcrypto"
+      }
+    }
   }
 }
 
@@ -28,7 +38,7 @@ case "amd64":
 
 task copyJni(type: Copy) {
   dependsOn 'assemble'
-  from 'build/libs/baratine/shared'
+  from 'build/libs/baratine/shared', 'build/libs/baratinessl/shared'
   into "build/dist/com/caucho/native/${osName}-${osArch}"
 }
 

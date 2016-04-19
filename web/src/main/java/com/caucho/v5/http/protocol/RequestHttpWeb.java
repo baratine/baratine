@@ -49,63 +49,39 @@ import io.baratine.service.ServiceRef;
 /**
  * State for a single http request.
  */
-public class RequestHttpState implements ConnectionProtocol
+public class RequestHttpWeb implements ConnectionProtocol
 {
-  private static final L10N L = new L10N(RequestHttpState.class);
+  private static final L10N L = new L10N(RequestHttpWeb.class);
   private static final Logger log
-    = Logger.getLogger(RequestHttpState.class.getName());
+    = Logger.getLogger(RequestHttpWeb.class.getName());
   
-  private ConnectionHttp _connHttp;
-
   private final RequestHttpBase _requestHttp;
-  
-  private RequestBaratineImpl _request;
   
   private InvocationBaratine _invocation;
 
-  //private RequestUpgrade _upgrade;
-  
   private StateHttpEnum _state = StateHttpEnum.IDLE;
   
-  //private RequestHttpState _next;
-  //private RequestHttpState _prev;
-  private long _sequenceRead;
-  //private long _sequence;
+  //private long _sequenceRead;
+  private ConnectionHttp _connHttp;
 
-  public RequestHttpState(ProtocolHttp protocolHttp)
+  protected RequestHttpWeb(ConnectionHttp connHttp,
+                           RequestHttpBase requestHttp)
   {
-    Objects.requireNonNull(protocolHttp);
+    Objects.requireNonNull(connHttp);
+    Objects.requireNonNull(requestHttp);
     
-    _requestHttp = createRequest(protocolHttp);
-    
-    //ProtocolHttp protocolHttp)
-    //Objects.requireNonNull(protocolHttp);
-    
-      // _connHttp = connHttp;
-    
-    //_requestHttp = new RequestHttp(protocolHttp, this);
-    //if (true) throw new UnsupportedOperationException();
-    
-    //RequestHttpBase requestHttp = null;
-    //_requestHttp = requestHttp;
+    _connHttp = connHttp;
+    _requestHttp = requestHttp;
+
+    //requestHttp.init(this);
   }
   
+  /*
   protected RequestHttpBase createRequest(ProtocolHttp protocolHttp)
   {
     return new RequestHttp(protocolHttp, this);
   }
-
-  public void init(ConnectionHttp connHttp)
-  {
-    // _connTcp = connTcp;
-    _connHttp = connHttp;
-    
-    _requestHttp.init(connHttp);
-    
-    _request = null;
-    _state = StateHttpEnum.IDLE;
-    _sequenceRead = 0;
-  }
+  */
   
   public ConnectionHttp connHttp()
   {
@@ -120,6 +96,13 @@ public class RequestHttpState implements ConnectionProtocol
   public InvocationBaratine invocation()
   {
     return _invocation;
+  }
+  
+  public void invocation(InvocationBaratine invocation)
+  {
+    Objects.requireNonNull(invocation);
+    
+    _invocation = invocation;
   }
   
   /*
@@ -213,30 +196,26 @@ public class RequestHttpState implements ConnectionProtocol
         
         if (connHttp().request() == this) {
           connHttp().requestComplete(this, false);
-          connHttp().protocol().requestFree(this);
+          //connHttp().protocol().requestFree(this);
           return StateConnection.CLOSE;
         }
         else {
-          connHttp().protocol().requestFree(this);
+          //connHttp().protocol().requestFree(this);
           return StateConnection.READ;
         }
       }
       
       // sequence used for write ordering 
-       _sequenceRead = connHttp().allocateSequence();
-      
-      _request = (RequestBaratineImpl) connHttp().protocol().newRequest(connHttp());
-      
-      _request.init(this);
+       //_sequenceRead = connHttp().nextSequenceRead();
       
       if (_state.isBodyComplete()) {
-        _request.bodyComplete();
+        bodyComplete();
       }
       else if (! requestHttp().isUpgrade()) {
         _requestHttp.readBodyChunk();
       }
       
-      StateConnection nextState = _invocation.service(_request);
+      StateConnection nextState = _invocation.service(this);
       
       //ServiceRef.flushOutboxAndExecuteLast();
       ServiceRef.flushOutbox();
@@ -264,10 +243,16 @@ public class RequestHttpState implements ConnectionProtocol
     }
   }
   
+  protected void bodyComplete()
+  {
+  }
+  
+  /*
   long sequence()
   {
     return _sequenceRead;
   }
+  */
 
   public void upgrade(ConnectionProtocol upgrade)
   {
@@ -280,7 +265,7 @@ public class RequestHttpState implements ConnectionProtocol
     
     _state = _state.toUpgrade();
     
-    requestHttp().getConnection().proxy().requestWake();
+    requestHttp().connTcp().proxy().requestWake();
   }
   
   private StateConnection readBody()
@@ -320,9 +305,8 @@ public class RequestHttpState implements ConnectionProtocol
     }
   }
 
-  public void onBodyChunk(TempBuffer tBuf)
+  protected void onBodyChunk(TempBuffer tBuf)
   {
-    _request.bodyChunk(tBuf);
   }
 
   public void onBodyComplete()
@@ -331,7 +315,7 @@ public class RequestHttpState implements ConnectionProtocol
     
     connHttp().requestComplete(this, requestHttp().isKeepalive());
     
-    _request.bodyComplete();
+    bodyComplete();
   }
 
   @Override
@@ -364,11 +348,11 @@ public class RequestHttpState implements ConnectionProtocol
     
     //RequestHttpState reqNext = next();
     
-    connHttp.onCloseWrite();
+    connHttp.onWriteEnd();
     
     _state = _state.toIdle();
     
-    connHttp.protocol().requestFree(this);
+    //connHttp.protocol().requestFree(this);
     
     /*
     if (reqNext != null) {
@@ -422,7 +406,7 @@ public class RequestHttpState implements ConnectionProtocol
     }
   }
   
-  protected boolean startBartender()
+  public boolean startBartender()
     throws IOException
   {
     ConnectionProtocol request = null;
@@ -495,7 +479,7 @@ public class RequestHttpState implements ConnectionProtocol
     IDLE
     {
       @Override
-      public StateConnection service(RequestHttpState request)
+      public StateConnection service(RequestHttpWeb request)
       {
         return request.accept();
       }
@@ -509,7 +493,7 @@ public class RequestHttpState implements ConnectionProtocol
       public StateHttpEnum toUpgrade() { return StateHttpEnum.UPGRADE; }
       
       @Override
-      public StateConnection service(RequestHttpState request)
+      public StateConnection service(RequestHttpWeb request)
       {
         return request.readBody();
       }
@@ -566,7 +550,7 @@ public class RequestHttpState implements ConnectionProtocol
       public StateHttpEnum toIdle() { return IDLE; }
     };
 
-    public StateConnection service(RequestHttpState requestBaratineImpl)
+    public StateConnection service(RequestHttpWeb requestBaratineImpl)
     {
       throw new IllegalStateException(toString());
     }

@@ -49,15 +49,13 @@ public class HttpBaratineBuilder extends HttpContainerBuilder
   private ArrayList<IncludeWebAmp> _includes = new ArrayList<>();
 
   private HttpBaratine _http;
-  private Config _config;
+  //private Config _config;
   
   public HttpBaratineBuilder(Config config,
                              ServerBartender selfServer, 
                              String serverHeader)
   {
-    super(selfServer, serverHeader);
-    
-    _config = config;
+    super(selfServer, config, serverHeader);
   }
   
   HttpBaratine http()
@@ -65,10 +63,12 @@ public class HttpBaratineBuilder extends HttpContainerBuilder
     return _http;
   }
   
+  /*
   public Config config()
   {
     return _config;
   }
+  */
 
   public void include(IncludeWebAmp include)
   {

@@ -63,7 +63,7 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   private final ConnectionHttp2Int _conn;
   
   private InHttp _inHttp;
-  private OutHttp _outHttp;
+  private OutHttp2 _outHttp;
   
   private OutputStream _logIn;
   private OutputStream _logOut;
@@ -73,6 +73,8 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   private WriteStream _os;
   private long _socketTimeout;
   private int _window;
+  
+  private boolean _isHuffman = true;
   
   private final AtomicBoolean _isCloseRead = new AtomicBoolean();
   private HashMap<Integer,InRequestClient> _requestMap = new HashMap<>();
@@ -93,6 +95,39 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   
     _inHttp = _conn.inHttp();
     _outHttp = _conn.outHttp();
+  }
+  
+  public ClientHttp2(ClientBuilder builder)
+    throws IOException
+  {
+    _conn = new ConnectionHttp2Int(this, PeerHttp.CLIENT);
+  
+    _inHttp = _conn.inHttp();
+    _outHttp = _conn.outHttp();
+    
+    _isHuffman = builder.isHuffman();
+    
+    String url = builder.url();
+    
+    if (url != null) {
+      connect(url);
+    }
+  }
+  
+  public static ClientBuilder build(String url)
+  {
+    return new ClientBuilder(url);
+  }
+  
+  public static ClientBuilder build()
+  {
+    return new ClientBuilder();
+  }
+  
+  @Override
+  public boolean isHeaderHuffman()
+  {
+    return _isHuffman;
   }
   
   public void logOut(OutputStream logOut)
@@ -218,7 +253,7 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
     _outHttp.writeSettings(_inHttp.getSettings());
     _outHttp.flush();
     
-    // _inHttp.init(is);
+    //_inHttp.init(is);
     if (! _inHttp.readSettings()) {
       throw new IOException(L.l("Invalid settings on h2 handshake"));
     }
@@ -246,18 +281,14 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
     offer(msg);
   }
   
-  public InputStreamClient get(String path)
+  public RequestBuilder get(String path)
     throws IOException
   {
     if (_socket == null) {
       throw new IllegalStateException(L.l("No connection available"));
     }
     
-    ResultFuture<InputStreamClient> future = new ResultFuture<>();
-    
-    get(path, future);
-    
-    return future.get(10, TimeUnit.SECONDS);
+    return new RequestBuilder("GET", path);
   }
   
   public ClientStream2 open(String path)
@@ -435,5 +466,100 @@ public class ClientHttp2 implements InHttpHandler, AutoCloseable
   ConnectionHttp2Int getConnection()
   {
     return _conn;
+  }
+  
+  public class RequestBuilder
+  {
+    private String _method;
+    private String _path;
+    private HashMap<String,String> _headers;
+    
+    RequestBuilder(String method, String path)
+    {
+      _method = method;
+      _path = path;
+    }
+    
+    public RequestBuilder header(String key, String value)
+    {
+      if (_headers == null) {
+        _headers = new HashMap<>();
+        
+        _headers.put(key, value);
+      }
+      
+      return this;
+    }
+    
+    public InputStreamClient get()
+      throws IOException
+    {
+      ResultFuture<InputStreamClient> future = new ResultFuture<>();
+      
+      get(future);
+      
+      return future.get(10, TimeUnit.SECONDS);
+    }
+    
+    public void get(Result<InputStreamClient> result)
+      throws IOException
+    {
+      if (_socket == null) {
+        throw new IllegalStateException(L.l("No connection available"));
+      }
+      
+      //ResultFuture<InputStreamClient> future = new ResultFuture<>();
+      
+      if (_socket == null) {
+        throw new IllegalStateException(L.l("No connection available"));
+      }
+      
+      InRequestClient request = new InRequestClient(ClientHttp2.this, result);
+      
+      FlagsHttp flags = FlagsHttp.END_STREAM;
+      
+      MessageRequestClientHttp2 msg
+        = new MessageRequestClientHttp2(_method, "localhost", _path, _headers, request, flags);
+      
+      offer(msg);
+    }
+  }
+  
+  public static class ClientBuilder
+  {
+    private String _url;
+    private boolean _isHuffman = true;
+    
+    ClientBuilder()
+    {
+    }
+    
+    ClientBuilder(String url)
+    {
+      _url = url;
+    }
+    
+    public ClientBuilder huffman(boolean isHuffman)
+    {
+      _isHuffman = isHuffman;
+      
+      return this;
+    }
+    
+    public boolean isHuffman()
+    {
+      return _isHuffman;
+    }
+    
+    public String url()
+    {
+      return _url;
+    }
+    
+    public ClientHttp2 get()
+      throws IOException
+    {
+      return new ClientHttp2(this);
+    }
   }
 }

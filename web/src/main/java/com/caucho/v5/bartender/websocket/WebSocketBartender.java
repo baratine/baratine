@@ -41,9 +41,9 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.http.protocol.OutHttp;
+import com.caucho.v5.http.protocol.OutHttpTcp;
 import com.caucho.v5.http.protocol.OutHttpProxy;
-import com.caucho.v5.http.protocol.OutResponseBase;
+import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.http.websocket.ConnectionWebSocketBaratine;
 import com.caucho.v5.http.websocket.WebSocketBase;
 import com.caucho.v5.http.websocket.WebSocketManager;
@@ -89,7 +89,7 @@ public class WebSocketBartender<T,S>
   
   private char []_charBuf = new char[256];
 
-  private OutResponseBase _os;
+  private OutHttpApp _os;
 
   private RequestBaratine _request;
   private ServiceWebSocket _service;
@@ -231,7 +231,7 @@ public class WebSocketBartender<T,S>
     
     // _fIs = fIs;
     
-    fIs.init(null, req.requestHttp().conn().readStream());
+    fIs.init(null, req.requestHttp().connTcp().readStream());
     
     frameInput(fIs);
 
@@ -851,7 +851,7 @@ public class WebSocketBartender<T,S>
   }
   */
   
-  private class OutWebSocketWriter implements OutHttp
+  private class OutWebSocketWriter implements OutHttpTcp
   {
     @Override
     public boolean write(WriteStream out,

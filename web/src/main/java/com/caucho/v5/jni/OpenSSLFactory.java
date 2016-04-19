@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +24,10 @@ import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.ServerSocketBar;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.jni.JniUtil.JniLoad;
+import com.caucho.v5.network.port.Protocol;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.config.Config;
 
 
 /**
@@ -49,15 +53,15 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
 
   private static boolean _isInitSystem;
 
-  private String _certificateFile;
-  private String _keyFile;
+  // private String _certificateFile;
+  // private String _keyFile;
   private String _certificateChainFile;
   private String _caCertificatePath;
   private String _caCertificateFile;
   private String _caRevocationPath;
   private String _caRevocationFile;
   private boolean _isCompression;
-  private String _password;
+  //private String _password;
   private String _verifyClient;
   private int _verifyDepth = -1;
   private String _cipherSuite;
@@ -80,6 +84,8 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
 
   private long _configFd;
   private int _defaultProtocolFlags;
+  private Config _cfg;
+  private String _portName;
 
   /**
    * Creates a ServerSocket factory without initializing it.
@@ -93,6 +99,34 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
     _protocolFlags = _defaultProtocolFlags;
   }
   
+  public OpenSSLFactory(Config cfg, 
+                        String portName,
+                        Protocol protocol)
+  {
+    Objects.requireNonNull(cfg);
+    Objects.requireNonNull(portName);
+    Objects.requireNonNull(protocol);
+    
+    _cfg = cfg;
+    _portName = portName;
+    
+    _defaultProtocolFlags = ~0;
+    _defaultProtocolFlags &= ~PROTOCOL_SSL2;
+    _defaultProtocolFlags &= ~PROTOCOL_SSL3;
+    
+    _protocolFlags = _defaultProtocolFlags;
+
+    System.out.println("PORT: " + portName + " " + _isEnabled);
+    
+    if (! isEnabled()) {
+      throw new IllegalStateException(L.l("OpenSSL not enabled"));
+    }
+    
+    nextProtocols(protocol.nextProtocols());
+    
+    initConfig();
+  }
+
   public static boolean isEnabled()
   {
     return _isEnabled;
@@ -101,6 +135,7 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
   /**
    * Sets the certificate file.
    */
+  /*
   public void setCertificateFile(Path certificateFile)
   {
     try {
@@ -109,18 +144,41 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
       throw new RuntimeException(e);
     }
   }
+  */
+  
+  private String portName()
+  {
+    return _portName;
+  }
 
   /**
    * Returns the certificate file.
    */
-  public String getCertificateFile()
+  public String certificateFile()
   {
-    return _certificateFile;
+    return toNative(_cfg.get(portName() + ".openssl.file"));
+  }
+  
+  private String toNative(String path)
+  {
+    if (path == null) {
+      return path;
+    }
+    
+    if (path.startsWith("file://")) {
+      path = path.substring(7);
+    }
+    else if (path.startsWith("file:")) {
+      path = path.substring(5);
+    }
+    
+    return path;
   }
 
   /**
    * Sets the key file.
    */
+  /*
   public void setCertificateKeyFile(Path keyFile)
   {
     try {
@@ -129,13 +187,14 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
       throw new RuntimeException(e);
     }
   }
+  */
 
   /**
    * Returns the key file.
    */
-  public String getCertificateKeyFile()
+  public String keyFile()
   {
-    return _keyFile;
+    return toNative(_cfg.get(portName() + ".openssl.key"));
   }
 
   /**
@@ -358,7 +417,7 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
   /**
    * Sets the next protocols.
    */
-  public void setNextProtocols(String ...protocols)
+  public void nextProtocols(String ...protocols)
   {
     if (protocols == null || protocols.length == 0) {
       _nextProtocols = null;
@@ -381,17 +440,19 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
   /**
    * Sets the password.
    */
+  /*
   public void setPassword(String password)
   {
     _password = password;
   }
+  */
 
   /**
    * Returns the key file.
    */
-  public String getPassword()
+  public String password()
   {
-    return _password;
+    return _cfg.get(portName() + ".openssl.password");
   }
   
   /**
@@ -541,10 +602,10 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
     throws ConfigException
   {
     if (_engine == null) {
-      if (_certificateFile == null)
+      if (certificateFile() == null)
         throw new ConfigException(L.l("'certificate-file' is required for OpenSSL."));
 
-      if (_password == null)
+      if (password() == null)
         throw new ConfigException(L.l("'password' is required for OpenSSL."));
     }
   }
@@ -603,7 +664,10 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
     try {
       jniServerSocket.setSSL(true);
 
-      nativeInit(jniServerSocket.getFd(), _configFd);
+      //_idSsl = nativeInit(jniServerSocket.getFd(), _configFd);
+      
+      //_contextSsl = nativeInit(_configFd);
+      
       isOk = true;
     } finally {
       if (! isOk)
@@ -652,11 +716,19 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
     throws IOException
   {
     JniSocketImpl jniSocket = (JniSocketImpl) socket;
-
-    if (! _stdServerSocket.accept(socket)) {
+    
+    if (! _stdServerSocket.accept(jniSocket)) {
       return false;
     }
 
+    ssl(jniSocket);
+    
+    return true;
+  }
+
+  @Override
+  public void ssl(JniSocketImpl jniSocket)
+  {
     long fd;
 
     synchronized (jniSocket) {
@@ -664,14 +736,18 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
     }
 
     if (fd == 0) {
-      Thread.dumpStack();
-      jniSocket.close();
-      throw new IOException(L.l("failed to open SSL socket"));
+      try {
+        Thread.dumpStack();
+        jniSocket.close();
+        throw new IllegalStateException(L.l("failed to open SSL socket"));
+      } catch (RuntimeException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
     else {
       jniSocket.setSecure(true);
-
-      return true;
     }
   }
 
@@ -720,16 +796,17 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
     if (_configFd != 0)
       throw new ConfigException(L.l("Configuration is already initialized."));
 
-    String certificateFile = _certificateFile;
-    String keyFile = _keyFile;
+    String certificateFile = certificateFile();
+    String keyFile = keyFile();
 
     if (certificateFile == null) {
       certificateFile = keyFile;
     }
 
+
     if (_engine == null) {
       if (certificateFile == null)
-        throw new ConfigException(L.l("certificate file is missing"));
+        throw new ConfigException(L.l("certificate file openssl.file is missing"));
 
       if (keyFile == null) {
         keyFile = certificateFile;
@@ -740,12 +817,12 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
         throw new ConfigException(L.l("key file is missing"));
         */
 
-      if (_password == null) {
+      if (password() == null) {
         throw new ConfigException(L.l("password is missing"));
       }
     }
 
-    _configFd = initConfig(certificateFile, keyFile, _password,
+    _configFd = initConfig(certificateFile, keyFile, password(),
                            _certificateChainFile,
                            _caCertificatePath, _caCertificateFile,
                            _caRevocationPath, _caRevocationFile,
@@ -764,6 +841,7 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
     setVerify(_configFd, _verifyClient, _verifyDepth);
     setSessionCache(_configFd, _enableSessionCache, _sessionCacheTimeout);
     
+    System.out.println("SETP: " + _nextProtocols);
     if (_nextProtocols != null) {
       setNextProtocols(_configFd, _nextProtocols);
     }
@@ -831,8 +909,12 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
   /**
    * Initialize the socket
    */
+  /*
   native void nativeInit(long ssFd, long configFd)
     throws ConfigException;
+    */
+  native long nativeInit(long configFd)
+      throws ConfigException;
 
   /**
    * Opens the connection for SSL.
@@ -891,7 +973,7 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
     = JniUtil.load(OpenSSLFactory.class,
                    new JniLoad() { 
                      public void load(String path) { System.load(path); }},
-                   "baratinessl_npn", "baratinessl");
+                   "baratinessl");
     
     try {
       if (_jniTroubleshoot.isEnabled()) {
@@ -902,6 +984,7 @@ public class OpenSSLFactory extends ServerSocketBar implements SSLFactory
         }        
       }
     } catch (Throwable e) {
+      e.printStackTrace();
       log.log(Level.FINEST, e.toString(), e);
     }
   }

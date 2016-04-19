@@ -111,11 +111,13 @@ public class HttpBaratine
     e.printStackTrace();
   }
 
+  /*
   @Override
   public ConnectionProtocol newRequest(ConnectionHttp connHttp)
   {
     return new RequestBaratineImpl(connHttp);
   }
+  */
 
   @Override
   public InvocationBaratine createInvocation()

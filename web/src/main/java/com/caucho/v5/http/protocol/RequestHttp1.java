@@ -44,8 +44,8 @@ import com.caucho.v5.health.meter.MeterAverage;
 import com.caucho.v5.health.meter.MeterService;
 import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.dispatch.Invocation;
-import com.caucho.v5.http.protocol2.Http2Constants;
 import com.caucho.v5.http.protocol2.ConnectionHttp2;
+import com.caucho.v5.http.protocol2.Http2Constants;
 import com.caucho.v5.io.ClientDisconnectException;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.TempBuffer;
@@ -63,12 +63,12 @@ import io.baratine.io.Buffer;
 /**
  * Parses and holds request information for an HTTP request.
  */
-public class RequestHttp extends RequestHttpBase
+public class RequestHttp1 extends RequestHttpBase
 {
-  private static final L10N L = new L10N(RequestHttp.class);
+  private static final L10N L = new L10N(RequestHttp1.class);
   
   private static final Logger log
-    = Logger.getLogger(RequestHttp.class.getName());
+    = Logger.getLogger(RequestHttp1.class.getName());
   
   public static final int HTTP_0_9 = 0x0009;
   public static final int HTTP_1_0 = 0x0100;
@@ -160,13 +160,13 @@ public class RequestHttp extends RequestHttpBase
 
   private boolean _isUpgrade;
 
-  private RequestBaratine _request;
-
   private PendingFirst _pending;
 
-  private final RequestHttpState _state;
+  // private final RequestHttpState _state;
 
   private boolean _isFirst;
+
+  private long _sequence;
   
   // private HmuxRequest _hmuxRequest;
 
@@ -175,14 +175,13 @@ public class RequestHttp extends RequestHttpBase
    *
    * @param server the owning server.
    */
-  public RequestHttp(ProtocolHttp protocolHttp,
-                     RequestHttpState state)
+  public RequestHttp1(ProtocolHttp protocolHttp)
   {
     super(protocolHttp);
     
-    Objects.requireNonNull(state);
+    //Objects.requireNonNull(state);
     
-    _state = state;
+    //_state = state;
 
     _meterRequestTime
       = MeterService.createActiveTimeMeter(METER_REQUEST_TIME);
@@ -198,24 +197,31 @@ public class RequestHttp extends RequestHttpBase
     _serverHeaderBytes = ("\r\nServer: " + serverHeader).getBytes();
   }
   
+  @Override
   public void init(RequestBaratine request)
   {
-    _request = request;
+    super.init(request);
+    
+    initRequest();
   }
 
   /**
    * Returns true for the top-level request, but false for any include()
    * or forward()
    */
+  /*
   public boolean isTop()
   {
     return true;
   }
+  */
 
+  /*
   protected boolean checkLogin()
   {
     return true;
   }
+  */
 
   //
   // HTTP request properties
@@ -300,7 +306,8 @@ public class RequestHttp extends RequestHttpBase
     else if ((_host = getHostHeader()) != null) {
     }
     else if (HTTP_1_1 <= getVersion()) {
-      throw new BadRequestException(L.l("HTTP/1.1 requires a Host header (Remote IP={0})", remoteHost()));
+      throw new BadRequestException(L.l("HTTP/1.1 requires a Host header (Remote IP={0})", 
+                                        connTcp().ipRemote()));
     }
 
     return _host;
@@ -310,7 +317,7 @@ public class RequestHttp extends RequestHttpBase
    * Returns the byte buffer containing the request URI
    */
   @Override
-  public byte []getUriBuffer()
+  public byte []uriBuffer()
   {
     return _uri;
   }
@@ -319,7 +326,7 @@ public class RequestHttp extends RequestHttpBase
    * Returns the length of the request URI
    */
   @Override
-  public int getUriLength()
+  public int uriLength()
   {
     return _uriLength;
   }
@@ -634,48 +641,6 @@ public class RequestHttp extends RequestHttpBase
   //
   // attribute management
   //
-
-  /**
-   * Initialize any special attributes.
-   */
-  /*
-  @Override
-  protected void initAttributes(RequestFacade request)
-  {
-    ConnectionTcp conn = getConnection();
-
-    if (! (conn instanceof ConnectionTcp))
-      return;
-    
-    ConnectionTcp tcpConn = (ConnectionTcp) conn;
-    
-    if (! conn.isSecure())
-      return;
-
-    SocketBar socket = tcpConn.socket();
-
-    String cipherSuite = socket.cipherSuite();
-    request.setCipherSuite(cipherSuite);
-
-    int keySize = socket.cipherBits();
-    if (keySize != 0) {
-      request.setCipherKeySize(keySize);
-    }
-
-    try {
-      X509Certificate []certs = socket.getClientCertificates();
-      if (certs != null && certs.length > 0) {
-        request.setCipherCertificate(certs);
-      }
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-    }
-  }
-  */
-
-  //
-  // stream management
-  //
   
   //
   // request parsing
@@ -685,8 +650,10 @@ public class RequestHttp extends RequestHttpBase
   public Invocation parseInvocation()
     throws IOException
   {
+    Objects.requireNonNull(request());
+    
     // initialize state for a request
-    initRequest();
+    //initRequest();
 
     if (! parseRequest()) {
       return null;
@@ -695,10 +662,15 @@ public class RequestHttp extends RequestHttpBase
     if (isUpgrade() && upgradeHttp2()) {
       return null;
     }
-
+    
     CharSequence host = hostInvocation();
 
     return invocation(host, _uri, _uriLength);
+  }
+  
+  long sequence()
+  {
+    return _sequence;
   }
 
   /**
@@ -708,20 +680,22 @@ public class RequestHttp extends RequestHttpBase
     throws IOException
   {
     try {
-      ReadStream is = conn().readStream();
+      ReadStream is = connTcp().readStream();
       
       if (! readRequest(is)) {
         clearRequest();
 
         return false;
       }
+      
+      _sequence = connHttp().nextSequenceRead();
 
       if (log.isLoggable(Level.FINE)) {
         log.fine(_method + " "
                  + new String(_uri, 0, _uriLength) + " " + _protocol
                  + " (" + dbgId() + ")");
-        log.fine("Remote-IP: " + remoteHost()
-                 + ":" + getRemotePort() + " (" + dbgId() + ")");
+        log.fine("Remote-IP: " + connTcp().addressRemote()
+                 + ":" + connTcp().portRemote() + " (" + dbgId() + ")");
       }
 
       parseHeaders(is);
@@ -869,13 +843,13 @@ public class RequestHttp extends RequestHttpBase
         return false;
       }
       else if (_method.matches("HAMP")) {
-        if (! _state.startBartender()) {
+        if (! request().startBartender()) {
           return false;
         }
         else {
           log.warning("Invalid Request: unable to start HAMP");
           
-          throw new BadRequestException("Invalid Request(Remote IP=" + remoteHost() + ")");
+          throw new BadRequestException("Invalid Request(Remote IP=" + connTcp().ipRemote() + ")");
         }
       }
     }
@@ -899,10 +873,10 @@ public class RequestHttp extends RequestHttpBase
       else {
         log.warning("Invalid Request (method='" + _method + "' url ch=0x" + Integer.toHexString(ch & 0xff)
                     + " off=" +readOffset + " len=" + readLength
-                    + ") (IP=" + remoteHost() + ")");
+                    + ") (IP=" + connTcp().ipRemote() + ")");
         log.warning(new String(readBuffer, 0, readLength));
         
-        throw new BadRequestException("Invalid Request(Remote IP=" + remoteHost() + ")");
+        throw new BadRequestException("Invalid Request(Remote IP=" + connTcp().ipRemote() + ")");
       }
 
       if (readLength <= readOffset) {
@@ -1068,7 +1042,7 @@ public class RequestHttp extends RequestHttpBase
     
     if (inOffset == 0) {
       if (! initBody()) {
-        _state.onBodyComplete();
+        request().onBodyComplete();
         
         return false;
       }
@@ -1095,7 +1069,7 @@ public class RequestHttp extends RequestHttpBase
       return false;
     }
     
-    ReadStream is = conn().readStream();
+    ReadStream is = connTcp().readStream();
     
     int sublen = (int) Math.min(Integer.MAX_VALUE, inOffset);
     sublen = Math.min(sublen, is.availableBuffer());
@@ -1116,7 +1090,7 @@ public class RequestHttp extends RequestHttpBase
       _inOffset -= sublen;
       
       tBuf.length(sublen);
-      _state.onBodyChunk(tBuf);
+      request().onBodyChunk(tBuf);
       
       return true;
     }
@@ -1132,7 +1106,7 @@ public class RequestHttp extends RequestHttpBase
       _inOffset -= sublen;
       
       tBuf.length(sublen);
-      _state.onBodyChunk(tBuf);
+      request().onBodyChunk(tBuf);
       
       return true;
     }
@@ -1149,7 +1123,7 @@ public class RequestHttp extends RequestHttpBase
       _inOffset -= sublen;
       
       tBuf.length(sublen);
-      _state.onBodyChunk(tBuf);
+      request().onBodyChunk(tBuf);
       // more data expected
       
       return true;
@@ -1159,7 +1133,7 @@ public class RequestHttp extends RequestHttpBase
   private int readChunkHeader()
     throws IOException
   {
-    ReadStream is = conn().readStream();
+    ReadStream is = connTcp().readStream();
     int ch;
     
     if ((ch = is.read()) == '\r') {
@@ -1174,7 +1148,7 @@ public class RequestHttp extends RequestHttpBase
     int len = readChunkLen(is, ch);
 
     if (len <= 0) {
-      _state.onBodyComplete();
+      request().onBodyComplete();
       len = -1;
     }
     
@@ -1222,11 +1196,11 @@ public class RequestHttp extends RequestHttpBase
     long contentLength = contentLength();
     
     if (contentLength <= inOffset) {
-      _state.onBodyComplete();
+      request().onBodyComplete();
       return false;
     }
     
-    ReadStream is = conn().readStream();
+    ReadStream is = connTcp().readStream();
     
     int sublen = (int) Math.min(Integer.MAX_VALUE, (contentLength - inOffset));
     sublen = Math.min(sublen, is.availableBuffer());
@@ -1247,10 +1221,10 @@ public class RequestHttp extends RequestHttpBase
       _inOffset += sublen;
       
       tBuf.length(sublen);
-      _state.onBodyChunk(tBuf);
+      request().onBodyChunk(tBuf);
       
       if (contentLength <= _inOffset) {
-        _state.onBodyComplete();
+        request().onBodyComplete();
       }
       
       return false;
@@ -1267,10 +1241,10 @@ public class RequestHttp extends RequestHttpBase
       _inOffset += sublen;
       
       tBuf.length(sublen);
-      _state.onBodyChunk(tBuf);
+      request().onBodyChunk(tBuf);
       
       if (contentLength <= _inOffset) {
-        _state.onBodyComplete();
+        request().onBodyComplete();
       }
       
       return false;
@@ -1288,7 +1262,7 @@ public class RequestHttp extends RequestHttpBase
       _inOffset += sublen;
       
       tBuf.length(sublen);
-      _state.onBodyChunk(tBuf);
+      request().onBodyChunk(tBuf);
       // more data expected
       
       return true;
@@ -1353,7 +1327,7 @@ public class RequestHttp extends RequestHttpBase
     
     handler = new ConnectionHttp2(protocolHttp(), 
                                      http(),
-                                     getConnection());
+                                     connTcp());
     
     startDuplex(handler);
     
@@ -1365,7 +1339,7 @@ public class RequestHttp extends RequestHttpBase
   private boolean startHttp2()
     throws IOException
   {
-    ReadStream is = conn().readStream();
+    ReadStream is = connTcp().readStream();
 
     //int offset = is.getOffset();
     
@@ -1384,7 +1358,7 @@ public class RequestHttp extends RequestHttpBase
     
     handler = new ConnectionHttp2(protocolHttp(), 
                                      http(),
-                                     getConnection());
+                                     connTcp());
     
     startDuplex(handler);
     
@@ -1612,7 +1586,7 @@ public class RequestHttp extends RequestHttpBase
     
     if (bufferStore != null) {
       throw new BadRequestException(L.l("URL or HTTP headers are too long (IP={0})",
-                                        getRemoteAddr()));
+                                        connTcp().ipRemote()));
     }
     
     bufferStore = allocateHttpBufferStore();
@@ -1712,12 +1686,14 @@ public class RequestHttp extends RequestHttpBase
   // upgrade to duplex
   //
 
+  /*
   @Override
   public boolean isDuplex()
   {
     throw new UnsupportedOperationException();
     //return getRequestProtocol().isDuplex();
   }
+  */
   
   @Override
   public void startDuplex(ConnectionProtocol request)
@@ -1778,11 +1754,11 @@ public class RequestHttp extends RequestHttpBase
   }
 
   @Override
-  protected OutResponseBase createOut()
+  protected OutHttpApp createOut()
   {
     //RequestHttp request = (RequestHttp) getRequest();
 
-    return new OutResponseHttp(this);
+    return new OutHttpApp1(this);
   }
   
   boolean isChunked()
@@ -1794,7 +1770,7 @@ public class RequestHttp extends RequestHttpBase
   {
     //RequestFacade request = request();
     
-    if (RequestHttp.HTTP_1_1 <= getVersion()
+    if (RequestHttp1.HTTP_1_1 <= getVersion()
         && contentLengthOut() < 0
         && ! method().equalsIgnoreCase("HEAD")) {
       return true;
@@ -1805,9 +1781,9 @@ public class RequestHttp extends RequestHttpBase
   }
   
   @Override
-  public boolean canWrite(long sequence)
+  public boolean canWrite(long writeSequence)
   {
-    return _state.sequence() <= sequence;
+    return sequence() <= writeSequence;
   }
   
   @Override
@@ -1815,20 +1791,15 @@ public class RequestHttp extends RequestHttpBase
                        Buffer data,
                        boolean isEnd)
   {
-    if (_state.isPrevCloseWrite()) {
-      return writeFirstImpl(out, data, isEnd);
-    }
-    else {
-      saveFirst(out, data, isEnd);
-      
-      return false;
-    }
+    writeImpl(out, data, isEnd);
+    
+    return ! isKeepalive();
   }
   
-  private boolean writeFirstImpl(WriteStream out,
-                                 Buffer data,
-                                 boolean isEnd)
-   {
+  private boolean writeImpl(WriteStream out, 
+                            Buffer data,
+                            boolean isEnd)
+  {
     try {
       if (_isFirst) {
         _isFirst = false;
@@ -1880,7 +1851,7 @@ public class RequestHttp extends RequestHttpBase
   {
     super.closeWrite();
     
-    _state.onCloseWrite();
+    //state.onCloseWrite();
   }
 
   private void saveFirst(WriteStream out,
@@ -1945,7 +1916,7 @@ public class RequestHttp extends RequestHttpBase
     @Override
     void write()
     {
-      writeFirstImpl(_out, _data, _isEnd);
+      writeImpl(_out, _data, _isEnd);
       writeNext();
     }
   }
@@ -2033,7 +2004,7 @@ public class RequestHttp extends RequestHttpBase
     int version = getVersion();
     boolean debug = log.isLoggable(Level.FINE);
 
-    if (version < RequestHttp.HTTP_1_0) {
+    if (version < RequestHttp1.HTTP_1_0) {
       killKeepalive("http client version " + version);
       return;
     }
@@ -2043,7 +2014,7 @@ public class RequestHttp extends RequestHttpBase
     int statusCode = status();
     
     if (statusCode == 200) {
-      if (version < RequestHttp.HTTP_1_1) {
+      if (version < RequestHttp1.HTTP_1_1) {
         os.write(_http10ok, 0, _http10ok.length);
       }
       else {
@@ -2051,7 +2022,7 @@ public class RequestHttp extends RequestHttpBase
       }
     }
     else {
-      if (version < RequestHttp.HTTP_1_1) {
+      if (version < RequestHttp1.HTTP_1_1) {
         os.printLatin1("HTTP/1.0 ");
       }
       else {
@@ -2273,7 +2244,7 @@ public class RequestHttp extends RequestHttpBase
       }
     }
 
-    if (version < RequestHttp.HTTP_1_1) {
+    if (version < RequestHttp1.HTTP_1_1) {
       killKeepalive("http response version: " + version);
     }
     else {

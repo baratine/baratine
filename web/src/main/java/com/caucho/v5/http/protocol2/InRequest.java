@@ -36,7 +36,7 @@ import com.caucho.v5.io.TempBuffer;
  */
 public interface InRequest
 {
-  ChannelHttp2 getChannel();
+  ChannelHttp2 channel();
   
   ChannelOutHttp2 getChannelOut();
 

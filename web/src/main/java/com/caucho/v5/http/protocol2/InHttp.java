@@ -135,7 +135,7 @@ public class InHttp
     ReadStream is = _is;
     byte []header = _header;
 
-    if (is == null || is.available() <= 0 || _conn.isClosed()) {
+    if (is == null || is.available() < 0 || _conn.isClosed()) {
       return false;
     }
 
@@ -173,7 +173,7 @@ public class InHttp
       return false;
     }
     
-    int length = BitsUtil.readInt16(is);
+    int length = BitsUtil.readInt24(is);
     int type = is.read();
     int flags = is.read();
     
@@ -281,7 +281,7 @@ public class InHttp
     int credit = BitsUtil.readInt(is);
     
     if (streamId == 0) {
-      _conn.getChannelZero().addSendCredit(credit);
+      _conn.channelZero().addSendCredit(credit);
       return true;
     }
     
@@ -399,7 +399,7 @@ public class InHttp
     
     ChannelInHttp2 inChannel = channel.getInChannel();
     
-    ChannelFlowHttp2 channelZero = _conn.getChannelZero();
+    ChannelFlowHttp2 channelZero = _conn.channelZero();
     channelZero.onData(length, _conn, 0);
     
     boolean isEndStream = (flags & Http2Constants.END_STREAM) != 0;
@@ -459,7 +459,7 @@ public class InHttp
     
     InRequest request = _inHandler.newInRequest();
     
-    ChannelHttp2 channel = request.getChannel(); // new InChannelHttp2(_conn, streamId, request);
+    ChannelHttp2 channel = request.channel(); // new InChannelHttp2(_conn, streamId, request);
     
     channel.getInChannel().addReceiveCredit(_settings.initialWindowSize());
 
@@ -509,7 +509,7 @@ public class InHttp
     }
     
     if (channel == null) {
-      channel = request.getChannel(); // new InChannelHttp2(_conn, streamId, request);
+      channel = request.channel(); // new InChannelHttp2(_conn, streamId, request);
       // stream.addReceiveCredit(_settings.getInitialWindowSize());
     
       channel.init(_conn, streamId);

@@ -74,7 +74,7 @@ public class MessageHeader extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteStream os, OutHttp outHttp)
+  public void deliver(WriteStream os, OutHttp2 outHttp)
     throws IOException
   {
     OutHeader outHeader = outHttp.getOutHeader();
@@ -93,7 +93,7 @@ public class MessageHeader extends MessageHttp
     outHeader.closeHeaders();
   }
   
-  protected int streamId(OutHttp outHttp)
+  protected int streamId(OutHttp2 outHttp)
   {
     return 1; // outHttp.nextStream(_channel);
   }

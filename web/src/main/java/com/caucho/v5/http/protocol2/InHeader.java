@@ -64,6 +64,8 @@ public class InHeader extends HeaderCommon implements AutoCloseable
   
   private int _streamId;
   
+  private int _staticTail;
+  
   private long _sequenceHead;
   private long _sequenceTail;
   
@@ -79,7 +81,9 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     _tableKeyMap.putAll(getTableKeyStatic());
     
     _tableEntryMap = new HashMap<>();
-    _tableEntryMap.putAll(getTableEntryStatic());
+    _tableEntryMap.putAll(tableEntryStatic());
+    
+    _staticTail = _tableEntryMap.size() + 1;
     
     _entries = new TableEntry[256];
     
@@ -170,7 +174,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
         readHeader(request, 6, op, true, seqReference);
       }
       else if ((op & 0x30) == 0x30) {
-        clearReferenceSet();
+        // clearReferenceSet();
       }
       else if ((op & 0x30) == 0x20) {
         int capacity = readInt(4, op);
@@ -209,7 +213,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     }
     
     String value = readString();
-    
+
     request.header(key, value);
     
     if (isUpdateTable) {
@@ -224,15 +228,15 @@ public class InHeader extends HeaderCommon implements AutoCloseable
   private void addEntry(TableEntry entry)
   {
     long head = _sequenceHead;
-    entry.setSequence(head);
-    entry.setReference(_sequenceReference + 1);
+    entry.sequence(head);
+    //entry.setReference(_sequenceReference + 1);
 
     _sequenceHead = head + 1;
 
     _tableEntryMap.put(entry, entry);
 
     if (entry.getNext() == null) {
-      _tableKeyMap.put(entry.getKey(), entry);
+      _tableKeyMap.put(entry.key(), entry);
     }
 
     _entries[(int) (head % _entries.length)] = entry;
@@ -242,6 +246,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     updateTableSize();
   }
   
+  /*
   private void clearReferenceSet()
   {
     for (long i = _sequenceTail; i < _sequenceHead; i++) {
@@ -250,18 +255,21 @@ public class InHeader extends HeaderCommon implements AutoCloseable
       entry.setReference(0);
     }
   }
+  */
   
   private void completeHeaders(InRequest request,
                                long reference)
   {
+    /*
     for (long ptr = _sequenceTail; ptr < _sequenceHead; ptr++) {
       TableEntry entry = _entries[(int) (ptr % _entries.length)];
       
-      if (entry.getReference() == reference) {
+      if (entry.reference() == reference) {
         entry.setReference(reference + 1);
-        request.header(entry.getKey(), entry.getValue());
+        request.header(entry.key(), entry.getValue());
       }
     }
+    */
   }
   
   private void readIndex(InRequest request, int op)
@@ -271,7 +279,9 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     
     TableEntry entry = getEntry(index);
     
-    if (entry.getReference() != _sequenceReference) {
+    request.header(entry.key(), entry.getValue());
+    /*
+    if (entry.reference() != _sequenceReference) {
       request.header(entry.getKey(), entry.getValue());
       
       if (entry.isStatic()) {
@@ -284,6 +294,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
       // index entries already in the reference is a deletion.
       entry.setReference(0);
     }
+    */
   }
   
   private String readKeyHeader(int index)
@@ -291,11 +302,17 @@ public class InHeader extends HeaderCommon implements AutoCloseable
   {
     TableEntry entry = getEntry(index);
 
-    return entry.getKey();
+    return entry.key();
   }
   
   private TableEntry getEntry(int index)
   {
+    if (index < _staticTail) {
+      return getEntryArrayStatic()[index];
+    }
+    
+    index -= _staticTail;
+    
     int length = (int) (_sequenceHead - _sequenceTail);
     
     if (length < index) {
@@ -334,7 +351,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     long i = _sequenceTail++;
     
     TableEntry entry = _entries[(int) (i % _entries.length)];
-    entry.setReference(0);
+    //entry.setReference(0);
     
     _tableEntryMap.remove(entry);
     
@@ -381,12 +398,14 @@ public class InHeader extends HeaderCommon implements AutoCloseable
       // huffman encoded
       len &= 0x7f;
       
+      //System.out.println("HUFF: " + len);
       while (buffer.length <= 2 * len) {
         buffer = new char[2 * buffer.length];
         _charBuffer = buffer;
       }
       
       int strlen = huffmanDecode(len, buffer);
+      //System.out.println("HUFF2: " + strlen);
       
       return new String(buffer, 0, strlen);
     }

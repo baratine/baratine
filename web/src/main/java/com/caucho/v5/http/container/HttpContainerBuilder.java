@@ -39,6 +39,8 @@ import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.config.Config;
+
 /**
  * Configuration for the <cluster> and <server> tags.
  */
@@ -79,12 +81,16 @@ public class HttpContainerBuilder // implements EnvironmentBean // , XmlSchemaBe
 
   private AccessLog _accessLog;
   
-  public HttpContainerBuilder(ServerBartender selfServer, 
+  private Config _config;
+  
+  public HttpContainerBuilder(ServerBartender selfServer,
+                              Config config,
                               String serverHeader)
   {
     _systemManager = SystemManager.getCurrent();
     
     _selfServer = selfServer; // BartenderSystem.getCurrentSelfServer();
+    _config = config;
     _serverHeader = serverHeader;
   }
 
@@ -110,6 +116,11 @@ public class HttpContainerBuilder // implements EnvironmentBean // , XmlSchemaBe
   public EnvironmentClassLoader getClassLoader()
   {
     return _systemManager.getClassLoader();
+  }
+  
+  public Config config()
+  {
+    return _config;
   }
   
   //

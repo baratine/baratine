@@ -48,7 +48,7 @@ public class MessageHttp implements MessageDeliver<MessageHttp>
    * @param writerHttp the writer context
    */
   public void deliver(WriteStream os,
-                      OutHttp writerHttp)
+                      OutHttp2 writerHttp)
     throws IOException
   {
     System.out.println("UNKNOWN-MESSAGE: " + this);

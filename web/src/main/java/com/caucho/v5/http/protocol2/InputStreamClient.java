@@ -39,7 +39,7 @@ abstract public class InputStreamClient extends InputStream
 {
   abstract public int getStatus();
   
-  abstract public String getHeader(String key);
+  abstract public String header(String key);
   
   abstract public Map<String,String> getHeaders();
 

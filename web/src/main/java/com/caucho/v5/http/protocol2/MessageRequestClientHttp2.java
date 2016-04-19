@@ -77,12 +77,12 @@ public class MessageRequestClientHttp2 extends MessageHttp
    * @param writerHttp the writer context
    */
   @Override
-  public void deliver(WriteStream os, OutHttp outHttp)
+  public void deliver(WriteStream os, OutHttp2 outHttp)
     throws IOException
   {
     // OutChannelHttp2 stream = _request.getStreamOut();
     
-    int streamId = outHttp.nextStream(_request.getChannel());
+    int streamId = outHttp.nextStream(_request.channel());
     
     // http/1220
     _request.init(streamId);
@@ -106,7 +106,7 @@ public class MessageRequestClientHttp2 extends MessageHttp
     
     if (getFlagsHttp() == FlagsHttp.END_STREAM) {
       // stream.closeWrite();
-      _request.getChannel().closeWrite();
+      _request.channel().closeWrite();
       // outHttp.closeWrite(streamId);
     }
   }

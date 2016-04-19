@@ -29,16 +29,17 @@
 
 package com.caucho.v5.web.webapp;
 
-import java.io.PrintWriter;
-import java.io.Reader;
+import java.io.IOException;
 import java.util.List;
 
+import com.caucho.v5.http.protocol.ConnectionHttp;
+import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.network.port.ConnectionProtocol;
 
 /**
  * Baratine facade for http requests.
  */
-public interface RequestBaratine extends RequestWebSpi
+public interface RequestBaratine extends RequestWebSpi, ConnectionProtocol
 {
   /*
   String uri();
@@ -71,12 +72,24 @@ public interface RequestBaratine extends RequestWebSpi
     
   }
   
+  void invocation(InvocationBaratine invocation);
+  
   // XXX: temp
   //PrintWriter getWriter();
 
   void requestProxy(RequestProxy proxy);
 
   WebApp webApp();
+
+  void onBodyComplete();
+
+  void onBodyChunk(TempBuffer tBuf);
+
+  boolean startBartender() throws IOException;
+
+  void onAccept();
+
+  ConnectionHttp connHttp();
   
   /*
   @Override

@@ -54,7 +54,7 @@ class HeaderCommon
     return _tableKeyStatic;
   }
 
-  protected Map<TableEntry,TableEntry> getTableEntryStatic()
+  protected Map<TableEntry,TableEntry> tableEntryStatic()
   {
     return _tableEntryStatic;
   }
@@ -142,6 +142,8 @@ class HeaderCommon
       while (bits <= 56) {
         if (length > 0) {
           int d = read();
+          
+          // System.out.println("  HC: 0x" + Integer.toHexString(d));
 
           chunk = (chunk << 8) | d;
           length--;
@@ -168,6 +170,7 @@ class HeaderCommon
       int index;
 
       if (true) {
+        //System.out.println("  TOP: 0x" + Integer.toHexString(top));
         HuffmanProgram ptr = topProgram.getChild(top);
 
         int bitOff = 16;
@@ -340,7 +343,7 @@ class HeaderCommon
 
     private int _hashCode;
     
-    private long _reference;
+    //private long _reference;
     
     // used for static
     private TableEntry _next;
@@ -351,7 +354,7 @@ class HeaderCommon
 
     public TableEntry(TableEntry next)
     {
-      update(0, next.getKey(), next.getValue());
+      update(0, next.key(), next.getValue());
       
       _next = next;
     }
@@ -361,25 +364,27 @@ class HeaderCommon
       update(sequence, key, value);
     }
 
-    public final long getSequence()
+    public final long sequence()
     {
       return _sequence;
     }
 
-    public final void setSequence(long sequence)
+    public final void sequence(long sequence)
     {
       _sequence = sequence;
     }
 
+    /*
     public final void setReference(long reference)
     {
       _reference = reference;
     }
 
-    public final long getReference()
+    public final long reference()
     {
       return _reference;
     }
+    */
 
     public boolean isStatic()
     {
@@ -400,7 +405,7 @@ class HeaderCommon
       _hashCode = key.hashCode() * 65521 + value.hashCode();
     }
 
-    public final String getKey()
+    public final String key()
     {
       return _key;
     }
@@ -412,7 +417,7 @@ class HeaderCommon
 
     public int getSize()
     {
-      return 32 + getKey().length() + getValue().length();
+      return 32 + key().length() + getValue().length();
     }
 
     @Override
@@ -605,6 +610,8 @@ class HeaderCommon
           ptr.addFinal(codePtr + i, entry);
         }
       } catch (Exception e) {
+        System.out.println("BAD: " + (char) ch + " " + ch + " " + e);
+        try { Thread.sleep(5000); } catch (Exception e1) {}
         throw new IllegalStateException("ch=" + ch + " (0x" + Integer.toHexString(ch) + ")"
                                         + ",code=0x" + Integer.toHexString(code)
                                         + ",len=" + length + ": " + e.getMessage(),
@@ -730,6 +737,10 @@ class HeaderCommon
 
     _staticEntryArray = new TableEntry[list.size()];
     list.toArray(_staticEntryArray);
+    
+    if (_staticEntryArray.length != 62) {
+      System.out.println("INVALID STATIC:" + _staticEntryArray);
+    }
 
     HuffmanBuilder builder = new HuffmanBuilder();
 
@@ -737,106 +748,106 @@ class HeaderCommon
       builder.add(i, 0x3ffffba + i, 26);
     }
 
-    builder.add(0x20, 0x0006, 5); // ' '
-    builder.add(0x21, 0x1ffc, 13); // '!'
-    builder.add(0x22, 0x01f0, 9); // '"'
-    builder.add(0x23, 0x3ffc, 14); // '#'
-    builder.add(0x24, 0x7ffc, 15); // '$'
-    builder.add(0x25, 0x001e, 6); // '%'
-    builder.add(0x26, 0x0064, 7); // '&'
-    builder.add(0x27, 0x1ffd, 13); // '''
+    builder.add(0x20, 0x0014, 6);  // ' '
+    builder.add(0x21, 0x03f8, 10); // '!'
+    builder.add(0x22, 0x03f9, 10); // '"'
+    builder.add(0x23, 0x0ffa, 12); // '#'
+    builder.add(0x24, 0x1ff9, 13); // '$'
+    builder.add(0x25, 0x0015, 6); // '%'
+    builder.add(0x26, 0x00f8, 8); // '&'
+    builder.add(0x27, 0x07fa, 11); // '''
     builder.add(0x28, 0x03fa, 10); // '('
-    builder.add(0x29, 0x01f1, 9); // ')'
-    builder.add(0x2a, 0x03fb, 10); // '*'
-    builder.add(0x2b, 0x03fc, 10); // '+'
-    builder.add(0x2c, 0x0065, 7); // ','
-    builder.add(0x2d, 0x0066, 7); // '-'
-    builder.add(0x2e, 0x001f, 6); // '.'
-    builder.add(0x2f, 0x0007, 5); // '/'
+    builder.add(0x29, 0x03fb, 10); // ')'
+    builder.add(0x2a, 0x00f9, 8);  // '*'
+    builder.add(0x2b, 0x07fb, 11); // '+'
+    builder.add(0x2c, 0x00fa, 8); // ','
+    builder.add(0x2d, 0x0016, 6); // '-'
+    builder.add(0x2e, 0x0017, 6); // '.'
+    builder.add(0x2f, 0x0018, 6); // '/'
 
-    builder.add(0x30, 0x0000, 4); // '0'
-    builder.add(0x31, 0x0001, 4); // '1'
-    builder.add(0x32, 0x0002, 4); // '2'
-    builder.add(0x33, 0x0008, 5); // '3'
-    builder.add(0x34, 0x0020, 6); // '4'
-    builder.add(0x35, 0x0021, 6); // '5'
-    builder.add(0x36, 0x0022, 6); // '6'
-    builder.add(0x37, 0x0023, 6); // '7'
-    builder.add(0x38, 0x0024, 6); // '8'
-    builder.add(0x39, 0x0025, 6); // '9'
-    builder.add(0x3a, 0x0026, 6); // ':'
-    builder.add(0x3b, 0x00ec, 8); // ';'
-    builder.add(0x3c, 0x1fffc, 17); // '<'
-    builder.add(0x3d, 0x0027, 6); // '='
-    builder.add(0x3e, 0x7ffd, 15); // '>'
-    builder.add(0x3f, 0x03fd, 10); // '?'
+    builder.add(0x30, 0x0000, 5); // '0'
+    builder.add(0x31, 0x0001, 5); // '1'
+    builder.add(0x32, 0x0002, 5); // '2'
+    builder.add(0x33, 0x0019, 6); // '3'
+    builder.add(0x34, 0x001a, 6); // '4'
+    builder.add(0x35, 0x001b, 6); // '5'
+    builder.add(0x36, 0x001c, 6); // '6'
+    builder.add(0x37, 0x001d, 6); // '7'
+    builder.add(0x38, 0x001e, 6); // '8'
+    builder.add(0x39, 0x001f, 6); // '9'
+    builder.add(0x3a, 0x005c, 7); // ':'
+    builder.add(0x3b, 0x00fb, 8); // ';'
+    builder.add(0x3c, 0x7ffc, 15); // '<'
+    builder.add(0x3d, 0x0020, 6); // '='
+    builder.add(0x3e, 0x0ffb, 12); // '>'
+    builder.add(0x3f, 0x03fc, 10); // '?'
 
-    builder.add(0x40, 0x7ffe, 15); // '@'
-    builder.add(0x41, 0x0067, 7); // 'A'
-    builder.add(0x42, 0x00ed, 8); // 'B'
-    builder.add(0x43, 0x00ee, 8); // 'C'
-    builder.add(0x44, 0x0068, 7); // 'D'
-    builder.add(0x45, 0x00ef, 8); // 'E'
-    builder.add(0x46, 0x0069, 7); // 'F'
-    builder.add(0x47, 0x006a, 7); // 'G'
-    builder.add(0x48, 0x01f2, 9); // 'H'
-    builder.add(0x49, 0x00f0, 8); // 'I'
-    builder.add(0x4a, 0x01f3, 9); // 'J'
-    builder.add(0x4b, 0x01f4, 9); // 'K'
-    builder.add(0x4c, 0x01f5, 9); // 'L'
-    builder.add(0x4d, 0x006b, 7); // 'M'
-    builder.add(0x4e, 0x006c, 7); // 'N'
-    builder.add(0x4f, 0x00f1, 8); // 'O'
+    builder.add(0x40, 0x1ffa, 13); // '@'
+    builder.add(0x41, 0x0021, 6); // 'A'
+    builder.add(0x42, 0x005d, 7); // 'B'
+    builder.add(0x43, 0x005e, 7); // 'C'
+    builder.add(0x44, 0x005f, 7); // 'D'
+    builder.add(0x45, 0x0060, 7); // 'E'
+    builder.add(0x46, 0x0061, 7); // 'F'
+    builder.add(0x47, 0x0062, 7); // 'G'
+    builder.add(0x48, 0x0063, 7); // 'H'
+    builder.add(0x49, 0x0064, 7); // 'I'
+    builder.add(0x4a, 0x0065, 7); // 'J'
+    builder.add(0x4b, 0x0066, 7); // 'K'
+    builder.add(0x4c, 0x0067, 7); // 'L'
+    builder.add(0x4d, 0x0068, 7); // 'M'
+    builder.add(0x4e, 0x0069, 7); // 'N'
+    builder.add(0x4f, 0x006a, 7); // 'O'
 
-    builder.add(0x50, 0x00f2, 8); // 'P'
-    builder.add(0x51, 0x01f6, 9); // 'Q'
-    builder.add(0x52, 0x01f7, 9); // 'R'
-    builder.add(0x53, 0x006d, 7); // 'S'
-    builder.add(0x54, 0x0028, 6); // 'T'
-    builder.add(0x55, 0x00f3, 8); // 'U'
-    builder.add(0x56, 0x01f8, 9); // 'V'
-    builder.add(0x57, 0x01f9, 9); // 'W'
-    builder.add(0x58, 0x00f4, 8); // 'X'
-    builder.add(0x59, 0x01fa, 9); // 'Y'
-    builder.add(0x5a, 0x01fb, 9); // 'Z'
-    builder.add(0x5b, 0x07fc, 11); // '['
-    builder.add(0x5c, 0x3ffffda, 26); // '\'
-    builder.add(0x5d, 0x07fd, 11); // ']'
-    builder.add(0x5e, 0x3ffd, 14); // '^'
-    builder.add(0x5f, 0x006e, 7); // '_'
+    builder.add(0x50, 0x006b, 7); // 'P'
+    builder.add(0x51, 0x006c, 7); // 'Q'
+    builder.add(0x52, 0x006d, 7); // 'R'
+    builder.add(0x53, 0x006e, 7); // 'S'
+    builder.add(0x54, 0x006f, 7); // 'T'
+    builder.add(0x55, 0x0070, 7); // 'U'
+    builder.add(0x56, 0x0071, 7); // 'V'
+    builder.add(0x57, 0x0072, 7); // 'W'
+    builder.add(0x58, 0x00fc, 8); // 'X'
+    builder.add(0x59, 0x0073, 7); // 'Y'
+    builder.add(0x5a, 0x00fd, 8); // 'Z'
+    builder.add(0x5b, 0x1ffb, 13); // '['
+    builder.add(0x5c, 0x7fff0, 19); // '\'
+    builder.add(0x5d, 0x1ffc, 13); // ']'
+    builder.add(0x5e, 0x3ffc, 14); // '^'
+    builder.add(0x5f, 0x0022, 6); // '_'
 
-    builder.add(0x60, 0x3fffe, 18); // '`'
-    builder.add(0x61, 0x0009, 5); // 'a'
-    builder.add(0x62, 0x006f, 7); // 'b'
-    builder.add(0x63, 0x000a, 5); // 'c'
-    builder.add(0x64, 0x0029, 6); // 'd'
-    builder.add(0x65, 0x000b, 5); // 'e'
-    builder.add(0x66, 0x0070, 7); // 'f'
-    builder.add(0x67, 0x002a, 6); // 'g'
-    builder.add(0x68, 0x002b, 6); // 'h'
-    builder.add(0x69, 0x000c, 5); // 'i'
-    builder.add(0x6a, 0x00f5, 8); // 'j'
-    builder.add(0x6b, 0x00f6, 8); // 'k'
-    builder.add(0x6c, 0x002c, 6); // 'l'
-    builder.add(0x6d, 0x002d, 6); // 'm'
-    builder.add(0x6e, 0x002e, 6); // ''
-    builder.add(0x6f, 0x000d, 5); // 'o'
+    builder.add(0x60, 0x7ffd, 15); // '`'
+    builder.add(0x61, 0x0003, 5); // 'a'
+    builder.add(0x62, 0x0023, 6); // 'b'
+    builder.add(0x63, 0x0004, 5); // 'c'
+    builder.add(0x64, 0x0024, 6); // 'd'
+    builder.add(0x65, 0x0005, 5); // 'e'
+    builder.add(0x66, 0x0025, 6); // 'f'
+    builder.add(0x67, 0x0026, 6); // 'g'
+    builder.add(0x68, 0x0027, 6); // 'h'
+    builder.add(0x69, 0x0006, 5); // 'i'
+    builder.add(0x6a, 0x0074, 7); // 'j'
+    builder.add(0x6b, 0x0075, 7); // 'k'
+    builder.add(0x6c, 0x0028, 6); // 'l'
+    builder.add(0x6d, 0x0029, 6); // 'm'
+    builder.add(0x6e, 0x002a, 6); // 'n'
+    builder.add(0x6f, 0x0007, 5); // 'o'
 
-    builder.add(0x70, 0x002f, 6); // 'p'
-    builder.add(0x71, 0x01fc, 9); // 'q'
-    builder.add(0x72, 0x0030, 6); // 'r'
-    builder.add(0x73, 0x0031, 6); // 's'
-    builder.add(0x74, 0x000e, 5); // 't'
-    builder.add(0x75, 0x0071, 7); // 'u'
-    builder.add(0x76, 0x0072, 7); // 'v'
-    builder.add(0x77, 0x0073, 7); // 'w'
-    builder.add(0x78, 0x0074, 7); // 'x'
-    builder.add(0x79, 0x0075, 7); // 'y'
-    builder.add(0x7a, 0x00f7, 8); // 'z'
-    builder.add(0x7b, 0x1fffd, 17); // '{'
-    builder.add(0x7c, 0x0ffc, 12); // '|'
-    builder.add(0x7d, 0x1fffe, 17); // '}'
-    builder.add(0x7e, 0x0ffd, 12); // '~'
+    builder.add(0x70, 0x002b, 6); // 'p'
+    builder.add(0x71, 0x0076, 7); // 'q'
+    builder.add(0x72, 0x002c, 6); // 'r'
+    builder.add(0x73, 0x0008, 5); // 's'
+    builder.add(0x74, 0x0009, 5); // 't'
+    builder.add(0x75, 0x002d, 6); // 'u'
+    builder.add(0x76, 0x0077, 7); // 'v'
+    builder.add(0x77, 0x0078, 7); // 'w'
+    builder.add(0x78, 0x0079, 7); // 'x'
+    builder.add(0x79, 0x007a, 7); // 'y'
+    builder.add(0x7a, 0x007b, 7); // 'z'
+    builder.add(0x7b, 0x7ffe, 15); // '{'
+    builder.add(0x7c, 0x07fc, 11); // '|'
+    builder.add(0x7d, 0x3ffd, 14); // '}'
+    builder.add(0x7e, 0x1ffd, 13); // '~'
 
     for (int i = 127; i <= 163; i++) {
       builder.add(i, 0x3ffffdb + i - 127, 26);
