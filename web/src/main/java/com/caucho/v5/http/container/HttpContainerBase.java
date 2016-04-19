@@ -52,6 +52,8 @@ import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.FreeRing;
 import com.caucho.v5.web.webapp.RequestBaratine;
 
+import io.baratine.config.Config;
+
 public class HttpContainerBase<I extends Invocation> implements HttpContainer
 {
   private static final Logger log
@@ -88,6 +90,8 @@ public class HttpContainerBase<I extends Invocation> implements HttpContainer
 
   private final Lifecycle _lifecycle;
 
+  private Config _config;
+
   /**
    * Creates a new http container.
    */
@@ -101,6 +105,9 @@ public class HttpContainerBase<I extends Invocation> implements HttpContainer
     
     _serverHeader = builder.getServerHeader();
     Objects.requireNonNull(_serverHeader);
+    
+    _config = builder.config();
+    Objects.requireNonNull(_config);
 
     String id = _selfServer.getId();
     
@@ -191,6 +198,12 @@ public class HttpContainerBase<I extends Invocation> implements HttpContainer
   public String getServerId()
   {
     return _selfServer.getId();
+  }
+  
+  @Override
+  public Config config()
+  {
+    return _config;
   }
 
   /**

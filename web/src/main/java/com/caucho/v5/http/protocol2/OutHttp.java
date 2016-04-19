@@ -71,7 +71,7 @@ public class OutHttp implements AutoCloseable
   
   private SettingsHttp _settings = new SettingsHttp();
 
-  private OutHeader _writerHeader;
+  private OutHeader _outHeader;
   
   private int _nextStreamId = 1;
 
@@ -79,7 +79,8 @@ public class OutHttp implements AutoCloseable
 
   private ConnectionHttp2Int _conn;
 
-  public OutHttp(ConnectionHttp2Int conn, PeerHttp peer)
+  public OutHttp(ConnectionHttp2Int conn, 
+                 PeerHttp peer)
   {
     Objects.requireNonNull(conn);
     
@@ -89,12 +90,14 @@ public class OutHttp implements AutoCloseable
     _queue = createQueue();
   }
   
+  /*
   public OutHttp(WriteStream os, PeerHttp peer)
   {
     this(new ConnectionHttp2Int(peer), peer);
     
     init(os);
   }
+  */
   
   public void init(WriteStream os)
   {
@@ -113,8 +116,13 @@ public class OutHttp implements AutoCloseable
     default:
       throw new IllegalStateException(String.valueOf(_peer));
     }
-    
-    _writerHeader = new OutHeader(os);
+
+    if (_conn.isHeaderHuffman()) {
+      _outHeader = new OutHeaderHuffman(os);
+    }
+    else {
+      _outHeader = new OutHeader(os);
+    }
   }
 
   /*
@@ -146,7 +154,7 @@ public class OutHttp implements AutoCloseable
 
   public OutHeader getOutHeader()
   {
-    return _writerHeader;
+    return _outHeader;
   }
   
   private QueueDeliver<MessageHttp> createQueue()

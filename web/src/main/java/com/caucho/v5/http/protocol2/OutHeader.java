@@ -185,7 +185,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   public void closeHeaders()
     throws IOException
   {
-    completeReferenceSet();
+    //completeReferenceSet();
     
     writeHeaders(_offset, _state.flagsClose());
   }
@@ -313,7 +313,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   {
     long seq = _sequence++;
     entry.sequence(seq);
-    entry.setReference(_seqReference + 1);
+    //entry.setReference(_seqReference + 1);
     
     _tableEntryMap.put(entry, entry);
     
@@ -368,10 +368,12 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   {
     write(0x30);
     
+    /*
     for (long i = _tailSequence; i < _sequence; i++) {
       TableEntry entry = _entries[(int) (i % _entries.length)];
-      entry.setReference(0);
+      //entry.setReference(0);
     }
+    */
   }
   
   public void setTableSize(int size)
@@ -399,7 +401,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
     long i = _tailSequence++;
     
     TableEntry entry = _entries[(int) (i % _entries.length)];
-    entry.setReference(0);
+    //entry.setReference(0);
     
     _tableEntryMap.remove(entry);
     
@@ -550,6 +552,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
   /**
    * References that were not used need to be deleted.
    */
+  /*
   private void completeReferenceSet()
     throws IOException
   {
@@ -564,6 +567,7 @@ public class OutHeader extends HeaderCommon implements AutoCloseable
       }
     }
   }
+  */
   
   @Override
   public void close()

@@ -69,7 +69,6 @@ public class InputStreamClientImpl extends InputStreamClient
   
   void header(String key, String value)
   {
-    System.out.println("HEADER: " + key + " " + value);
     if (_headers == null) {
       _headers = new HashMap<>();
     }

@@ -51,12 +51,13 @@ public class ConnectionHttp2 extends ConnectionHttp
   implements InHttpHandler
 {
   private final ProtocolHttp _httpProtocol;
-  private final HttpContainer _httpContainer;
+  private final HttpContainer _http;
   private final ConnectionHttp2Int _conn;
   private ConnectionTcp _connTcp;
   
   private FreeRing<RequestHttp2> _freeRequest = new FreeRing<>(8);
   //private ConnectionHttp _connHttp;
+  private boolean _isHuffman;
 
   public ConnectionHttp2(ProtocolHttp protocolHttp,
                          HttpContainer httpContainer,
@@ -69,8 +70,12 @@ public class ConnectionHttp2 extends ConnectionHttp
     Objects.requireNonNull(connTcp);
     
     _httpProtocol = protocolHttp;
-    _httpContainer = httpContainer;
+    _http = httpContainer;
     _connTcp = connTcp;
+    
+    _isHuffman = _http.config().get("server.http2.huffman", 
+                                             boolean.class, 
+                                             true);
     
     _conn = new ConnectionHttp2Int(this, PeerHttp.SERVER);
   }
@@ -78,6 +83,12 @@ public class ConnectionHttp2 extends ConnectionHttp
   OutHttp getOut()
   {
     return _conn.outHttp();
+  }
+  
+  @Override
+  public boolean isHeaderHuffman()
+  {
+    return _isHuffman;
   }
 
   // @Override

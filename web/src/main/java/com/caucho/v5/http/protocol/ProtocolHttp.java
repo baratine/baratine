@@ -90,7 +90,7 @@ public class ProtocolHttp implements Protocol
   @Override
   public String []nextProtocols()
   {
-    return new String[] { "h2-12", "http/1.1", "http/1.0" };
+    return new String[] { "h2", "http/1.1", "http/1.0" };
   }
 
  /**

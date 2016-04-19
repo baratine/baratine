@@ -36,6 +36,7 @@ import java.security.GeneralSecurityException;
 import javax.net.ssl.SSLSocket;
 
 import com.caucho.v5.config.ConfigException;
+import com.caucho.v5.jni.JniSocketImpl;
 
 /**
  * SSL factory to connect both normal sockets and JNI sockets.
@@ -55,6 +56,11 @@ public interface SSLFactory {
 
   default SSLSocket ssl(SocketChannel s)
     throws IOException
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  default void ssl(JniSocketImpl jniSocket)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

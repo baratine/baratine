@@ -29,14 +29,13 @@
 
 package com.caucho.v5.network.port;
 
-import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.ServerSocketBar;
-import com.caucho.v5.io.Vfs;
+import com.caucho.v5.jni.OpenSSLFactory;
 import com.caucho.v5.network.ssl.SSLFactoryJsse;
 
 import io.baratine.config.Config;
@@ -142,6 +141,12 @@ public class PortTcpBuilder
 
   public SSLFactory sslFactory()
   {
+    String opensslKey = _env.get(portName() + ".openssl.key");
+    
+    if (opensslKey != null) {
+      return opensslFactory();
+    }
+    
     String keyStore = _env.get(portName() + ".ssl.key-store");
     
     boolean isSsl = _env.get(portName() + ".ssl.enabled", boolean.class, false);
@@ -178,7 +183,21 @@ public class PortTcpBuilder
 
     return sslFactory;
   }
-  
+
+  public SSLFactory opensslFactory()
+  {
+    String opensslKey = _env.get(portName() + ".openssl.key");
+    
+    OpenSSLFactory sslFactory = new OpenSSLFactory(_env, 
+                                                   portName(),
+                                                   protocol());
+    
+    System.out.println("OPENSSL: " + sslFactory);
+    
+    
+    return sslFactory;
+  }
+    
   public ServerSocketBar serverSocket()
   {
     return _serverSocket;

@@ -40,4 +40,10 @@ public interface InHttpHandler
    * Called when all stream are closed.
    */
   void onGoAway();
+
+  default boolean isHeaderHuffman()
+  {
+    System.out.println("IHH: " + this);
+    return true;
+  }
 }

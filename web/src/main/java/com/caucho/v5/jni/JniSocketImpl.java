@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.io.ClientDisconnectException;
 import com.caucho.v5.io.InetAddressUtil;
+import com.caucho.v5.io.SSLFactory;
 import com.caucho.v5.io.SocketBar;
 import com.caucho.v5.io.StreamImpl;
 import com.caucho.v5.io.TempBuffer;
@@ -224,6 +225,12 @@ public final class JniSocketImpl extends SocketBar
 
       return result;
     }
+  }
+
+  @Override
+  public void ssl(SSLFactory sslFactory)
+  {
+    sslFactory.ssl(this);
   }
 
   /**

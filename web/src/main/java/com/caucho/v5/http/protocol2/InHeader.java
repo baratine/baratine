@@ -83,7 +83,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     _tableEntryMap = new HashMap<>();
     _tableEntryMap.putAll(tableEntryStatic());
     
-    _staticTail = _tableKeyMap.size() + 1;
+    _staticTail = _tableEntryMap.size() + 1;
     
     _entries = new TableEntry[256];
     
@@ -174,7 +174,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
         readHeader(request, 6, op, true, seqReference);
       }
       else if ((op & 0x30) == 0x30) {
-        clearReferenceSet();
+        // clearReferenceSet();
       }
       else if ((op & 0x30) == 0x20) {
         int capacity = readInt(4, op);
@@ -213,7 +213,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     }
     
     String value = readString();
-    
+
     request.header(key, value);
     
     if (isUpdateTable) {
@@ -229,7 +229,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
   {
     long head = _sequenceHead;
     entry.sequence(head);
-    entry.setReference(_sequenceReference + 1);
+    //entry.setReference(_sequenceReference + 1);
 
     _sequenceHead = head + 1;
 
@@ -246,6 +246,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     updateTableSize();
   }
   
+  /*
   private void clearReferenceSet()
   {
     for (long i = _sequenceTail; i < _sequenceHead; i++) {
@@ -254,10 +255,12 @@ public class InHeader extends HeaderCommon implements AutoCloseable
       entry.setReference(0);
     }
   }
+  */
   
   private void completeHeaders(InRequest request,
                                long reference)
   {
+    /*
     for (long ptr = _sequenceTail; ptr < _sequenceHead; ptr++) {
       TableEntry entry = _entries[(int) (ptr % _entries.length)];
       
@@ -266,6 +269,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
         request.header(entry.key(), entry.getValue());
       }
     }
+    */
   }
   
   private void readIndex(InRequest request, int op)
@@ -274,10 +278,8 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     int index = readInt(7, op);
     
     TableEntry entry = getEntry(index);
-    System.out.println("ENTRY: " + entry + " " + index);
     
     request.header(entry.key(), entry.getValue());
-    System.out.println("HEAD: " + entry.key() + " " + entry.getValue()); 
     /*
     if (entry.reference() != _sequenceReference) {
       request.header(entry.getKey(), entry.getValue());
@@ -349,7 +351,7 @@ public class InHeader extends HeaderCommon implements AutoCloseable
     long i = _sequenceTail++;
     
     TableEntry entry = _entries[(int) (i % _entries.length)];
-    entry.setReference(0);
+    //entry.setReference(0);
     
     _tableEntryMap.remove(entry);
     
@@ -396,12 +398,14 @@ public class InHeader extends HeaderCommon implements AutoCloseable
       // huffman encoded
       len &= 0x7f;
       
+      //System.out.println("HUFF: " + len);
       while (buffer.length <= 2 * len) {
         buffer = new char[2 * buffer.length];
         _charBuffer = buffer;
       }
       
       int strlen = huffmanDecode(len, buffer);
+      //System.out.println("HUFF2: " + strlen);
       
       return new String(buffer, 0, strlen);
     }

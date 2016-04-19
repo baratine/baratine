@@ -418,8 +418,8 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   @Override
   public MultiMap<String,String> queryMap()
   {
-    System.out.println("NVOK: " + invocation());
-    return invocation().queryMap();
+
+  return invocation().queryMap();
   }
 
   @Override

@@ -29,6 +29,7 @@
 
 package com.caucho.v5.http.protocol2;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,8 +53,12 @@ public class ConnectionHttp2Int
   private AtomicInteger _channelCount = new AtomicInteger();
   private InHttpHandler _inHandler;
   
-  public ConnectionHttp2Int(InHttpHandler handler, PeerHttp peer)
+  public ConnectionHttp2Int(InHttpHandler handler, 
+                            PeerHttp peer)
   {
+    Objects.requireNonNull(handler);
+    Objects.requireNonNull(peer);
+    
     _inHandler = handler;
     
     _inHttp = new InHttp(this, handler);
@@ -75,6 +80,11 @@ public class ConnectionHttp2Int
   public PeerHttp getPeer()
   {
     return _peer;
+  }
+
+  public boolean isHeaderHuffman()
+  {
+    return _inHandler.isHeaderHuffman();
   }
 
   public InHttp inHttp()

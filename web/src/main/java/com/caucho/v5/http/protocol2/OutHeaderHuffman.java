@@ -37,9 +37,9 @@ import com.caucho.v5.io.WriteStream;
 /**
  * HeaderOut is the compression for the writer.
  */
-public class OutHeaderHuffmanRequest extends OutHeader
+public class OutHeaderHuffman extends OutHeader
 {
-  public OutHeaderHuffmanRequest(WriteStream os)
+  public OutHeaderHuffman(WriteStream os)
   {
     super(os);
   }
