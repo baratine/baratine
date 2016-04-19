@@ -47,6 +47,17 @@ public class FieldNull<T> extends FieldBase<T>
     super(FIELD_NULL);
   }
   
+  @Override
+  public Object getObject(T bean)
+  {
+    return null;
+  }
+
+  @Override
+  public void setObject(T bean, Object value)
+  {
+  }
+  
   static {
     Field fieldNull = null;
     for (Field field : FieldNull.class.getDeclaredFields()) {

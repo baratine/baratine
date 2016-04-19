@@ -224,6 +224,12 @@ public class StubClass
       return;
     }
     
+    addMethods(cl.getSuperclass());
+    
+    for (Class<?> api : cl.getInterfaces()) {
+      addMethods(api);
+    }
+    
     for (Method method : cl.getDeclaredMethods()) {
       if (Modifier.isStatic(method.getModifiers())) {
         continue;
@@ -315,12 +321,6 @@ public class StubClass
       
       addMethod(method.getName(), createPlainMethod(method));
     }
-    
-    addMethods(cl.getSuperclass());
-    
-    for (Class<?> api : cl.getInterfaces()) {
-      addMethods(api);
-    }
   }
   
   private void addMethod(String methodName, MethodAmp stubMethod)
@@ -332,9 +332,10 @@ public class StubClass
       _stubMethodMap.put(methodName, methods);
     }
 
-    if (! methods.contains(stubMethod)) {
-      methods.add(stubMethod);
-    }
+    // later methods override
+    methods.remove(stubMethod);
+
+    methods.add(stubMethod);
   }
   
   /**

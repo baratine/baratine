@@ -100,6 +100,7 @@ public class VaultDriverBase<ID,T>
     
     _idField = introspectId(assetClass);
     _stateField = introspectState(assetClass);
+    Objects.requireNonNull(_stateField);
     
     if (_idField == null && ! Void.class.equals(idClass)) {
       throw new VaultException(L.l("Missing @Id for asset '{0}'",
@@ -148,7 +149,7 @@ public class VaultDriverBase<ID,T>
       }
     }
     
-    return introspectId(assetClass.getSuperclass());
+    return introspectState(assetClass.getSuperclass());
   }
 
   public String getAddress()
