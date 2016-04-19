@@ -49,8 +49,7 @@ public class FieldNull<T> extends FieldBase<T>
   
   static {
     Field fieldNull = null;
-    
-    for (Field field : FieldNull.class.getFields()) {
+    for (Field field : FieldNull.class.getDeclaredFields()) {
       if (field.getName().equals("_null")) {
         fieldNull = field;
       }

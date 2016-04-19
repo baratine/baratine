@@ -75,6 +75,9 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
+/**
+ * RunnerBaratine is a junit Runner used to test services deployed in Baratine.
+ */
 public class RunnerBaratine extends BlockJUnit4ClassRunner
 {
   private static final Logger log

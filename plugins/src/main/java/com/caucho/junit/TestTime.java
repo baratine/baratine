@@ -34,18 +34,34 @@ import java.util.concurrent.TimeUnit;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.CurrentTimeTest;
 
+/**
+ * Class TestTime is used to control Baratine time during the test. This is useful
+ * when testing time sensitive behaviour such as time-outs, timers etc.
+ */
 public class TestTime
 {
+  /**
+   * Clears all alarms
+   */
   public static void clear()
   {
     CurrentTimeTest.clear();
   }
 
+  /**
+   * Sets Baratine time
+   * @param time
+   */
   public static void setTime(long time)
   {
     CurrentTimeTest.setTime(time);
   }
 
+  /**
+   * Adds time to Baratine time
+   * @param delta
+   * @param timeUnit
+   */
   public static void addTime(long delta, TimeUnit timeUnit)
   {
     delta = timeUnit.toMillis(delta);

@@ -61,12 +61,23 @@ public class JdbcServiceImpl implements JdbcService
   public void onInit(Result<Void> result)
   {
     String url = _config.get(JdbcService.CONFIG_URL);
-    int poolSize = _config.get(JdbcService.CONFIG_POOL_SIZE, Integer.class, 32);
+    String user = _config.get(JdbcService.CONFIG_USER);
+    String pass = _config.get(JdbcService.CONFIG_PASS);
+
+    int poolSize = _config.get(JdbcService.CONFIG_POOL_SIZE, Integer.class, 64);
 
     String testQueryBefore = _config.get(JdbcService.CONFIG_TEST_QUERY_BEFORE);
     String testQueryAfter= _config.get(JdbcService.CONFIG_TEST_QUERY_AFTER);
 
     Properties props = new Properties();
+
+    if (user != null) {
+      props.setProperty("user", user);
+
+      if (pass != null) {
+        props.setProperty("password", pass);
+      }
+    }
 
     if (_logger.isLoggable(Level.FINE)) {
       _logger.log(Level.FINE, "onInit: size=" + poolSize + ", url=" + toDebugSafe(url));
@@ -113,7 +124,7 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void query(Result<ResultSetKraken> result, String sql, Object ... params)
+  public void query(Result<JdbcResultSet> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
@@ -123,7 +134,7 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void queryBatch(Result<ResultSetKraken[]> result, String sql, Object[] ... paramsList)
+  public void queryBatch(Result<JdbcResultSet[]> result, String sql, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "queryBatch: " + toDebugSafe(sql));
@@ -133,7 +144,7 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void queryBatch(Result<ResultSetKraken[]> result, String[] sqlList, Object[] ... paramsList)
+  public void queryBatch(Result<JdbcResultSet[]> result, String[] sqlList, Object[] ... paramsList)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "queryBatch: " + sqlList.length);
