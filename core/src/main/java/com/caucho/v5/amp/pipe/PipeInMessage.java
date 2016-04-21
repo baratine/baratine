@@ -120,7 +120,7 @@ public class PipeInMessage<T>
   @Override
   protected boolean invokeOk(StubAmp actorDeliver)
   {
-    //_result.ok((Void) null);
+    _result.ok((Void) null);
     
     return true;
   }

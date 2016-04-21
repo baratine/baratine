@@ -29,13 +29,15 @@
 
 package io.baratine.web;
 
-import java.util.Map;
-
-public interface ViewAndMap
+public interface ViewRender<T>
 {
-  String view();
-  
-  Map<String,Object> map();
-  
-  Object get(String key);
+  /**
+   * Processes the view, returning true if the view can handle the value.
+   * 
+   * @param req the web request
+   * @param value the value returned by the service
+   * 
+   * @return true if the view matches, false if the next view should be tried
+   */
+  boolean render(RequestWeb req, T value);
 }

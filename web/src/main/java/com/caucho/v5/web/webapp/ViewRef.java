@@ -30,7 +30,7 @@
 package com.caucho.v5.web.webapp;
 
 import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.ViewRender;
 
 import java.lang.reflect.Type;
 import java.util.Objects;
@@ -42,20 +42,20 @@ import com.caucho.v5.inject.type.TypeRef;
  */
 class ViewRef<T>
 {
-  private final ViewWeb<T> _view;
+  private final ViewRender<T> _view;
 
   private final Class<T> _type;
 
   /**
    * Creates the view and analyzes the type
    */
-  public ViewRef(ViewWeb<T> view)
+  public ViewRef(ViewRender<T> view)
   {
     Objects.requireNonNull(view);
 
     _view = view;
 
-    TypeRef viewType = TypeRef.of(view.getClass()).to(ViewWeb.class);
+    TypeRef viewType = TypeRef.of(view.getClass()).to(ViewRender.class);
 
     TypeRef typeRef = viewType.param(0);
 
@@ -70,13 +70,13 @@ class ViewRef<T>
   /**
    * Creates the view and analyzes the type
    */
-  public ViewRef(ViewWeb<T> view, Type type)
+  public ViewRef(ViewRender<T> view, Type type)
   {
     Objects.requireNonNull(view);
 
     _view = view;
 
-    TypeRef viewType = TypeRef.of(type).to(ViewWeb.class);
+    TypeRef viewType = TypeRef.of(type).to(ViewRender.class);
 
     TypeRef typeRef = viewType.param(0);
 
@@ -91,7 +91,7 @@ class ViewRef<T>
   /**
    * Creates the view and analyzes the type
    */
-  public ViewRef(ViewWeb<T> view, Class<T> type)
+  public ViewRef(ViewRender<T> view, Class<T> type)
   {
     Objects.requireNonNull(view);
     Objects.requireNonNull(type);
@@ -100,7 +100,7 @@ class ViewRef<T>
     _type = type;
   }
 
-  ViewWeb<T> view()
+  ViewRender<T> view()
   {
     return _view;
   }

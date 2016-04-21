@@ -106,7 +106,7 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.IncludeWeb;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.ViewRender;
 import io.baratine.web.WebServer;
 import io.baratine.web.WebServerBuilder;
 
@@ -527,7 +527,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public <T> WebServerBuilder view(ViewWeb<T> view)
+  public <T> WebServerBuilder view(ViewRender<T> view)
   {
     include(new ViewGen(view));
 
@@ -535,7 +535,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public <T> WebServerBuilder view(Class<? extends ViewWeb<T>> viewClass)
+  public <T> WebServerBuilder view(Class<? extends ViewRender<T>> viewClass)
   {
     include(new ViewClass(viewClass));
 
@@ -1785,9 +1785,9 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   
   private static class ViewGen implements IncludeWebAmp
   {
-    private ViewWeb<?> _view;
+    private ViewRender<?> _view;
     
-    ViewGen(ViewWeb<?> view)
+    ViewGen(ViewRender<?> view)
     {
       Objects.requireNonNull(view);
       
@@ -1803,9 +1803,9 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   
   private static class ViewClass implements IncludeWebAmp
   {
-    private Class<? extends ViewWeb<?>> _viewClass;
+    private Class<? extends ViewRender<?>> _viewClass;
     
-    ViewClass(Class<? extends ViewWeb<?>> viewClass)
+    ViewClass(Class<? extends ViewRender<?>> viewClass)
     {
       Objects.requireNonNull(viewClass);
       

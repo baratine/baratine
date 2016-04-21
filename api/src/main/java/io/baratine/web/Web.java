@@ -87,12 +87,12 @@ public interface Web
   // view
   //
   
-  static <T> WebServerBuilder view(ViewWeb<T> view)
+  static <T> WebServerBuilder view(ViewRender<T> view)
   {
     return builder().view(view);
   }
   
-  static <T> WebServerBuilder view(Class<? extends ViewWeb<T>> view)
+  static <T> WebServerBuilder view(Class<? extends ViewRender<T>> view)
   {
     return builder().view(view);
   }

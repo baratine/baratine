@@ -38,8 +38,8 @@ import freemarker.template.Template;
 import io.baratine.config.Config;
 import io.baratine.config.Include;
 import io.baratine.inject.Bean;
-import io.baratine.web.ViewAndMap;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.View;
+import io.baratine.web.ViewRender;
 
 /**
  * freemarker view configuration.
@@ -55,7 +55,7 @@ public class IncludeFreemarker
   }
   
   @Bean
-  public ViewWeb<ViewAndMap> freemarker()
+  public ViewRender<View> freemarker()
   {
     return new ViewFreemarker(_config);
   }

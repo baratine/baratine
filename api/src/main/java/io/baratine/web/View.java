@@ -29,17 +29,31 @@
 
 package io.baratine.web;
 
-public interface Views
+import java.util.Map;
+
+public interface View
 {
-  static ViewAndMapBuilder view(String name)
+  String view();
+  
+  Map<String,Object> map();
+  
+  Object get(String key);
+  
+  <X> X get(Class<X> type);
+  
+  Object get();
+  
+  static ViewBuilder newView(String name)
   {
-    return new ViewAndMapImpl(name);
+    return new ViewImpl(name);
   }
   
-  public interface ViewAndMapBuilder extends ViewAndMap
+  public interface ViewBuilder extends View
   {
-    ViewAndMapBuilder add(String key, Object value);
+    ViewBuilder add(String key, Object value);
     
-    ViewAndMapBuilder add(Object value);
+    <X> ViewBuilder add(X value);
+    
+    ViewBuilder set(Object value);
   }
 }

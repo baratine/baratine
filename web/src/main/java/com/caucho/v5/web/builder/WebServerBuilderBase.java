@@ -42,7 +42,7 @@ import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpMethod;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.ViewRender;
 import io.baratine.web.RouteBuilder;
 import io.baratine.web.WebServer;
 import io.baratine.web.WebServerBuilder;
@@ -185,13 +185,13 @@ class WebServerBuilderBase implements WebServerBuilder
   }
 
   @Override
-  public <T> WebServerBuilder view(ViewWeb<T> view)
+  public <T> WebServerBuilder view(ViewRender<T> view)
   {
     return delegate().view(view);
   }
 
   @Override
-  public <T> WebServerBuilder view(Class<? extends ViewWeb<T>> view)
+  public <T> WebServerBuilder view(Class<? extends ViewRender<T>> view)
   {
     return delegate().view(view);
   }

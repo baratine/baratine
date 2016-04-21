@@ -91,7 +91,7 @@ import io.baratine.web.RequestWeb;
 import io.baratine.web.RouteBuilder;
 import io.baratine.web.ServiceWeb;
 import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.ViewRender;
 import io.baratine.web.WebBuilder;
 import io.baratine.web.WebSocket;
 import io.baratine.web.WebSocketBuilder;
@@ -373,11 +373,11 @@ public class WebAppBuilder
 
     InjectorAmp inject = webApp.inject();
 
-    for (Binding<ViewWeb> binding : inject.bindings(ViewWeb.class)) {
+    for (Binding<ViewRender> binding : inject.bindings(ViewRender.class)) {
       try {
-        ViewWeb<?> view = (ViewWeb<?>) binding.provider().get();
+        ViewRender<?> view = (ViewRender<?>) binding.provider().get();
 
-        Key<ViewWeb<?>> key = (Key) binding.key();
+        Key<ViewRender<?>> key = (Key) binding.key();
 
         view(view, key);
       } catch (Exception e) {
@@ -589,7 +589,7 @@ public class WebAppBuilder
   //
 
   @Override
-  public <T> WebBuilder view(ViewWeb<T> view)
+  public <T> WebBuilder view(ViewRender<T> view)
   {
     _views.add(new ViewRef<>(view));
 
@@ -597,14 +597,14 @@ public class WebAppBuilder
   }
 
   @Override
-  public <T> WebBuilder view(Class<? extends ViewWeb<T>> viewType)
+  public <T> WebBuilder view(Class<? extends ViewRender<T>> viewType)
   {
-    ViewWeb<?> view = injector().instance(viewType);
+    ViewRender<?> view = injector().instance(viewType);
 
     return view(view, Key.of(viewType));
   }
 
-  private <T> WebBuilder view(ViewWeb<T> view, Key key)
+  private <T> WebBuilder view(ViewRender<T> view, Key key)
   {
     _views.add(new ViewRef<>(view, key.type()));
 
@@ -803,7 +803,7 @@ public class WebAppBuilder
     }
 
     @Override
-    public <T> OutBuilder view(ViewWeb<T> view)
+    public <T> OutBuilder view(ViewRender<T> view)
     {
       Objects.requireNonNull(view);
 

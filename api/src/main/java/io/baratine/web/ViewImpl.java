@@ -33,14 +33,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import io.baratine.web.Views.ViewAndMapBuilder;
+import io.baratine.web.View.ViewBuilder;
 
-class ViewAndMapImpl implements ViewAndMapBuilder, ViewAndMap
+class ViewImpl implements ViewBuilder, View
 {
   private String _view;
-  private LinkedHashMap<String,Object> _map = new LinkedHashMap<>();
   
-  ViewAndMapImpl(String view)
+  private Map<String,Object> _map;
+  private Object _value;
+  
+  ViewImpl(String view)
   {
     Objects.requireNonNull(view);
     
@@ -56,17 +58,53 @@ class ViewAndMapImpl implements ViewAndMapBuilder, ViewAndMap
   @Override
   public Map<String,Object> map()
   {
+    if (_map == null) {
+      _map = new LinkedHashMap<>();
+    }
+    
     return _map;
   }
   
   @Override
   public Object get(String key)
   {
-    return map().get(key);
+    Map<String,Object> map = _map;
+    
+    if (map == null) {
+      return null;
+    }
+    
+    return map.get(key);
+  }
+  
+  @Override
+  public <X> X get(Class<X> type)
+  {
+    Map<String,Object> map = _map;
+    
+    if (map == null) {
+      return null;
+    }
+    
+    return (X) map.get(type.getSimpleName());
+  }
+  
+  @Override
+  public Object get()
+  {
+    return _value;
+  }
+  
+  @Override
+  public ViewImpl set(Object value)
+  {
+    _value = value;
+    
+    return this;
   }
 
   @Override
-  public ViewAndMapBuilder add(String key, Object value)
+  public ViewBuilder add(String key, Object value)
   {
     Objects.requireNonNull(key);
     Objects.requireNonNull(value);
@@ -77,19 +115,11 @@ class ViewAndMapImpl implements ViewAndMapBuilder, ViewAndMap
   }
 
   @Override
-  public ViewAndMapBuilder add(Object value)
+  public <X> ViewBuilder add(X value)
   {
     Objects.requireNonNull(value);
     
     String name = value.getClass().getSimpleName();
-    
-    char ch = name.charAt(0);
-    
-    if (Character.isUpperCase(ch)) {
-      name = new StringBuilder().append(Character.toLowerCase(ch))
-                                .append(name.substring(1))
-                                .toString();
-    }
     
     _map.put(name, value);
 

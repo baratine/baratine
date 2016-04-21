@@ -29,23 +29,14 @@
 
 package com.caucho.v5.ramp.pipe;
 
-import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
-import com.caucho.v5.bartender.ServerBartender;
-import com.caucho.v5.bartender.pod.NodePodAmp;
-import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.OnDestroy;
-import io.baratine.service.OnInit;
 import io.baratine.service.OnLookup;
-import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.service.ServiceException;
-import io.baratine.service.ServiceRef;
 
 /**
  * Implementation of the pipes
@@ -56,6 +47,9 @@ public class SchemePipeImpl
   private static final L10N L = new L10N(SchemePipeImpl.class);
     
   private String _address = "pipe://";
+  
+  private ConcurrentHashMap<String,PipeNode<?>> _pipeMap
+    = new ConcurrentHashMap<>();
   
   public SchemePipeImpl()
   {
@@ -86,14 +80,36 @@ public class SchemePipeImpl
     return value;
   }
 
-  public Object lookupPath(String path)
+  public PipeNode<?> lookupPath(String path)
   {
     return lookupPipeNode(path);
   }
   
-  private Object lookupPipeNode(String path)
+  private PipeNode<?> lookupPipeNode(String path)
   {
-    return new PipeNode(path);
+    PipeNode<?> pipe = _pipeMap.get(path);
+    
+    if (pipe == null) {
+      pipe = new PipeNode(this, path);
+    
+      _pipeMap.putIfAbsent(path, pipe);
+      
+      pipe = _pipeMap.get(path);
+    }
+    
+    return pipe;
+  }
+
+  public void onChild(String parent, String child, Result<Void> result)
+  {
+    PipeNode<?> pipeParent = _pipeMap.get(parent);
+    
+    if (pipeParent != null) {
+      pipeParent.onChild(child, result);
+    }
+    else {
+      result.ok(null);
+    }
   }
   
   @Override

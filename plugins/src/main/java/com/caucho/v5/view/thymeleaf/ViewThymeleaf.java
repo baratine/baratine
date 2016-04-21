@@ -36,10 +36,10 @@ import org.thymeleaf.templateresolver.TemplateResolver;
 
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewAndMap;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.View;
+import io.baratine.web.ViewRender;
 
-public class ViewThymeleaf implements ViewWeb<ViewAndMap>
+public class ViewThymeleaf implements ViewRender<View>
 {
   private Config _config;
   private TemplateEngine _engine;
@@ -74,7 +74,7 @@ public class ViewThymeleaf implements ViewWeb<ViewAndMap>
   }
 
   @Override
-  public boolean render(RequestWeb req, ViewAndMap view)
+  public boolean render(RequestWeb req, View view)
   {
     String viewName = view.view();
 

@@ -97,7 +97,9 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
   {
     try {
       _ctor = introspectConstructor(_type);
-      _ctor.setAccessible(true);
+      if (_ctor != null) {
+        _ctor.setAccessible(true);
+      }
 
       //introspectFields(_type, factory);
       
@@ -228,8 +230,12 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
                               + " JSON deserialization requires concrete types.");
     }
 
+    /*
     throw new IllegalStateException(type + " cannot be deserialized because it does not have a zero-arg constructor."
                                     + " JSON deserialization requires zero-arg constructors.");
+                                    */
+    
+    return null;
   }
 
   @Override

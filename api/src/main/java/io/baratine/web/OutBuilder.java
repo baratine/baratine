@@ -31,5 +31,5 @@ package io.baratine.web;
 
 public interface OutBuilder
 {
-  <T> OutBuilder view(ViewWeb<T> view);
+  <T> OutBuilder view(ViewRender<T> view);
 }

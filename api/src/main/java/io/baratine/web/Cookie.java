@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
 public @interface Cookie
 {
   /**
-   * Query to be assigned to the parameter.
+   * Cookie to be assigned to the parameter.
    */
   String value();
 }

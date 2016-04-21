@@ -277,6 +277,8 @@ class PipeStatic<T>
     
     private PipeInBuilderImpl<T> _pipeBuilder;
     
+    private Consumer<Void> _onOk;
+    
     private Pipe<T> _builtPipe;
     
     private Credits _flowIn;
@@ -463,6 +465,14 @@ class PipeStatic<T>
     {
       throw new IllegalStateException(getClass().getName());
     }
+    
+    @Override
+    public void ok(Void value)
+    {
+      if (_onOk != null) {
+        _onOk.accept(value);
+      }
+    }
 
     /*
     @Override
@@ -475,7 +485,9 @@ class PipeStatic<T>
     @Override
     public PipeInBuilder<T> ok(Consumer<Void> onOkSubscription)
     {
-      throw new IllegalStateException();
+      _onOk = onOkSubscription;
+      
+      return this;
     }
 
     @Override

@@ -419,6 +419,7 @@ public class WriteStream extends OutputStreamWithBuffer
   /**
    * Flushes and writes the buffer
    */
+  @Override
   public byte []nextBuffer(int offset) throws IOException
   {
     _writeLength = 0;
@@ -464,6 +465,14 @@ public class WriteStream extends OutputStreamWithBuffer
       }
       
       _source.write(buffer, false);
+    }
+  }
+  
+  private void require(int length)
+    throws IOException
+  {
+    if (_writeBuffer.length - _writeLength < length) {
+      flush();
     }
   }
 
@@ -948,40 +957,27 @@ public class WriteStream extends OutputStreamWithBuffer
     int length = 0;
     int exp = 10;
 
-    if (i >= 1000000000)
+    if (i >= 1000000000) {
       length = 9;
+    }
     else {
-      for (; i >= exp; length++) {
+      for (; exp <= i; length++) {
         exp = 10 * exp;
       }
     }
+    
+    require(length);
 
     byte []buffer = _writeBuffer;
     int writeLength = _writeLength;
 
-    if (writeLength + length < buffer.length) {
-      writeLength += length;
-      _writeLength = writeLength + 1;
+    writeLength += length;
+    _writeLength = writeLength + 1;
 
-      for (int j = 0; j <= length; j++) {
-        buffer[writeLength - j] = (byte) (i % 10 + '0');
-        i = i / 10;
-      }
-      return;
+    for (int j = 0; j <= length; j++) {
+      buffer[writeLength - j] = (byte) (i % 10 + '0');
+      i = i / 10;
     }
-
-    if (_bytes == null) {
-      _bytes = new byte[32];
-    }
-
-    int j = 31;
-
-    while (i > 0) {
-      _bytes[--j] = (byte) ((i % 10) + '0');
-      i /= 10;
-    }
-
-    write(_bytes, j, 31 - j);
   }
 
   /**

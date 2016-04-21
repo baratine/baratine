@@ -50,10 +50,10 @@ public interface WebServerBuilder extends WebBuilder
   WebServerBuilder property(String name, String value);
 
   @Override
-  <T> WebServerBuilder view(ViewWeb<T> view);
+  <T> WebServerBuilder view(ViewRender<T> view);
 
   @Override
-  <T> WebServerBuilder view(Class<? extends ViewWeb<T>> view);
+  <T> WebServerBuilder view(Class<? extends ViewRender<T>> view);
   
   //
   // injection

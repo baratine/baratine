@@ -61,6 +61,10 @@ public class IoUtil
       sb.append((char) ch);
     }
     
+    if (ch < 0) {
+      return null;
+    }
+
     return sb.toString();
   }
   

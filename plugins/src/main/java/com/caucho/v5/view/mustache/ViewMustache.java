@@ -44,10 +44,10 @@ import java.io.Writer;
 
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewAndMap;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.View;
+import io.baratine.web.ViewRender;
 
-public class ViewMustache implements ViewWeb<ViewAndMap>
+public class ViewMustache implements ViewRender<View>
 {
   private Config _config;
 
@@ -85,7 +85,7 @@ public class ViewMustache implements ViewWeb<ViewAndMap>
   }
 
   @Override
-  public boolean render(RequestWeb req, ViewAndMap view)
+  public boolean render(RequestWeb req, View view)
   {
     String viewName = view.view();
 

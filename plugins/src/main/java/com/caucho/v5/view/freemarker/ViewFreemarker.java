@@ -36,13 +36,13 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewAndMap;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.View;
+import io.baratine.web.ViewRender;
 
 /**
  * freemarker view.
  */
-public class ViewFreemarker implements ViewWeb<ViewAndMap>
+public class ViewFreemarker implements ViewRender<View>
 {
   private Config _config;
   private Configuration _cfg;
@@ -83,7 +83,7 @@ public class ViewFreemarker implements ViewWeb<ViewAndMap>
   }
   
   @Override
-  public boolean render(RequestWeb req, ViewAndMap view)
+  public boolean render(RequestWeb req, View view)
   {
     String viewName = view.view();
     

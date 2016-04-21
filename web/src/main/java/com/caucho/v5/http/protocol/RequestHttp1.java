@@ -168,6 +168,8 @@ public class RequestHttp1 extends RequestHttpBase
 
   private long _sequence;
   
+  private StateAlloc _state = StateAlloc.NEW;
+  
   // private HmuxRequest _hmuxRequest;
 
   /**
@@ -734,6 +736,8 @@ public class RequestHttp1 extends RequestHttpBase
   protected void initRequest()
   {
     super.initRequest();
+    
+    _state = _state.toActive();
     
     // HttpBufferStore httpBuffer = getHttpBufferStore();
     HttpBufferStore bufferStore = getHttpBufferStore();
@@ -1796,7 +1800,7 @@ public class RequestHttp1 extends RequestHttpBase
     return ! isKeepalive();
   }
   
-  private boolean writeImpl(WriteStream out, 
+  private void writeImpl(WriteStream out, 
                             Buffer data,
                             boolean isEnd)
   {
@@ -1829,20 +1833,12 @@ public class RequestHttp1 extends RequestHttpBase
         }
         
         closeWrite();
-
-        if (! isKeepalive()) {
-          return true;
-        }
       }
-        
-      return false;
     } catch (Throwable e) {
       e.printStackTrace();
       log.log(Level.WARNING, e.toString(), e);
       
       disconnect(out);
-      
-      return true;
     }
   }
 
@@ -1850,6 +1846,10 @@ public class RequestHttp1 extends RequestHttpBase
   public void closeWrite()
   {
     super.closeWrite();
+    
+    _state = _state.toFree();
+    
+    protocolHttp().requestFree(this);
     
     //state.onCloseWrite();
   }
@@ -2068,63 +2068,6 @@ public class RequestHttp1 extends RequestHttpBase
       os.printLatin1NoLf(serverHeader);
     }
 
-    /*
-    if (statusCode >= 400) {
-      removeHeader("ETag");
-      removeHeader("Last-Modified");
-    }
-    else if (statusCode == HttpConstants.SC_NOT_MODIFIED
-             || statusCode == HttpConstants.SC_NO_CONTENT) {
-      // php/1b0k
-
-      contentType = null;
-    }
-    else if (httpRequest.isCacheControl()) {
-      // application manages cache control
-    }
-    else if (httpRequest.isNoCache()) {
-      // server/1b15
-      removeHeader("ETag");
-      removeHeader("Last-Modified");
-
-      // even in case of 302, this may be needed for filters which
-      // automatically set cache headers
-      setHeaderOutImpl("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
-
-      os.printLatin1("\r\nCache-Control: no-cache");
-
-      if (debug) {
-        log.fine("Cache-Control: no-cache (" + dbgId() + ")");
-      }
-    }
-    else if (httpRequest.isNoCacheUnlessVary()
-             && ! containsHeaderOut("Vary")) {
-      os.printLatin1("\r\nCache-Control: private");
-
-      if (debug) {
-        log.fine("Cache-Control: private (" + dbgId() + ")");
-      }
-    }
-    else if (httpRequest.isPrivateCache()) {
-      if (RequestHttp.HTTP_1_1 <= version) {
-        // technically, this could be private="Set-Cookie,Set-Cookie2"
-        // but caches don't recognize it, so there's no real extra value
-        os.printLatin1("\r\nCache-Control: private");
-
-        if (debug)
-          log.fine("Cache-Control: private (" + dbgId() + ")");
-      }
-      else {
-        setHeaderOutImpl("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
-        os.printLatin1("\r\nCache-Control: no-cache");
-
-        if (debug) {
-          log.fine("CacheControl: no-cache (" + dbgId() + ")");
-        }
-      }
-    }
-    */
-
     ArrayList<String> headerKeys = headerKeysOut();
     ArrayList<String> headerValues = headerValuesOut();
     int size = headerKeys.size();
@@ -2162,51 +2105,11 @@ public class RequestHttp1 extends RequestHttpBase
     }
 
     writeCookies(os);
-    /*
-    httpRequest.writeCookies(os);
-
-    if (contentType != null) {
-      // server/1b5a
-      if (charEncoding == null && contentType.startsWith("text/")) {
-        //  if (webApp != null)
-        //  charEncoding = webApp.getCharacterEncoding();
-
-        // always use a character encoding to avoid XSS attacks (?)
-        if (charEncoding == null) {
-          charEncoding = "utf-8";
-        }
-      }
-
-      os.write(_contentTypeBytes, 0, _contentTypeBytes.length);
-      os.printLatin1(contentType);
-      
-      if (charEncoding != null) {
-        os.write(_charsetBytes, 0, _charsetBytes.length);
-        os.printLatin1(charEncoding);
-      }
-
-      if (debug) {
-        log.fine("Content-Type: " + contentType
-                 + "; charset=" + charEncoding + " (" + dbgId() + ")");
-      }
-    }
-   */
 
     if (hasFooter()) {
       contentLength = -1;
       length = -1;
     }
-
-    //boolean hasContentLength = false;
-    /*
-    if (isHead()) {
-      // server/269t, server/0560
-      hasContentLength = true;
-      os.write(_contentLengthBytes, 0, _contentLengthBytes.length);
-      os.print(0);
-    }
-    else
-    */
 
     if (contentLength >= 0) {
       os.write(_contentLengthBytes, 0, _contentLengthBytes.length);
@@ -2327,13 +2230,6 @@ public class RequestHttp1 extends RequestHttpBase
       os.print("; Secure");
     }
   }
-  
-  @Override
-  public void freeSelf()
-  {
-    System.out.println("NOPE_FREE:");
-    //protocolHttp().requestFree(this);
-  }
 
   @Override
   public String toString()
@@ -2361,6 +2257,34 @@ public class RequestHttp1 extends RequestHttpBase
     INIT,
     ALLOC,
     KILL;
+  }
+  
+  enum StateAlloc {
+    NEW {
+      
+    },
+    ACTIVE {
+      StateAlloc toActive()
+      {
+        System.out.println("TAD: " + this);
+        return ACTIVE;
+      }
+
+      @Override
+      StateAlloc toFree() { return FREE; }
+    },
+    FREE;
+    
+    StateAlloc toActive()
+    {
+      return ACTIVE;
+    }
+    
+    StateAlloc toFree()
+    {
+      System.out.println("TO-FREE: " + this);
+      return FREE;
+    }
   }
   
   static {

@@ -37,8 +37,8 @@ import com.caucho.v5.view.jetbrick.ViewJetbrick;
 import io.baratine.config.Config;
 import io.baratine.config.Include;
 import io.baratine.inject.Bean;
-import io.baratine.web.ViewAndMap;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.View;
+import io.baratine.web.ViewRender;
 
 /**
  * mustache view configuration.
@@ -54,7 +54,7 @@ public class IncludeJetbrick
   }
 
   @Bean
-  public ViewWeb<ViewAndMap> jade()
+  public ViewRender<View> jade()
   {
     return new ViewJetbrick(_config);
   }

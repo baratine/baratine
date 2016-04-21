@@ -29,6 +29,11 @@
 
 package io.baratine.pipe;
 
+import java.util.function.BiConsumer;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Pin;
+import io.baratine.service.Result;
 import io.baratine.service.Service;
 
 
@@ -36,7 +41,7 @@ import io.baratine.service.Service;
  * The Pipes service is a broker between publishers and subscribers, available
  * at the "pipe:" scheme.
  */
-@Service("pipe:///{param[0]}")
+@Service("pipe:///{name}")
 public interface Pipes<T>
 {
   void consume(ResultPipeIn<T> result);
@@ -44,4 +49,9 @@ public interface Pipes<T>
   void subscribe(ResultPipeIn<T> result);
   
   void publish(ResultPipeOut<T> result);
+  
+  void send(T value, Result<Void> result);
+  
+  void onChild(@Pin BiConsumer<String,Result<Void>> onChild, 
+               @Pin Result<Cancel> result);
 }

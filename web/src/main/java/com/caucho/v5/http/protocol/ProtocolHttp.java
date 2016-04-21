@@ -38,7 +38,7 @@ import com.caucho.v5.network.port.ConnectionTcp;
 import com.caucho.v5.network.port.Protocol;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.FreeList;
+import com.caucho.v5.util.FreeRing;
 import com.caucho.v5.util.Version;
 import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
@@ -53,7 +53,7 @@ public class ProtocolHttp implements Protocol
   
   private String _serverHeader;
   
-  private FreeList<RequestHttp1> _freeRequest = new FreeList<>(128);
+  private FreeRing<RequestHttp1> _freeRequest = new FreeRing<>(128);
   
   private AtomicLong _sequence = new AtomicLong();
 
@@ -157,7 +157,9 @@ public class ProtocolHttp implements Protocol
   protected void requestFree(RequestHttp1 request)
   {
     if (request != null) {
-      _freeRequest.free(request);
+      if (! _freeRequest.free(request)) {
+        System.out.println("UNFR: " + _freeRequest.getSize());
+      }
     }
   }
 }

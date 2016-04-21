@@ -45,7 +45,7 @@ import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.web.CrossOrigin;
 import io.baratine.web.ServiceWeb;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.ViewRender;
 
 public class WebServerBuilderBaratine extends WebServerBuilderImpl
 {
@@ -58,7 +58,7 @@ public class WebServerBuilderBaratine extends WebServerBuilderImpl
   @Override
   public WebServerImpl build(WebServerBuilderImpl builder)
   {
-    builder.bean(ViewJsonDefault.class).to(new Key<ViewWeb<Object>>() {});
+    builder.bean(ViewJsonDefault.class).to(new Key<ViewRender<Object>>() {});
     
     builder.bean(new TriFunction<CrossOrigin,InjectionPoint<?>,RouteBuilderAmp,ServiceWeb>() {
       public ServiceWeb apply(CrossOrigin ann, 

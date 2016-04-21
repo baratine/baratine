@@ -34,13 +34,13 @@ import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.json.ser.JsonFactory;
 
 import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.ViewRender;
 
 /**
  * Default JSON render
  */
 
-public class ViewJsonDefault implements ViewWeb<Object>
+public class ViewJsonDefault implements ViewRender<Object>
 {
   private JsonFactory _serializer = new JsonFactory();
   private JsonWriter _jOut = _serializer.out();

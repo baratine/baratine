@@ -43,10 +43,10 @@ import org.apache.velocity.runtime.resource.loader.ResourceLoader;
 
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewAndMap;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.View;
+import io.baratine.web.ViewRender;
 
-public class ViewVelocity implements ViewWeb<ViewAndMap>
+public class ViewVelocity implements ViewRender<View>
 {
   private Config _config;
   private VelocityEngine _engine;
@@ -83,7 +83,7 @@ public class ViewVelocity implements ViewWeb<ViewAndMap>
   }
 
   @Override
-  public boolean render(RequestWeb req, ViewAndMap view)
+  public boolean render(RequestWeb req, View view)
   {
     String viewName = view.view();
 

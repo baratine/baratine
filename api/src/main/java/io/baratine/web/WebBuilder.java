@@ -108,8 +108,8 @@ public interface WebBuilder
 
   WebSocketBuilder websocket(String path);
 
-  <T> WebBuilder view(ViewWeb<T> view);
-  <T> WebBuilder view(Class<? extends ViewWeb<T>> view);
+  <T> WebBuilder view(ViewRender<T> view);
+  <T> WebBuilder view(Class<? extends ViewRender<T>> view);
 
   default WebBuilder push()
   {

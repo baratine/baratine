@@ -34,7 +34,7 @@ import java.util.Objects;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.OutBuilder;
 import io.baratine.web.ServiceWeb;
-import io.baratine.web.ViewWeb;
+import io.baratine.web.ViewRender;
 
 class RouteGenService implements IncludeWebAmp, OutBuilder
 {
@@ -43,7 +43,7 @@ class RouteGenService implements IncludeWebAmp, OutBuilder
   
   private ServiceWeb _service;
   
-  private ViewWeb<?> _view;
+  private ViewRender<?> _view;
   
   RouteGenService(String path,
                HttpMethod method,
@@ -72,7 +72,7 @@ class RouteGenService implements IncludeWebAmp, OutBuilder
     return _service;
   }
   
-  public <T> OutBuilder view(ViewWeb<T> view)
+  public <T> OutBuilder view(ViewRender<T> view)
   {
     _view = view;
     
