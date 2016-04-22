@@ -42,11 +42,9 @@ import io.baratine.service.AfterBatch;
  */
 class OutHttpProxyImpl implements OutHttpProxy
 {
-  private ConnectionHttp _connHttp;
+  private final ConnectionHttp _connHttp;
   
   private ArrayList<Pending> _pendingList = new ArrayList<>();
-  
-  private boolean _isClose;
   
   OutHttpProxyImpl(ConnectionHttp conn)
   {
@@ -66,7 +64,6 @@ class OutHttpProxyImpl implements OutHttpProxy
   
   void start()
   {
-    _isClose = false;
   }
   
   @Override
@@ -90,7 +87,9 @@ class OutHttpProxyImpl implements OutHttpProxy
       _pendingList.add(new PendingData(out, buffer, isEnd));
     }
     
-    _isClose = isClose;
+    if (isClose) {
+      connHttp().closeWrite();
+    }
   }
 
   /*
@@ -141,10 +140,7 @@ class OutHttpProxyImpl implements OutHttpProxy
   
   private boolean isClose()
   {
-    if (_isClose) {
-      return true;
-    }
-    else if (connHttp().isCloseRead()) {
+    if (connHttp().isWriteComplete()) {
       return true;
     }
     else {

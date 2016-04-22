@@ -83,8 +83,6 @@ public abstract class RequestHttpBase implements OutHttpTcp
 
   protected static final CaseInsensitiveIntMap _headerCodes;
 
-  public static final String JSP_EXCEPTION = "javax.servlet.jsp.jspException";
-
   public static final String SHUTDOWN = "com.caucho.shutdown";
 
   private static final char []CONNECTION = "connection".toCharArray();
@@ -388,7 +386,7 @@ public abstract class RequestHttpBase implements OutHttpTcp
     _isHeaderWritten = false;
 
     _isClosed = false;
-    _serverHeader = http().serverHeader();
+    //_serverHeader = http().serverHeader();
     
     _isKeepalive = true;
   }
@@ -2537,7 +2535,7 @@ public abstract class RequestHttpBase implements OutHttpTcp
     
     CharBuffer dateCharBuffer = _dateCharBuffer;
     dateCharBuffer.clear();
-    dateCharBuffer.append("\r\nDate: ");
+    dateCharBuffer.append("\r\ndate: ");
     
     //DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
     _dateCharBuffer.append(_dateFormatter.format(time));

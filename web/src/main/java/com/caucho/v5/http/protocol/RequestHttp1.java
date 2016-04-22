@@ -80,18 +80,18 @@ public class RequestHttp1 extends RequestHttpBase
   
   private static final byte []_http10ok = "HTTP/1.0 200 OK".getBytes();
   private static final byte []_http11ok = "HTTP/1.1 200 OK".getBytes();
-  private static final byte []_contentLengthBytes = "\r\nContent-Length: ".getBytes();
-  private static final byte []_contentTypeBytes = "\r\nContent-Type: ".getBytes();
-  private static final byte []_textHtmlBytes = "\r\nContent-Type: text/html".getBytes();
+  private static final byte []_contentLengthBytes = "\r\ncontent-length: ".getBytes();
+  private static final byte []_contentTypeBytes = "\r\ncontent-type: ".getBytes();
+  private static final byte []_textHtmlBytes = "\r\ncontent-type: text/html".getBytes();
   private static final byte []_charsetBytes = "; charset=".getBytes();
-  private static final byte []_textHtmlLatin1Bytes = "\r\nContent-Type: text/html; charset=iso-8859-1".getBytes();
+  private static final byte []_transferChunkedBytes = "\r\ntransfer-encoding: chunked".getBytes();
 
-  private static final byte []_connectionCloseBytes = "\r\nConnection: close".getBytes();
+  private static final byte []_connectionCloseBytes = "\r\nconnection: close".getBytes();
 
-  private static final char []_connectionCb = "Connection".toCharArray();
-  private static final CharBuffer _closeCb = new CharBuffer("Close");
+  //private static final char []_connectionCb = "connection".toCharArray();
+  //private static final CharBuffer _closeCb = new CharBuffer("close");
 
-  private final byte []_serverHeaderBytes;
+  private byte []_serverHeaderBytes;
   
   private static final char []_toLowerAscii;
   private static final char []_toUpperAscii;
@@ -196,7 +196,7 @@ public class RequestHttp1 extends RequestHttpBase
     
     String serverHeader = protocolHttp().serverHeader();
     
-    _serverHeaderBytes = ("\r\nServer: " + serverHeader).getBytes();
+    _serverHeaderBytes = ("\r\nserver: " + serverHeader).getBytes();
   }
   
   @Override
@@ -307,7 +307,7 @@ public class RequestHttp1 extends RequestHttpBase
     }
     else if ((_host = getHostHeader()) != null) {
     }
-    else if (HTTP_1_1 <= getVersion()) {
+    else if (HTTP_1_1 <= version()) {
       throw new BadRequestException(L.l("HTTP/1.1 requires a Host header (Remote IP={0})", 
                                         connTcp().ipRemote()));
     }
@@ -361,7 +361,7 @@ public class RequestHttp1 extends RequestHttpBase
   /**
    * Returns the HTTP version of the request based on getProtocol().
    */
-  int getVersion()
+  int version()
   {
     if (_version > 0) {
       return _version;
@@ -1280,7 +1280,7 @@ public class RequestHttp1 extends RequestHttpBase
     
     long contentLength = contentLength();
 
-    if (contentLength < 0 && HTTP_1_1 <= getVersion()
+    if (contentLength < 0 && HTTP_1_1 <= version()
         && header("Transfer-Encoding") != null) {
       _isChunkedIn = true;
       
@@ -1378,7 +1378,7 @@ public class RequestHttp1 extends RequestHttpBase
    */
   private void parseHeaders(ReadStream s) throws IOException
   {
-    int version = getVersion();
+    int version = version();
 
     if (version < HTTP_1_0) {
       return;
@@ -1774,7 +1774,7 @@ public class RequestHttp1 extends RequestHttpBase
   {
     //RequestFacade request = request();
     
-    if (RequestHttp1.HTTP_1_1 <= getVersion()
+    if (RequestHttp1.HTTP_1_1 <= version()
         && contentLengthOut() < 0
         && ! method().equalsIgnoreCase("HEAD")) {
       return true;
@@ -2001,7 +2001,7 @@ public class RequestHttp1 extends RequestHttpBase
   private void writeHeaders(WriteStream os, long length)
     throws IOException
   {
-    int version = getVersion();
+    int version = version();
     boolean debug = log.isLoggable(Level.FINE);
 
     if (version < RequestHttp1.HTTP_1_0) {
@@ -2059,12 +2059,13 @@ public class RequestHttp1 extends RequestHttpBase
       }
     }
 
+    // asdf
     String serverHeader = serverHeader();
     if (serverHeader == null) {
       os.write(_serverHeaderBytes, 0, _serverHeaderBytes.length);
     }
     else {
-      os.printLatin1("\r\nServer: ");
+      os.printLatin1("\r\nserver: ");
       os.printLatin1NoLf(serverHeader);
     }
 
@@ -2095,11 +2096,11 @@ public class RequestHttp1 extends RequestHttpBase
     String contentEncoding = headerOutContentEncoding();
     
     if (contentType != null) {
-      os.print("\r\ncontent-type: ");
+      os.write(_contentTypeBytes);
       os.printLatin1NoLf(contentType);
       
       if (contentEncoding != null) {
-        os.print("; charset=");
+        os.write(_charsetBytes);
         os.printLatin1NoLf(contentEncoding);
       }
     }
@@ -2151,15 +2152,6 @@ public class RequestHttp1 extends RequestHttpBase
       killKeepalive("http response version: " + version);
     }
     else {
-      /* XXX: the request processing already processed this header
-      CharSegment conn = _request.getHeaderBuffer(_connectionCb,
-                                                  _connectionCb.length);
-      if (conn != null && conn.equalsIgnoreCase(_closeCb)) {
-        _request.killKeepalive();
-      }
-      else
-      */
-
       if (isKeepalive()) {
       }
       else if (_isUpgrade) {
@@ -2181,9 +2173,8 @@ public class RequestHttp1 extends RequestHttpBase
       if (debug) {
         log.fine(dbgId() + "Transfer-Encoding: chunked");
       }
-      
-      os.printLatin1("\r\nTransfer-Encoding: chunked");
 
+      os.write(_transferChunkedBytes);
       os.write(dateBuffer, 0, dateBufferLength - 2);
     }
     else {
@@ -2199,7 +2190,11 @@ public class RequestHttp1 extends RequestHttpBase
       return;
     }
     
-    for (CookieWeb cookie : cookiesOut) {
+    int size = cookiesOut.size();
+    
+    for (int i = 0; i < size; i++) {
+      CookieWeb cookie = cookiesOut.get(i);
+
       printCookie(os, cookie);
     }
   }

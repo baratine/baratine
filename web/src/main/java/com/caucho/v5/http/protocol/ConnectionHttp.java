@@ -258,6 +258,9 @@ public class ConnectionHttp implements ConnectionProtocol
     return StateConnection.CLOSE;
   }
 
+  /**
+   * Called by reader thread on reader end of file.
+   */
   @Override
   public StateConnection onCloseRead()
   {
@@ -269,10 +272,10 @@ public class ConnectionHttp implements ConnectionProtocol
     
     _sequenceClose.set(_sequenceRead.get());
     
-    if (_sequenceWrite.get() < _sequenceClose.get()) {
+    if (_sequenceFlush.get() < _sequenceClose.get()) {
       _isClosePending.set(true);
       
-      if (_sequenceWrite.get() < _sequenceClose.get()) {
+      if (_sequenceFlush.get() < _sequenceClose.get()) {
         return StateConnection.CLOSE_READ_S;
       }
       else {
@@ -285,8 +288,16 @@ public class ConnectionHttp implements ConnectionProtocol
       return StateConnection.CLOSE;
     }
   }
+  
+  public void closeWrite()
+  {
+    _sequenceClose.set(_sequenceWrite.get());
+  }
 
-  public boolean isCloseRead()
+  /**
+   * The last write has completed after the read. 
+   */
+  public boolean isWriteComplete()
   {
     long seqClose = _sequenceClose.get();
     long seqWrite = _sequenceWrite.get();
@@ -334,13 +345,6 @@ public class ConnectionHttp implements ConnectionProtocol
   public void onWriteEnd()
   {
     _sequenceWrite.incrementAndGet();
-
-    /*
-    if (_isClosePending.compareAndSet(true, false)) {
-      // XXX: wake?
-      connTcp().proxy().requestWake();
-    }
-    */
   }
   
   public void requestComplete(RequestHttpWeb requestHttpState, 

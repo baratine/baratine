@@ -97,7 +97,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
 
   private List<ViewRef<?>> _views;
 
-  private ArrayList<CookieWeb> _cookieList = new ArrayList<>();
+  private ArrayList<CookieWeb> _cookieList;
 
   private StateRequest _state = StateRequest.ACCEPT;
 
@@ -750,8 +750,12 @@ public final class RequestBaratineImpl extends RequestHttpWeb
     if (views == null) {
       return false;
     }
+    
+    int size = views.size();
 
-    for (ViewRef<?> view : views) {
+    for (int i = 0; i < size; i++) {
+      ViewRef<?> view = views.get(i);
+
       if (((ViewRef) view).render(this, value)) {
         return true;
       }
@@ -853,9 +857,11 @@ public final class RequestBaratineImpl extends RequestHttpWeb
     if (cookieList == null) {
       return;
     }
+    
+    int size = cookieList.size();
 
-    for (CookieWeb cookie : cookieList) {
-      printCookie(os, cookie);
+    for (int i = 0; i < size; i++) {
+      printCookie(os, cookieList.get(i));
     }
   }
 

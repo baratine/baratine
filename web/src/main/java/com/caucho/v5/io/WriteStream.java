@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Objects;
 
 import io.baratine.io.Buffer;
 
@@ -721,16 +722,14 @@ public class WriteStream extends OutputStreamWithBuffer
       for (int i = sublen - 1; i >= 0; i--) {
         char ch = buffer[offset + i];
 
-        // writeBuffer[writeLength + i] = (byte) ch;
-        writeBuffer[writeLength + i] = LATIN1[ch];
-        /*
+        //writeBuffer[writeLength + i] = LATIN1[ch];
+
         if (ch < 0x100) {
           writeBuffer[writeLength + i] = (byte) ch;
         }
         else {
-          writeBuffer[writeLength + i] = 0x3f;
+          writeBuffer[writeLength + i] = LATIN1[ch];
         }
-        */
       }
       
       if (length == sublen) {
@@ -826,30 +825,155 @@ public class WriteStream extends OutputStreamWithBuffer
   /**
    * Prints a string.
    */
-  public final void printLatin1(String string)
+  public final void printLatin1Old(String string)
     throws IOException
   {
-    if (string == null)
+    if (string == null) {
       string = "null";
+    }
 
     int length = string.length();
-    int offset = 0;
+    int i = 0;
+    
+    do {
+      int sublen = Math.min(length - i, 128);
+      
+      require(sublen);
+      
+      int end = i + sublen;
+      
+      byte []buffer = buffer();
+      int offset = offset();
+      
+      for (; i < end; i++) {
+        char ch = string.charAt(i);
+        
+        if (ch < 0x100) {
+          buffer[offset++] = (byte) ch;
+        }
+        else {
+          buffer[offset++] = LATIN1[ch];
+        }
+      }
+      
+      offset(offset);
+    } while (i< length);
+  }
 
-    char []chars = chars();
+  /**
+   * Prints a string.
+   */
+  private final void printLatin1Direct(String string, int strlen)
+    throws IOException
+  {
+    require(strlen);
+    
+    byte []buffer = buffer();
+    int offset = offset();
+    
+    for (int i = 0; i < strlen; i++) {
+      char ch = string.charAt(i);
+      
+      if (ch < 0x100) {
+        buffer[offset + i] = (byte) ch;
+      }
+      else {
+        buffer[offset + i] = LATIN1[ch];
+      }
+    }
+    
+    offset(offset + strlen);
+  }
 
-    while (length > 0) {
-      int sublen = Math.min(length, CHARS_LENGTH);
-
-      string.getChars(offset, offset + sublen, chars, 0);
-
-      printLatin1(chars, 0, sublen);
-
-      length -= sublen;
-      offset += sublen;
+  public final void printLatin1(final String string)
+      throws IOException
+  {
+    final int sLength = string.length();
+    final char []chars = chars();
+    int sOffset = 0;
+    
+    while (true) {
+      final byte []buffer = _writeBuffer;
+      int offset = _writeLength;
+      
+      int sublen = Math.min(sLength - sOffset, buffer.length - offset);
+      sublen = Math.min(sublen, chars.length);
+      
+      string.getChars(sOffset, sOffset + sublen, chars, 0);
+      
+      for (int i = 0; i < sublen; i++) {
+        final char ch = chars[i];
+        
+        if (ch < 0x100) {
+          buffer[offset + i] = (byte) ch;
+        }
+        else {
+          buffer[offset + i] = LATIN1[ch];
+        }
+      }
+      
+      _writeLength = offset + sublen;
+      
+      sOffset += sublen;
+      
+      if (sLength <= sOffset) {
+        return;
+      }
+      
+      require(Math.min(chars.length, sLength - sOffset));
     }
   }
 
-  public final void printLatin1NoLf(String string)
+  public final void printLatin1NoLf(final String string)
+      throws IOException
+  {
+    Objects.requireNonNull(string);
+
+    final int length = string.length();
+    final char []chars = chars();
+    int sOffset = 0;
+    
+    while (true) {
+      final byte []buffer = _writeBuffer;
+      int offset = _writeLength;
+      
+      int sublen = Math.min(length - sOffset, buffer.length - offset);
+      sublen = Math.min(sublen, chars.length);
+      
+      string.getChars(sOffset, sOffset + sublen, chars, 0);
+      
+      for (int i = 0; i < sublen; i++) {
+        final char ch = chars[i];
+        
+        if (ch < 0x100) {
+          if (ch >= 0x20) {
+            buffer[offset + i] = (byte) ch;
+          }
+          else if (ch == '\r' || ch == '\n') {
+            _writeLength = offset + i;
+            return;
+          }
+          else {
+            buffer[offset + i] = (byte) ch;
+          }
+        }
+        else {
+          buffer[offset + i] = LATIN1[ch];
+        }
+      }
+      
+      _writeLength = offset + sublen;
+      sOffset += sublen;
+      
+      if (length <= sOffset) {
+        return;
+      }
+      
+      require(Math.min(length - sOffset, chars.length));
+    }
+  }
+
+  private final void printLatin1NoLfOld(String string)
       throws IOException
   {
     if (string == null)
