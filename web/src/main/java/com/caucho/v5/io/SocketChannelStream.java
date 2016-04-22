@@ -30,6 +30,7 @@ package com.caucho.v5.io;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.logging.Level;
@@ -89,7 +90,12 @@ public class SocketChannelStream extends StreamImpl
   public void init(SocketChannel s)
   {
     _s = s;
-    
+
+    try {
+      s.setOption(StandardSocketOptions.TCP_NODELAY, true);
+    } catch (Exception e) {
+      e.printStackTrace();;
+    }
     //_is = null;
     //_os = null;
     _needsFlush = false;

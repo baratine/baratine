@@ -33,8 +33,8 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.SocketAddress;
+import java.net.StandardSocketOptions;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.file.Path;
 
@@ -70,7 +70,9 @@ public class ServerSocketFactoryBar
       */
 
       try {
-        ss.bind(addr, listenBacklog);
+        //ss.bind(addr, listenBacklog);
+        ss.bind(addr);
+        //ss.setOption(StandardSocketOptions.TCP_NODELAY, true);
         //ServerSocket ss = new ServerSocket(port, listenBacklog, host);
       
         return new ServerSocketChannelWrapper(ss);

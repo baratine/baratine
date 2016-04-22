@@ -73,10 +73,10 @@ public class ProtocolHttp implements Protocol
 
   public ProtocolHttp(HttpContainer http)
   {
+    Objects.requireNonNull(http);
     //setProtocolName("http");
     
     _http = http;
-    Objects.requireNonNull(http);
     
     _serverHeader = http.serverHeader();
   }
