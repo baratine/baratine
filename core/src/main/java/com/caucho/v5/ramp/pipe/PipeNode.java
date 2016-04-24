@@ -47,26 +47,24 @@ import io.baratine.service.Result;
  */
 class PipeNode<T> implements Pipes<T>
 {
-  private SchemePipeImpl _scheme;
+  //private SchemePipeImpl _scheme;
   private String _address;
   
   private ArrayList<SubscriberNode> _consumers = new ArrayList<>();
   
   private ArrayList<SubscriberNode> _subscribers = new ArrayList<>();
   
-  private ArrayList<BiConsumer<String,Result<Void>>> _onChildList = new ArrayList<>();
-  private ArrayList<Runnable> _pendingInit = new ArrayList<>();
+  //private ArrayList<BiConsumer<String,Result<Void>>> _onChildList = new ArrayList<>();
+  //private ArrayList<Runnable> _pendingInit = new ArrayList<>();
   
   private long _sequence;
   
-  private StateInit _init = StateInit.NEW;
+  private StateInit _sendInit = StateInit.NEW;
   
-  public PipeNode(SchemePipeImpl scheme, String address)
+  protected PipeNode(String address)
   {
-    Objects.requireNonNull(scheme);
     Objects.requireNonNull(address);
-    
-    _scheme = scheme;
+
     _address = address;
   }
 
@@ -80,7 +78,7 @@ class PipeNode<T> implements Pipes<T>
     result.pipe().credits().onAvailable(sub);
     result.ok(null);
     
-    init();
+    //init();
   }
 
   @Override
@@ -93,7 +91,7 @@ class PipeNode<T> implements Pipes<T>
     result.pipe().credits().onAvailable(sub);
     result.ok(null);
     
-    init();
+    //init();
   }
   
   private void unsubscribe(SubscriberNode node)
@@ -105,15 +103,17 @@ class PipeNode<T> implements Pipes<T>
   @Override
   public void publish(ResultPipeOut<T> result)
   {
+    /*
     if (! init() && pendingPublish(result)) {
       return;
     }
     
     init();
-    
+    */
     result.ok(new PublisherNode());
   }
   
+  /*
   private boolean pendingPublish(ResultPipeOut<T> result)
   {
     if (_init == StateInit.INIT) {
@@ -124,19 +124,23 @@ class PipeNode<T> implements Pipes<T>
     
     return true;
   }
+  */
   
   @Override
   public void send(T value, Result<Void> result)
   {
+    /*
     if (! init() && pendingSend(value, result)) {
       return;
     }
+    */
     
     send(value);
 
     result.ok(null);
   }
   
+  /*
   private boolean pendingSend(T value, Result<Void> result)
   {
     if (_init == StateInit.INIT) {
@@ -147,6 +151,7 @@ class PipeNode<T> implements Pipes<T>
     
     return true;
   }
+  */
   
   private void send(T value)
   {
@@ -164,6 +169,7 @@ class PipeNode<T> implements Pipes<T>
     }
   }
   
+  /*
   private boolean init()
   {
     if (_init == StateInit.INIT) {
@@ -204,7 +210,9 @@ class PipeNode<T> implements Pipes<T>
     
     _pendingInit.clear();
   }
+  */
   
+  /*
   @Override
   public void onChild(@Pin BiConsumer<String,Result<Void>> onChild, 
                       @Pin Result<Cancel> result)
@@ -229,6 +237,7 @@ class PipeNode<T> implements Pipes<T>
     
     fork.join(x->null);
   }
+  */
   
   @Override
   public String toString()
@@ -287,6 +296,7 @@ class PipeNode<T> implements Pipes<T>
     }
   }
   
+  /*
   private class OnChildCancel implements Cancel
   {
     private BiConsumer<String,Result<Void>> _onChild;
@@ -302,6 +312,7 @@ class PipeNode<T> implements Pipes<T>
     }
     
   }
+  */
   
   private enum StateInit {
     NEW,

@@ -52,6 +52,11 @@ public interface Pipes<T>
   
   void send(T value, Result<Void> result);
   
-  void onChild(@Pin BiConsumer<String,Result<Void>> onChild, 
-               @Pin Result<Cancel> result);
+  /*
+  default void onChild(@Pin BiConsumer<String,Result<Void>> onChild, 
+                       @Pin Result<Cancel> result)
+  {
+    result.fail(new UnsupportedOperationException(getClass().getName()));
+  }
+  */
 }

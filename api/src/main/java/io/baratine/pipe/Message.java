@@ -27,23 +27,35 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.service;
+package io.baratine.pipe;
 
-import io.baratine.spi.MessageApi;
-
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 
 /**
- * This interface is a callback for when a queue is full.
+ * General message type for pipes.
  * 
- * The default handler throws an exception.
+ * This Message API is designed to improve interoperability by providing a 
+ * useful default API. While pipes can use any message type, general messages 
+ * drivers like an AMQP broker or a mail sender need to choose one of 
+ * their own. 
+ * 
+ * Applications may be better served by using application-specific messages.
  */
-
-public interface QueueFullHandler
+public interface Message<T>
 {
-  void onQueueFull(ServiceRef service, 
-                   int queueSize,
-                   long timeout,
-                   TimeUnit unit,
-                   MessageApi message);
+  T value();
+  
+  Map<String,Object> headers();
+  
+  Object header(String key);
+  
+  static <X> MessageBuilder<X> newMessage(X value)
+  {
+    return new MessageImpl<>(value);
+  }
+  
+  public interface MessageBuilder<T> extends Message<T>
+  {
+    MessageBuilder<T> header(String key, Object value);
+  }
 }

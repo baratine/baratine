@@ -51,7 +51,7 @@ import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
-import io.baratine.spi.Message;
+import io.baratine.spi.MessageApi;
 
 /**
  * Creates AMP actors and proxies.
@@ -67,7 +67,7 @@ abstract public class ServiceManagerAmpWrapper implements ServicesAmp
   }
 
   @Override
-  public Message currentMessage()
+  public MessageApi currentMessage()
   {
     return delegate().currentMessage();
   }

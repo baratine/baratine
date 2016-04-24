@@ -33,12 +33,12 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.MessageDeliver;
 import com.caucho.v5.amp.stub.StubAmp;
 
-import io.baratine.spi.Message;
+import io.baratine.spi.MessageApi;
 
 /**
  * Mailbox for an actor
  */
-public interface MessageAmp extends MessageDeliver<MessageAmp>, Message
+public interface MessageAmp extends MessageDeliver<MessageAmp>, MessageApi
 {
   void invoke(InboxAmp inbox, StubAmp actor);
   

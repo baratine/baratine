@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.queue.QueueRingForPipe;
@@ -57,6 +58,8 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   
   private static final long OFFER_TIMEOUT_DEFAULT = 10000L;
   private static final int CAPACITY_DEFAULT = 256;
+  
+  private final ServicesAmp _services;
   
   private Pipe<T> _inPipe;
   private QueueRingForPipe<T> _queue;
@@ -94,6 +97,8 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     Objects.requireNonNull(_inPipe);
     
     _outRef = builder.outRef();
+    
+    _services = builder.services();
     
     int prefetch = builder.prefetch();
     long credits = builder.credits();
@@ -451,12 +456,13 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
     } while (! _stateInRef.compareAndSet(stateOld, stateNew));
     
     if (stateOld == StateInPipe.IDLE) {
-      OutboxAmp outbox = OutboxAmp.current();
-      Objects.requireNonNull(outbox);
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_services)) {
+        Objects.requireNonNull(outbox);
       
-      PipeWakeInMessage<T> msg = new PipeWakeInMessage<>(outbox, _inRef, this);
+        PipeWakeInMessage<T> msg = new PipeWakeInMessage<>(outbox, _inRef, this);
     
-      outbox.offer(msg);
+        outbox.offer(msg);
+      }
     }
   }
   

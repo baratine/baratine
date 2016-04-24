@@ -87,7 +87,7 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceExceptionQueueFull;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
-import io.baratine.spi.Message;
+import io.baratine.spi.MessageApi;
 import io.baratine.vault.Vault;
 
 /**
@@ -998,7 +998,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
                             int queueSize, 
                             long timeout,
                             TimeUnit unit, 
-                            Message message)
+                            MessageApi message)
     {
       throw new ServiceExceptionQueueFull(L.l("full queue {0} with {1} entries after {2}ms at message {3}.",
                                             service,

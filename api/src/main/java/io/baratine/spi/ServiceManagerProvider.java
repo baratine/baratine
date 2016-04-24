@@ -101,7 +101,7 @@ abstract public class ServiceManagerProvider implements AutoCloseable
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  public Message getCurrentMessage()
+  public MessageApi getCurrentMessage()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

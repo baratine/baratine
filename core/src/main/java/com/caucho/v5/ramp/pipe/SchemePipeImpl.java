@@ -90,7 +90,7 @@ public class SchemePipeImpl
     PipeNode<?> pipe = _pipeMap.get(path);
     
     if (pipe == null) {
-      pipe = new PipeNode(this, path);
+      pipe = new PipeNode(path);
     
       _pipeMap.putIfAbsent(path, pipe);
       
@@ -100,6 +100,7 @@ public class SchemePipeImpl
     return pipe;
   }
 
+  /*
   public void onChild(String parent, String child, Result<Void> result)
   {
     PipeNode<?> pipeParent = _pipeMap.get(parent);
@@ -111,6 +112,7 @@ public class SchemePipeImpl
       result.ok(null);
     }
   }
+  */
   
   @Override
   public String toString()

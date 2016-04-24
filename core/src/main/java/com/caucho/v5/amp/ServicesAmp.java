@@ -52,7 +52,7 @@ import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
-import io.baratine.spi.Message;
+import io.baratine.spi.MessageApi;
 
 /**
  * Manages an AMP domain.
@@ -73,7 +73,7 @@ public interface ServicesAmp extends Services, LookupAmp
    */
   ServiceRef currentService();
   
-  Message currentMessage();
+  MessageApi currentMessage();
  
   <T> T newProxy(ServiceRefAmp actorRef, 
                     Class<T> api);

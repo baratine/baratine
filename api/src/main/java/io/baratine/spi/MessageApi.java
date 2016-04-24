@@ -54,9 +54,9 @@ package io.baratine.spi;
  * 
  */
 
-public interface Message
+public interface MessageApi
 {
-  static Message current()
+  static MessageApi current()
   {
     return ServiceManagerProvider.current().getCurrentMessage();
   }

@@ -42,7 +42,7 @@ import com.caucho.v5.util.L10N;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceExceptionQueueFull;
 import io.baratine.service.ServiceRef;
-import io.baratine.spi.Message;
+import io.baratine.spi.MessageApi;
 
 /**
  * Handler for queue full messages.
@@ -70,7 +70,7 @@ public class QueueFullHandlerAmp implements QueueFullHandler
                           int queueSize, 
                           long timeout,
                           TimeUnit unit, 
-                          Message message)
+                          MessageApi message)
   {
     long lastExceptionTime = _lastExceptionTime.get();
     long firstSequenceTime = _firstSequenceTime.get();

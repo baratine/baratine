@@ -30,6 +30,7 @@
 package io.baratine.service;
 
 import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
@@ -45,7 +46,7 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RUNTIME)
-@Target({METHOD})
+@Target({METHOD,ANNOTATION_TYPE})
 public @interface OnInit
 {
 }

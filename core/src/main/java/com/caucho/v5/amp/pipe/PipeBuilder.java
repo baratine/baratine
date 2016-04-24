@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.Deliver;
 import com.caucho.v5.amp.deliver.Outbox;
 import com.caucho.v5.amp.queue.QueueRingForPipe;
@@ -128,5 +129,10 @@ class PipeBuilder<T>
   PipeImpl<T> build()
   {
     return new PipeImpl<T>(this);
+  }
+
+  public ServicesAmp services()
+  {
+    return ServicesAmp.current();
   }
 }

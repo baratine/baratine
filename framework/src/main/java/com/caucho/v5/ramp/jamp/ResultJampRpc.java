@@ -31,7 +31,7 @@ package com.caucho.v5.ramp.jamp;
 
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionTimeout;
-import io.baratine.spi.Message;
+import io.baratine.spi.MessageApi;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
