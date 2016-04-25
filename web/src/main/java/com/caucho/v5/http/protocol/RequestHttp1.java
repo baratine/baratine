@@ -2202,7 +2202,7 @@ public class RequestHttp1 extends RequestHttpBase
   private void printCookie(WriteStream os, CookieWeb cookie)
     throws IOException
   {
-    os.print("\r\nSet-Cookie: ");
+    os.print("\r\nset-cookie: ");
     os.print(cookie.name());
     os.print("=");
     os.print(cookie.value());

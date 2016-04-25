@@ -320,6 +320,8 @@ public abstract class RequestHttpBase implements OutHttpTcp
     }
       
     _logBuffer = new LogBuffer(logSize, true);
+    
+    _serverHeader = protocolHttp.serverHeader();
   }
   
   public void init(RequestBaratine requestWeb)

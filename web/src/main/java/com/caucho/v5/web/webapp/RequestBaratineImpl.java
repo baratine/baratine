@@ -592,7 +592,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   public void redirect(String address)
   {
     status(HttpStatus.MOVED_TEMPORARILY);
-    header("Location", encodeUrl(address));
+    header("location", encodeUrl(address));
     type("text/plain; charset=utf-8");
 
     write("Moved: " + encodeUrl(address));
@@ -868,7 +868,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   private void printCookie(WriteStream os, CookieWeb cookie)
     throws IOException
   {
-    os.print("\r\nSet-Cookie: ");
+    os.print("\r\nset-cookie: ");
     os.print(cookie.name());
     os.print("=");
     os.print(cookie.value());
