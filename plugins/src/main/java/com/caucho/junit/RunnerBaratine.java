@@ -52,7 +52,6 @@ import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
 import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.inject.BaratineProducer;
-import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.loader.EnvironmentClassLoader;
@@ -69,7 +68,6 @@ import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 import io.baratine.vault.Asset;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -78,7 +76,7 @@ import org.junit.runners.model.TestClass;
 /**
  * RunnerBaratine is a junit Runner used to test services deployed in Baratine.
  */
-public class RunnerBaratine extends BlockJUnit4ClassRunner
+public class RunnerBaratine extends BaseRunner
 {
   private static final Logger log
     = Logger.getLogger(RunnerBaratine.class.getName());
@@ -98,28 +96,6 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     initialize(test);
 
     return test;
-  }
-
-  private ServiceTest[] getServices()
-  {
-    TestClass test = getTestClass();
-
-    ServiceTests config
-      = test.getAnnotation(ServiceTests.class);
-
-    if (config != null)
-      return config.value();
-
-    Annotation[] annotations = test.getAnnotations();
-
-    List<ServiceTest> list = new ArrayList<>();
-
-    for (Annotation annotation : annotations) {
-      if (ServiceTest.class.isAssignableFrom(annotation.getClass()))
-        list.add((ServiceTest) annotation);
-    }
-
-    return list.toArray(new ServiceTest[list.size()]);
   }
 
   private class VaultResourceDriver
@@ -218,8 +194,7 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     }
   }
 
-  private Map<ServiceDescriptor,ServiceRef> deployServices(
-    Services manager)
+  private Map<ServiceDescriptor,ServiceRef> deployServices(Services manager)
   {
     Map<ServiceDescriptor,ServiceRef> descriptors = new HashMap<>();
 
@@ -352,9 +327,10 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
       _serviceClass = serviceClass;
       _service = (Service) serviceClass.getAnnotation(Service.class);
 
-      Objects.requireNonNull(_service,
-                             L.l("{0} must declare @Service annotation",
-                                 _serviceClass));
+      if (_service == null)
+        throw new IllegalStateException(L.l(
+          "{0} must declare @Service annotation",
+          _serviceClass));
 
       if (serviceClass.isInterface()) {
         _api = serviceClass;
@@ -498,17 +474,6 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
     }
   }
 
-  private ConfigurationBaratine getConfiguration()
-  {
-    ConfigurationBaratine config
-      = getTestClass().getAnnotation(ConfigurationBaratine.class);
-
-    if (config == null)
-      config = ConfigurationBaratineDefault.INSTNANCE;
-
-    return config;
-  }
-
   private String getWorkDir()
   {
     final ConfigurationBaratine config = getConfiguration();
@@ -537,32 +502,6 @@ public class RunnerBaratine extends BlockJUnit4ClassRunner
         expr));
 
     return System.getProperty(expr.substring(1, expr.length() - 1));
-  }
-}
-
-class ConfigurationBaratineDefault
-  extends AnnotationLiteral<ConfigurationBaratine>
-  implements ConfigurationBaratine
-{
-  public static final long TEST_TIME = 894621091000L;
-
-  static final ConfigurationBaratine INSTNANCE
-    = new ConfigurationBaratineDefault();
-
-  private ConfigurationBaratineDefault()
-  {
-  }
-
-  @Override
-  public String workDir()
-  {
-    return "{java.io.tmpdir}";
-  }
-
-  @Override
-  public long testTime()
-  {
-    return TEST_TIME;
   }
 }
 
