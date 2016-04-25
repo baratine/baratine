@@ -31,28 +31,81 @@ package com.caucho.junit;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
 import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonWriter;
 
-public class JsonClient
+public class HttpClient
 {
   private String _url;
 
-  public JsonClient(String url)
+  public HttpClient(String url)
   {
     _url = url;
   }
 
-  public Response x()
+  public Response get()
+  {
+    return get(null);
+  }
+
+  public Response get(String path)
   {
     HttpURLConnection conn = null;
     try {
-      conn = (HttpURLConnection) new URL(_url).openConnection();
+      String url = _url;
+
+      if (path != null && path.length() > 0) {
+        url += path;
+      }
+
+      conn = (HttpURLConnection) new URL(url).openConnection();
       conn.setConnectTimeout(10);
       conn.setReadTimeout(100);
+
+      return new Response(conn);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      if (conn != null)
+        conn.disconnect();
+    }
+  }
+
+  public Response post(String path, Object object)
+  {
+    HttpURLConnection conn = null;
+
+    try {
+      String url = _url;
+
+      if (path != null && path.length() > 0) {
+        url += path;
+      }
+
+      conn = (HttpURLConnection) new URL(url).openConnection();
+      conn.setConnectTimeout(100);
+      conn.setReadTimeout(1000);
+
+      conn.setDoOutput(true);
+      conn.setRequestMethod("POST");
+      conn.setRequestProperty("Content-Type", "application/json");
+
+      OutputStreamWriter out
+        = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+
+      JsonWriter writer = new JsonWriter(out);
+
+      writer.write(object);
+
+      writer.close();
+
+      out.flush();
+
       return new Response(conn);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -69,7 +122,6 @@ public class JsonClient
     public Response(HttpURLConnection conn) throws IOException
     {
       _conn = conn;
-      _conn.connect();
     }
 
     public int getResponseCode()
