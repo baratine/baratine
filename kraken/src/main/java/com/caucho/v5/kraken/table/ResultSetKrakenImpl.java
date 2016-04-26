@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -23,38 +23,41 @@
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
+ *
+ * @author Alex Rojkov
  */
 
-package io.baratine.db;
+package com.caucho.v5.kraken.table;
 
-import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
-/**
- * Experimental async database.
- */
-public interface Cursor
+public class ResultSetKrakenImpl implements ResultSetKraken
 {
-  long getVersion();
-  
-  long getUpdateTime();
-  
-  long getTimeout();
-  
-  int getInt(int index);
-  
-  long getLong(int index);
-  
-  double getDouble(int index);
-  
-  String getString(int index);
-  
-  Object getObject(int index);
+  private List<List<Object>> _data;
 
-  InputStream getInputStream(int i);
+  public ResultSetKrakenImpl(List<List<Object>> data)
+  {
+    _data = data;
+  }
 
-  byte[] getBytes(int i);
+  @Override
+  public Iterator<List<Object>> iterator()
+  {
+    return _data.iterator();
+  }
 
-  BlobReader getBlobReader(int i);
+  @Override
+  public void forEach(Consumer<? super List<Object>> action)
+  {
+    _data.forEach(action);
+  }
 
-  int getColumnCount();
+  @Override
+  public Spliterator<List<Object>> spliterator()
+  {
+    return _data.spliterator();
+  }
 }

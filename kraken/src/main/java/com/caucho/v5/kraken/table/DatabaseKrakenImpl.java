@@ -27,26 +27,43 @@
 
 package com.caucho.v5.kraken.table;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import io.baratine.db.Cursor;
 import io.baratine.service.Result;
 
 public class DatabaseKrakenImpl implements DatabaseKraken
 {
   private KrakenImpl _kraken;
-  
+
   DatabaseKrakenImpl(KrakenImpl kraken)
   {
     _kraken = kraken;
   }
-  
+
   @Override
-  public void execute(Result<Object> result, String sql, Object ... params)
+  public void execute(Result<Object> result, String sql, Object... params)
   {
     _kraken.exec(sql, params, result);
   }
 
-  public void query(Result<ResultSetKraken> result, String sql, Object ... params)
+  public void query(Result<ResultSetKraken> result,
+                    String sql,
+                    Object... params)
   {
-    System.out.println("ZORP2: " + sql);;
-    result.ok(null);
+    _kraken.findAll(sql, params, result.of(it -> {
+      List<List<Object>> data = new ArrayList<>();
+
+      for (Cursor cursor : it) {
+        List<Object> list = new ArrayList<>();
+        for (int i = 0; i < cursor.getColumnCount(); i++)
+          list.add(cursor.getObject(i + 1));
+
+        data.add(list);
+      }
+
+      return new ResultSetKrakenImpl(data);
+    }));
   }
 }

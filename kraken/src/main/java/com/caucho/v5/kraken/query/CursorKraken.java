@@ -127,7 +127,13 @@ public class CursorKraken implements Cursor
   {
     return _results[index - 1].evalBlobReader(_envKelp);
   }
-  
+
+  @Override
+  public int getColumnCount()
+  {
+    return _results.length;
+  }
+
   @Override
   public String toString()
   {
