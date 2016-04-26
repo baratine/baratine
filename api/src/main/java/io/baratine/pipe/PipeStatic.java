@@ -44,8 +44,8 @@ import io.baratine.service.Result;
  */
 class PipeStatic<T>
 {
-  static class ResultPipeInHandlerImpl<T>
-    implements ResultPipeIn<T>, Pipe<T>
+  static class ResultPipeInHandlerImpl<T> extends ResultPipeInBase<T>
+    implements ResultPipeIn<T>, Pipe<T>, PipeInBuilder<T>
   {
     private InHandler<T> _handler;
     
@@ -56,8 +56,16 @@ class PipeStatic<T>
       _handler = handler;
     }
     
+    /*
     @Override
     public Pipe<T> pipe()
+    {
+      return this;
+    }
+    */
+    
+    @Override
+    public Pipe<T> pipeImpl()
     {
       return this;
     }
@@ -85,7 +93,6 @@ class PipeStatic<T>
     {
       throw new IllegalStateException(getClass().getName());
     }
-    
   }
   
   static class PipeInResultImpl<T> implements Pipe<T>
@@ -243,10 +250,19 @@ class PipeStatic<T>
   static class PipeInBuilderImpl<T> implements Pipe<T>
   {
     private final Consumer<T> _onNext;
+    private ResultPipeInImpl<T> _resultPipe;
     
-    PipeInBuilderImpl(Consumer<T> onNext)
+    PipeInBuilderImpl(ResultPipeInImpl<T> resultPipe,
+                      Consumer<T> onNext)
     {
+      _resultPipe = resultPipe;
       _onNext = onNext;
+    }
+    
+    @Override
+    public void credits(Credits credits)
+    {
+      _resultPipe.onCredits(credits);
     }
 
     @Override
@@ -271,7 +287,8 @@ class PipeStatic<T>
   }
   
   static class ResultPipeInImpl<T>
-  implements ResultPipeIn<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
+    extends ResultPipeInBase<T>
+    implements ResultPipeIn<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
   {
     private final Pipe<T> _pipe;
     
@@ -281,15 +298,15 @@ class PipeStatic<T>
     
     private Pipe<T> _builtPipe;
     
-    private Credits _flowIn;
+    //private Credits _flowIn;
     
-    private Credits _flowNext;
+    //private Credits _flowNext;
     
-    private Long _credits;
-    private Integer _prefetch;
-    private Integer _capacity;
+    //private Long _credits;
+    //private Integer _prefetch;
+    //private Integer _capacity;
     
-    private long _sequenceIn;
+    //private long _sequenceIn;
     
     ResultPipeInImpl(Pipe<T> pipe)
     {
@@ -302,7 +319,7 @@ class PipeStatic<T>
     {
       Objects.requireNonNull(onNext);
       
-      _pipeBuilder = new PipeInBuilderImpl<>(onNext);
+      _pipeBuilder = new PipeInBuilderImpl<>(this, onNext);
       _pipe = _pipeBuilder;
     }
     
@@ -321,10 +338,18 @@ class PipeStatic<T>
       }
     }
     
+    @Override
+    public Pipe<T> pipeImpl()
+    {
+      return _pipe;
+    }
+    
+    
     //
     // pipe filter methods
     //
 
+    /*
     @Override
     public void next(T value)
     {
@@ -346,11 +371,13 @@ class PipeStatic<T>
     {
       _pipe.fail(exn);
     }
+    */
     
     //
     // filter pipe init methods
     //
     
+    /*
     @Override
     public void credits(Credits flow)
     {
@@ -359,6 +386,253 @@ class PipeStatic<T>
       if (_flowNext != null) {
         _flowIn.set(_flowNext.get());
       }
+    }
+    */
+    
+    /*
+    @Override
+    public int prefetch()
+    {
+      if (_flowNext != null) {
+        return PREFETCH_DISABLE;
+      }
+      else if (_prefetch != null) {
+        return _prefetch;
+      }
+      else {
+        return Pipe.PREFETCH_DEFAULT;
+      }
+    }
+    */
+    
+    /*
+    @Override
+    public long creditsInitial()
+    {
+      if (_flowNext != null) {
+        return _flowNext.get();
+      }
+      else if (_credits != null) {
+        return _credits;
+      }
+      else {
+        return Pipe.CREDIT_DISABLE;
+      }
+    }
+    */
+    
+    //
+    // builder methods
+    //
+
+    /*
+    @Override
+    public PipeInBuilder<T> credits(long credits)
+    {
+      _credits = credits;
+      
+      return this;
+    }
+
+    @Override
+    public PipeInBuilder<T> prefetch(int prefetch)
+    {
+      _prefetch = prefetch;
+      
+      return this;
+    }
+
+    @Override
+    public PipeInBuilder<T> capacity(int size)
+    {
+      _capacity = size;
+      
+      return this;
+    }
+    */
+
+    /*
+    @Override
+    public int capacity()
+    {
+      if (_capacity != null) {
+        return _capacity;
+      }
+      else {
+        return 0;
+      }
+    }
+    */
+
+    @Override
+    public ResultPipeIn<T> chain(Credits flowNext)
+    {
+      _builtPipe = this;
+      
+      super.chain(flowNext);
+      
+      return this;
+    }
+
+    /*
+    @Override
+    public void available()
+    {
+      updateCredits();
+    }
+    */
+
+    /*
+    private void updateCredits()
+    {
+      if (_flowNext != null) {
+        int available = _flowNext.available();
+      
+        if (_flowIn != null) {
+          _flowIn.set(_sequenceIn + available);
+        }
+      }
+    }
+    */
+    
+    // 
+    // illegal state methods
+
+    @Override
+    public void handle(T next, Throwable fail, boolean ok)
+    {
+      throw new IllegalStateException(getClass().getName());
+    }
+    
+    @Override
+    public void ok(Void value)
+    {
+      if (_onOk != null) {
+        _onOk.accept(value);
+      }
+    }
+
+    /*
+    @Override
+    public void handle(Void value, Throwable fail)
+    {
+      throw new IllegalStateException();
+    }
+    */
+
+    @Override
+    public PipeInBuilder<T> ok(Consumer<Void> onOkSubscription)
+    {
+      _onOk = onOkSubscription;
+      
+      return this;
+    }
+
+    @Override
+    public PipeInBuilder<T> fail(Consumer<Throwable> onFail)
+    {
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public PipeInBuilder<T> close(Runnable onClose)
+    {
+      throw new IllegalStateException();
+    }
+  }
+  
+  abstract static class ResultPipeInBase<T>
+    implements ResultPipeIn<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
+  {
+    private Consumer<Void> _onOk;
+    
+    //private Pipe<T> _builtPipe;
+    
+    private Consumer<Credits> _onCredits;
+    
+    private Credits _flowIn;
+    
+    private Credits _flowNext;
+    
+    private Long _credits;
+    private Integer _prefetch;
+    private Integer _capacity;
+    
+    private long _sequenceIn;
+    
+    /**
+     * The subscriber's {@code PipeIn} handler will be registered as
+     * the pipe consumer.
+     */
+    @Override
+    public Pipe<T> pipe()
+    {
+      return pipeImpl();
+    }
+    
+    abstract protected Pipe<T> pipeImpl();
+    
+    @Override
+    public PipeInBuilder<T> credits(Consumer<Credits> onCredits)
+    {
+      _onCredits = onCredits;
+      
+      return this;
+    }
+    
+    //
+    // pipe filter methods
+    //
+
+    @Override
+    public void next(T value)
+    {
+      _sequenceIn++;
+      
+      pipeImpl().next(value);
+      
+      updateCredits();
+    }
+
+    @Override
+    public void close()
+    {
+      pipeImpl().close();
+    }
+
+    @Override
+    public void fail(Throwable exn)
+    {
+      pipeImpl().fail(exn);
+    }
+    
+    //
+    // filter pipe init methods
+    //
+    
+    protected void onCredits(Credits flow)
+    {
+      _flowIn = flow;
+      
+      if (_flowNext != null) {
+        _flowIn.set(_flowNext.get());
+      }
+      
+      if (_onCredits != null) {
+        _onCredits.accept(flow);
+      }
+    }
+    
+    @Override
+    public void credits(Credits flow)
+    {
+      onCredits(flow);
+
+      /*
+      if (pipe() != this) {
+        pipe().credits(flow);
+      }
+      */
     }
     
     @Override
@@ -432,8 +706,6 @@ class PipeStatic<T>
     public ResultPipeIn<T> chain(Credits flowNext)
     {
       _flowNext = flowNext;
-      
-      _builtPipe = this;
       
       _flowNext.onAvailable(this);
       

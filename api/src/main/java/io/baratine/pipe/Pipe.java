@@ -115,9 +115,14 @@ public interface Pipe<T>
     return new ResultPipeInImpl<>(next);
   }
   
-  public static <T> Pipe<T> in(InHandler<T> handler)
+  public static <T> Pipe<T> pipe(InHandler<T> handler)
   {
     return new ResultPipeInHandlerImpl<T>(handler);
+  }
+  
+  public static <T> PipeInBuilder<T> in(InHandler<T> handler)
+  {
+    return in(pipe(handler));
   }
   
   public interface InHandler<T>
@@ -138,8 +143,10 @@ public interface Pipe<T>
     PipeInBuilder<T> fail(Consumer<Throwable> onFail);
     PipeInBuilder<T> close(Runnable onClose);
     
-    PipeInBuilder<T> credits(long initialCredit);
+    PipeInBuilder<T> credits(Consumer<Credits> onCredits);
     
+    PipeInBuilder<T> credits(long initialCredit);
+        
     PipeInBuilder<T> prefetch(int prefetch);
     
     PipeInBuilder<T> capacity(int size);
