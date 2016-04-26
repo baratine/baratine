@@ -139,7 +139,7 @@ public class RunnerBaratine extends BaseRunner
     ServiceManagerBuilderAmp serviceBuilder = ServicesAmp.newManager();
     serviceBuilder.name("junit-test");
     serviceBuilder.autoServices(true);
-    serviceBuilder.injectManager(() -> injectBuilder.get());
+    serviceBuilder.injector(injectBuilder);
 
     StubGeneratorVault gen = new StubGeneratorVaultDriver();
 

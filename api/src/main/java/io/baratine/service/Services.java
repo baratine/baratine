@@ -32,6 +32,7 @@ package io.baratine.service;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.spi.ServiceManagerProvider;
 
@@ -122,8 +123,12 @@ public interface Services
     
     <T> ServiceRef.ServiceBuilder service(Key<?> key, Class<T> type);
     
+    <T> ServiceRef.ServiceBuilder service(T type);
+    
     <T> ServiceRef.ServiceBuilder service(Class<T> type, 
                                           Supplier<? extends T> supplier);
+    
+    InjectorBuilder injector();
     
     /**
      * Sets an executor factory for context-dependent integration.

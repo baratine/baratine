@@ -29,6 +29,7 @@
 
 package com.caucho.v5.amp.stub;
 
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -52,6 +53,7 @@ import com.caucho.v5.inject.type.AnnotatedTypeClass;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.inject.Key;
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.AfterBatch;
@@ -246,8 +248,9 @@ public class StubClass
         continue;
       }
       
-      if (method.isAnnotationPresent(OnInit.class)) {
-        _onInit = createMethod(method);
+      if (method.isAnnotationPresent(OnInit.class)
+          || onInitDriverAnn(method) != null) {
+        _onInit = createOnInitMethod(method);
         _isLifecycleAware = true;
 
         continue;
@@ -462,6 +465,41 @@ public class StubClass
     MethodAmp methodAmp = createMethod(method);
     
     return methodAmp;
+  }
+  
+  protected MethodAmp createOnInitMethod(Method method)
+  {
+    Annotation onInitAnn = onInitDriverAnn(method);
+    
+    if (onInitAnn != null) {
+      MethodOnInitGenerator gen
+        = services().injector().instance(Key.of(MethodOnInitGenerator.class,
+                                                onInitAnn.annotationType()));
+      
+      if (gen != null) {
+        MethodAmp methodStub = gen.createMethod(method, onInitAnn, services());
+        
+        return methodStub;
+      }
+      else {
+        System.out.println("ON-Onit: " + onInitAnn + " is an unknown @OnInit");
+        
+        return null;
+      }
+    }
+    
+    return createMethod(method);
+  }
+  
+  private Annotation onInitDriverAnn(Method method)
+  {
+    for (Annotation ann : method.getAnnotations()) {
+      if (ann.annotationType().isAnnotationPresent(OnInit.class)) {
+        return ann;
+      }
+    }
+    
+    return null;
   }
     
   protected MethodAmp createMethod(Method method)

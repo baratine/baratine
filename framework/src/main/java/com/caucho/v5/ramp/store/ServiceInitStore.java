@@ -30,7 +30,7 @@
 package com.caucho.v5.ramp.store;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.Services;
+import io.baratine.service.Services.ServicesBuilder;
 
 /**
  * Entry to the store system.
@@ -38,9 +38,9 @@ import io.baratine.service.Services;
 public class ServiceInitStore implements ServiceInitializer
 {
   @Override
-  public void init(Services manager)
+  public void init(ServicesBuilder manager)
   {
-    manager.newService(new StoreSchemeRamp())
+    manager.service(new StoreSchemeRamp())
            .address("store:")
            .ref();
   }

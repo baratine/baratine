@@ -30,7 +30,7 @@
 package com.caucho.v5.ramp.compute;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.Services;
+import io.baratine.service.Services.ServicesBuilder;
 
 /**
  * Binding of the compute service.
@@ -38,9 +38,9 @@ import io.baratine.service.Services;
 public class ServiceInitCompute implements ServiceInitializer
 {
   @Override
-  public void init(Services manager)
+  public void init(ServicesBuilder manager)
   {
-    manager.newService(new ComputeServiceImpl())
+    manager.service(new ComputeServiceImpl())
            .address("compute:")
            .ref()
            .start();

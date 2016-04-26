@@ -31,13 +31,13 @@ package com.caucho.v5.bartender.pod;
 
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.Services;
+import io.baratine.service.Services.ServicesBuilder;
 
 /**
  * Binding the pod service to Baratine's directory.
@@ -49,10 +49,8 @@ public class ServiceInitPod implements ServiceInitializer
     = Logger.getLogger(ServiceInitPod.class.getName());
   
   @Override
-  public void init(Services manager)
+  public void init(ServicesBuilder builder)
   {
-    ServicesAmp ampManager = (ServicesAmp) manager;
-    
     BartenderSystem bartender = BartenderSystem.current();
     
     if (bartender == null) {
@@ -64,10 +62,12 @@ public class ServiceInitPod implements ServiceInitializer
       return;
     }
     
-    ServiceRefAmp podScheme = new SchemePod(bartender, ampManager);
+    ServicesAmp services = (ServicesAmp) builder.get();
+    
+    ServiceRefAmp podScheme = new SchemePod(bartender, services);
     
     /*
-    if (ampManager instanceof AmpManagerBartender) {
+    if (services instanceof AmpManagerBartender) {
       podScheme = new SchemePodSystem(bartender, ampManager);
     }
     else {
@@ -81,7 +81,7 @@ public class ServiceInitPod implements ServiceInitializer
     
     ServiceRefAmp schemeBartender;
     
-    schemeBartender = new SchemeBartenderPodProxy(bartender, ampManager, pod);
+    schemeBartender = new SchemeBartenderPodProxy(bartender, services, pod);
     
     schemeBartender.bind(schemeBartender.address());
   }

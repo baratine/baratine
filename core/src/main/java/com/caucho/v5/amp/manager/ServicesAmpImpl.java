@@ -222,7 +222,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     // _broker.bind("/", root);
     _registry.bind("local://", new SchemeLocal(this));
     
-    _injectManager = builder.injectManager(this);
+    _injectManager = ()->(InjectorAmp) builder.injector().get();
   }
 
   /*

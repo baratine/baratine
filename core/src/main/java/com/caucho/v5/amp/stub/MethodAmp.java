@@ -49,7 +49,10 @@ public interface MethodAmp
 {
   String name();
   
-  boolean isClosed();
+  default boolean isClosed()
+  {
+    return false;
+  }
   
   default boolean isValid()
   {
@@ -66,11 +69,20 @@ public interface MethodAmp
     return false;
   }
   
-  Annotation[] getAnnotations();
+  default Annotation[] getAnnotations()
+  {
+    return null;
+  }
   
-  Class<?> getReturnType();
+  default Class<?> getReturnType()
+  {
+    return null;
+  }
 
-  ParameterAmp []parameters();
+  default ParameterAmp []parameters()
+  {
+    return null;
+  }
   
   /*
   Class<?> []getParameterTypes();
@@ -119,9 +131,12 @@ public interface MethodAmp
     send(headers, actor, new Object[] { arg1, arg2, arg3 });
   }
 
-  void send(HeadersAmp headers,
-            StubAmp actor,
-            Object []args);
+  default void send(HeadersAmp headers,
+                    StubAmp actor,
+                    Object []args)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
   
   //
   // query methods
@@ -161,35 +176,50 @@ public interface MethodAmp
     query(headers, result, actor, new Object[] { arg1, arg2, arg3 });
   }
   
-  void query(HeadersAmp headers,
-             ResultChain<?> result,
-             StubAmp actor,
-             Object []args);
+  default void query(HeadersAmp headers,
+                     ResultChain<?> result,
+                     StubAmp actor,
+                     Object []args)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
 
-  Object shim(Object value);
+  default Object shim(Object value)
+  {
+    return value;
+  }
   
   //
   // map-reduce/stream methods
   //
   
-  <T> void stream(HeadersAmp headers,
-                  ResultStream<T> result,
-                  StubAmp actor,
-                  Object []args);
+  default <T> void stream(HeadersAmp headers,
+                          ResultStream<T> result,
+                          StubAmp actor,
+                          Object []args)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
   
   //
   // pipe methods
   //
   
-  <T> void outPipe(HeadersAmp headers,
-                   ResultPipeOut<T> result,
-                   StubAmp actor,
-                   Object []args);
+  default <T> void outPipe(HeadersAmp headers,
+                           ResultPipeOut<T> result,
+                           StubAmp actor,
+                           Object []args)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
   
-  <T> void inPipe(HeadersAmp headers,
-                  ResultPipeIn<T> result,
-                  StubAmp actor,
-                  Object []args);
+  default <T> void inPipe(HeadersAmp headers,
+                          ResultPipeIn<T> result,
+                          StubAmp actor,
+                          Object []args)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
 
   static Class<?>[] paramTypes(Method targetMethod)
   {

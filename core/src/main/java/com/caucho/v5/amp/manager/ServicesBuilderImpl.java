@@ -59,6 +59,7 @@ import com.caucho.v5.util.ConcurrentArrayList;
 import com.caucho.v5.util.Holder;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceInitializer;
@@ -91,7 +92,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   private ServiceNode _podNode;
   private ClassLoader _loader = Thread.currentThread().getContextClassLoader();
   
-  private Supplier<InjectorAmp> _injectManager;
+  private InjectorBuilder _injector;
   
   private Holder<ServicesAmp> _holder;
   
@@ -382,31 +383,30 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   }
 
   @Override
-  public Supplier<InjectorAmp> injectManager(ServicesAmp ampManager)
+  public InjectorBuilder injector()
   {
-    if (_injectManager == null) {
+    if (_injector == null) {
       InjectBuilderAmp builder;
       
       builder = InjectorAmp.manager();
-      builder.autoBind(new InjectAutoBindService(ampManager));
-      
+      // XXX: 
+      builder.autoBind(new InjectAutoBindService(_holder.get()));
+
       builder.provider(()->_holder.get()).to(Services.class);
       builder.provider(()->_holder.get()).to(ServicesAmp.class);
       
-      InjectorAmp managerAmp = builder.get();
-      
-      _injectManager = ()->managerAmp;
+      _injector = builder;
     }
 
-    return _injectManager;
+    return _injector;
   }
 
   @Override
-  public ServiceManagerBuilderAmp injectManager(Supplier<InjectorAmp> inject)
+  public ServiceManagerBuilderAmp injector(InjectBuilderAmp injector)
   {
     Objects.requireNonNull(this);
     
-    _injectManager = inject;
+    _injector = injector;
 
     return this;
   }
@@ -511,6 +511,20 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     
     return service;
   }
+
+  @Override
+  public <T> ServiceBuilder service(T value)
+  {
+    Objects.requireNonNull(value);
+    
+    Class<T> type = (Class) value.getClass();
+    
+    ServiceBuilderStart service = new ServiceBuilderStart(type, value);
+    
+    _services.add(service);
+    
+    return service;
+  }
   
   protected void initAutoServices(ServicesAmp manager)
   {
@@ -543,7 +557,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     
     for (ServiceInitializer provider : providerList) {
       try {
-        provider.init(manager);
+        provider.init(this); // manager);
       } catch (Throwable e) {
         if (log.isLoggable(Level.FINER)) {
           log.log(Level.FINER, e.toString(), e);
@@ -588,6 +602,15 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
       
       _type = type;
       _supplier = supplier;
+    }
+    
+    ServiceBuilderStart(Class<T> type, T value)
+    {
+      Objects.requireNonNull(type);
+      Objects.requireNonNull(value);
+      
+      _type = type;
+      _supplier = ()->value;
     }
 
     @Override

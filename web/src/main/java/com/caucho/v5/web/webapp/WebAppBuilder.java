@@ -169,7 +169,7 @@ public class WebAppBuilder
       _serviceBuilder = ServicesAmp.newManager();
       _serviceBuilder.name("webapp");
       _serviceBuilder.autoServices(true);
-      _serviceBuilder.injectManager(()->_injectBuilder.get());
+      _serviceBuilder.injector(_injectBuilder);
       //_serviceBuilder.setJournalFactory(new JournalFactoryImpl());
       addJournalFactory(_serviceBuilder);
       addStubVault(_serviceBuilder);

@@ -37,11 +37,11 @@ import com.caucho.v5.amp.journal.JournalFactoryAmp;
 import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.stub.StubGenerator;
-import com.caucho.v5.inject.InjectorAmp;
+import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 
 import io.baratine.service.QueueFullHandler;
-import io.baratine.service.Services;
 import io.baratine.service.ServiceNode;
+import io.baratine.service.Services;
 
 /**
  * Creates a AMP domain.
@@ -113,8 +113,8 @@ public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
   ServiceManagerBuilderAmp stubGenerator(StubGenerator factory);
   StubGenerator[] stubGenerators();
   
-  Supplier<InjectorAmp> injectManager(ServicesAmp ampManager);
-  ServiceManagerBuilderAmp injectManager(Supplier<InjectorAmp> inject);
+  //Supplier<InjectorAmp> injectManager(ServicesAmp ampManager);
+  ServiceManagerBuilderAmp injector(InjectBuilderAmp injector);
   
   /**
    * Returns the pod node.

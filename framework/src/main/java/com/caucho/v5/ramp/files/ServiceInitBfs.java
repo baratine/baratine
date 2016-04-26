@@ -29,10 +29,10 @@
 
 package com.caucho.v5.ramp.files;
 
-import io.baratine.service.ServiceInitializer;
-import io.baratine.service.Services;
-
 import com.caucho.v5.bartender.files.BartenderFileSystem;
+
+import io.baratine.service.ServiceInitializer;
+import io.baratine.service.Services.ServicesBuilder;
 
 
 /**
@@ -41,12 +41,12 @@ import com.caucho.v5.bartender.files.BartenderFileSystem;
 public class ServiceInitBfs implements ServiceInitializer
 {
   @Override
-  public void init(Services manager)
+  public void init(ServicesBuilder builder)
   {
     BartenderFileSystem bfs = BartenderFileSystem.getCurrent();
     
     if (bfs != null && bfs.createSchemeServiceImpl() != null) {
-      manager.newService(bfs.createSchemeServiceImpl())
+      builder.service(bfs.createSchemeServiceImpl())
              .address("bfs:")
              .ref();
     }

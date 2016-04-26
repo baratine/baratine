@@ -29,6 +29,7 @@
 
 package io.baratine.service;
 
+import io.baratine.service.Services.ServicesBuilder;
 
 /**
  * Initializer hook on service manager start.
@@ -39,7 +40,7 @@ package io.baratine.service;
  */
 public interface ServiceInitializer
 {
-  default public void init(Services manager)
+  default public void init(ServicesBuilder manager)
   {
   }
 }

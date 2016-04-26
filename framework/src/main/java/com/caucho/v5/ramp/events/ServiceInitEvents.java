@@ -29,11 +29,11 @@
 
 package com.caucho.v5.ramp.events;
 
-import io.baratine.service.ServiceInitializer;
-import io.baratine.service.Services;
-
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+
+import io.baratine.service.ServiceInitializer;
+import io.baratine.service.ServiceRef;
+import io.baratine.service.Services.ServicesBuilder;
 
 /**
  * Provider for the event bus.
@@ -41,19 +41,19 @@ import com.caucho.v5.amp.ServiceRefAmp;
 public class ServiceInitEvents implements ServiceInitializer
 {
   @Override
-  public void init(Services manager)
+  public void init(ServicesBuilder manager)
   {
-    ServicesAmp managerAmp = (ServicesAmp) manager;
+    //ServicesAmp managerAmp = (ServicesAmp) manager;
     
     EventServiceRamp eventsScheme = new EventServiceRamp("event:");
     
-    ServiceRefAmp eventsRef = managerAmp.newService(eventsScheme)
+    ServiceRef eventsRef = manager.service(eventsScheme)
                                         .address("event:")
                                         .ref();
     
     EventServerImpl eventsPod = eventsScheme.getEventServer();
     
-    ServiceRefAmp eventsPodRef = eventsRef.pin(eventsPod);
+    ServiceRefAmp eventsPodRef = (ServiceRefAmp) eventsRef.pin(eventsPod);
     
     //eventsPodRef.bind("pod://" + EventsPodServerRamp.PATH);
     eventsPodRef.bind("local://" + EventServerImpl.PATH);

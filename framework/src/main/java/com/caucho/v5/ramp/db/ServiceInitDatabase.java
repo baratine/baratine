@@ -32,7 +32,7 @@ package com.caucho.v5.ramp.db;
 import com.caucho.v5.kraken.KrakenSystem;
 
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.Services;
+import io.baratine.service.Services.ServicesBuilder;
 
 /**
  * Entry to the store system.
@@ -40,11 +40,11 @@ import io.baratine.service.Services;
 public class ServiceInitDatabase implements ServiceInitializer
 {
   @Override
-  public void init(Services manager)
+  public void init(ServicesBuilder builder)
   {
     if (KrakenSystem.current() != null
         || System.getProperty("baratine.root") != null) {
-      manager.newService(new SchemeDatabaseRamp())
+      builder.service(new SchemeDatabaseRamp())
              .address("bardb:")
              .ref();
     }

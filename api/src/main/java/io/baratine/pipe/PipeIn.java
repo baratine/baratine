@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,32 +27,19 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.ramp.pubsub;
+package io.baratine.pipe;
 
-import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceRef;
-import io.baratine.service.Services.ServicesBuilder;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * Provider for the streaming pub/sub
- */
-public class ServiceInitPubSub implements ServiceInitializer
+import io.baratine.service.OnInit;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+@OnInit
+public @interface PipeIn
 {
-  @Override
-  public void init(ServicesBuilder manager)
-  {
-    SchemePubSubRamp scheme = new SchemePubSubRamp("pubsub:", manager.get());
-    
-    ServiceRef pubsubRef = manager.service(scheme)
-                                  .address("pubsub:")
-                                  .ref();
-    // pubsubRef.bind("pubsub:");
-
-    //PubSubServiceRamp eventsPod = eventsScheme.getEventServer();
-    
-    //ServiceRef eventsPodRef = eventsRef.pin(eventsPod);
-    
-    //eventsPodRef.bind("pod://" + EventsPodServerRamp.PATH);
-    //eventsPodRef.bind("local://" + PubSubServiceRamp.PATH);
-  }
+  String value() default "";
 }

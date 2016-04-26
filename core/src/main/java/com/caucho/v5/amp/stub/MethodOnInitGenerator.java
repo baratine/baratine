@@ -27,32 +27,19 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.ramp.pubsub;
+package com.caucho.v5.amp.stub;
 
-import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceRef;
-import io.baratine.service.Services.ServicesBuilder;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
+import com.caucho.v5.amp.ServicesAmp;
 
 /**
- * Provider for the streaming pub/sub
+ * Generator for OnInit.
  */
-public class ServiceInitPubSub implements ServiceInitializer
+public interface MethodOnInitGenerator
 {
-  @Override
-  public void init(ServicesBuilder manager)
-  {
-    SchemePubSubRamp scheme = new SchemePubSubRamp("pubsub:", manager.get());
-    
-    ServiceRef pubsubRef = manager.service(scheme)
-                                  .address("pubsub:")
-                                  .ref();
-    // pubsubRef.bind("pubsub:");
-
-    //PubSubServiceRamp eventsPod = eventsScheme.getEventServer();
-    
-    //ServiceRef eventsPodRef = eventsRef.pin(eventsPod);
-    
-    //eventsPodRef.bind("pod://" + EventsPodServerRamp.PATH);
-    //eventsPodRef.bind("local://" + PubSubServiceRamp.PATH);
-  }
+  MethodAmp createMethod(Method method, 
+                         Annotation onInitAnn, 
+                         ServicesAmp services);
 }
