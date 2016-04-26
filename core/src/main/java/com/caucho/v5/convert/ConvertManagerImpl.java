@@ -33,20 +33,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.baratine.convert.Convert;
+import io.baratine.convert.ConvertFrom;
 import io.baratine.convert.ConvertManager;
-import io.baratine.convert.ConvertManagerType;
 
 /**
  * Default converter.
  */
 public class ConvertManagerImpl implements ConvertManager
 {
-  private static final Map<Class<?>,ConvertManagerType<?>> _defaultConverterMap
+  private static final Map<Class<?>,ConvertFrom<?>> _defaultConverterMap
     = new HashMap<>();
   
   private static final Convert<?,?> IDENTITY = new ConverterIdentity<>();
   
-  private final Map<Class<?>,ConvertManagerType<?>> _converterMap
+  private final Map<Class<?>,ConvertFrom<?>> _converterMap
     = new HashMap<>();
   
   public ConvertManagerImpl()
@@ -54,7 +54,7 @@ public class ConvertManagerImpl implements ConvertManager
     _converterMap.putAll(_defaultConverterMap);
   }
   
-  public static Iterable<ConvertManagerType<?>> convertManagers()
+  public static Iterable<ConvertFrom<?>> convertManagers()
   {
     return _defaultConverterMap.values();
   }
@@ -62,8 +62,8 @@ public class ConvertManagerImpl implements ConvertManager
   @Override
   public <S, T> Convert<S, T> converter(Class<S> source, Class<T> target)
   {
-    ConvertManagerType<S> convertType
-      = (ConvertManagerType<S>) _defaultConverterMap.get(source);
+    ConvertFrom<S> convertType
+      = (ConvertFrom<S>) _defaultConverterMap.get(source);
     
     if (convertType != null) {
       Convert<S,T> converter = convertType.converter(target);

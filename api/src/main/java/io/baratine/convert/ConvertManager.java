@@ -75,8 +75,13 @@ public interface ConvertManager
     }
   }
   
-  default <S> ConvertManagerType<S> to(Class<S> type)
+  default <T> ConvertTo<T> to(Class<T> targetType)
   {
-    throw new UnsupportedOperationException(); 
+    throw new UnsupportedOperationException(getClass().getSimpleName()); 
+  }
+  
+  default <S> ConvertFrom<S> from(Class<S> sourceType)
+  {
+    throw new UnsupportedOperationException(getClass().getSimpleName()); 
   }
 }

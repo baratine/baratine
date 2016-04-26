@@ -27,34 +27,46 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.convert;
+package io.baratine.convert;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import io.baratine.convert.Convert;
-import io.baratine.convert.ConvertTo;
 import io.baratine.service.Result;
 
-public class ConvertException extends RuntimeException
+/**
+ * Convert from source to target.
+ * 
+ * Async converters must be called with the Result api.
+ */
+public interface ConvertTo<T>
 {
-  public ConvertException()
+  Class<T> targetType();
+  
+  <S> Convert<S, T> converter(Class<S> target);
+  
+  /**
+   * Convert using only sync converters
+   * 
+   * @param targetType the expected type of the target
+   * @param source the source value
+   * 
+   * @return the converted value
+   */
+  default <S> T convert(Class<S> sourceType, S source)
   {
+    return converter(sourceType).convert(source);
   }
   
-  public ConvertException(Throwable cause)
+  /**
+   * Convert using sync or async converters.
+   */
+  default <S> void convert(Class<S> sourceType, S source, Result<T> result)
   {
-    super(cause);
+    converter(sourceType).convert(source, result);
   }
   
-  public ConvertException(String msg, Throwable cause)
+  public interface ConvertToBuilder<S>
   {
-    super(msg, cause);
-  }
-  
-  public ConvertException(String msg)
-  {
-    super(msg);
+    <T> ConvertToBuilder<S> add(Convert<S,T> convert);
+    
+    ConvertTo<S> get();
   }
 }

@@ -470,7 +470,7 @@ public class StubClass
   protected MethodAmp createOnInitMethod(Method method)
   {
     Annotation onInitAnn = onInitDriverAnn(method);
-    
+
     if (onInitAnn != null) {
       MethodOnInitGenerator gen
         = services().injector().instance(Key.of(MethodOnInitGenerator.class,

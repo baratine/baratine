@@ -27,46 +27,52 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.convert;
+package com.caucho.v5.convert;
 
-import io.baratine.service.Result;
+import com.caucho.v5.util.L10N;
+
+import io.baratine.convert.Convert;
+import io.baratine.convert.ConvertManager;
+import io.baratine.convert.ConvertTo;
 
 /**
- * Convert from source to target.
- * 
- * Async converters must be called with the Result api.
+ * Converter to a known target
  */
-public interface ConvertManagerType<S>
+class ConvertToImpl<T> implements ConvertTo<T>
 {
-  Class<S> sourceType();
+  private static final L10N L = new L10N(ConvertToImpl.class);
   
-  <T> Convert<S, T> converter(Class<T> target);
+  private final ConvertManager _manager;
+  private final Class<T> _target;
   
-  /**
-   * Convert using only sync converters
-   * 
-   * @param targetType the expected type of the target
-   * @param source the source value
-   * 
-   * @return the converted value
-   */
-  default <T> T convert(Class<T> targetType, S source)
+  private ConvertToMap<T> _convertMap = new ConvertToMap<>();
+  
+  public ConvertToImpl(ConvertManager manager,
+                       Class<T> target)
   {
-    return converter(targetType).convert(source);
+    _manager = manager;
+    _target = target;
+  }
+
+  @Override
+  public Class<T> targetType()
+  {
+    return _target;
+  }
+
+  @Override
+  public <S> Convert<S, T> converter(Class<S> source)
+  {
+    return (Convert) _convertMap.get(source);
   }
   
-  /**
-   * Convert using sync or async converters.
-   */
-  default <T> void convert(Class<T> targetType, S source, Result<T> result)
+  class ConvertToMap<T> extends ClassValue<Convert<?,T>>
   {
-    converter(targetType).convert(source, result);
-  }
-  
-  public interface ConvertTypeBuilder<S>
-  {
-    <T> ConvertTypeBuilder<S> add(Convert<S,T> convert);
+    @Override
+    protected Convert<?, T> computeValue(Class<?> source)
+    {
+      return (Convert) _manager.converter(source, _target);
+    }
     
-    ConvertManagerType<S> get();
   }
 }

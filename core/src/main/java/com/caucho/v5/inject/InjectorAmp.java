@@ -76,7 +76,7 @@ public interface InjectorAmp extends Injector
   
   Config config();
   
-  <S,T> Convert<S, T> converter(Class<S> source, Class<T> target);
+  // <S,T> Convert<S, T> converter(Class<S> source, Class<T> target);
   
   String property(String key);
   

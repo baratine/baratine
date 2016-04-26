@@ -128,6 +128,6 @@ public interface WebBuilder
 
   default <S,T> Convert<S,T> converter(Class<S> source, Class<T> target)
   {
-    return injector().converter(source, target);
+    return injector().converter().converter(source, target);
   }
 }

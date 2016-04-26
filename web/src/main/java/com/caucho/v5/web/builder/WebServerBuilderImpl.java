@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -95,8 +94,8 @@ import com.caucho.v5.web.webapp.HttpBaratineBuilder;
 import io.baratine.config.Config;
 import io.baratine.config.Include;
 import io.baratine.convert.Convert;
-import io.baratine.convert.ConvertManagerType;
-import io.baratine.convert.ConvertManagerType.ConvertTypeBuilder;
+import io.baratine.convert.ConvertFrom;
+import io.baratine.convert.ConvertFrom.ConvertFromBuilder;
 import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.IncludeInject;
 import io.baratine.inject.Injector.InjectAutoBind;
@@ -372,9 +371,9 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
   */
   
-  private ConvertManagerType<String> converter()
+  private ConvertFrom<String> converter()
   {
-    ConvertTypeBuilder<String> builder = ConvertStringDefault.build();
+    ConvertFromBuilder<String> builder = ConvertStringDefault.build();
     
     builder.add(new ConvertStringToPath());
     

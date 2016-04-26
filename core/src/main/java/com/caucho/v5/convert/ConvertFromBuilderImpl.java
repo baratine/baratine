@@ -34,68 +34,59 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.caucho.v5.inject.type.TypeRef;
+
 import io.baratine.convert.Convert;
-import io.baratine.convert.ConvertManagerType;
-import io.baratine.service.Result;
+import io.baratine.convert.ConvertFrom;
+import io.baratine.convert.ConvertFrom.ConvertFromBuilder;
 
 /**
  * Default string converter.
  * read-only properties map.
  */
-public class ConvertBase<S> implements ConvertManagerType<S>
+public class ConvertFromBuilderImpl<S> implements ConvertFromBuilder<S>
 {
-  private final Map<Class<?>,Convert<S,?>> _converterMap
-    = new HashMap<>();
   private Class<S> _sourceType;
+  private Map<Class<?>,Convert<S,?>> _converterMap
+    = new HashMap<>();
   
-  ConvertBase(Class<S> sourceType, Map<Class<?>,Convert<S,?>> map)
+  ConvertFromBuilderImpl(Class<S> sourceType)
   {
-    Objects.requireNonNull(sourceType);
-    
     _sourceType = sourceType;
-    
-    _converterMap.putAll(map);
   }
-  
-  ConvertBase(ConvertTypeBuilderImpl<S> builder)
-  {
-    _sourceType = builder.sourceType();
-    
-    _converterMap.putAll(builder.map());
-  }
-  
+
   public Class<S> sourceType()
   {
     return _sourceType;
   }
+
+  public void add(ConvertFromBase<S> base)
+  {
+    _converterMap.putAll(base.map());
+  }
   
-  public Map<Class<?>,Convert<S,?>> map()
+  @Override
+  public <T> ConvertFromBuilder<S> add(Convert<S,T> convert)
+  {
+    Objects.requireNonNull(convert);
+    
+    TypeRef typeRef = TypeRef.of(convert.getClass());
+    TypeRef convertRef = typeRef.to(Convert.class);
+    TypeRef targetRef = convertRef.param(0);
+    
+    _converterMap.put(targetRef.rawClass(), convert);
+
+    return this;
+  }
+
+  @Override
+  public ConvertFrom<S> get()
+  {
+    return new ConvertFromBase<>(this);
+  }
+
+  public Map<Class<?>, Convert<S,?>> map()
   {
     return Collections.unmodifiableMap(_converterMap);
-  }
-
-  @Override
-  public <T> Convert<S,T> converter(Class<T> targetType)
-  {
-    return (Convert) _converterMap.get(targetType);
-  }
-
-  @Override
-  public <T> T convert(Class<T> targetType, S source)
-  {
-    Convert<S,T> convert = converter(targetType);
-    
-    if (convert != null) {
-      return convert.convert(source);
-    }
-    else {
-      return null;
-    }
-  }
-
-  @Override
-  public <T> void convert(Class<T> targetType, S source, Result<T> result)
-  {
-    result.ok(convert(targetType, source));
   }
 }

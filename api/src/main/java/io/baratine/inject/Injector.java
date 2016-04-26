@@ -33,12 +33,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.inject.Provider;
 
 import io.baratine.config.IncludeGenerator;
 import io.baratine.convert.Convert;
+import io.baratine.convert.ConvertManager;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**
@@ -87,7 +87,9 @@ public interface Injector
   /**
    * Returns the type converter from a source class to a target class.
    */
-  <S,T> Convert<S, T> converter(Class<S> source, Class<T> target);
+  ConvertManager converter();
+  //<S,T> Convert<S, T> converter(Class<S> source, Class<T> target);
+
 
   /**
    * Creates a new manager.

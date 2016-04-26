@@ -70,7 +70,7 @@ public class ServiceInitPipe implements ServiceInitializer
     InjectorBuilder injector = builder.injector();
     
     
-    injector.bean(PipeInGenerator.class)
+    injector.bean(PipeInMethodGenerator.class)
             .to(Key.of(MethodOnInitGenerator.class,
                        PipeIn.class));
 
@@ -78,96 +78,5 @@ public class ServiceInitPipe implements ServiceInitializer
     //pipeRef.start();
     
     //services.
-  }
-  
-  private static class PipeInGenerator implements MethodOnInitGenerator
-  {
-    @Override
-    public MethodAmp createMethod(Method method, 
-                                  Annotation ann,
-                                  ServicesAmp services)
-    {
-      PipeIn pipeIn = (PipeIn) ann;
-      String path = pipeIn.value();
-      
-      if (path.isEmpty()) {
-        path = "pipe:///" + method.getName();
-      }
-      
-      Pipes<?> pipes = services.service(path).as(Pipes.class);
-
-      return new PipeInMethod(pipes, method);
-    }
-    
-  }
-  
-  private static class PipeInMethod<T> implements MethodAmp
-  {
-    private Pipes<T> _pipes;
-    private Method _method;
-    
-    PipeInMethod(Pipes<T> pipes,
-                 Method method)
-    {
-      _pipes = pipes;
-      _method = method;
-    }
-    
-    @Override
-    public String name()
-    {
-      return "onInit";
-    }
-
-    @Override
-    public void query(HeadersAmp headers, 
-                      ResultChain<?> result, 
-                      StubAmp stub,
-                      Object[] args)
-    {
-      PipeSubscriber<T> sub = new PipeSubscriber<>(stub.bean(), _method);
-      
-      _pipes.subscribe(Pipe.in(sub));
-      
-      result.ok(null);
-    }
-  }
-  
-  private static class PipeSubscriber<T> implements Pipe<T>
-  {
-    private Object _bean;
-    private Method _method;
-    
-    PipeSubscriber(Object bean, Method method)
-    {
-      _bean = bean;
-      _method = method;
-    }
-    
-    @Override
-    public void next(T value)
-    {
-      try {
-        Message<?> msg = (Message) value;
-        
-        _method.invoke(_bean, msg.value());
-      } catch (Exception e) {
-        String loc = _bean.getClass().getSimpleName() + "." + _method.getName();
-        
-        log.log(Level.FINER, loc + ": " + e, e); ;
-      }
-    }
-
-    @Override
-    public void close()
-    {
-      
-    }
-
-    @Override
-    public void fail(Throwable exn)
-    {
-      exn.printStackTrace();
-    }
   }
 }

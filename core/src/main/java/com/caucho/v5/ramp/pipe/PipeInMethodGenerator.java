@@ -43,6 +43,7 @@ import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.convert.Convert;
+import io.baratine.convert.ConvertTo;
 import io.baratine.pipe.Message;
 import io.baratine.pipe.Pipe;
 import io.baratine.pipe.PipeIn;
@@ -73,8 +74,9 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
 
     Pipes<?> pipes = services.service(path).as(Pipes.class);
     
+    method.setAccessible(true);
     Parameter []params = method.getParameters();
-    
+
     if (params.length != 1) {
       throw new IllegalArgumentException(L.l("@{0} method {1}.{2} must have a single value",
                                              PipeIn.class.getSimpleName(),
@@ -82,24 +84,37 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
                                              method.getName()));
     }
     
-    MessageConverter converter = new MessageConverter(String.class);
+    Class<?> type = params[0].getType();
     
-    return new PipeInMethod(pipes, method, converter);
+    //MessageConverter converter = new MessageConverter(String.class);
+    
+    PipeArg []args = new PipeArg[1];
+    
+    if (Message.class.isAssignableFrom(type)) {
+      args[0] = new PipeArgMessage();
+    }
+    else {
+      ConvertTo<?> converter = services.injector().converter().to(type);
+      
+      args[0] = new PipeArgValue(converter);
+    }
+    
+    return new PipeInMethod(pipes, method, args);
   }
 
   private static class PipeInMethod<T> implements MethodAmp
   {
     private Pipes<T> _pipes;
     private Method _method;
-    private MessageConverter<T> _converter;
+    private PipeArg[] _args;
 
     PipeInMethod(Pipes<T> pipes,
                  Method method,
-                 MessageConverter<T> converter)
+                 PipeArg []args)
     {
       _pipes = pipes;
       _method = method;
-      _converter = converter;
+      _args = args;
     }
 
     @Override
@@ -114,32 +129,13 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
                       StubAmp stub,
                       Object[] args)
     {
-      PipeArgValue<T> arg = new PipeArgValue<>(_converter);
-      
       PipeSubscriber<T> sub
-        = new PipeSubscriber<>(stub.bean(), _method, arg);
+        = new PipeSubscriber<>(stub.bean(), _method, _args[0]);
 
       _pipes.subscribe(Pipe.in(sub));
 
       result.ok(null);
     }
-  }
-  
-  private static class MessageConverter<T> extends ClassValue<Convert<?,T>>
-  {
-    private Class<T> _target;
-    
-    MessageConverter(Class<T> target)
-    {
-      _target = target;
-    }
-    
-    @Override
-    protected Convert<?, T> computeValue(Class<?> type)
-    {
-      return x->(T) x;
-    }
-    
   }
   
   private interface PipeArg
@@ -158,11 +154,11 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
   
   private static class PipeArgValue<T> implements PipeArg
   {
-    private ClassValue<Convert<?,T>> _converterMap;
+    private ConvertTo<T> _converterTo;
     
-    PipeArgValue(ClassValue<Convert<?,T>> converterMap)
+    PipeArgValue(ConvertTo<T> converterTo)
     {
-      _converterMap = converterMap;
+      _converterTo = converterTo;
     }
     
     @Override
@@ -181,9 +177,30 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
         }
       }
       
-      Convert converter = _converterMap.get(message.getClass());
+      Convert converter = _converterTo.converter(message.getClass());
       
       return (T) converter.convert(message);
+    }
+  }
+  
+  private static class PipeArgMessage implements PipeArg
+  {
+    PipeArgMessage()
+    {
+    }
+    
+    @Override
+    public Message<?> arg(Object message)
+    {
+      if (message == null) {
+        return null;
+      }
+      else if (message instanceof Message) {
+        return (Message<?>) message;
+      }
+      else {
+        throw new IllegalArgumentException(String.valueOf(message));
+      }
     }
   }
 
@@ -209,8 +226,8 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
         _method.invoke(_bean, _arg.arg(message));
       } catch (Exception e) {
         String loc = _bean.getClass().getSimpleName() + "." + _method.getName();
-
-        log.log(Level.FINER, loc + ": " + e, e); ;
+        
+        log.log(Level.FINE, loc + ": " + e, e); ;
       }
     }
 

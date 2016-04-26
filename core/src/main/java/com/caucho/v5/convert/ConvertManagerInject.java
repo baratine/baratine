@@ -40,8 +40,9 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.convert.Convert;
+import io.baratine.convert.ConvertFrom;
 import io.baratine.convert.ConvertManager;
-import io.baratine.convert.ConvertManagerType;
+import io.baratine.convert.ConvertTo;
 import io.baratine.inject.Binding;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
@@ -69,13 +70,13 @@ public class ConvertManagerInject implements ConvertManager
   
   private void init()
   {
-    for (ConvertManagerType<?> convertManager
+    for (ConvertFrom<?> convertManager
         : ConvertManagerImpl.convertManagers()) {
       add(convertManager);
     }
     
-    for (Binding<ConvertManagerType<?>> binding
-        : _injector.bindings(new Key<ConvertManagerType<?>>() {})) {
+    for (Binding<ConvertFrom<?>> binding
+        : _injector.bindings(new Key<ConvertFrom<?>>() {})) {
       add(binding.provider().get());
     }
     
@@ -90,7 +91,7 @@ public class ConvertManagerInject implements ConvertManager
     }
   }
   
-  private <S> void add(ConvertManagerType<S> convertManager)
+  private <S> void add(ConvertFrom<S> convertManager)
   {
     Class<S> sourceType = convertManager.sourceType();
     
@@ -116,9 +117,15 @@ public class ConvertManagerInject implements ConvertManager
   @Override
   public <S, T> Convert<S, T> converter(Class<S> source, Class<T> target)
   {
-    ConvertManagerType<S> convertType = getOrCreate(source);
+    ConvertFrom<S> convertType = getOrCreate(source);
     
     return convertType.converter(target);
+  }
+  
+  @Override
+  public <T> ConvertTo<T> to(Class<T> target)
+  {
+    return new ConvertToImpl<>(this, target);
   }
 
   /**
@@ -140,10 +147,10 @@ public class ConvertManagerInject implements ConvertManager
     return (ConvertManagerTypeImpl<S>) _convertMap.get(sourceType);
   }
   
-  static final class ConvertManagerTypeImpl<S> implements ConvertManagerType<S>
+  static final class ConvertManagerTypeImpl<S> implements ConvertFrom<S>
   {
     private Class<S> _sourceType;
-    private ArrayList<ConvertManagerType<S>> _delegates = new ArrayList<>();
+    private ArrayList<ConvertFrom<S>> _delegates = new ArrayList<>();
     
     private ConcurrentHashMap<Class<?>,Convert<?,?>> _converterMap
       = new ConcurrentHashMap<>();
@@ -153,12 +160,13 @@ public class ConvertManagerInject implements ConvertManager
       _sourceType = sourceType;
     }
     
+    @Override
     public Class<S> sourceType()
     {
       return _sourceType;
     }
     
-    void add(ConvertManagerType<S> delegate)
+    void add(ConvertFrom<S> delegate)
     {
       Objects.requireNonNull(delegate);
       
@@ -192,7 +200,7 @@ public class ConvertManagerInject implements ConvertManager
     
     private <T> Convert<S,T> findConverter(Class<T> target)
     {
-      for (ConvertManagerType<S> delegate : _delegates) {
+      for (ConvertFrom<S> delegate : _delegates) {
         Convert<S, T> convert = delegate.converter(target);
         
         if (convert != null) {

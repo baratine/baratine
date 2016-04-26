@@ -36,7 +36,7 @@ import java.util.Objects;
 import com.caucho.v5.convert.ConvertStringDefault;
 
 import io.baratine.config.Config;
-import io.baratine.convert.ConvertManagerType;
+import io.baratine.convert.ConvertFrom;
 
 /**
  * ConfigEnv is the configuration environment, which contains a
@@ -48,7 +48,7 @@ class ConfigBuilderImpl
   private final Map<String,String> _map = new HashMap<>();
   
   private ConfigImpl _config;
-  private ConvertManagerType<String> _converter;
+  private ConvertFrom<String> _converter;
   
   ConfigBuilderImpl()
   {
@@ -75,7 +75,7 @@ class ConfigBuilderImpl
   }
   
   @Override
-  public void converter(ConvertManagerType<String> converter)
+  public void converter(ConvertFrom<String> converter)
   {
     Objects.requireNonNull(converter);
     
@@ -87,7 +87,7 @@ class ConfigBuilderImpl
   public Config get()
   {
     if (_config == null) {
-      ConvertManagerType<String> converter = _converter;
+      ConvertFrom<String> converter = _converter;
       
       if (converter == null) {
         converter = ConvertStringDefault.get();

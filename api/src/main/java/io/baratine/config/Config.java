@@ -31,7 +31,7 @@ package io.baratine.config;
 
 import java.util.Map;
 
-import io.baratine.convert.ConvertManagerType;
+import io.baratine.convert.ConvertFrom;
 
 /**
  * ConfigEnv is the configuration environment, which contains a
@@ -91,7 +91,7 @@ public interface Config extends Map<String,String>
       return this;
     }
     
-    void converter(ConvertManagerType<String> convertManager);
+    void converter(ConvertFrom<String> convertManager);
     
     Config get();
   }

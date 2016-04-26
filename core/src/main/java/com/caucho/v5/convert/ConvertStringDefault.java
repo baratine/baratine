@@ -50,7 +50,7 @@ import io.baratine.service.Result;
  * read-only properties map.
  */
 @Priority(-100)
-public class ConvertStringDefault extends ConvertBase<String>
+public class ConvertStringDefault extends ConvertFromBase<String>
 {
   private static final Logger log
     = Logger.getLogger(ConvertStringDefault.class.getName());
@@ -150,10 +150,10 @@ public class ConvertStringDefault extends ConvertBase<String>
     return null;
   }
   
-  public static ConvertTypeBuilder<String> build()
+  public static ConvertFromBuilder<String> build()
   {
-    ConvertTypeBuilderImpl<String> builder
-      = new ConvertTypeBuilderImpl<>(String.class);
+    ConvertFromBuilderImpl<String> builder
+      = new ConvertFromBuilderImpl<>(String.class);
     
     builder.add(get());
     

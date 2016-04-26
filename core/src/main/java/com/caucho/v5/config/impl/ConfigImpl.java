@@ -43,7 +43,7 @@ import com.caucho.v5.convert.ConvertStringDefault;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.config.Config;
-import io.baratine.convert.ConvertManagerType;
+import io.baratine.convert.ConvertFrom;
 
 /**
  * ConfigEnv is the configuration environment, which contains a
@@ -57,10 +57,10 @@ public class ConfigImpl extends AbstractMap<String,String>
     = Logger.getLogger(ConfigImpl.class.getName());
   
   private final Map<String,String> _map;
-  private final ConvertManagerType<String> _converter;
+  private final ConvertFrom<String> _converter;
   
   ConfigImpl(Map<String,String> map,
-             ConvertManagerType<String> converter)
+             ConvertFrom<String> converter)
   {
     Objects.requireNonNull(map);
     Objects.requireNonNull(converter);

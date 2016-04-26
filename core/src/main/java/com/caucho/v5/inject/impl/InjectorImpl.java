@@ -758,6 +758,7 @@ public class InjectorImpl implements InjectorAmp
     }
   }
 
+  /*
   @Override
   public <S, T> Convert<S, T> converter(Class<S> source, Class<T> target)
   {
@@ -766,6 +767,17 @@ public class InjectorImpl implements InjectorAmp
     }
     
     return _convertManager.get().converter(source, target);
+  }
+  */
+  
+  @Override
+  public ConvertManager converter()
+  {
+    if (_convertManager == null) {
+      _convertManager = provider(Key.of(ConvertManager.class));
+    }
+    
+    return _convertManager.get();
   }
   
   private RuntimeException error(String msg, Object ...args)

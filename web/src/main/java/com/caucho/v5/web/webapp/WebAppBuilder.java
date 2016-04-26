@@ -492,7 +492,7 @@ public class WebAppBuilder
   @Override
   public <S,T> Convert<S,T> converter(Class<S> source, Class<T> target)
   {
-    return _injectBuilder.get().converter(source, target);
+    return _injectBuilder.get().converter().converter(source, target);
   }
 
   @Override
