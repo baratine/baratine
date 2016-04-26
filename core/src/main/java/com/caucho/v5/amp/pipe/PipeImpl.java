@@ -469,6 +469,12 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
   private void cancel()
   {
     _stateInRef.set(_stateInRef.get().toClose());
+    
+    OnAvailable outFlow = _outFlow;
+    
+    if (outFlow != null) {
+      outFlow.cancel();
+    }
   }
 
   /**
