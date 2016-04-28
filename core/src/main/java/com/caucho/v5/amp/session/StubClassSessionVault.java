@@ -41,7 +41,6 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpBean;
-import com.caucho.v5.amp.stub.StubAmpBeanBase;
 import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.convert.bean.FieldBean;
 import com.caucho.v5.convert.bean.FieldString;
@@ -194,7 +193,7 @@ public class StubClassSessionVault<T> extends StubClass
         _fieldSetter.setString(session, path);
       }
 
-      StubAmpBeanBase stubBean = (StubAmpBeanBase) stub;
+      StubAmpBean stubBean = (StubAmpBean) stub;
       StubContainerAmp container = stubBean.getContainer();
 
       StubAmp stubChild = new StubAmpBean(_stubClassSession,

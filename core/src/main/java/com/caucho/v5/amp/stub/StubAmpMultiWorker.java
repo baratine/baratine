@@ -34,7 +34,7 @@ import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
@@ -43,7 +43,7 @@ import io.baratine.service.Result;
 /**
  * amp disruptor method
  */
-public class StubAmpMultiWorker extends StubAmpStateBase
+public class StubAmpMultiWorker extends StubAmpBase
 {
   private final StubAmp _delegate;
   
@@ -58,10 +58,10 @@ public class StubAmpMultiWorker extends StubAmpStateBase
   }
   
   @Override
-  public LoadStateAmp createLoadState()
+  public StubStateAmp createLoadState()
   {
     //return new LoadStateMultiWorker();
-    return LoadStateActorAmp.NEW;
+    return StubStateAmpBean.NEW;
   }
   
   @Override
@@ -138,7 +138,7 @@ public class StubAmpMultiWorker extends StubAmpStateBase
   }
   
   @Override
-  public LoadStateAmp load(StubAmp actorMessage, MessageAmp msg)
+  public StubStateAmp load(StubAmp actorMessage, MessageAmp msg)
   {
     return delegate().load(msg);
   }

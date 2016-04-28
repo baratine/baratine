@@ -36,11 +36,11 @@ import io.baratine.service.ResultChain;
 /**
  * @OnModify implementation for a stub.
  */
-public class FilterMethodModify extends MethodAmpWrapper
+public class FilterMethodDelete extends MethodAmpWrapper
 {
   private final MethodAmp _delegate;
   
-  public FilterMethodModify(MethodAmp delegate)
+  public FilterMethodDelete(MethodAmp delegate)
   {
     _delegate = delegate;
   }
@@ -64,7 +64,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   {
     delegate().send(headers, stub, args);
     
-    setModified(stub);
+    setDeleted(stub);
   }
   
   @Override
@@ -74,7 +74,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   {
     delegate().query(headers, result, stub);
     
-    setModified(stub);
+    setDeleted(stub);
   }
   
   @Override
@@ -85,7 +85,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   {
     delegate().query(headers, result, stub, a1);
     
-    setModified(stub);
+    setDeleted(stub);
   }
   
   @Override
@@ -97,7 +97,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   {
     delegate().query(headers, result, stub, a1, a2);
     
-    setModified(stub);
+    setDeleted(stub);
   }
   
   @Override
@@ -110,7 +110,7 @@ public class FilterMethodModify extends MethodAmpWrapper
   {
     delegate().query(headers, result, stub, a1, a2, a3);
     
-    setModified(stub);
+    setDeleted(stub);
   }
 
   @Override
@@ -121,12 +121,12 @@ public class FilterMethodModify extends MethodAmpWrapper
   {
     delegate().query(headers, result, stub, args);
 
-    setModified(stub);
+    setDeleted(stub);
   }
   
-  private void setModified(StubAmp stub)
+  private void setDeleted(StubAmp stub)
   {
-    stub.onModify();
+    stub.onDelete();
     
     /*
     if (actor instanceof ActorSkeletonResource) {

@@ -71,7 +71,7 @@ public class OnShutdownMessage extends MessageAmpBase
       
       if (_isSingle) {
         // baratine/9260
-        actorDeliver.loadState().shutdown(actorDeliver, _mode);
+        actorDeliver.state().shutdown(actorDeliver, _mode);
       }
       
       //inbox.close();

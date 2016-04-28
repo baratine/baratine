@@ -62,6 +62,11 @@ public interface VaultDriver<ID,T>
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }
 
+  default void delete(ID id, T entity, ResultChain<Void> result)
+  {
+    result.fail(new UnsupportedOperationException(getClass().getName()));
+  }
+
   default void findOne(String[] fields, Object[] values, Result<ID> result)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
@@ -107,12 +112,12 @@ public interface VaultDriver<ID,T>
                                        String methodName,
                                        Class<?> []paramTypes)
   {
-    return null;
+    throw new IllegalStateException(getClass().getSimpleName());
   }
 
   default <V> MethodVault<V> newMethod(Method method)
   {
-    return null;
+    throw new IllegalStateException(method.toString());
   }
 
   default ResultStreamBuilder<ID> findAllIds()

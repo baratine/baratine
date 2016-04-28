@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,27 +27,20 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.spi;
+package io.baratine.service;
 
-import com.caucho.v5.amp.stub.StubAmp;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 /**
- * State/dispatch for a loadable actor.
+ * {@code @OnDelete} marks a method as a delete callback for a checkpoint.
  */
-public class LoadStateLoadBase implements LoadStateAmp
-{
-  public static final LoadStateLoadBase LOAD = new LoadStateLoadBase();
-  
-  @Override
-  public LoadStateAmp load(StubAmp actor,
-                        InboxAmp inbox,
-                        MessageAmp msg)
-  {
-    return this;
-  }
-
-  @Override
-  public void onModify(StubAmp  actorAmpBase)
-  {
-  }
+@Documented
+@Retention(RUNTIME)
+@Target({METHOD})
+public @interface OnDelete {
 }

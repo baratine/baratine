@@ -270,12 +270,12 @@ public class QueryMessageBase<T> extends MethodMessageBase
   }
 
   @Override
-  public final void invoke(InboxAmp inbox, StubAmp actorDeliver)
+  public final void invoke(InboxAmp inbox, StubAmp stubDeliver)
   {
-    _state.invoke(this, inbox, actorDeliver);
+    _state.invoke(this, inbox, stubDeliver);
   }
   
-  public void invokeQuery(InboxAmp inbox, StubAmp actorDeliver)
+  public void invokeQuery(InboxAmp inbox, StubAmp stubDeliver)
   {
     RuntimeException e = new UnsupportedOperationException(getClass().getName());
     e.fillInStackTrace();
@@ -356,12 +356,12 @@ public class QueryMessageBase<T> extends MethodMessageBase
       }
 
       @Override
-      void invoke(QueryMessageBase<?> query, InboxAmp inbox, StubAmp actorDeliver)
+      void invoke(QueryMessageBase<?> query, InboxAmp inbox, StubAmp stubDeliver)
       {
         query._state = SENT;
         
         try {
-          query.invokeQuery(inbox, actorDeliver);
+          query.invokeQuery(inbox, stubDeliver);
         } catch (Throwable e) {
           query.fail(e);
         }

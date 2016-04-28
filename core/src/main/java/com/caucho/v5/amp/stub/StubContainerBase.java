@@ -99,7 +99,7 @@ public class StubContainerBase implements StubContainerAmp
     ServiceRefAmp serviceRef = (ServiceRefAmp) ServiceRef.current();
     
     for (StubAmp actor : children) {
-      actor.loadState().onActive(actor, serviceRef.inbox());
+      actor.state().onActive(actor, serviceRef.inbox());
     }
   }
   

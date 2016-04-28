@@ -399,14 +399,16 @@ public class ClassGeneratorVault<T>
       
       int ampResult = findAmpResult(paramTypes, Result.class);
 
-      if (ampResult < 0) {
-        throw new IllegalStateException(L.l("Result argument is required {0}",
-                                            method));
-      }
+      if (isCreate(method) || isFind(method)) {
+        if (ampResult < 0) {
+          throw new IllegalStateException(L.l("Result argument is required {0}",
+                                              method));
+        }
       
-      if (! void.class.equals(method.getReturnType())) {
-        throw new IllegalArgumentException(L.l("method must return void {0}",
-                                               method));
+        if (! void.class.equals(method.getReturnType())) {
+          throw new IllegalArgumentException(L.l("method must return void {0}",
+                                                 method));
+        }
       }
       
       if (paramLen > 0 
@@ -419,7 +421,23 @@ public class ClassGeneratorVault<T>
         
         createAmpResultMethod(jClass, method, ampResult);
       }
+      else if (ampResult < 0) {
+        createAmpSendMethod(jClass, method);
+      }
+      else {
+        throw new IllegalStateException(method.toString());
+      }
     }
+  }
+  
+  private boolean isCreate(Method method)
+  {
+    return method.getName().startsWith("create");
+  }
+  
+  private boolean isFind(Method method)
+  {
+    return method.getName().startsWith("find");
   }
   
   private ArrayList<Method> getMethods()
@@ -588,16 +606,6 @@ public class ClassGeneratorVault<T>
   }
   */
   
-  /**
-   * void foo(X a1, Y a2, Result<T> cont)
-   * {
-   *    new AmpQueryMessageActorCompletion(__caucho_getCurrentContext(),
-   *                                       cont,
-   *                                       timeout,
-   *                                       _methodRef,
-   *                                       new Object[] {a1, a2}).send();
-   * }
-   */
   private void createAmpResultMethod(JavaClass jClass,
                                      Method method,
                                      int resultOffset)
@@ -632,6 +640,45 @@ public class ClassGeneratorVault<T>
                          "invoke",
                          void.class,
                          Result.class,
+                         Object[].class);
+
+    code.addReturn();
+
+    code.close();
+  }
+  
+  private void createAmpSendMethod(JavaClass jClass,
+                                   Method method)
+  {
+    String methodName = method.getName();
+    Class<?> []parameterTypes = method.getParameterTypes();
+    Annotation [][]parameterAnns = method.getParameterAnnotations();
+
+    addMethod(method);
+    
+    CodeWriterAttribute code = createMethodHeader(jClass, method);
+    
+    code.setMaxLocals(1 + 2 * parameterTypes.length);
+    code.setMaxStack(10 + 2 * parameterTypes.length);
+
+    code.pushObjectVar(0);
+    code.getField(jClass.getThisClass(),
+                  fieldName(method),
+                  MethodVault.class);
+    
+    //code.pushObjectVar(getLength(parameterTypes, resultOffset) + 1);
+    
+    int argLen = parameterTypes.length;
+    
+    pushParameters(code, parameterTypes, parameterAnns, 
+                   1, 
+                   0, 
+                   argLen, // paramLength,
+                   -1);
+      
+    code.invokeInterface(MethodVault.class,
+                         "invoke",
+                         void.class,
                          Object[].class);
 
     code.addReturn();

@@ -152,7 +152,7 @@ class DeliverInbox implements Deliver<MessageAmp>
   @Override
   public void shutdown(ShutdownModeAmp mode)
   {
-    _actor.loadState().shutdown(_actor, mode);
+    _actor.state().shutdown(_actor, mode);
   }
 
   @Override

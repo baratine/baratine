@@ -42,6 +42,7 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
 import io.baratine.service.Cancel;
+import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionClosed;
 
 /**
@@ -127,7 +128,7 @@ public class ServiceRefPin extends ServiceRefStub
     //return getManager().createPinProxy(this, api, apis);
     return manager().newProxy(this, api);
   }
-  
+
   @Override
   public void shutdown(ShutdownModeAmp mode)
   {

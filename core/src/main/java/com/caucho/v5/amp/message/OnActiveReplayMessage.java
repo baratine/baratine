@@ -58,7 +58,7 @@ public class OnActiveReplayMessage extends MessageAmpBase
     actor = actor.worker(actor);
       //actor.load(this).onActive(this);
     try {
-      actor.loadState().onActive(actor, inbox);
+      actor.state().onActive(actor, inbox);
       
       //System.out.println("AREP: " + actor + " " + actor.loadReplay(this));
     } catch (Exception e) {

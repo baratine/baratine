@@ -210,7 +210,8 @@ public class VaultDriverDataImpl<ID, T>
     result.ok(null);
   }
 
-  private void delete(ID id, T entity, ResultChain<Void> result)
+  @Override
+  public void delete(ID id, T entity, ResultChain<Void> result)
   {
     if (log.isLoggable(Level.FINER)) {
       log.finer("deleting entity " + entity);
@@ -631,7 +632,7 @@ public class VaultDriverDataImpl<ID, T>
       = new MethodParserVault(this, _entityInfo, method);
 
     FindQueryVault<?,?,V> query = parser.parse();
-
+    
     if (query != null) {
       return query;
     }
