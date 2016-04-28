@@ -33,14 +33,14 @@ import io.baratine.service.Result;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 
 
 /**
  * child actor init state, before the bean is loaded.
  */
-public class LoadStateChildInit implements LoadStateAmp
+public class LoadStateChildInit implements StubStateAmp
 {
   private final StubAmpBeanChild _actor;
   
@@ -50,7 +50,7 @@ public class LoadStateChildInit implements LoadStateAmp
   }
 
   @Override
-  public LoadStateAmp load(StubAmp actor, 
+  public StubStateAmp load(StubAmp actor, 
                         InboxAmp inbox, 
                         MessageAmp msg)
   {

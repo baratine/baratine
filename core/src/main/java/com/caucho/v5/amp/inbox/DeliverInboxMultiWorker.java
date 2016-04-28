@@ -180,12 +180,12 @@ class DeliverInboxMultiWorker implements Deliver<MessageAmp>
       _inbox.wakeAllAndWait();
     }
 
-    _actor.loadState().shutdown(_actor, mode);
+    _actor.state().shutdown(_actor, mode);
   }
 
   public void onShutdownImpl(ShutdownModeAmp mode)
   {
-    _actor.loadState().shutdown(_actor, mode);
+    _actor.state().shutdown(_actor, mode);
   }
 
   @Override

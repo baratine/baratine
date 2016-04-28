@@ -31,35 +31,39 @@ package com.caucho.v5.amp.stub;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
-import com.caucho.v5.amp.spi.LoadStateNull;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.inject.type.AnnotatedTypeClass;
-import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
-import io.baratine.service.ResultChain;
-import io.baratine.service.ServiceExceptionMethodNotFound;
 
 /**
- * Abstract stream for an actor.
+ * stub
  */
 public class StubAmpBase implements StubAmp
 {
-  private static final L10N L = new L10N(StubAmpBase.class);
+  //private static final L10N L = new L10N(StubAmpBase.class);
+  private static final Logger log
+    = Logger.getLogger(StubAmpBase.class.getName());
+  
+  private PendingMessages _pendingMessages;
   
   private static final AnnotatedType _annotatedTypeObject
     = new AnnotatedTypeClass(Object.class);
   
-  private LoadStateAmp _loadState;
+  private StubStateAmp _state;
   
   protected StubAmpBase()
   {
@@ -68,18 +72,26 @@ public class StubAmpBase implements StubAmp
   
   public void initLoadState()
   {
-    _loadState = createLoadState();
+    _state = createLoadState();
+  }
+
+  /*
+  public StubStateAmp createLoadState()
+  {
+    return LoadStateLoad.LOAD;
+  }
+  */
+  
+  //@Override
+  protected StubStateAmp createLoadState()
+  {
+    return StubStateAmpBean.NEW;
   }
   
   @Override
-  public LoadStateAmp loadState()
+  public StubStateAmp state()
   {
-    return _loadState;
-  }
-  
-  public LoadStateAmp createLoadState()
-  {
-    return LoadStateLoad.LOAD;
+    return _state;
   }
   
   @Override
@@ -213,35 +225,41 @@ public class StubAmpBase implements StubAmp
   }
   
   @Override
-  public LoadStateAmp load(StubAmp actorMessage, MessageAmp msg)
+  public StubStateAmp load(StubAmp stubMessage, MessageAmp msg)
   {
-    return actorMessage.loadState().load(actorMessage, 
-                                         msg.inboxTarget(), 
-                                         msg);
+    return stubMessage.state().load(stubMessage, 
+                                    msg.inboxTarget(), 
+                                    msg);
   }
   
   @Override
-  public LoadStateAmp load(MessageAmp msg)
+  public StubStateAmp load(MessageAmp msg)
   {
-    return _loadState.load(this, msg.inboxTarget(), msg);
+    return _state.load(this, msg.inboxTarget(), msg);
   }
   
   // @Override
-  public LoadStateAmp load(InboxAmp inbox, MessageAmp msg)
+  public StubStateAmp load(InboxAmp inbox, MessageAmp msg)
   {
-    return _loadState.load(this, inbox, msg);
+    return _state.load(this, inbox, msg);
   }
   
   @Override
-  public LoadStateAmp loadReplay(InboxAmp inbox, MessageAmp msg)
+  public StubStateAmp loadReplay(InboxAmp inbox, MessageAmp msg)
   {
-    return _loadState.loadReplay(this, inbox, msg);
+    return _state.loadReplay(this, inbox, msg);
+  }
+  
+  @Override
+  public void onDelete()
+  {
+    state().onDelete(this);
   }
   
   @Override
   public void onModify()
   {
-    loadState().onModify(this);
+    state().onModify(this);
   }
   
   @Override
@@ -249,7 +267,7 @@ public class StubAmpBase implements StubAmp
   {
     SaveResult saveResult = new SaveResult(result);
     
-    loadState().onSave(this, saveResult);
+    state().onSave(this, saveResult);
     
     saveResult.completeBean();
     
@@ -263,10 +281,10 @@ public class StubAmpBase implements StubAmp
     return true;
   }
   
-  public void setLoadState(LoadStateAmp loadState)
+  public void state(StubStateAmp loadState)
   {
-    _loadState = loadState;
-    if (loadState instanceof LoadStateNull) {
+    _state = loadState;
+    if (loadState instanceof StubStateAmpNull) {
       System.out.println("LSN: " + this);
     }
   }
@@ -287,6 +305,7 @@ public class StubAmpBase implements StubAmp
   }
   */
   
+  /*
   @Override
   public void beforeBatch()
   {
@@ -301,6 +320,7 @@ public class StubAmpBase implements StubAmp
   public void afterBatch()
   {
   }
+  */
 
   /*
   @Override
@@ -320,7 +340,7 @@ public class StubAmpBase implements StubAmp
   @Override
   public boolean isStarted()
   {
-    return loadState().isActive();
+    return state().isActive();
   }
   
   @Override
@@ -337,6 +357,7 @@ public class StubAmpBase implements StubAmp
   }
   */
   
+  /*
   @Override
   public void onInit(Result<? super Boolean> result)
   {
@@ -344,6 +365,7 @@ public class StubAmpBase implements StubAmp
       result.ok(true);
     }
   }
+  */
   
   @Override
   public void onActive(Result<? super Boolean> result)
@@ -375,8 +397,223 @@ public class StubAmpBase implements StubAmp
   {
     return getClass().getSimpleName() + "[" + name() + "]";
   }
+
+  @Override
+  public void onInit(Result<? super Boolean> result)
+  {
+    result.ok(true);
+  }
+
+  public void onLoad(Result<? super Boolean> result)
+  {
+    result.ok(true);
+  }
   
-  static class MethodBase extends MethodAmpBase {
+  @Override
+  public void beforeBatch()
+  {
+    state().beforeBatch(this);
+  }
+  
+  public void beforeBatchImpl()
+  {
+  }
+  
+  @Override
+  public void afterBatch()
+  {
+    state().afterBatch(this);
+  }
+  
+  public void afterBatchImpl()
+  {
+  }
+  
+  
+  @Override
+  public boolean isJournalReplay()
+  {
+    return journal() != null;
+  }
+
+  protected boolean isModifiedChild(StubAmp actor)
+  {
+    return false;
+  }
+
+  protected void addModifiedChild(StubAmp actor)
+  {
+  }
+  
+  protected void flushModified()
+  {
+  }
+
+  public void onSaveChildren(SaveResult saveResult)
+  {
+  }  
+  
+  @Override
+  public void queuePendingMessage(MessageAmp msg)
+  {
+    if (msg == null) {
+      return;
+    }
+    
+    //System.err.println("PEND: " + msg);
+    //Thread.dumpStack();
+    
+    if (_pendingMessages == null) {
+      _pendingMessages = new PendingMessages();
+    }
+    
+    _pendingMessages.addMessage(msg);
+  }
+
+  void queuePendingSave(SaveResult saveResult)
+  {
+    if (saveResult == null) {
+      return;
+    }
+    
+    if (_pendingMessages == null) {
+      _pendingMessages = new PendingMessages();
+    }
+    
+    //System.err.println("MSG1: " + msg);
+    //Thread.dumpStack();
+    
+    _pendingMessages.addSave(saveResult);
+  }
+
+  @Override
+  public void queuePendingReplayMessage(MessageAmp msg)
+  {
+    if (msg == null) {
+      return;
+    }
+    
+    if (_pendingMessages == null) {
+      _pendingMessages = new PendingMessages();
+    }
+    
+    //System.err.println("PEND-REPLAY: " + msg);
+    //Thread.dumpStack();
+    System.out.println("  Q2: " + msg + " " + this);
+    
+    if (_pendingMessages.addReplay(msg)) {
+      addModifiedChild(this);
+    }
+  }
+  
+  @Override
+  public void deliverPendingMessages(InboxAmp inbox)
+  {
+    PendingMessages pending = _pendingMessages;
+    
+    if (pending == null) {
+      return;
+    }
+    
+    _pendingMessages = null;
+
+    pending.deliver(inbox);
+  }
+  
+  @Override
+  public void deliverPendingReplay(InboxAmp inbox)
+  {
+    PendingMessages pending = _pendingMessages;
+    
+    if (pending == null) {
+      return;
+    }
+
+    pending.deliverReplay(inbox);
+  }
+  
+  private class PendingMessages
+  {
+    private ArrayList<MessageAmp> _pendingReplay = new ArrayList<>();
+    private ArrayList<MessageAmp> _pendingMessages = new ArrayList<>();
+    private SaveResult _saveResult;
+    
+    boolean addReplay(MessageAmp msg)
+    {
+      boolean isNew = _pendingReplay.size() == 0;
+      
+      _pendingReplay.add(msg);
+      
+      return isNew;
+    }
+    
+    public void addSave(SaveResult saveResult)
+    {
+      Objects.requireNonNull(saveResult);
+
+      if (_saveResult != null && _saveResult != saveResult) {
+        System.out.println("Double pending save");
+      }
+      
+      _saveResult = saveResult;
+    }
+
+    void addMessage(MessageAmp msg)
+    {
+      _pendingMessages.add(msg);
+    }
+    
+    void deliverReplay(InboxAmp inbox)
+    {
+      ArrayList<MessageAmp> pendingMessages = new ArrayList<>(_pendingReplay);
+      _pendingReplay.clear();
+      
+      for (MessageAmp msg : pendingMessages) {
+        try {
+          msg.invoke(inbox, StubAmpBase.this);
+        } catch (Exception e) {
+          e.printStackTrace();
+          log.log(Level.WARNING, e.toString(), e);
+        }
+      }
+    }
+    
+    void deliverSave()
+    {
+      SaveResult saveResult = _saveResult;
+      
+      if (saveResult != null) {
+        _saveResult = null;
+        
+        state().onSave(StubAmpBase.this, saveResult);
+      }
+    }
+    
+    void deliver(InboxAmp inbox)
+    {
+      deliverReplay(inbox);
+      deliverSave();
+      
+      ArrayList<MessageAmp> pendingMessages = new ArrayList<>(_pendingMessages);
+      _pendingMessages.clear();
+      
+      for (MessageAmp msg : pendingMessages) {
+        //System.err.println("DPM: " + msg);
+        //Thread.dumpStack();
+        
+        try {
+          msg.invoke(inbox, StubAmpBase.this);
+        } catch (Exception e) {
+          e.printStackTrace();
+          log.log(Level.WARNING, e.toString(), e);
+        }
+      }
+      
+    }
+  }
+
+  /*
+  private static class MethodBase extends MethodAmpBase {
     public MethodBase(String methodName)
     {
     }
@@ -399,52 +636,5 @@ public class StubAmpBase implements StubAmp
                                            this, actor)));
     }
   }
-  
-  private static class LoadStateLoad implements LoadStateAmp {
-    private static final LoadStateLoad LOAD = new LoadStateLoad();
-    
-    @Override
-    public LoadStateAmp load(StubAmp actor,
-                          InboxAmp inbox,
-                          MessageAmp msg)
-    {
-      return this;
-    }
-    
-    @Override
-    public LoadStateAmp loadReplay(StubAmp actor,
-                                InboxAmp inbox,
-                                MessageAmp msg)
-    {
-      return this;
-    }
-
-    @Override
-    public void send(StubAmp actorDeliver,
-                     StubAmp actorMessage,
-                      MethodAmp method, 
-                      HeadersAmp headers,
-                      Object[] args)
-    {
-      method.send(headers, actorDeliver.worker(actorMessage), args);
-    }
-
-    @Override
-    public void query(StubAmp actorDeliver,
-                      StubAmp actorMessage,
-                      MethodAmp method, 
-                      HeadersAmp headers,
-                      Result<?> result, 
-                      Object[] args)
-    {
-      method.query(headers, result, actorDeliver.worker(actorMessage), args);
-    }
-
-    @Override
-    public void onModify(StubAmp actorAmpBase)
-    {
-      // TODO Auto-generated method stub
-      
-    }
-  }
+  */
 }

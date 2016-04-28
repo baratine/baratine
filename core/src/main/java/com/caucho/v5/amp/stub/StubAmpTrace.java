@@ -36,19 +36,18 @@ import java.util.Objects;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 
 import io.baratine.service.Result;
 
 /**
  * Trace actor for debugging.
  */
-public class StubAmpTrace implements ActorAmpState
+public class StubAmpTrace implements StubAmp
 {
   private StubAmp _delegate;
   
@@ -64,20 +63,15 @@ public class StubAmpTrace implements ActorAmpState
     return _delegate;
   }
   
-  private ActorAmpState delegateState()
+  private StubAmp delegateState()
   {
-    if (_delegate instanceof ActorAmpState) {
-      return (ActorAmpState) _delegate;
-    }
-    else {
-      return null;
-    }
+    return _delegate;
   }
   
   @Override
-  public LoadStateAmp loadState()
+  public StubStateAmp state()
   {
-    return delegate().loadState();
+    return delegate().state();
   }
   
   @Override
@@ -217,33 +211,33 @@ public class StubAmpTrace implements ActorAmpState
   }
   
   @Override
-  public LoadStateAmp load(StubAmp actorMessage, MessageAmp msg)
+  public StubStateAmp load(StubAmp actorMessage, MessageAmp msg)
   {
     return delegate().load(actorMessage, msg);
   }
   
   @Override
-  public LoadStateAmp load(MessageAmp msg)
+  public StubStateAmp load(MessageAmp msg)
   {
     return delegate().load(msg);
   }
   
   @Override
-  public LoadStateAmp load(InboxAmp inbox, MessageAmp msg)
+  public StubStateAmp load(InboxAmp inbox, MessageAmp msg)
   {
     return delegate().load(inbox, msg);
   }
   
   @Override
-  public LoadStateAmp loadReplay(InboxAmp inbox, MessageAmp msg)
+  public StubStateAmp loadReplay(InboxAmp inbox, MessageAmp msg)
   {
     return delegate().loadReplay(inbox, msg);
   }
   
   @Override
-  public void onModify()
+  public void onDelete()
   {
-    delegate().onModify();
+    delegate().onDelete();
   }
   
   @Override
@@ -336,9 +330,9 @@ public class StubAmpTrace implements ActorAmpState
   }
 
   @Override
-  public void setLoadState(LoadStateAmp state)
+  public void state(StubStateAmp state)
   {
-    delegateState().setLoadState(state);
+    delegateState().state(state);
   }
 
   @Override

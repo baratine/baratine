@@ -32,7 +32,7 @@ package com.caucho.v5.amp.message;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -81,7 +81,7 @@ public final class SendMessage_1 extends MethodMessageBase
   {
     StubAmp actorMessage = serviceRef().stub();
     
-    LoadStateAmp load = actorDeliver.load(actorMessage, this);
+    StubStateAmp load = actorDeliver.load(actorMessage, this);
     
     load.send(actorDeliver,
                actorMessage,

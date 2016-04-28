@@ -33,6 +33,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
@@ -75,14 +76,12 @@ public class QueryWithResultMessage_N<V> extends QueryWithResultMessage<V>
   {
     StubAmp stubMessage = serviceRef().stub();
 
-    // actorDeliver.load(actorService, message)
-    //             .query(actorDeliver, actorService, ...)
-    // XXX: baratine/9230
-    stubDeliver.load(stubMessage, this)
-                .query(stubDeliver, stubMessage,
-                       method(),
-                       getHeaders(),
-                       this,
-                       _args);
+    StubStateAmp state = stubDeliver.load(stubMessage, this);
+
+    state.query(stubDeliver, stubMessage,
+                method(),
+                getHeaders(),
+                this,
+                _args);
   }
 }

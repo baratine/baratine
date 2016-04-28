@@ -42,107 +42,190 @@ import io.baratine.stream.ResultStream;
 
 
 /**
- * State/dispatch for a loadable actor.
+ * State/dispatch for a stub
  */
-public interface LoadStateAmp
+public interface StubStateAmp
 {
-  LoadStateAmp load(StubAmp actor,
-                 InboxAmp inbox,
-                 MessageAmp msg);
+  //
+  // state transitions
+  //
+
+  default boolean isActive()
+  {
+    return true;
+  }
+
+  default boolean isModified()
+  {
+    return false;
+  }
+
+  default boolean isDelete()
+  {
+    return false;
+  }
   
-  default LoadStateAmp loadReplay(StubAmp actor,
+  StubStateAmp load(StubAmp stub,
+                    InboxAmp inbox,
+                    MessageAmp msg);
+  
+  /**
+   * Journal replay.
+   */
+  default StubStateAmp loadReplay(StubAmp stub,
                                InboxAmp inbox,
                                MessageAmp msg)
   {
-    throw new IllegalStateException(this + " " + actor + " " + msg);
+    throw new IllegalStateException(this + " " + stub + " " + msg);
   }
 
-  void onModify(StubAmp actorAmpBase);
-
-  default void onSave(StubAmp actor, SaveResult saveResult)
+  default void onActive(StubAmp stub, InboxAmp inbox)
   {
   }
   
-  default StubAmp getActor(StubAmp actor)
+  /**
+   * After a slow init or load, resend the pending messages that were waiting
+   * for the init or load to complete.
+   */
+  default void flushPending(StubAmp stub, InboxAmp inbox)
   {
-    return actor;
+  }
+  
+  /**
+   * Mark the stub as create.
+   */
+  default void onCreate(StubAmp stub)
+  {
+  }
+  
+  /**
+   * Mark the stub as modified.
+   */
+  default void onModify(StubAmp stub)
+  {
+  }
+  
+  /**
+   * Mark the stub as deleted.
+   */
+  default void onDelete(StubAmp stub)
+  {
   }
 
-  default void onActive(StubAmp actor, InboxAmp inbox)
+  default void onSave(StubAmp stub, SaveResult saveResult)
   {
   }
 
-  default void send(StubAmp actorDeliver,
-                    StubAmp actorMessage,
+  default boolean onSave(StubAmp stub)
+  {
+    return false;
+  }
+
+  default void onSaveComplete(StubAmp stub)
+  {
+  }
+
+
+  default void beforeBatch(StubAmp stub)
+  {
+    stub.beforeBatchImpl();
+  }
+  
+
+  default void afterBatch(StubAmp stub)
+  {
+    stub.afterBatchImpl();
+  }
+
+  default void shutdown(StubAmp stub, ShutdownModeAmp mode)
+  {
+    stub.onShutdown(mode);
+  }
+
+  /**
+   * Used by journal to return a null stub so the invocation doesn't
+   * occur twice. 
+   */
+  default StubAmp stub(StubAmp stub)
+  {
+    return stub;
+  }
+  
+  //
+  // method calls
+  //
+
+  default void send(StubAmp stubDeliver,
+                    StubAmp stubMessage,
                     MethodAmp method, 
                     HeadersAmp headers)
   {
-    method.send(headers, actorDeliver.worker(actorMessage));
+    method.send(headers, stubDeliver.worker(stubMessage));
   }
 
-  default void send(StubAmp actorDeliver,
-                    StubAmp actorMessage,
+  default void send(StubAmp stubDeliver,
+                    StubAmp stubMessage,
                     MethodAmp method, 
                     HeadersAmp headers, 
                     Object arg0)
   {
-    method.send(headers, actorDeliver.worker(actorMessage), arg0);
+    method.send(headers, stubDeliver.worker(stubMessage), arg0);
   }
 
-  default void send(StubAmp actorDeliver,
-                    StubAmp actorMessage,
+  default void send(StubAmp stubDeliver,
+                    StubAmp stubMessage,
                     MethodAmp method, 
                     HeadersAmp headers, 
                     Object arg0,
                     Object arg1)
   {
-    method.send(headers, actorDeliver.worker(actorMessage), arg0, arg1);
+    method.send(headers, stubDeliver.worker(stubMessage), arg0, arg1);
   }
 
-  default void send(StubAmp actorDeliver,
-                    StubAmp actorMessage,
+  default void send(StubAmp stubDeliver,
+                    StubAmp stubMessage,
                     MethodAmp method, 
                     HeadersAmp headers, 
                     Object arg0,
                     Object arg1,
                     Object arg2)
   {
-    method.send(headers, actorDeliver.worker(actorMessage), arg0, arg1, arg2);
+    method.send(headers, stubDeliver.worker(stubMessage), arg0, arg1, arg2);
   }
 
-  default void send(StubAmp actorDeliver,
-                    StubAmp actorMessage,
+  default void send(StubAmp stubDeliver,
+                    StubAmp stubMessage,
                     MethodAmp method, 
                     HeadersAmp headers, 
                     Object []args)
   {
-    method.send(headers, actorDeliver.worker(actorMessage), args);
+    method.send(headers, stubDeliver.worker(stubMessage), args);
   }
   
-  default void query(StubAmp actorDeliver,
-                     StubAmp actorMessage,
+  default void query(StubAmp stubDeliver,
+                     StubAmp stubMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result)
   {
     method.query(headers, result, 
-                 actorDeliver.worker(actorMessage));
+                 stubDeliver.worker(stubMessage));
   }
   
-  default void query(StubAmp actorDeliver,
-                     StubAmp actorMessage,
+  default void query(StubAmp stubDeliver,
+                     StubAmp stubMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result,
                      Object arg0)
   {
     method.query(headers, result, 
-                 actorDeliver.worker(actorMessage),
+                 stubDeliver.worker(stubMessage),
                  arg0);
   }
   
-  default void query(StubAmp actorDeliver,
-                     StubAmp actorMessage,
+  default void query(StubAmp stubDeliver,
+                     StubAmp stubMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result,
@@ -150,12 +233,12 @@ public interface LoadStateAmp
                      Object arg1)
   {
     method.query(headers, result, 
-                 actorDeliver.worker(actorMessage),
+                 stubDeliver.worker(stubMessage),
                  arg0, arg1);
   }
   
-  default void query(StubAmp actorDeliver,
-                     StubAmp actorMessage,
+  default void query(StubAmp stubDeliver,
+                     StubAmp stubMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result,
@@ -164,81 +247,81 @@ public interface LoadStateAmp
                      Object arg2)
   {
     method.query(headers, result, 
-                 actorDeliver.worker(actorMessage),
+                 stubDeliver.worker(stubMessage),
                  arg0, arg1, arg2);
   }
   
-  default void query(StubAmp actorDeliver,
-                     StubAmp actorMessage,
+  default void query(StubAmp stubDeliver,
+                     StubAmp stubMessage,
                      MethodAmp method,
                      HeadersAmp headers,
                      Result<?> result, 
                      Object[] args)
   {
     method.query(headers, result, 
-                 actorDeliver.worker(actorMessage), 
+                 stubDeliver.worker(stubMessage), 
                  args);
   }
   
-  default void stream(StubAmp actorDeliver,
-                      StubAmp actorMessage,
+  default void stream(StubAmp stubDeliver,
+                      StubAmp stubMessage,
                       MethodAmp method,
                       HeadersAmp headers,
                       ResultStream<?> result, 
                       Object[] args)
   {
     method.stream(headers, result, 
-                  actorDeliver.worker(actorMessage), 
+                  stubDeliver.worker(stubMessage), 
                   args);
   }
   
-  default void outPipe(StubAmp actorDeliver,
-                       StubAmp actorMessage,
+  default void outPipe(StubAmp stubDeliver,
+                       StubAmp stubMessage,
                        MethodAmp method,
                        HeadersAmp headers,
                        ResultPipeOut<?> result, 
                        Object[] args)
   {
     method.outPipe(headers, result, 
-                   actorDeliver.worker(actorMessage), 
+                   stubDeliver.worker(stubMessage), 
                    args);
   }
   
-  default void inPipe(StubAmp actorDeliver,
-                       StubAmp actorMessage,
+  default void inPipe(StubAmp stubDeliver,
+                       StubAmp stubMessage,
                        MethodAmp method,
                        HeadersAmp headers,
                        ResultPipeIn<?> result, 
                        Object[] args)
   {
     method.inPipe(headers, result, 
-                   actorDeliver.worker(actorMessage), 
+                   stubDeliver.worker(stubMessage), 
                    args);
   }
   
-  default void queryError(StubAmp actor,
+  default void queryError(StubAmp stub,
                           HeadersAmp headers,
                           long qid,
                           Throwable exn)
   {
-    StubAmp queryActor = getActor(actor);
+    StubAmp queryStub = stub(stub);
     
-    queryActor.queryError(headers, queryActor, qid, exn);
+    queryStub.queryError(headers, queryStub, qid, exn);
   }
 
-  default void streamCancel(StubAmp actorDeliver,
-                            StubAmp actorMessage,
+  default void streamCancel(StubAmp stubDeliver,
+                            StubAmp stubMessage,
                             HeadersAmp headers, 
                             String addressFrom, 
                             long qid)
   {
-    StubAmp queryActor = actorDeliver.worker(actorMessage);
+    StubAmp queryActor = stubDeliver.worker(stubMessage);
     
-    queryActor.streamCancel(headers, actorMessage, addressFrom, qid);
+    queryActor.streamCancel(headers, stubMessage, addressFrom, qid);
   }
 
-  default void streamResult(StubAmp actorDeliver, 
-                            StubAmp actorMessage,
+  default void streamResult(StubAmp stubDeliver, 
+                            StubAmp stubMessage,
                             HeadersAmp headers,
                             long qid,
                             int sequence,
@@ -246,44 +329,9 @@ public interface LoadStateAmp
                             Throwable exn,
                             boolean isComplete)
   {
-    StubAmp queryActor = actorDeliver.worker(actorMessage);
+    StubAmp queryActor = stubDeliver.worker(stubMessage);
     
-    queryActor.streamReply(headers, actorMessage, qid, sequence,
+    queryActor.streamReply(headers, stubMessage, qid, sequence,
                            values, exn, isComplete);
-  }
-
-  default void flushPending(StubAmp actorBean, InboxAmp serviceRef)
-  {
-  }
-
-  default boolean onSave(StubAmp actor)
-  {
-    return false;
-  }
-
-  default void beforeBatch(ActorAmpState actor)
-  {
-    actor.beforeBatchImpl();
-  }
-  
-
-  default void afterBatch(ActorAmpState actor)
-  {
-    actor.afterBatchImpl();
-  }
-
-  default void shutdown(StubAmp actor, ShutdownModeAmp mode)
-  {
-    actor.onShutdown(mode);
-  }
-
-  default boolean isActive()
-  {
-    return false;
-  }
-
-  default boolean isModified()
-  {
-    return false;
   }
 }

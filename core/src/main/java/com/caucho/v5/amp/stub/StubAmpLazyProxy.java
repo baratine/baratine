@@ -29,21 +29,20 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.service.ServiceRefLazy;
-import com.caucho.v5.amp.spi.ActorAmpState;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.util.L10N;
 
+import io.baratine.service.Result;
+
 /**
  * Null actor
  */
-public class StubAmpLazyProxy extends StubAmpBase implements ActorAmpState
+public class StubAmpLazyProxy extends StubAmpBase implements StubAmp
 {
   private static final L10N L = new L10N(StubAmpLazyProxy.class);
   private static final Logger log = Logger.getLogger(StubAmpLazyProxy.class.getName());

@@ -67,7 +67,7 @@ public class VaultDriverBase<ID,T>
   private static final Logger log
     = Logger.getLogger(VaultDriverBase.class.getName());
 
-  private ServicesAmp _ampManager;
+  private ServicesAmp _services;
   private Class<ID> _idClass;
   private Class<T> _assetClass;
   private String _address;
@@ -87,7 +87,7 @@ public class VaultDriverBase<ID,T>
     Objects.requireNonNull(assetClass);
     Objects.requireNonNull(idClass);
 
-    _ampManager = ampManager;
+    _services = ampManager;
     _assetClass = assetClass;
     _idClass = idClass;
     
@@ -249,7 +249,7 @@ public class VaultDriverBase<ID,T>
       //targetMethod.setAccessible(true);
       //MethodHandle targetHandle = MethodHandles.lookup().unreflect(targetMethod);
     
-      return new MethodVaultCreate<S>(_ampManager, idGen, targetMethod);
+      return new MethodVaultCreate<S>(_services, idGen, targetMethod);
     } catch (Exception e) {
       e.printStackTrace();;
       throw new IllegalStateException(e);
@@ -264,7 +264,7 @@ public class VaultDriverBase<ID,T>
       Class<?> []params = vaultMethod.getParameterTypes();
       
       if (params.length != 2) {
-        throw new ConfigException(L.l("'{0}' is an invalid vault create.",
+        throw new ConfigException(L.l("'{0}' is an invalid vault create because it does not have two arguments.",
                                       vaultMethod));
       }
       
@@ -276,13 +276,15 @@ public class VaultDriverBase<ID,T>
       MethodAmp methodAmp;
    
       if (valueRef.rawClass().equals(_idField.field().getType())) {
-        methodAmp = new MethodAmpCreateDTO<>(transfer, _idField, _stateField);
+        methodAmp = new MethodAmpCreateDTO<>(vaultMethod.getName(),
+            transfer, _idField, _stateField);
       }
       else {
-        methodAmp = new MethodAmpCreateDTO<>(transfer, null, _stateField);
+        methodAmp = new MethodAmpCreateDTO<>(vaultMethod.getName(),
+            transfer, null, _stateField);
       }
     
-      return new MethodVaultCreateDTO<S>(_ampManager, idGen, 
+      return new MethodVaultCreateDTO<S>(_services, idGen, 
                                         vaultMethod,
                                         methodAmp);
     } catch (Exception e) {
@@ -299,7 +301,7 @@ public class VaultDriverBase<ID,T>
       //targetMethod.setAccessible(true);
       //MethodHandle targetHandle = MethodHandles.lookup().unreflect(targetMethod);
 
-      return new MethodVaultDelete<S>(_ampManager, targetMethod);
+      return new MethodVaultDelete<S>(_services, targetMethod);
     } catch (Exception e) {
       e.printStackTrace();;
       throw new IllegalStateException(e);
@@ -322,13 +324,13 @@ public class VaultDriverBase<ID,T>
       MethodAmp methodAmp;
    
       if (valueRef.rawClass().equals(_idField.field().getType())) {
-        methodAmp = new MethodAmpDeleteDTO<>(_idField, _stateField);
+        methodAmp = new MethodAssetDeleteDTO<>(_idField, _stateField);
       }
       else {
-        methodAmp = new MethodAmpDeleteDTO<>(null, _stateField);
+        methodAmp = new MethodAssetDeleteDTO<>(null, _stateField);
       }
     
-      return new MethodVaultDeleteDTO<S>(_ampManager,
+      return new MethodVaultDeleteDTO<S>(_services,
                                         vaultMethod,
                                         methodAmp);
     } catch (Exception e) {
@@ -503,20 +505,29 @@ public class VaultDriverBase<ID,T>
 
   private class MethodAmpCreateDTO<S> extends MethodAmpBase
   {
+    private String _name;
     private ShimConverter<T,S> _transfer;
     private FieldBean<T> _idField;
     private FieldBean<T> _stateField;
     
-    MethodAmpCreateDTO(ShimConverter<T,S> transfer,
+    MethodAmpCreateDTO(String name,
+                       ShimConverter<T,S> transfer,
                        FieldBean<T> idField,
                        FieldBean<T> stateField)
     {
       Objects.requireNonNull(transfer);
       Objects.requireNonNull(stateField);
       
+      _name = name;
       _transfer = transfer;
       _idField = idField;
       _stateField = stateField;
+    }
+    
+    @Override
+    public String name()
+    {
+      return _name;
     }
     
     @Override
@@ -539,6 +550,7 @@ public class VaultDriverBase<ID,T>
         _stateField.setObject(asset, state.create());
       }
       
+      stub.onCreate();
       stub.onModify();
       
       if (_idField != null) {
@@ -583,7 +595,6 @@ public class VaultDriverBase<ID,T>
     @Override
     public void invoke(Result<S> result, Object[] args)
     {
-      System.out.println("DEL: " + this);
       String id = String.valueOf(args[0]);
 
       ServiceRefAmp childRef = _services.service(_prefix + id);
@@ -628,7 +639,6 @@ public class VaultDriverBase<ID,T>
     public void invoke(Result<S> result, Object[] args)
     {
       String id = String.valueOf(args[0]);
-      System.out.println("ID: " + id + " " + args[0]);
 
       ServiceRefAmp childRef = _services.service(_prefix + id);
 
@@ -651,13 +661,13 @@ public class VaultDriverBase<ID,T>
     }
   }
 
-  private class MethodAmpDeleteDTO<S> extends MethodAmpBase
+  private class MethodAssetDeleteDTO<S> extends MethodAmpBase
   {
     private FieldBean<T> _idField;
     private FieldBean<T> _stateField;
     
-    MethodAmpDeleteDTO(FieldBean<T> idField,
-                       FieldBean<T> stateField)
+    MethodAssetDeleteDTO(FieldBean<T> idField,
+                         FieldBean<T> stateField)
     {
       Objects.requireNonNull(stateField);
       
@@ -677,14 +687,11 @@ public class VaultDriverBase<ID,T>
 
       StateAsset state = (StateAsset) _stateField.getObject(asset);
       
-      System.out.println("DEL0: " + state);
-
-      
       if (state != null) {
         _stateField.setObject(asset, state.delete());
       }
       
-      stub.onModify();
+      stub.onDelete();
       
       if (_idField != null) {
         ((Result) result).ok(_idField.getObject(asset));

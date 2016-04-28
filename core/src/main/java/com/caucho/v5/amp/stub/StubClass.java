@@ -61,6 +61,7 @@ import io.baratine.service.BeforeBatch;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Modify;
 import io.baratine.service.OnActive;
+import io.baratine.service.OnDelete;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.OnLoad;
@@ -75,6 +76,7 @@ import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
 import io.baratine.stream.ResultStreamBuilder;
+import io.baratine.vault.AutoCreate;
 
 /**
  * Stub for a bean's class.
@@ -102,6 +104,7 @@ public class StubClass
   private final Class<?> _api;
   
   private boolean _isPublic;
+  private boolean _isAutoCreate;
   
   private MethodAmp _onInit;
   private MethodAmp _onActive;
@@ -109,6 +112,7 @@ public class StubClass
 
   private MethodAmp _onLoad;
   private MethodAmp _onSave;
+  private MethodAmp _onDelete;
   
   private MethodAmp _onLookup;
   
@@ -154,6 +158,8 @@ public class StubClass
   {
     try {
       addMethods(_type);
+      
+      _isAutoCreate = _type.isAnnotationPresent(AutoCreate.class);
     } catch (RuntimeException e) {
       throw e;
     } catch (Exception e) {
@@ -164,6 +170,11 @@ public class StubClass
   public boolean isPublic()
   {
     return _isPublic;
+  }
+
+  public boolean isAutoCreate()
+  {
+    return _isAutoCreate;
   }
   
   protected boolean isLocalPodNode()
@@ -192,6 +203,9 @@ public class StubClass
     else if (OnSave.class.equals(type)) {
       return _onSave != null;
     }
+    else if (OnDelete.class.equals(type)) {
+      return _onDelete != null;
+    }
     else {
       return false;
     }
@@ -217,6 +231,14 @@ public class StubClass
     Objects.requireNonNull(onSave);
     
     _onSave = onSave;
+    _isLifecycleAware = true;
+  }
+  
+  protected void onDelete(MethodAmp onDelete)
+  {
+    Objects.requireNonNull(onDelete);
+    
+    _onDelete = onDelete;
     _isLifecycleAware = true;
   }
   
@@ -269,6 +291,14 @@ public class StubClass
         }
         
         _onSave = createMethod(method);
+        _isLifecycleAware = true;
+      }
+      else if (method.isAnnotationPresent(OnDelete.class)) {
+        if (! isLocalPodNode()) {
+          continue;
+        }
+        
+        _onDelete = createMethod(method);
         _isLifecycleAware = true;
       }
       else if (method.isAnnotationPresent(OnLoad.class)) {
@@ -506,8 +536,10 @@ public class StubClass
   {
     MethodAmp methodAmp = createMethodBase(method);
     
-    if (method.isAnnotationPresent(Modify.class)) {
-
+    if (method.getName().startsWith("delete")) {
+      methodAmp = new FilterMethodDelete(methodAmp);
+    }
+    else if (method.isAnnotationPresent(Modify.class)) {
       methodAmp = new FilterMethodModify(methodAmp);
     }
     
@@ -773,19 +805,27 @@ public class StubClass
   }
   */
   
-  public void checkpointStart(StubAmp bean, Result<Boolean> result)
+  public void checkpointStart(StubAmp stub, Result<Boolean> result)
   {
     try {
+      MethodAmp onDelete = _onDelete;
       MethodAmp onSave = _onSave;
       
-      if (onSave != null) {
+      if (stub.state().isDelete() && onDelete != null) {
+        onDelete.query(HeadersNull.NULL, result, stub);
+      }
+      else if (onSave != null) {
         //QueryRefAmp queryRef = new QueryRefChainAmpCompletion(result);
         
-        onSave.query(HeadersNull.NULL, result, bean);
+        onSave.query(HeadersNull.NULL, result, stub);
       }
       else {
         result.ok(true);
       }
+      
+      stub.state().onSaveComplete(stub);
+      
+      //stub.onSaveEnd(true);
     } catch (Throwable e) {
       e.printStackTrace();
       result.fail(e);

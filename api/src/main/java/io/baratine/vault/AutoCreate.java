@@ -24,37 +24,18 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.amp.spi;
+package io.baratine.vault;
 
-import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.SaveResult;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import io.baratine.service.Result;
-
-
-/**
- * An AMP Actor sends and receives messages as the core class in a
- * service-oriented architecture.
- *
- * <h2>Core API</h2>
- *
- * Each actor has a unique address, which is the address for messages sent to
- * the actor.  addresses are typically URLs.
- *
- */
-public interface ActorAmpState extends StubAmp
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface AutoCreate
 {
-  boolean isJournalReplay();
-  void queuePendingReplayMessage(MessageAmp msg);
-  void queuePendingMessage(MessageAmp msg);
-  void setLoadState(LoadStateAmp state);
-  void deliverPendingMessages(InboxAmp inbox);
-  void deliverPendingReplay(InboxAmp inbox);
-  boolean onSaveStartImpl(Result<Boolean> addBean);
-  void onLoad(Result<? super Boolean> result);
-  void afterBatchImpl();
-  void onSaveChildren(SaveResult saveResult);
 }

@@ -36,7 +36,7 @@ import java.util.Objects;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -45,7 +45,7 @@ import com.caucho.v5.amp.stub.StubAmp;
 /**
  * State/dispatch for a loadable actor.
  */
-public class LoadStateJournal implements LoadStateAmp
+public class LoadStateJournal implements StubStateAmp
 {
   private StubJournal _journalActor;
   
@@ -57,7 +57,7 @@ public class LoadStateJournal implements LoadStateAmp
   }
   
   @Override
-  public LoadStateAmp load(StubAmp actor,
+  public StubStateAmp load(StubAmp actor,
                         InboxAmp inbox,
                         MessageAmp msg)
   {

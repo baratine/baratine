@@ -76,7 +76,7 @@ public class StubAmpBeanChild extends StubAmpBean
   {
     StubContainerAmp container = getContainer();
     
-    if (loadState().isModified()) {
+    if (state().isModified()) {
       container.onLruModified(serviceRef);
     }
   }

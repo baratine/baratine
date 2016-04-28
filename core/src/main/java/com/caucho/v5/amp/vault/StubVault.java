@@ -47,7 +47,6 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpBean;
-import com.caucho.v5.amp.stub.StubAmpBeanBase;
 import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.convert.ConvertException;
 import com.caucho.v5.util.L10N;
@@ -295,7 +294,7 @@ public class StubVault extends StubClass
     @Override
     public void query(HeadersAmp headers,
                       ResultChain<?> result,
-                      StubAmp actor,
+                      StubAmp stub,
                       Object arg1)
     {
       Object entity = _provider.get();
@@ -315,8 +314,8 @@ public class StubVault extends StubClass
         }
       }
 
-      StubAmpBeanBase actorBean = (StubAmpBeanBase) actor;
-      StubContainerAmp container = actorBean.getContainer();
+      StubAmpBean stubBean = (StubAmpBean) stub;
+      StubContainerAmp container = stubBean.getContainer();
 
       StubAmp actorChild = new StubAmpBean(_skelEntity,
                                              entity,

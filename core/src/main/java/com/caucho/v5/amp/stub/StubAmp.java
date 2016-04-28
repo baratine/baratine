@@ -37,7 +37,7 @@ import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
@@ -70,6 +70,11 @@ public interface StubAmp
   //void consume(ServiceRef consumer);
   //void subscribe(ServiceRef consumer);
   //void unsubscribe(ServiceRef consumer);
+
+  default boolean isAutoCreate()
+  {
+    return true;
+  }
 
   /**
    * Returns an stub method.
@@ -219,7 +224,18 @@ public interface StubAmp
               Result<Boolean> result);
   
   void onActive(Result<? super Boolean> result);
-  void onModify();
+  
+  default void onCreate()
+  {
+  }
+  
+  default void onDelete()
+  {
+  }
+  
+  default void onModify()
+  {
+  }
   
   boolean onSave(Result<Boolean> result);
   void onSaveEnd(boolean isValid);
@@ -228,11 +244,11 @@ public interface StubAmp
 
   StubAmp worker(StubAmp stubMessage);
 
-  LoadStateAmp load(StubAmp stubMessage, MessageAmp msg);
-  LoadStateAmp load(MessageAmp msg);
-  LoadStateAmp load(InboxAmp inbox, MessageAmp msg);
-  LoadStateAmp loadReplay(InboxAmp inbox, MessageAmp msg);
-  LoadStateAmp loadState();
+  StubStateAmp load(StubAmp stubMessage, MessageAmp msg);
+  StubStateAmp load(MessageAmp msg);
+  StubStateAmp load(InboxAmp inbox, MessageAmp msg);
+  StubStateAmp loadReplay(InboxAmp inbox, MessageAmp msg);
+  StubStateAmp state();
 
   default void onLru(ServiceRefAmp serviceRef)
   {
@@ -255,5 +271,51 @@ public interface StubAmp
     return this;
   }
 */
-
+  
+  //
+  // state methods
+  //
+  
+  default boolean isJournalReplay()
+  {
+    return false;
+  }
+  
+  default void queuePendingReplayMessage(MessageAmp msg)
+  {
+  }
+  
+  default void queuePendingMessage(MessageAmp msg)
+  {
+  }
+  
+  default void state(StubStateAmp state)
+  {
+  }
+  
+  default void deliverPendingMessages(InboxAmp inbox)
+  {
+  }
+  
+  default void deliverPendingReplay(InboxAmp inbox)
+  {
+  }
+  
+  default boolean onSaveStartImpl(Result<Boolean> addBean)
+  {
+    return false;
+  }
+  
+  default void onLoad(Result<? super Boolean> result)
+  {
+  }
+  
+  default void afterBatchImpl()
+  {
+  }
+  
+  default void onSaveChildren(SaveResult saveResult)
+  {
+    
+  }
 }

@@ -34,7 +34,7 @@ import java.util.Objects;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.message.OnSaveRequestMessage;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
@@ -75,7 +75,7 @@ public final class StubJournal extends StubAmpBase
   }
   
   @Override
-  public LoadStateAmp loadState()
+  public StubStateAmp state()
   {
     return _loadState;
   }
@@ -95,15 +95,15 @@ public final class StubJournal extends StubAmpBase
   */
   
   @Override
-  public LoadStateAmp load(StubAmp actorMessage, MessageAmp msg)
+  public StubStateAmp load(StubAmp actorMessage, MessageAmp msg)
   {
-    return loadState();
+    return state();
   }
   
   @Override
-  public LoadStateAmp load(MessageAmp msg)
+  public StubStateAmp load(MessageAmp msg)
   {
-    return loadState();
+    return state();
   }
   
   public void setInbox(InboxAmp inbox)

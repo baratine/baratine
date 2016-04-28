@@ -33,9 +33,8 @@ import java.lang.reflect.AnnotatedType;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.spi.LoadStateAmp;
-import com.caucho.v5.amp.spi.LoadStateLoadBase;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 
 /**
  * amp disruptor method
@@ -48,13 +47,13 @@ public class StubAmpJournal extends StubAmpBase
   private final String _path;
   
   public StubAmpJournal(StubClass stubClass,
-                 JournalAmp journal,
-                 StubAmp actorMain,
-                 String path)
+                        JournalAmp journal,
+                        StubAmp stubMain,
+                        String path)
   {
     _stubClass = stubClass;
     _journal = journal;
-    _stubMain = actorMain;
+    _stubMain = stubMain;
     _path = path;
   }
   
@@ -83,23 +82,23 @@ public class StubAmpJournal extends StubAmpBase
   }
   
   @Override
-  public LoadStateAmp load(MessageAmp msg)
+  public StubStateAmp load(MessageAmp msg)
   {
     // return _actor.load(msg, actor);
-    StubAmp actorMain = _stubMain;
+    StubAmp stubMain = _stubMain;
     
-    if (actorMain != null) {
+    if (stubMain != null) {
       return _stubMain.load(msg);
     }
     else {
-      return LoadStateLoadBase.LOAD;
+      return StubStateAmpNull.STATE;
     }
   }
 
   @Override
-  public void onModify()
+  public void onDelete()
   {
-    _stubMain.onModify();
+    _stubMain.onDelete();
   }
 
   /*

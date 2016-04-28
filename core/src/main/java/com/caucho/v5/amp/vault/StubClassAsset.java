@@ -44,6 +44,7 @@ import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubClass;
 
+import io.baratine.service.OnDelete;
 import io.baratine.service.OnLoad;
 import io.baratine.service.OnSave;
 import io.baratine.service.Result;
@@ -102,6 +103,10 @@ public class StubClassAsset extends StubClass
       
       if (! isImplemented(OnSave.class)) {
         onSave(new MethodOnSave(idGetter, driver));
+      }
+      
+      if (! isImplemented(OnDelete.class)) {
+        onDelete(new MethodOnDelete(idGetter, driver));
       }
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
@@ -207,6 +212,43 @@ public class StubClassAsset extends StubClass
         Serializable id = (Serializable) _idGetter.invoke(bean);
         
         ((VaultDriver) _driver).save(id, bean, Result.ignore());
+        
+        result.ok(null);
+      } catch (Throwable e) {
+        result.fail(e);
+      }
+    }
+  }
+  
+  private static class MethodOnDelete extends MethodAmpBase
+  {
+    private MethodHandle _idGetter;
+    private VaultDriver<?,?> _driver;
+    
+    MethodOnDelete(MethodHandle idGetter,
+                   VaultDriver<?,?> driver)
+    {
+      _idGetter = idGetter;
+      _driver = driver;
+    }
+    
+    @Override
+    public String name()
+    {
+      return "@OnDelete";
+    }
+    
+    @Override
+    public void query(HeadersAmp headers,
+                      ResultChain<?> result,
+                      StubAmp stub)
+    {
+      Object bean = stub.bean();
+    
+      try {
+        Serializable id = (Serializable) _idGetter.invoke(bean);
+        
+        ((VaultDriver) _driver).delete(id, bean, Result.ignore());
         
         result.ok(null);
       } catch (Throwable e) {
