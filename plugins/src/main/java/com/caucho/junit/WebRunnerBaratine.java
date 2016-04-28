@@ -258,7 +258,7 @@ public class WebRunnerBaratine extends BaseRunner
         Class type = types[i];
 
         if (HttpClient.class.equals(type)) {
-          args[i] = new HttpClient(httpUrl());
+          args[i] = new HttpClient(httpPort());
         }
         else {
           throw new IllegalArgumentException(L.l("type {0} is not supported",

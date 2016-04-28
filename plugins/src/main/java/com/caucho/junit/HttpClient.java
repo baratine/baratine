@@ -29,149 +29,597 @@
 
 package com.caucho.junit;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.SocketBar;
+import com.caucho.v5.io.SocketSystem;
+import com.caucho.v5.io.SocketSystem.SocketBarBuilder;
+import com.caucho.v5.io.VfsStream;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.util.L10N;
 
-public class HttpClient
+public class HttpClient implements AutoCloseable
 {
-  private String _url;
+  private static final Logger log
+    = Logger.getLogger(HttpClient.class.getName());
 
-  public HttpClient(String url)
+  private static final L10N L = new L10N(HttpClient.class);
+
+  private SocketSystem _system;
+
+  private String _addressRemote;
+  private int _port;
+  private InetSocketAddress _inetRemote;
+
+  private String _addressLocal;
+  private int _portLocal;
+  private InetSocketAddress _inetLocal;
+
+  private WriteStream _out;
+
+  private SocketBar _socket;
+
+  private boolean _isSsl;
+
+  private String[] _sslProtocols;
+
+  public HttpClient(int port)
   {
-    _url = url;
+    _system = SocketSystem.current();
+
+    Objects.requireNonNull(_system);
+
+    port(port);
+    ipRemote("127.0.0.1");
+
+    portLocal(10010);
+    ipLocal("127.0.0.1");
+
+    _socket = _system.createSocket();
+
+    _out = new WriteStream();
+    _out.reuseBuffer(true);
   }
 
-  public Response get()
+  public void port(int port)
   {
-    return get(null);
+    if (port > 0) {
+      _port = port;
+    }
+
+    fillAddressRemote();
   }
 
-  public Response get(String path)
+  public void portLocal(int port)
   {
-    HttpURLConnection conn = null;
+    _portLocal = port;
+
+    fillAddressLocal();
+  }
+
+  public void ipRemote(String ip)
+  {
+    _addressRemote = ip;
+
+    fillAddressRemote();
+  }
+
+  public void ipLocal(String ip)
+  {
+    _addressLocal = ip;
+
+    fillAddressLocal();
+  }
+
+  private void fillAddressRemote()
+  {
     try {
-      String url = _url;
-
-      if (path != null && path.length() > 0) {
-        url += path;
+      if (_port > 0 && _addressRemote != null) {
+        _inetRemote = new InetSocketAddress(_addressRemote, _port);
       }
-
-      conn = (HttpURLConnection) new URL(url).openConnection();
-      conn.setConnectTimeout(10);
-      conn.setReadTimeout(100);
-
-      return new Response(conn);
-    } catch (IOException e) {
+      else {
+        _inetRemote = null;
+      }
+    } catch (Exception e) {
       throw new RuntimeException(e);
-    } finally {
-      if (conn != null)
-        conn.disconnect();
     }
   }
 
-  public Response post(String path, Object object)
+  private void fillAddressLocal()
   {
-    HttpURLConnection conn = null;
-
     try {
-      String url = _url;
+      if (_portLocal > 0 && _addressLocal != null) {
+        _inetLocal = new InetSocketAddress(_addressLocal, _portLocal);
+      }
+      else {
+        _inetLocal = null;
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-      if (path != null && path.length() > 0) {
-        url += path;
+  public void setSecure(boolean isSecure)
+  {
+    //_conn.setSecure(isSecure);
+  }
+
+  public void ssl(boolean isSsl)
+  {
+    _isSsl = isSsl;
+  }
+
+  public void sslProtocol(String... protocols)
+  {
+    _sslProtocols = protocols;
+  }
+
+  public void timeout(int timeout)
+    throws IOException
+  {
+    _socket.setSoTimeout(timeout);
+  }
+
+  public Response request(String input, byte[] data) throws IOException
+  {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+    _out.init(new VfsStream(os));
+
+    request(input, data, _out);
+
+    _out.close();
+
+/*
+    FileOutputStream f = new FileOutputStream("/tmp/junk.dat");
+    f.write(os.toByteArray());
+
+    f.close();
+*/
+
+    return new Response(new ByteArrayInputStream(os.toByteArray()));
+  }
+
+  public void requestToNull(String input) throws Exception
+  {
+    _out.init(new VfsStream());
+
+    request(input, null, _out);
+
+    _out.close();
+  }
+
+  public String requestEnc(String input) throws Exception
+  {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+    _out.init(new VfsStream(os));
+
+    request(input, null, _out);
+
+    _out.close();
+
+    byte[] values = os.toByteArray();
+
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < values.length; i++) {
+      int ch = values[i] & 0xff;
+
+      if (ch == '\n' || ch == '\r') {
+        sb.append((char) ch);
+      }
+      else if (ch < 0x20 || ch >= 0x7f) {
+        sb.append("\\x").append(Integer.toHexString((ch >> 4) & 0xf))
+          .append(Integer.toHexString(ch & 0xf));
+      }
+      else {
+        sb.append((char) ch);
+      }
+    }
+
+    return sb.toString();
+  }
+
+  public void request(String input, byte[] data, WriteStream out)
+    throws IOException
+  {
+    SocketBarBuilder socketBuilder = _system.connect();
+
+    socketBuilder.socket(_socket);
+
+    socketBuilder.address(_inetRemote);
+
+    if (_inetLocal != null) {
+      socketBuilder.addressLocal(_inetLocal);
+    }
+    //socketBuilder.port(_port);
+    //socketBuilder.portLocal(_portLocal);
+
+    if (_isSsl) {
+      socketBuilder.ssl(true);
+
+      if (_sslProtocols != null) {
+        socketBuilder.sslProtocols(_sslProtocols);
+      }
+    }
+
+    try (SocketBar socket = socketBuilder.get()) {
+      socket.setSoTimeout(2000);
+
+      try (ReadStream sIn = socket.getInputStream()) {
+        try (WriteStream sOut = socket.getOutputStream()) {
+          sOut.print(input);
+
+          if (data != null)
+            sOut.write(data);
+        }
+
+        out.writeStream(sIn);
+      }
+    } catch (Exception e) {
+      log.log(Level.WARNING, e.toString(), e);
+
+      out.println("\n" + e.toString());
+    }
+  }
+
+  public void postMultipart(String url, Map<String,String> map)
+    throws Exception
+  {
+    String boundaryStr = "-----boundary0";
+
+    StringBuilder sb = new StringBuilder();
+
+    map.forEach((k, v) -> {
+      sb.append(boundaryStr + "\r");
+
+      sb.append("Content-Disposition: form-data; name=\"" + k + "\"\r");
+      sb.append("\r");
+      sb.append(v);
+      sb.append("\r");
+    });
+
+    String request = "POST "
+                     + url
+                     + " HTTP/1.0\r"
+                     + "Content-Type: multipart/form-data; boundary="
+                     + boundaryStr
+                     + "\r"
+                     + "Content-Length: "
+                     + sb.length()
+                     + "\r"
+                     + "\r"
+                     + sb;
+
+    request(request, null);
+  }
+
+  public Request post(String url)
+  {
+    return new Request(this).method("POST").url(url);
+  }
+
+  public Request get(String url)
+  {
+    return new Request(this).method("GET").url(url);
+  }
+
+  public void close()
+  {
+  }
+
+  public void handleExit(Object o)
+  {
+    close();
+  }
+
+  public static class Request
+  {
+    private HttpClient _tcp;
+    private String _method;
+    private String _host = "localhost";
+    private String _url;
+    private byte[] _body;
+    private String _type;
+
+    private LinkedHashMap<String,String> _headers
+      = new LinkedHashMap<>();
+
+    private LinkedHashMap<String,String> _cookies
+      = new LinkedHashMap<>();
+
+    Request(HttpClient tcp)
+    {
+      _tcp = tcp;
+    }
+
+    public Request method(String method)
+    {
+      Objects.requireNonNull(method);
+
+      _method = method;
+
+      return this;
+    }
+
+    public Request url(String url)
+    {
+      Objects.requireNonNull(url);
+
+      _url = url;
+
+      return this;
+    }
+
+    public Request type(String type)
+    {
+      Objects.requireNonNull(type);
+
+      _type = type;
+
+      return this;
+    }
+
+    public Request body(String body)
+    {
+      Objects.requireNonNull(body);
+
+      _body = body.getBytes();
+
+      return this;
+    }
+
+    public void body(Object bean)
+    {
+      Objects.requireNonNull(bean);
+
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+      try (
+        OutputStreamWriter writer = new OutputStreamWriter(buffer);
+        JsonWriter jsonWriter = new JsonWriter(writer)) {
+        jsonWriter.write(bean);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
 
-      conn = (HttpURLConnection) new URL(url).openConnection();
-      conn.setConnectTimeout(100);
-      conn.setReadTimeout(1000);
+      _body = buffer.toByteArray();
 
-      conn.setDoOutput(true);
-      conn.setRequestMethod("POST");
-      conn.setRequestProperty("Content-Type", "application/json");
+      _type = "application/json";
+    }
 
-      OutputStreamWriter out
-        = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+    public Request header(String key, String value)
+    {
+      Objects.requireNonNull(key);
+      Objects.requireNonNull(value);
 
-      JsonWriter writer = new JsonWriter(out);
+      _headers.put(key, value);
 
-      writer.write(object);
+      return this;
+    }
 
-      writer.close();
+    public Request cookie(String key, String value)
+    {
+      Objects.requireNonNull(key);
+      Objects.requireNonNull(value);
 
-      out.flush();
+      _cookies.put(key, value);
 
-      return new Response(conn);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    } finally {
-      if (conn != null)
-        conn.disconnect();
+      return this;
+    }
+
+    public Request session(String value)
+    {
+      Objects.requireNonNull(value);
+
+      _cookies.put("JSESSIONID", value);
+
+      return this;
+    }
+
+    public Response go() throws IOException
+    {
+      StringBuilder sb = new StringBuilder();
+
+      sb.append(_method);
+      sb.append(" ").append(_url);
+      sb.append(" HTTP/1.1\r\n");
+
+      sb.append("Host: " + _host + "\r\n");
+
+      if (_type != null) {
+        sb.append("Content-Type: " + _type + "\r\n");
+      }
+
+      for (Map.Entry<String,String> entry : _headers.entrySet()) {
+        sb.append(entry.getKey() + ": " + entry.getValue() + "\r\n");
+      }
+
+      if (_body != null) {
+        sb.append("Content-Length: " + _body.length + "\r\n");
+      }
+
+      if (_cookies.size() > 0) {
+        sb.append("Cookie:");
+
+        for (Map.Entry<String,String> entry : _cookies.entrySet()) {
+          sb.append(" " + entry.getKey() + "=" + entry.getValue());
+        }
+
+        sb.append("\r\n");
+      }
+
+      sb.append("\r\n");
+
+      return _tcp.request(sb.toString(), _body);
     }
   }
 
   public static class Response
   {
-    private final HttpURLConnection _conn;
+    private InputStream _in;
+    private int _status;
 
-    public Response(HttpURLConnection conn) throws IOException
+    private Map<String,String> _headers;
+
+    public Response(InputStream in)
     {
-      _conn = conn;
+      _in = in;
     }
 
-    public int getResponseCode()
+    public int status()
+    {
+      if (_headers == null)
+        parseHead();
+
+      return _status;
+    }
+
+    public Map<String,String> headers()
+    {
+      if (_headers == null)
+        parseHead();
+
+      return _headers;
+    }
+
+    private void parseHead()
     {
       try {
-        return _conn.getResponseCode();
+        parseStatusLine();
+
+        parseHeaders();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
 
-    public String getResponseMessage()
+    private void parseHeaders() throws IOException
     {
-      try {
-        return _conn.getResponseMessage();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+      if (_headers != null)
+        throw new IllegalStateException();
+
+      _headers = new HashMap<>();
+
+      int i;
+
+      while ((i = _in.read()) != '\r' && i > -1) {
+        StringBuilder key = new StringBuilder();
+        StringBuilder value = new StringBuilder();
+        StringBuilder current = key;
+
+        boolean isKey = true;
+        for (; i != '\n' && i > -1; i = _in.read()) {
+          switch (i) {
+          case ':': {
+            if (isKey) {
+              isKey = false;
+              current = value;
+              if ((i = _in.read()) != ' ')
+                current.append((char) i);
+            }
+            break;
+          }
+          case '\r':
+            break;
+          default: {
+            current.append((char) i);
+          }
+          }
+        }
+
+        _headers.put(key.toString(), value.toString());
       }
+      if ((i = _in.read()) != '\n')
+        throw new IllegalStateException(L.l(
+          "expected 0x0a but encountered {0}",
+          String.format("0x%02x", i)));
     }
 
-    public long getContentLength()
+    private void parseStatusLine() throws IOException
     {
-      return _conn.getContentLengthLong();
+      int i;
+      //skip protocol
+      for (i = _in.read(); i != ' '; i = _in.read()) ;
+
+      int status = 0;
+      for (i = _in.read(); i != ' '; i = _in.read()) {
+        status = status * 10 + (i - '0');
+      }
+
+      //skip message
+      for (i = _in.read(); i != '\n'; i = _in.read()) ;
+
+      _status = status;
     }
 
-    public String getContentType()
+    private InputStream getInputStream()
     {
-      return _conn.getContentType();
+      return _in;
     }
 
-    public String getHeaderField(String name)
-    {
-      return _conn.getHeaderField(name);
-    }
-
-    public Map readMap()
+    public Map readMap() throws IOException
     {
       return readObject(Map.class);
     }
 
-    public <T> T readObject(Class<T> type)
+    public <T> T readObject(Class<T> type) throws IOException
     {
-      try {
-        JsonReader reader
-          = new JsonReader(new InputStreamReader(_conn.getInputStream()));
+      if (_headers == null)
+        parseHeaders();
 
-        return (T) reader.readObject(type);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      JsonReader reader
+        = new JsonReader(new InputStreamReader(getInputStream()));
+
+      return (T) reader.readObject(type);
     }
+
+    public String body() throws IOException
+    {
+      if (_headers == null)
+        parseHeaders();
+
+      StringBuilder builder = new StringBuilder();
+
+      for (int i = _in.read(); i > -1; i = _in.read()) {
+        builder.append((char) i);
+      }
+
+      return builder.toString();
+    }
+  }
+
+  public static void main(String[] args) throws IOException
+  {
+    FileInputStream in = new FileInputStream("/tmp/junk.dat");
+
+    Response r = new Response(in);
+
+    System.out.println("HttpClient2.main " + r.status());
+
+    System.out.println("HttpClient2.main " + r.headers());
+
+    System.out.println("HttpClient2.main " + r.body());
+
+    int i = '\n';
+
+    System.out.println("HttpClient.main " + String.format("0x%02x", i));
   }
 }

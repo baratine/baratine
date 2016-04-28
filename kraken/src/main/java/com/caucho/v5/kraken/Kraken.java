@@ -38,11 +38,16 @@ import com.caucho.v5.kraken.table.KrakenBuilderImpl;
  */
 public interface Kraken
 {
-  public static KrakenBuilder newDatabase()
+  static KrakenBuilder newDatabase()
   {
     return new KrakenBuilderImpl();
   }
-  
+
   DatabaseKraken database();
+
   DatabaseKrakenSync databaseSync();
+
+  void start();
+
+  void close();
 }
