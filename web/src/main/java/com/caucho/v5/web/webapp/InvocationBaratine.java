@@ -40,6 +40,7 @@ import com.caucho.v5.network.port.StateConnection;
 
 import io.baratine.web.HttpStatus;
 import io.baratine.web.MultiMap;
+import io.baratine.web.ViewResolver;
 
 /**
  * A repository for request information parsed from the uri.
@@ -54,16 +55,22 @@ public class InvocationBaratine extends Invocation
   private WebApp _webApp;
   private RouteBaratine []_routes = new RouteBaratine[0];
   
-  private Map<String,String> _params;
+  private Map<String,String> _pathMap;
   private MultiMap<String,String> _queryMap;
 
   private String _path;
   private String _pathInfo = "";
+
+  private ViewResolver<Object> _viewResolver;
   
   public InvocationBaratine()
   {
   }
   
+  /**
+   * The matching path of the URL, i.e. the part that matches the
+   * path pattern.
+   */
   public String path()
   {
     String path = _path;
@@ -76,6 +83,10 @@ public class InvocationBaratine extends Invocation
     }
   }
 
+  /**
+   * The matching path of the URL, i.e. the part that matches the
+   * path pattern.
+   */
   public void path(String path)
   {
     Objects.requireNonNull(path);
@@ -83,11 +94,17 @@ public class InvocationBaratine extends Invocation
     _path = path;
   }
   
+  /**
+   * The pathInfo of the URL is any wildcard suffix after the matching path.
+   */
   public String pathInfo()
   {
     return _pathInfo;
   }
 
+  /**
+   * Set the pathInfo.
+   */
   public void pathInfo(String pathInfo)
   {
     Objects.requireNonNull(pathInfo);
@@ -95,16 +112,19 @@ public class InvocationBaratine extends Invocation
     _pathInfo = pathInfo;
   }
 
+  /**
+   * The path parameters as matching the patterns.
+   */
   public Map<String, String> pathMap()
   {
-    return _params;
+    return _pathMap;
   }
   
-  public void params(Map<String,String> params)
+  public void pathMap(Map<String,String> params)
   {
     Objects.requireNonNull(params);
     
-    _params = Collections.unmodifiableMap(params);
+    _pathMap = Collections.unmodifiableMap(params);
   }
 
   public MultiMap<String, String> queryMap()
@@ -133,9 +153,28 @@ public class InvocationBaratine extends Invocation
     _webApp = webApp;
   }
 
+  /**
+   * The webApp is the container for the requests in a context.
+   */
   public WebApp webApp()
   {
     return _webApp;
+  }
+
+  /**
+   * The view resolver for the path.
+   */
+  public ViewResolver<Object> viewResolver()
+  {
+    return _viewResolver;
+  }
+  
+  /**
+   * The view resolver for the path.
+   */
+  void viewResolver(ViewResolver<Object> resolver)
+  {
+    _viewResolver = resolver;
   }
 
   /**
@@ -144,15 +183,12 @@ public class InvocationBaratine extends Invocation
    * @param request the http request facade
    * @param response the http response facade
    */
-  public StateConnection service(ConnectionProtocol request)
+  public void service(ConnectionProtocol request)
   {
     RequestBaratine req = (RequestBaratine) request;
-    //ResponseBaratine res = (ResponseBaratine) response;
     
     Thread thread = Thread.currentThread();
     ClassLoader oldLoader = thread.getContextClassLoader();
-    
-    StateConnection nextState = StateConnection.CLOSE;
     
     try {
       if (_webApp != null) {
@@ -161,7 +197,7 @@ public class InvocationBaratine extends Invocation
       
       for (RouteBaratine route : _routes) {
         if (route.service(req)) {
-          return nextState;
+          return;
         }
       }
       
@@ -175,7 +211,5 @@ public class InvocationBaratine extends Invocation
     } finally {
       thread.setContextClassLoader(oldLoader);
     }
-    
-    return nextState;
   }
 }

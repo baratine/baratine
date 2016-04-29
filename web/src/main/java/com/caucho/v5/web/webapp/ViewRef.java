@@ -29,95 +29,14 @@
 
 package com.caucho.v5.web.webapp;
 
-import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewRender;
-
-import java.lang.reflect.Type;
-import java.util.Objects;
-
-import com.caucho.v5.inject.type.TypeRef;
+import io.baratine.web.ViewResolver;
 
 /**
  * View with associated type meta-data
  */
-class ViewRef<T>
+interface ViewRef<T>
 {
-  private final ViewRender<T> _view;
-
-  private final Class<T> _type;
-
-  /**
-   * Creates the view and analyzes the type
-   */
-  public ViewRef(ViewRender<T> view)
-  {
-    Objects.requireNonNull(view);
-
-    _view = view;
-
-    TypeRef viewType = TypeRef.of(view.getClass()).to(ViewRender.class);
-
-    TypeRef typeRef = viewType.param(0);
-
-    if (typeRef != null) {
-      _type = (Class) typeRef.rawClass();
-    }
-    else {
-      _type = (Class) Object.class;
-    }
-  }
-
-  /**
-   * Creates the view and analyzes the type
-   */
-  public ViewRef(ViewRender<T> view, Type type)
-  {
-    Objects.requireNonNull(view);
-
-    _view = view;
-
-    TypeRef viewType = TypeRef.of(type).to(ViewRender.class);
-
-    TypeRef typeRef = viewType.param(0);
-
-    if (typeRef != null) {
-      _type = (Class) typeRef.rawClass();
-    }
-    else {
-      _type = (Class) Object.class;
-    }
-  }
-
-  /**
-   * Creates the view and analyzes the type
-   */
-  public ViewRef(ViewRender<T> view, Class<T> type)
-  {
-    Objects.requireNonNull(view);
-    Objects.requireNonNull(type);
-
-    _view = view;
-    _type = type;
-  }
-
-  ViewRender<T> view()
-  {
-    return _view;
-  }
-
-  Class<?> type()
-  {
-    return _type;
-  }
-
-  boolean render(RequestWeb req, Object value)
-  {
-    if (value != null
-        && ! _type.isAssignableFrom(value.getClass())) {
-      return false;
-    }
-    else {
-      return _view.render(req, (T) value);
-    }
-  }
+  Class<T> type();
+  ViewResolver<? super T> resolver();
+  int priority();
 }

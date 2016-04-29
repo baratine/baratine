@@ -39,7 +39,7 @@ import com.caucho.v5.web.builder.WebServerFactory;
 import com.caucho.v5.web.view.ViewJsonDefault;
 
 import io.baratine.inject.Key;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
 public class WebServerFactoryBaratine implements WebServerFactory
 {
@@ -50,7 +50,7 @@ public class WebServerFactoryBaratine implements WebServerFactory
   @Override
   public WebServerImpl build(WebServerBuilderImpl builder)
   {
-    builder.bean(ViewJsonDefault.class).to(new Key<ViewRender<Object>>() {});
+    builder.bean(ViewJsonDefault.class).to(new Key<ViewResolver<Object>>() {});
 
     //ServerBuilderBaratine serverBuilder;
     //serverBuilder = new ServerBuilderBaratine(builder.config());

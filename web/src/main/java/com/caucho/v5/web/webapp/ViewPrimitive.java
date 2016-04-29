@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
  * This file is part of Baratine(TM)
  *
@@ -24,40 +24,45 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Nam Nguyen
+ * @author Scott Ferguson
  */
 
-package com.caucho.v5.autoconf.view;
+package com.caucho.v5.web.webapp;
 
-import javax.inject.Inject;
-
-import com.caucho.v5.config.IncludeOnClass;
 import com.caucho.v5.config.Priority;
-import com.caucho.v5.view.jetbrick.ViewJetbrick;
 
-import io.baratine.config.Config;
-import io.baratine.config.Include;
-import io.baratine.inject.Bean;
-import io.baratine.web.View;
+import io.baratine.web.RequestWeb;
 import io.baratine.web.ViewResolver;
 
 /**
- * mustache view configuration.
+ * View with associated type meta-data
  */
-@Include
-@IncludeOnClass(jetbrick.template.JetTemplate.class)
-public class IncludeJetbrick
+@Priority(-100)
+class ViewPrimitive implements ViewResolver<Object>
 {
-  private @Inject Config _config;
-
-  public IncludeJetbrick()
+  @Override
+  public boolean render(RequestWeb request, Object value)
   {
+    if (value == null) {
+    }
+    else if (value instanceof String) {
+      request.type("text/plain; charset=utf-8");
+      
+      request.write((String) value);
+    }
+    else {
+      request.type("text/plain; charset=utf-8");
+      
+      request.write(String.valueOf(value));
+    }
+    
+    request.ok();
+    return true;
   }
-
-  @Bean
-  @Priority(-10)
-  public ViewResolver<View> jade()
+  
+  @Override
+  public String toString()
   {
-    return new ViewJetbrick(_config);
+    return getClass().getSimpleName() + "[]";
   }
 }

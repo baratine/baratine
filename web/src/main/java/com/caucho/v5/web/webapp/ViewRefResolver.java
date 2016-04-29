@@ -27,33 +27,57 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package com.caucho.v5.web.webapp;
 
-import java.util.Map;
+import java.util.Objects;
 
-public interface View
+import io.baratine.web.ViewResolver;
+
+/**
+ * View with associated type meta-data
+ */
+class ViewRefResolver<T> implements ViewRef<T>
 {
-  String name();
-  
-  Map<String,Object> map();
-  
-  Object get(String key);
-  
-  <X> X get(Class<X> type);
-  
-  Object get();
-  
-  static ViewBuilder newView(String name)
+  private final ViewResolver<? super T> _resolver;
+  private final Class<T> _type;
+  private final int _priority;
+
+  /**
+   * Creates the view and analyzes the type
+   */
+  public ViewRefResolver(ViewResolver<? super T> resolver,
+                         Class<T> type,
+                         int priority)
   {
-    return new ViewImpl(name);
+    Objects.requireNonNull(resolver);
+    Objects.requireNonNull(type);
+
+    _resolver = resolver;
+    _type = type;
+    _priority = priority;
+  }
+
+  @Override
+  public Class<T> type()
+  {
+    return _type;
+  }
+
+  @Override
+  public ViewResolver<? super T> resolver()
+  {
+    return _resolver;
   }
   
-  public interface ViewBuilder extends View
+  @Override
+  public int priority()
   {
-    ViewBuilder add(String key, Object value);
-    
-    <X> ViewBuilder add(X value);
-    
-    ViewBuilder set(Object value);
+    return _priority;
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _resolver + "," + _priority + "]";
   }
 }

@@ -32,7 +32,9 @@ package io.baratine.web;
 public interface ViewResolver<T>
 {
   /**
-   * Selects a matching renderer for the view. If none match, returns null. 
+   * Selects a matching renderer for the view and render it.
+   * 
+   * If none match, returns false. 
    */
-  <X extends T> ViewRender<X> resolve(X value);
+  boolean render(RequestWeb request, T value);
 }

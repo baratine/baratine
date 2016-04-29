@@ -59,7 +59,7 @@ public class RepositoryImpl<ID, T>
   private Class<ID> _idClass;
   private Class<T> _entityClass;
 
-  private EntityInfo<ID,T> _entityDesc;
+  private AssetInfo<ID,T> _entityDesc;
   private FieldInfo<T,ID> _idDesc;
 
   private DatabaseService _db;
@@ -91,7 +91,7 @@ public class RepositoryImpl<ID, T>
   {
     Asset table = _entityClass.getAnnotation(Asset.class);
 
-    _entityDesc = new EntityInfo<>(_entityClass, _idClass, table);
+    _entityDesc = new AssetInfo<>(_entityClass, _idClass, table);
 
     _idDesc = _entityDesc.id();
     /*

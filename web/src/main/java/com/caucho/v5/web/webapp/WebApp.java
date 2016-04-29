@@ -191,6 +191,11 @@ public class WebApp
     return _services;
   }
 
+  public int node()
+  {
+    return services().node().nodeIndex();
+  }
+
   public Buffers buffers()
   {
     return _buffers;

@@ -44,9 +44,9 @@ import org.apache.velocity.runtime.resource.loader.ResourceLoader;
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.View;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
-public class ViewVelocity implements ViewRender<View>
+public class ViewVelocity implements ViewResolver<View>
 {
   private Config _config;
   private VelocityEngine _engine;
@@ -85,7 +85,7 @@ public class ViewVelocity implements ViewRender<View>
   @Override
   public boolean render(RequestWeb req, View view)
   {
-    String viewName = view.view();
+    String viewName = view.name();
 
     if (! viewName.endsWith(".vm")) {
       return false;

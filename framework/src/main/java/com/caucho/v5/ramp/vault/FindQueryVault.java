@@ -263,10 +263,10 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
   public static class ListResultField<ID,T,V> extends FindQueryVault<ID,T,V>
   {
     private FieldInfo _field;
-    private EntityInfo _entityDesc;
+    private AssetInfo _entityDesc;
 
     ListResultField(VaultDriver<ID,T> driver,
-                    EntityInfo entityDesc,
+                    AssetInfo entityDesc,
                     FieldInfo field,
                     String where)
     {

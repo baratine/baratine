@@ -37,12 +37,12 @@ import freemarker.template.TemplateExceptionHandler;
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.View;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
 /**
  * freemarker view.
  */
-public class ViewFreemarker implements ViewRender<View>
+public class ViewFreemarker implements ViewResolver<View>
 {
   private Config _config;
   private Configuration _cfg;
@@ -81,18 +81,26 @@ public class ViewFreemarker implements ViewRender<View>
     
     _cfg = cfg;
   }
-  
+
   @Override
-  public boolean render(RequestWeb req, View view)
+  public boolean render(RequestWeb request, View view)
   {
-    String viewName = view.view();
+    String name = view.name();
     
-    if (! viewName.endsWith(".ftl")) {
+    if (name.endsWith(".ftl")) {
+      renderImpl(request, view);
+      
+      return true;
+    }
+    else {
       return false;
     }
-    
+  }
+  
+  private void renderImpl(RequestWeb req, View view)
+  {
     try {
-      Template tmpl = _cfg.getTemplate(viewName);
+      Template tmpl = _cfg.getTemplate(view.name());
       
       req.type("text/html; charset=utf-8");
 
@@ -103,7 +111,5 @@ public class ViewFreemarker implements ViewRender<View>
       e.printStackTrace();
       req.fail(e);
     }
-    
-    return true;
   }
 }

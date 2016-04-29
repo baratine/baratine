@@ -38,14 +38,14 @@ import com.caucho.v5.util.TriFunction;
 import com.caucho.v5.web.WebServerImpl;
 import com.caucho.v5.web.cli.ArgsBaratine;
 import com.caucho.v5.web.view.ViewJsonDefault;
-import com.caucho.v5.web.webapp.RouteBuilderAmp;
 import com.caucho.v5.web.webapp.FilterCrossOrigin;
+import com.caucho.v5.web.webapp.RouteBuilderAmp;
 
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.web.CrossOrigin;
 import io.baratine.web.ServiceWeb;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
 public class WebServerBuilderBaratine extends WebServerBuilderImpl
 {
@@ -58,7 +58,7 @@ public class WebServerBuilderBaratine extends WebServerBuilderImpl
   @Override
   public WebServerImpl build(WebServerBuilderImpl builder)
   {
-    builder.bean(ViewJsonDefault.class).to(new Key<ViewRender<Object>>() {});
+    //builder.bean(ViewJsonDefault.class).to(new Key<ViewResolver<Object>>() {});
     
     builder.bean(new TriFunction<CrossOrigin,InjectionPoint<?>,RouteBuilderAmp,ServiceWeb>() {
       public ServiceWeb apply(CrossOrigin ann, 

@@ -262,6 +262,8 @@ public class WebAppFactory implements DeployFactory2<WebApp>
       else {
         builder = new WebAppBuilder(this);
       }
+      
+      builder.init();
     
       return builder.get();
     } catch (InvocationTargetException e) {

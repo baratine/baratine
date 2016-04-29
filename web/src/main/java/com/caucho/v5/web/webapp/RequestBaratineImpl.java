@@ -77,6 +77,8 @@ import io.baratine.web.MultiMap;
 import io.baratine.web.OutWeb;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWebSocket;
+import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
 
 /**
@@ -89,13 +91,11 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   private static final Logger log
     = Logger.getLogger(RequestBaratineImpl.class.getName());
 
-  //private static final String FORM_TYPE = "application/x-www-form-urlencoded";
-
-  //private ConnectionHttp _connHttp;
-
-  //private RequestHttpState _requestState;
-
-  private List<ViewRef<?>> _views;
+  //private List<ViewRef<?>> _views;
+  
+  //private ViewResolver<Object> _viewResolver;
+  
+  private RouteBaratine _route;
 
   private ArrayList<CookieWeb> _cookieList;
 
@@ -109,7 +109,6 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   private Class<?> _bodyType;
   private Result<Object> _bodyResult;
   private Object _bodyValue;
-  private RequestProxy _requestProxy;
   private HashMap<String, Object> _attributeMap;
 
   public RequestBaratineImpl(ConnectionHttp connHttp,
@@ -119,41 +118,19 @@ public final class RequestBaratineImpl extends RequestHttpWeb
     
     request.init(this);
   }
-
-  /*
-  public void init(RequestHttpState requestState)
+  
+  @Override
+  public void route(RouteBaratine route)
   {
-    _requestState = requestState;
+    Objects.requireNonNull(route);
+    
+    _route = route;
   }
-  */
-
-  /*
-  public ConnectionHttp connHttp()
+  
+  private RouteBaratine route()
   {
-    return _connHttp;
+    return _route;
   }
-  */
-
-  /*
-  public RequestHttpBase requestHttp()
-  {
-    return requestState().requestHttp();
-  }
-  */
-
-  /*
-  public RequestHttpState requestState()
-  {
-    return _requestState;
-  }
-  */
-
-  /*
-  public InvocationBaratine invocation()
-  {
-    return requestState().invocation();
-  }
-  */
 
   @Override
   public WebApp webApp()
@@ -233,27 +210,29 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   {
     return services().service(type, id);
   }
-
+  
+  //
+  // session methods
+  //
+  
+  /**
+   * Find the session by its service name.
+   * 
+   * If the session doesn't exist, create it.
+   */
   @Override
   public ServiceRefAmp session(String name)
   {
-    ServicesAmp services = services();
-
-    if (name.indexOf('/') >= 0) {
-      throw new IllegalArgumentException(name);
-    }
-
-    String sessionId = cookie("JSESSIONID");
-
-    if (sessionId == null) {
-      sessionId = generateSessionId();
-
-      cookie("JSESSIONID", sessionId);
-    }
-
-    return services.service("session:///" + name + "/" + sessionId);
+    String address = "session:///" + name + "/";
+    
+    return sessionImpl(address);
   }
-
+  
+  /**
+   * Find the session by its service type.
+   * 
+   * If the session doesn't exist, create it.
+   */
   @Override
   public <X> X session(Class<X> type)
   {
@@ -261,7 +240,11 @@ public final class RequestBaratineImpl extends RequestHttpWeb
 
     return sessionImpl(address + "/").as(type);
   }
-
+  
+  /**
+   * Find or create a session cookie as the session id and 
+   * find or create a session with the generated address.
+   */
   private ServiceRefAmp sessionImpl(String address)
   {
     if (! address.startsWith("session:") || ! address.endsWith("/")) {
@@ -285,6 +268,8 @@ public final class RequestBaratineImpl extends RequestHttpWeb
 
     Base64Util.encodeUrl(sb, webApp().nextId());
     Base64Util.encodeUrl(sb, RandomUtil.getRandomLong());
+    sb.append('.');
+    sb.append(Base64Util.encodeUrl(webApp().node()));
 
     return sb.toString();
   }
@@ -584,8 +569,10 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   public void halt(HttpStatus status)
   {
     status(status);
-    ok(null);
-    //ok();
+    
+    //type("text/plain; charset=utf-8");
+    //ok(null);
+    ok();
   }
 
   @Override
@@ -730,11 +717,10 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   @Override
   public void ok(Object value)
   {
-    if (view(value)) {
-      return;
-    }
-
-    if (viewPrimitives(value)) {
+    ViewResolver<Object> resolver = viewResolver();
+    
+    
+    if (resolver != null && resolver.render(this, value)) {
       return;
     }
 
@@ -742,26 +728,10 @@ public final class RequestBaratineImpl extends RequestHttpWeb
 
     halt(HttpStatus.INTERNAL_SERVER_ERROR);
   }
-
-  private boolean view(Object value)
+  
+  private ViewResolver<Object> viewResolver()
   {
-    List<ViewRef<?>> views = _views;
-
-    if (views == null) {
-      return false;
-    }
-    
-    int size = views.size();
-
-    for (int i = 0; i < size; i++) {
-      ViewRef<?> view = views.get(i);
-
-      if (((ViewRef) view).render(this, value)) {
-        return true;
-      }
-    }
-
-    return false;
+    return route().viewResolver();
   }
 
   private boolean viewPrimitives(Object value)
@@ -913,15 +883,17 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   // implementation methods
   //
 
+  /*
   @Override
   public void requestProxy(RequestProxy proxy)
   {
     _requestProxy = proxy;
   }
+  */
 
   RequestProxy requestProxy()
   {
-    return _requestProxy;
+    return route().requestProxy();
   }
 
   @Override
@@ -1077,11 +1049,13 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   {
   }
 
+  /*
   @Override
   public void views(List<ViewRef<?>> views)
   {
     _views = views;
   }
+  */
 
   @Override
   public String toString()

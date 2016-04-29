@@ -339,7 +339,7 @@ public class RequestHttp2
       
       
       
-      StateConnection nextState = _invocation.service(request);
+      _invocation.service(request);
 
       //request().setInvocation(_invocation);
       

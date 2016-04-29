@@ -66,7 +66,7 @@ public class Base64Util {
     cb.append(Base64Util.encode(data));
   }
   */
-
+  
   public static void encode(StringBuilder sb, long data)
   {
     for (int i = 58; i > 0; i -= 6) {
@@ -465,7 +465,10 @@ public class Base64Util {
   {
     return _decode[d];
   }
-
+  
+  /**
+   * Encode a single-digit for base64-url
+   */
   public static char encodeUrl(long d)
   {
     return _encodeUrl[(int) (d & 0x3f)];

@@ -37,9 +37,9 @@ import org.thymeleaf.templateresolver.TemplateResolver;
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.View;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
-public class ViewThymeleaf implements ViewRender<View>
+public class ViewThymeleaf implements ViewResolver<View>
 {
   private Config _config;
   private TemplateEngine _engine;
@@ -76,7 +76,7 @@ public class ViewThymeleaf implements ViewRender<View>
   @Override
   public boolean render(RequestWeb req, View view)
   {
-    String viewName = view.view();
+    String viewName = view.name();
 
     if (! viewName.endsWith(".html")) {
       return false;

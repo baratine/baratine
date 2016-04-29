@@ -92,6 +92,7 @@ import io.baratine.web.RouteBuilder;
 import io.baratine.web.ServiceWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 import io.baratine.web.WebBuilder;
 import io.baratine.web.WebSocket;
 import io.baratine.web.WebSocketBuilder;
@@ -145,7 +146,17 @@ public class WebAppBuilder
 
     _classLoader = EnvironmentClassLoader.create(_http.classLoader(),
                                                  factory.id());
-
+    
+    view(new ViewPrimitive(), String.class, -1000);
+    view(new ViewPrimitive(), Number.class, -1000);
+    view(new ViewPrimitive(), Void.class, -1000);
+    view(new ViewPrimitive(), Boolean.class, -1000);
+    view(new ViewPrimitive(), Character.class, -1000);
+    
+  }
+  
+  protected void init()
+  {
     Thread thread = Thread.currentThread();
     ClassLoader loader = thread.getContextClassLoader();
 
@@ -160,7 +171,7 @@ public class WebAppBuilder
       thread.setContextClassLoader(classLoader());
 
       _configBuilder = Configs.config();
-      _configBuilder.add(factory.config());
+      _configBuilder.add(_factory.config());
 
       _injectBuilder = InjectorAmp.manager(classLoader());
 
@@ -175,13 +186,13 @@ public class WebAppBuilder
       addStubVault(_serviceBuilder);
       _serviceBuilder.contextManager(true);
 
-      ServicesAmp serviceManager = _serviceBuilder.get();
-      Amp.contextManager(serviceManager);
+      ServicesAmp services = _serviceBuilder.get();
+      Amp.contextManager(services);
 
-      _injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
+      _injectBuilder.autoBind(new InjectAutoBindService(services));
 
       if (outbox != null) {
-        InboxAmp inbox = serviceManager.inboxSystem();
+        InboxAmp inbox = services.inboxSystem();
         // XXX: should set the inbox
         outbox.getAndSetContext(inbox);
         //System.out.println("OUTBOX-a: " + inbox + " " + serviceManager);
@@ -287,7 +298,7 @@ public class WebAppBuilder
     get("/**").to(WebStaticFile.class);
     
     _injectBuilder.get();
-    ServicesAmp serviceManager = _serviceBuilder.start();
+    _serviceBuilder.start();
   }
 
   //@Override
@@ -373,17 +384,7 @@ public class WebAppBuilder
 
     InjectorAmp inject = webApp.inject();
 
-    for (Binding<ViewRender> binding : inject.bindings(ViewRender.class)) {
-      try {
-        ViewRender<?> view = (ViewRender<?>) binding.provider().get();
-
-        Key<ViewRender<?>> key = (Key) binding.key();
-
-        view(view, key);
-      } catch (Exception e) {
-        log.log(Level.FINE, e.toString(), e);
-      }
-    }
+    buildViews(inject);
 
     ArrayList<RouteMap> mapList = new ArrayList<>();
 
@@ -413,6 +414,43 @@ public class WebAppBuilder
     mapList.toArray(routeArray);
 
     return new InvocationRouterWebApp(webApp, routeArray);
+  }
+  
+  private void buildViews(InjectorAmp inject)
+  {
+    for (Binding<ViewRender> binding : inject.bindings(ViewRender.class)) {
+      try {
+        ViewRender<?> view = (ViewRender<?>) binding.provider().get();
+        
+        Key<ViewRender<?>> key = (Key) binding.key();
+        
+        TypeRef typeRef = TypeRef.of(key.type());
+        TypeRef renderRef = typeRef.to(ViewRender.class).param(0);
+        
+        Class<?> type = renderRef != null ? renderRef.rawClass() : Object.class;
+
+        _views.add(new ViewRefRender(view, type, binding.priority()));
+      } catch (Exception e) {
+        log.log(Level.FINE, e.toString(), e);
+      }
+    }
+    
+    for (Binding<ViewResolver> binding : inject.bindings(ViewResolver.class)) {
+      try {
+        ViewResolver<?> view = (ViewResolver<?>) binding.provider().get();
+        
+        Key<ViewResolver<?>> key = (Key) binding.key();
+        
+        TypeRef typeRef = TypeRef.of(key.type());
+        TypeRef resolverRef = typeRef.to(ViewResolver.class).param(0);
+        
+        Class<?> type = resolverRef != null ? resolverRef.rawClass() : Object.class;
+
+        _views.add(new ViewRefResolver(view, type, binding.priority()));
+      } catch (Exception e) {
+        log.log(Level.FINE, e.toString(), e);
+      }
+    }
   }
 
   /**
@@ -591,7 +629,7 @@ public class WebAppBuilder
   @Override
   public <T> WebBuilder view(ViewRender<T> view)
   {
-    _views.add(new ViewRef<>(view));
+    _views.add(new ViewRefRender<>(view));
 
     return this;
   }
@@ -606,7 +644,21 @@ public class WebAppBuilder
 
   private <T> WebBuilder view(ViewRender<T> view, Key key)
   {
-    _views.add(new ViewRef<>(view, key.type()));
+    _views.add(new ViewRefRender(view, (Class) key.type(), 0));
+
+    return this;
+  }
+
+  private <T> WebBuilder view(ViewRender<T> view, Class<T> type, int priority)
+  {
+    _views.add(new ViewRefRender<>(view, type, priority));
+
+    return this;
+  }
+
+  protected <T> WebBuilder view(ViewResolver<? super T> view, Class<T> type, int priority)
+  {
+    _views.add(new ViewRefResolver<>(view, type, priority));
 
     return this;
   }
@@ -807,7 +859,7 @@ public class WebAppBuilder
     {
       Objects.requireNonNull(view);
 
-      _viewRef = new ViewRef(view);
+      _viewRef = new ViewRefRender<>(view);
 
       return this;
     }
@@ -855,6 +907,12 @@ public class WebAppBuilder
       }
 
       views.addAll(views());
+      
+      ViewMap viewMap = new ViewMap();
+      
+      for (ViewRef<?> viewRef : views) {
+        viewMap.add(viewRef);
+      }
 
       ServiceWeb service;
 
@@ -878,7 +936,8 @@ public class WebAppBuilder
 
       Predicate<RequestWeb> test = _methodMap.get(method);
 
-      routeApply = new RouteApply(service, filtersBefore, filtersAfter, serviceRef, test, views);
+      routeApply = new RouteApply(service, filtersBefore, filtersAfter, 
+                                  serviceRef, test, viewMap);
 
       List<RouteMap> list = new ArrayList<>();
       list.add(new RouteMap(_path, routeApply));

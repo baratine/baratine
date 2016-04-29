@@ -50,6 +50,7 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 
 import io.baratine.db.Cursor;
 import io.baratine.service.ServiceException;
@@ -57,15 +58,15 @@ import io.baratine.vault.Asset;
 import io.baratine.vault.IdAsset;
 import io.baratine.vault.StateAsset;
 
-class EntityInfo<ID,T>
+class AssetInfo<ID,T>
 {
   private static final Logger log
-    = Logger.getLogger(EntityInfo.class.getName());
+    = Logger.getLogger(AssetInfo.class.getName());
 
-  private static final L10N L = new L10N(EntityInfo.class);
+  private static final L10N L = new L10N(AssetInfo.class);
   
   private static final 
-  HashMap<Class<?>,Function<EntityInfo<?,?>,IdGenerator<?>>> _idGenMap;
+  HashMap<Class<?>,Function<AssetInfo<?,?>,IdGenerator<?>>> _idGenMap;
 
   private static final Map<Class,Class> _primitiveWrappers = new HashMap<>();
 
@@ -89,7 +90,7 @@ class EntityInfo<ID,T>
 
   private boolean _isSolo;
 
-  public EntityInfo(Class<T> type,
+  public AssetInfo(Class<T> type,
                     Class<ID> idType,
                     Asset table)
   {
@@ -142,7 +143,7 @@ class EntityInfo<ID,T>
         fieldInfo = new FieldInfoIdAsset<>(field, column);
       }
       else {
-        fieldInfo = new FieldReflected<>(field, column);
+        fieldInfo = new FieldAsset<>(field, column);
       }
       
       if (! fieldInfo.isColumn()) {
@@ -185,7 +186,7 @@ class EntityInfo<ID,T>
 
     FieldInfo<T,?>[] fieldsArray = fields.toArray(new FieldInfo[fields.size()]);
     
-    Function<EntityInfo<?,?>,IdGenerator<ID>> idGenFun
+    Function<AssetInfo<?,?>,IdGenerator<ID>> idGenFun
       = (Function) _idGenMap.get(_idType);
     
     _idSequence.set(RandomUtil.getRandomLong());
@@ -682,7 +683,7 @@ class EntityInfo<ID,T>
   @Override
   public String toString()
   {
-    return EntityInfo.class.getSimpleName()
+    return AssetInfo.class.getSimpleName()
            + "["
            + _type
            + ':'
@@ -701,14 +702,14 @@ class EntityInfo<ID,T>
 
   private static class IdGenerator<ID>
   {
-    private EntityInfo<?,?> _entity;
+    private AssetInfo<?,?> _entity;
     
-    IdGenerator(EntityInfo<?,?> entity)
+    IdGenerator(AssetInfo<?,?> entity)
     {
       _entity = entity;
     }
     
-    protected EntityInfo<?,?> entity()
+    protected AssetInfo<?,?> entity()
     {
       return _entity;
     }
@@ -730,7 +731,7 @@ class EntityInfo<ID,T>
   {
     private IdAssetGenerator _idGen;
     
-    private IdGeneratorLong(EntityInfo<?,?> entity)
+    private IdGeneratorLong(AssetInfo<?,?> entity)
     {
       super(entity);
       
@@ -752,7 +753,7 @@ class EntityInfo<ID,T>
   {
     private IdAssetGenerator _idGen;
     
-    private IdGeneratorIdAsset(EntityInfo<?,?> entity)
+    private IdGeneratorIdAsset(AssetInfo<?,?> entity)
     {
       super(entity);
       

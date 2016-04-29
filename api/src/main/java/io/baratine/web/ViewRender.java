@@ -39,5 +39,5 @@ public interface ViewRender<T>
    * 
    * @return true if the view matches, false if the next view should be tried
    */
-  boolean render(RequestWeb req, T value);
+  void render(RequestWeb req, T value);
 }

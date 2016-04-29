@@ -42,9 +42,9 @@ import io.baratine.db.Cursor;
 import io.baratine.service.ServiceException;
 import io.baratine.vault.Id;
 
-class FieldReflected<T,V> implements FieldInfo<T,V>
+class FieldAsset<T,V> implements FieldInfo<T,V>
 {
-  private static final L10N L = new L10N(FieldReflected.class);
+  private static final L10N L = new L10N(FieldAsset.class);
   
   private final Field _field;
   private final String _columnName; 
@@ -59,7 +59,7 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
   
   private FieldVault<T> _fieldData; 
 
-  public FieldReflected(Field field, ColumnVault column)
+  public FieldAsset(Field field, ColumnVault column)
   {
     _field = field;
     
@@ -78,12 +78,14 @@ class FieldReflected<T,V> implements FieldInfo<T,V>
     if (field.isAnnotationPresent(Id.class)) {
       _isId = true;
     }
+    /*
     else if (columnName.equals("id")) {
       _isId = true;
     }
     else if (columnName.equals("_id")) {
       _isId = true;
     }
+    */
     else {
       _isId = false;
     }

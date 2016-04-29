@@ -73,7 +73,7 @@ public class VaultDriverDataImpl<ID, T>
   private Class<ID> _idClass;
   private Class<T> _entityClass;
 
-  private EntityInfo<ID,T> _entityInfo;
+  private AssetInfo<ID,T> _entityInfo;
 
   private DatabaseServiceSync _db;
 
@@ -115,7 +115,7 @@ public class VaultDriverDataImpl<ID, T>
   {
     Asset table = _entityClass.getAnnotation(Asset.class);
 
-    _entityInfo = new EntityInfo<>(_entityClass, _idClass, table);
+    _entityInfo = new AssetInfo<>(_entityClass, _idClass, table);
 
     TableManagerVault<ID,T> schemaManager = new TableManagerVault<>(_db, _entityInfo);
 
@@ -138,7 +138,7 @@ public class VaultDriverDataImpl<ID, T>
     _deleteSql = _entityInfo.deleteSql();
   }
   
-  EntityInfo<ID,T> entityInfo()
+  AssetInfo<ID,T> entityInfo()
   {
     return _entityInfo;
   }

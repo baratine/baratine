@@ -50,7 +50,7 @@ class ViewImpl implements ViewBuilder, View
   }
   
   @Override
-  public String view()
+  public String name()
   {
     return _view;
   }

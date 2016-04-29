@@ -34,12 +34,12 @@ import java.util.Properties;
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.View;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 import jetbrick.template.JetContext;
 import jetbrick.template.JetEngine;
 import jetbrick.template.JetTemplate;
 
-public class ViewJetbrick implements ViewRender<View>
+public class ViewJetbrick implements ViewResolver<View>
 {
   private Config _config;
   private JetEngine _engine;
@@ -73,7 +73,7 @@ public class ViewJetbrick implements ViewRender<View>
   @Override
   public boolean render(RequestWeb req, View view)
   {
-    String viewName = view.view();
+    String viewName = view.name();
 
     if (! viewName.endsWith(".jetx")) {
       return false;

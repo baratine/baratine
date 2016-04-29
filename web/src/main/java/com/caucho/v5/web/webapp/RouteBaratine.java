@@ -29,11 +29,23 @@
 
 package com.caucho.v5.web.webapp;
 
+import io.baratine.web.ViewResolver;
+
 /**
  * Invokes a service for a request.
  */
 public interface RouteBaratine
 {
+  default ViewResolver<Object> viewResolver()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  default RequestProxy requestProxy()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
   /**
    * Service a request.
    * 

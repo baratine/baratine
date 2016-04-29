@@ -39,6 +39,7 @@ import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
 import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
+import com.caucho.v5.web.view.ViewJsonDefault;
 
 import io.baratine.vault.Asset;
 
@@ -56,6 +57,8 @@ public class WebAppBuilderFramework extends WebAppBuilder
   public WebAppBuilderFramework(WebAppFactory factory)
   {
     super(factory);
+    
+    view(new ViewJsonDefault(), Object.class, -1000);
   }
 
   @Override

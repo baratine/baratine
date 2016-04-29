@@ -60,11 +60,11 @@ public class TableManagerVault<ID,T>
   private final static L10N L = new L10N(TableManagerVault.class);
 
   private DatabaseServiceSync _db;
-  private EntityInfo<ID,T> _entityInfo;
+  private AssetInfo<ID,T> _entityInfo;
   private Config _config;
 
   public TableManagerVault(DatabaseServiceSync db,
-                           EntityInfo<ID,T> entityDesc)
+                           AssetInfo<ID,T> entityDesc)
   {
     Objects.requireNonNull(db);
     

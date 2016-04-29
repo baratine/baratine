@@ -30,17 +30,19 @@ package com.caucho.v5.web.view;
 
 import java.io.Writer;
 
+import com.caucho.v5.config.Priority;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.json.ser.JsonFactory;
 
 import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
 /**
  * Default JSON render
  */
 
-public class ViewJsonDefault implements ViewRender<Object>
+@Priority(-100)
+public class ViewJsonDefault implements ViewResolver<Object>
 {
   private JsonFactory _serializer = new JsonFactory();
   private JsonWriter _jOut = _serializer.out();
@@ -48,11 +50,16 @@ public class ViewJsonDefault implements ViewRender<Object>
   @Override
   public boolean render(RequestWeb req, Object value)
   {
+    /*
     if (value == null
         || value instanceof String
         || value instanceof Character
         || value instanceof Boolean
         || value instanceof Number) {
+      return false;
+    }
+    */
+    if (value == null) {
       return false;
     }
 
@@ -68,8 +75,8 @@ public class ViewJsonDefault implements ViewRender<Object>
       else {
         req.type("application/json");
       }
-      //@TODO add tests
-      req.header("Access-Control-Allow-Origin", "*");
+
+      // req.header("Access-Control-Allow-Origin", "*");
 
       JsonWriter jOut = _jOut;
       jOut.init(writer);
@@ -95,5 +102,11 @@ public class ViewJsonDefault implements ViewRender<Object>
 
       return true;
     }
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[]";
   }
 }

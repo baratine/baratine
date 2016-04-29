@@ -67,17 +67,23 @@ public interface RequestBaratine extends RequestWebSpi, ConnectionProtocol
   
 
   // sets an assigned view
+  /*
   default void views(List<ViewRef<?>> views)
   {
     
   }
+  */
   
   void invocation(InvocationBaratine invocation);
   
   // XXX: temp
   //PrintWriter getWriter();
 
-  void requestProxy(RequestProxy proxy);
+  /**
+   * Sets the matching route.
+   */
+  void route(RouteBaratine route);
+  //  void requestProxy(RequestProxy proxy);
 
   WebApp webApp();
 
@@ -90,7 +96,8 @@ public interface RequestBaratine extends RequestWebSpi, ConnectionProtocol
   void onAccept();
 
   ConnectionHttp connHttp();
-  
+
+
   /*
   @Override
   default void handle(Buffer value, Throwable exn, boolean isEnd)

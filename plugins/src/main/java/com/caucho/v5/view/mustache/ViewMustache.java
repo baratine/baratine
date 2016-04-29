@@ -29,6 +29,12 @@
 
 package com.caucho.v5.view.mustache;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
@@ -36,18 +42,12 @@ import com.github.mustachejava.MustacheResolver;
 import com.github.mustachejava.resolver.ClasspathResolver;
 import com.github.mustachejava.resolver.DefaultResolver;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-
 import io.baratine.config.Config;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.View;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
-public class ViewMustache implements ViewRender<View>
+public class ViewMustache implements ViewResolver<View>
 {
   private Config _config;
 
@@ -87,7 +87,7 @@ public class ViewMustache implements ViewRender<View>
   @Override
   public boolean render(RequestWeb req, View view)
   {
-    String viewName = view.view();
+    String viewName = view.name();
 
     if (! viewName.endsWith(".mustache")) {
       return false;

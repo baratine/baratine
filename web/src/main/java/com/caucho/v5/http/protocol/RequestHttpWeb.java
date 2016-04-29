@@ -215,7 +215,7 @@ public class RequestHttpWeb implements ConnectionProtocol
         _requestHttp.readBodyChunk();
       }
       
-      StateConnection nextState = _invocation.service(this);
+      _invocation.service(this);
       
       //ServiceRef.flushOutboxAndExecuteLast();
       ServiceRef.flushOutbox();

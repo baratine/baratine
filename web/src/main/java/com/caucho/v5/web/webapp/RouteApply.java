@@ -30,6 +30,7 @@
 package com.caucho.v5.web.webapp;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -39,6 +40,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWeb;
+import io.baratine.web.ViewResolver;
 
 /**
  * Route resulting in a not-found message.
@@ -56,19 +58,21 @@ public class RouteApply implements RouteBaratine
   private ServiceWeb []_services;
   private ArrayList<ViewRef<?>> _views;
   
+  private ViewResolver<Object> _viewResolver;
+  
   RouteApply(ServiceWeb service,
              ArrayList<ServiceWeb> filtersBefore,
              ArrayList<ServiceWeb> filtersAfter,
              ServiceRefAmp serviceRef,
              Predicate<RequestWeb> predicate,
-             ArrayList<ViewRef<?>> views)
+             ViewResolver<Object> viewResolver)
   {
     Objects.requireNonNull(service);
     Objects.requireNonNull(predicate);
-    Objects.requireNonNull(views);
+    Objects.requireNonNull(viewResolver);
     
-    _views = views;
     _predicate = predicate;
+    _viewResolver = viewResolver;
     
     //_service = serviceRef.pin(new WebServiceWrapper(service)).as(ServiceWeb.class);
     _service = serviceRef.pin(new ServiceWebStub(service))
@@ -98,6 +102,12 @@ public class RouteApply implements RouteBaratine
     services.toArray(_services);
   }
   
+  @Override
+  public ViewResolver<Object> viewResolver()
+  {
+    return _viewResolver;
+  }
+  
   /**
    * Service a request.
    *
@@ -111,10 +121,13 @@ public class RouteApply implements RouteBaratine
       if (! _predicate.test(request)) {
         return false;
       }
-      
+    
+      request.route(this);
+      /*
       request.requestProxy(_proxy);
       
       request.views(_views);
+      */
 
       if (_services.length > 1) {
         RequestFilter requestChain = new RequestFilter(request, _services);

@@ -139,9 +139,11 @@ public class StubClassSessionVault<T> extends StubClass
         return field;
       }
 
+      /*
       if (field.getName().equals("id") || field.getName().equals("_id")) {
         idField = field;
       }
+      */
     }
 
     Field idParent = findIdField(entityClass.getSuperclass());

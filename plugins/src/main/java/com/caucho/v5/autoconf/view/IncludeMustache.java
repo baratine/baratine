@@ -32,13 +32,14 @@ package com.caucho.v5.autoconf.view;
 import javax.inject.Inject;
 
 import com.caucho.v5.config.IncludeOnClass;
+import com.caucho.v5.config.Priority;
 import com.caucho.v5.view.mustache.ViewMustache;
 
 import io.baratine.config.Config;
 import io.baratine.config.Include;
 import io.baratine.inject.Bean;
 import io.baratine.web.View;
-import io.baratine.web.ViewRender;
+import io.baratine.web.ViewResolver;
 
 /**
  * mustache view configuration.
@@ -54,7 +55,8 @@ public class IncludeMustache
   }
 
   @Bean
-  public ViewRender<View> mustache()
+  @Priority(-10)
+  public ViewResolver<View> mustache()
   {
     return new ViewMustache(_config);
   }

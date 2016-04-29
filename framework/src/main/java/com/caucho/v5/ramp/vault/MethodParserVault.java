@@ -48,7 +48,7 @@ public class MethodParserVault<ID,T>
 {
   private final static L10N L = new L10N(MethodParserVault.class);
 
-  private final EntityInfo<ID,T> _entityInfo;
+  private final AssetInfo<ID,T> _entityInfo;
   private final Method _method;
   private final char[] _name;
   private int _parseIndex = 0;
@@ -58,7 +58,7 @@ public class MethodParserVault<ID,T>
   private VaultDriverDataImpl<ID,T> _driver;
 
   public MethodParserVault(VaultDriverDataImpl<ID,T> driver,
-                              EntityInfo<ID,T> entityInfo,
+                              AssetInfo<ID,T> entityInfo,
                               Method method)
   {
     _driver = driver;

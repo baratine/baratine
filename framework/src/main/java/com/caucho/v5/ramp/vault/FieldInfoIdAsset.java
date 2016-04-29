@@ -33,7 +33,7 @@ import java.lang.reflect.Field;
 
 import io.baratine.vault.IdAsset;
 
-class FieldInfoIdAsset<T,V> extends FieldReflected<T,V>
+class FieldInfoIdAsset<T,V> extends FieldAsset<T,V>
 {
   public FieldInfoIdAsset(Field field, ColumnVault column)
   {

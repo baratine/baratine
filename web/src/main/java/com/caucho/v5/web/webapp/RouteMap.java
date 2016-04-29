@@ -95,7 +95,7 @@ public class RouteMap
         }
       }
       
-      invocation.params(params);
+      invocation.pathMap(params);
       
       invocation.queryMap(parseQuery(invocation.queryString()));
       
