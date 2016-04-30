@@ -50,7 +50,6 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
-import com.sun.xml.internal.bind.v2.model.core.ID;
 
 import io.baratine.db.Cursor;
 import io.baratine.service.ServiceException;
