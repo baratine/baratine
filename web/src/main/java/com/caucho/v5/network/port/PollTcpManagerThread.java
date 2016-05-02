@@ -7,7 +7,6 @@
 package com.caucho.v5.network.port;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -133,6 +132,12 @@ public class PollTcpManagerThread
     return true;
   }
 
+  @Override
+  public PollController createHandle(ConnectionTcp connTcp)
+  {
+    return new PollControllerThread(connTcp);
+  }
+
   /**
    * Adds a keepalive connection.
    *
@@ -176,7 +181,6 @@ public class PollTcpManagerThread
       result = conn.fillWithTimeout(timeout);
 
       if (result > 0) {
-        System.out.println("RES: " + result);
         return PollResult.DATA;
       }
       else if (expireTime <= CurrentTime.currentTime()) {

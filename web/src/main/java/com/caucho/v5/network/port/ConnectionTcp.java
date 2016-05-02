@@ -72,7 +72,8 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   private ReadStream _readStream;
   private WriteStream _writeStream;
   
-  private final PollControllerTcp _pollHandle;
+  //private final PollControllerTcpPoll _pollHandle;
+  private final PollController _pollHandle;
   private final ClassLoader _loader;
   
   private final ConnectionTcpProxy _connProxy;
@@ -128,7 +129,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     _name = _id;
 
     //_connectionTask = new TaskConnection(this);
-    _pollHandle = new PollControllerTcp(this);
+    _pollHandle = port.createPollHandle(this); // new PollControllerTcpPoll(this);
     
     System.out.println("*CTCP: " + this);
   }

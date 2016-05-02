@@ -49,7 +49,7 @@ import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.network.port.ConnectionProtocol;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.FreeRing;
+import com.caucho.v5.util.FreeList;
 import com.caucho.v5.web.webapp.RequestBaratine;
 
 import io.baratine.config.Config;
@@ -77,8 +77,8 @@ public class HttpContainerBase<I extends Invocation> implements HttpContainer
   private boolean _isSendfileEnabled = true;
   private long _sendfileMinLength = 32 * 1024L;
   
-  private final FreeRing<HttpBufferStore> _httpBufferFreeList
-    = new FreeRing<>(256);
+  private final FreeList<HttpBufferStore> _httpBufferFreeList
+    = new FreeList<>(256);
   
   private int _accessLogBufferSize;
 

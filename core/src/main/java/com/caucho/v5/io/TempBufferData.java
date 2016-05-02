@@ -31,7 +31,7 @@ package com.caucho.v5.io;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.caucho.v5.util.FreeRing;
+import com.caucho.v5.util.FreeList;
 
 /**
  * Pooled temporary byte buffer.
@@ -41,14 +41,14 @@ public final class TempBufferData
   private final byte []_buffer;
   
   private final AtomicInteger _refCount = new AtomicInteger();
-  private final FreeRing<TempBufferData> _freeList;
+  private final FreeList<TempBufferData> _freeList;
   
   private static final AtomicInteger _debugCount = new AtomicInteger();
 
   /**
    * Create a new TempBuffer.
    */
-  TempBufferData(int size, FreeRing<TempBufferData> freeList)
+  TempBufferData(int size, FreeList<TempBufferData> freeList)
   {
     _buffer = new byte[size];
     _freeList = freeList;

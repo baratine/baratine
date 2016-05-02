@@ -74,4 +74,18 @@ public interface PollController extends MessageDeliver
   void onPollReadClose();
 
   boolean isKeepaliveRegistered();
+  
+  default boolean isKeepaliveStarted()
+  {
+    return true;
+  }
+
+  default void initKeepalive()
+  {
+  }
+  
+  default void destroy()
+  {
+    
+  }
 }

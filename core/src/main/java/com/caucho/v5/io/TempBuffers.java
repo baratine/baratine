@@ -29,16 +29,9 @@
 
 package com.caucho.v5.io;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.util.FreeRing;
-
-import io.baratine.io.Buffer;
+import com.caucho.v5.util.FreeList;
 
 /**
  * Pooled temporary byte buffer.
@@ -53,14 +46,14 @@ public class TempBuffers
   public static final int LARGE_SIZE;
   public static final int STANDARD_SIZE;
   
-  private static final FreeRing<TempBufferData> _freeSmall
-    = new FreeRing<>(128);
+  private static final FreeList<TempBufferData> _freeSmall
+    = new FreeList<>(256);
   
-  private static final FreeRing<TempBufferData> _freeStandard
-    = new FreeRing<>(128);
+  private static final FreeList<TempBufferData> _freeStandard
+    = new FreeList<>(256);
   
-  private static final FreeRing<TempBufferData> _freeLarge
-    = new FreeRing<>(128);
+  private static final FreeList<TempBufferData> _freeLarge
+    = new FreeList<>(256);
 
   /**
    * Returns true for a smallmem configuration

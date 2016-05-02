@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.thread.ThreadPool;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
-import com.caucho.v5.network.port.PollControllerTcp;
+import com.caucho.v5.network.port.PollControllerTcpPoll;
 import com.caucho.v5.network.port.PollTcpManagerBase;
 import com.caucho.v5.network.port.PollTcpManagerNio;
 import com.caucho.v5.websocket.io.InWebSocketConnection;
@@ -61,7 +61,7 @@ class ConnectionWebSocketNio
   
   private long _idleExpireTime;
 
-  private PollControllerTcp _keepalive;
+  private PollControllerTcpPoll _keepalive;
   
   ConnectionWebSocketNio(WebSocketClientBaratine client, SocketBar socket)
   {
