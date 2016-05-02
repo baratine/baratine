@@ -43,16 +43,14 @@ import com.caucho.v5.io.SocketBar;
  * <p>TcpConnection is the most common implementation.  The test harness
  * provides a string based Connection.
  */
-public class PollControllerTcp implements PollController
+public class PollControllerThread implements PollController
 {
-  private final ConnectionTcpApi _conn;
+  private final ConnectionTcp _conn;
   private final SocketBar _socket;
   
   private PollTcpManager _pollManager;
-  private final AtomicReference<KeepaliveState> _keepaliveState
-    = new AtomicReference<KeepaliveState>(KeepaliveState.ACTIVE);
 
-  public PollControllerTcp(ConnectionTcpApi conn)
+  public PollControllerThread(ConnectionTcp conn)
   {
     _conn = conn;
     _socket = conn.socket();
@@ -84,101 +82,45 @@ public class PollControllerTcp implements PollController
   
   public boolean isKeepaliveStarted()
   {
-    return _keepaliveState.get().isKeepalive();
+    return true;
   }
 
   @Override
   public final boolean enableKeepaliveIfNew(PollTcpManager selectManager)
   {
-    if (_pollManager == null) {
-      _pollManager = selectManager;
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
-  
-  protected final void initKeepalive()
-  {
-    _keepaliveState.set(KeepaliveState.ACTIVE);
+    return true;
   }
   
   public boolean isKeepaliveRegistered()
   {
-    return _keepaliveState.get().isRegistered();
+    //return _keepaliveState.get().isRegistered();
+    return true;
   }
   
   @Override
   public final boolean toKeepaliveStart()
   {
-    KeepaliveState oldState;
-    KeepaliveState newState;
-
-    do {
-      oldState = _keepaliveState.get();
-
-      if (oldState.isAvailable()) {
-        return false;
-      }
-      
-      newState = oldState.toKeepalive();
-    } while (! _keepaliveState.compareAndSet(oldState, newState));
-    
     return true;
   }
   
   public void toKeepaliveClose()
   {
-    _keepaliveState.set(KeepaliveState.CLOSED);
+    //_keepaliveState.set(KeepaliveState.CLOSED);
   }
 
   @Override
   public final void onPollRead()
   {
-    KeepaliveState oldState;
-    KeepaliveState newState;
-
-    do {
-      oldState = _keepaliveState.get();
-      
-      newState = oldState.toRead();
-    } while (! _keepaliveState.compareAndSet(oldState, newState));
-
-    if (oldState.isKeepalive()) {
-      _conn.proxy().requestPollRead();
-      //requestPollRead();
-    }
   }
 
   @Override
   public final void onKeepaliveTimeout()
   {
-    KeepaliveState oldState;
-    KeepaliveState newState;
-
-    do {
-      oldState = _keepaliveState.get();
-      
-      newState = oldState.toTimeout();
-    } while (! _keepaliveState.compareAndSet(oldState, newState));
-
-    requestTimeout();
   }
 
   @Override
   public final void onPollReadClose()
   {
-    KeepaliveState oldState;
-    KeepaliveState newState;
-
-    do {
-      oldState = _keepaliveState.get();
-      
-      newState = oldState.toDisconnect();
-    } while (! _keepaliveState.compareAndSet(oldState, newState));
-    
-    _conn.proxy().requestCloseRead();
   }
 
   protected void requestPollRead()

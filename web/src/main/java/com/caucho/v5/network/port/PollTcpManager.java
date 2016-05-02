@@ -34,7 +34,7 @@ import com.caucho.v5.util.ModulePrivate;
 /**
  * A select manager handles keepalive connections.
  */
-@ModulePrivate
+//@ModulePrivate
 public interface PollTcpManager
 {
   /**

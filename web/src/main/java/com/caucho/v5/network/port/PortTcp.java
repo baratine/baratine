@@ -607,6 +607,13 @@ public class PortTcp implements PortSocket
     return _pollManager;
   }
 
+  public PollController createPollHandle(ConnectionTcp connTcp)
+  {
+    PollTcpManagerBase pollManager = pollManager();
+
+    return pollManager.createHandle(connTcp);
+  }
+
   /**
    * Returns the next unique connection sequence.
    */

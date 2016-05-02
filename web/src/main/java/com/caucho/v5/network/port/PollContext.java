@@ -159,7 +159,7 @@ public class PollContext
     }
   }
 
-  protected final void initKeepalive()
+  public final void initKeepalive()
   {
     _state.set(KeepaliveState.ACTIVE);
   }

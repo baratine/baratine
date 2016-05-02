@@ -111,4 +111,9 @@ abstract public class PollTcpManagerBase implements PollTcpManager {
   {
     stop();
   }
+
+  public PollController createHandle(ConnectionTcp connTcp)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
 }

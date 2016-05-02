@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * do nothing.
  */
 public final class FreeList<T> {
-  private final int _size;
+  private final int _capacity;
   private final AtomicReferenceArray<T> _freeStack;
   private final AtomicInteger _top = new AtomicInteger();
 
@@ -49,10 +49,15 @@ public final class FreeList<T> {
    *
    * @param initialSize maximum number of free objects to store.
    */
-  public FreeList(int size)
+  public FreeList(int capacity)
   {
-    _size = size;
-    _freeStack = new AtomicReferenceArray<T>(size);
+    _capacity = capacity;
+    _freeStack = new AtomicReferenceArray<T>(capacity);
+  }
+  
+  public int size()
+  {
+    return _top.get();
   }
   
   /**
@@ -61,14 +66,24 @@ public final class FreeList<T> {
    *
    * @return the new object or null.
    */
-  public T allocate()
+  public final T allocate()
   {
-    int top = _top.get();
+    AtomicInteger topRef = _top;
+    
+    while (true) {
+      final int top = topRef.get();
 
-    if (top > 0 && _top.compareAndSet(top, top - 1))
-      return _freeStack.getAndSet(top - 1, null);
-    else
-      return null;
+      if (top <= 0) {
+        return null;
+      }
+      else if (topRef.compareAndSet(top, top - 1)) {
+        T value = _freeStack.getAndSet(top - 1, null);
+        
+        if (value != null) {
+          return value;
+        }
+      }
+    }
   }
   
   /**
@@ -79,17 +94,23 @@ public final class FreeList<T> {
    */
   public boolean free(T obj)
   {
-    final int top = _top.get();
+    AtomicInteger topRef = _top;
 
-    if (top < _size) {
+    while (true) {
+      final int top = topRef.get();
+      
+      if (_capacity <= top) {
+        return false;
+      }
+
       boolean isFree = _freeStack.compareAndSet(top, null, obj);
       
-      _top.compareAndSet(top, top + 1);
+      topRef.compareAndSet(top, top + 1);
 
-      return isFree;
+      if (isFree) {
+        return true;
+      }
     }
-    else
-      return false;
   }
 
   /**
