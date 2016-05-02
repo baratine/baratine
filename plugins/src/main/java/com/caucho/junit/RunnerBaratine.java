@@ -32,6 +32,7 @@ package com.caucho.junit;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +64,9 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import com.caucho.v5.vfs.VfsOld;
 import io.baratine.config.Config;
+import io.baratine.pipe.PipeIn;
 import io.baratine.service.Api;
+import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
@@ -224,6 +227,14 @@ public class RunnerBaratine extends BaseRunner
       descriptors.put(descriptor, ref);
     }
 
+    for (Map.Entry<ServiceDescriptor,ServiceRef> e : descriptors.entrySet()) {
+      ServiceDescriptor desc = e.getKey();
+
+      if (desc.isStart()) {
+        e.getValue().start();
+      }
+    }
+
     return descriptors;
   }
 
@@ -232,6 +243,9 @@ public class RunnerBaratine extends BaseRunner
                             Class<?> type,
                             Annotation[] annotations)
   {
+    if (Services.class.equals(type))
+      return _manager;
+
     Service binding = null;
 
     for (int i = 0; i < annotations.length; i++) {
@@ -247,9 +261,7 @@ public class RunnerBaratine extends BaseRunner
       binding = ServiceLiteral.LITERAL;
     }
 
-    ServiceRef service = null;
-
-    service = matchServiceByImpl(map, type);
+    ServiceRef service = matchServiceByImpl(map, type);
 
     if (service == null)
       service = matchServiceByAddress(map, binding);
@@ -300,11 +312,13 @@ public class RunnerBaratine extends BaseRunner
   private ServiceRef matchServiceByAddress(Map<ServiceDescriptor,ServiceRef> map,
                                            Service binding)
   {
-    for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
-      ServiceDescriptor descriptor = entry.getKey();
+    if (!binding.value().isEmpty()) {
+      for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
+        ServiceDescriptor descriptor = entry.getKey();
 
-      if (descriptor.getAddress().equals(binding.value())) {
-        return entry.getValue();
+        if (descriptor.getAddress().equals(binding.value())) {
+          return entry.getValue();
+        }
       }
     }
 
@@ -376,7 +390,30 @@ public class RunnerBaratine extends BaseRunner
       } while (api == null
                && (t = serviceClass.getSuperclass()) != Object.class);
 
-      return api == null ? null : api.value();
+      Class type = null;
+
+      if (api != null)
+        type = api.value();
+
+      if (type == null) {
+        Class[] interfaces = serviceClass.getInterfaces();
+        out:
+        for (Class face : interfaces) {
+          final Method[] methods = face.getDeclaredMethods();
+          for (Method method : methods) {
+            final Class<?>[] pTypes = method.getParameterTypes();
+            for (Class<?> pType : pTypes) {
+              if (Result.class.isAssignableFrom(pType)) {
+                type = face;
+
+                break out;
+              }
+            }
+          }
+        }
+      }
+
+      return type;
     }
 
     public String getAddress()
@@ -395,6 +432,18 @@ public class RunnerBaratine extends BaseRunner
       }
 
       return address;
+    }
+
+    public boolean isStart()
+    {
+      final Method[] methods = _serviceClass.getDeclaredMethods();
+
+      for (Method method : methods) {
+        if (method.getAnnotation(PipeIn.class) != null)
+          return true;
+      }
+
+      return false;
     }
 
     public static ServiceDescriptor of(Class t)
@@ -427,6 +476,18 @@ public class RunnerBaratine extends BaseRunner
     public Class<?> getApi()
     {
       return _api;
+    }
+
+    @Override
+    public String toString()
+    {
+      return this.getClass().getSimpleName() + "["
+             + _api
+             + ", "
+             + _serviceClass
+             + ", "
+             + _service
+             + ']';
     }
   }
 
