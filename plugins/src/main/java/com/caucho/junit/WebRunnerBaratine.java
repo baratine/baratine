@@ -34,11 +34,8 @@ import static io.baratine.web.Web.start;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,15 +49,15 @@ import io.baratine.web.Path;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Web;
 import io.baratine.web.WebServer;
-import org.junit.Test;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.TestClass;
 
 public class WebRunnerBaratine extends BaseRunner
 {
+  private final static Logger log
+    = Logger.getLogger(BaseRunner.class.getName());
+
   private final static L10N L = new L10N(WebRunnerBaratine.class);
 
   private WebServer _web;
@@ -76,12 +73,6 @@ public class WebRunnerBaratine extends BaseRunner
                                                 List<Throwable> errors)
   {
     super.validatePublicVoidNoArgMethods(annotation, isStatic, errors);
-  }
-
-  @Override
-  protected TestClass createTestClass(Class<?> testClass)
-  {
-    return new WebTestClass(testClass);
   }
 
   private String httpHost()
@@ -105,12 +96,65 @@ public class WebRunnerBaratine extends BaseRunner
   }
 
   @Override
+  protected Object resolve(Class type, Annotation[] annotations)
+  {
+    Object result;
+
+    try {
+      if (HttpClient.class.equals(type)) {
+        result = new HttpClient(httpPort());
+      }
+      else if (ServiceWebSocket.class.isAssignableFrom(type)) {
+        Path path = null;
+        for (Annotation ann : annotations) {
+          if (Path.class.isAssignableFrom(ann.annotationType())) {
+            path = (Path) ann;
+            break;
+          }
+        }
+
+        Objects.requireNonNull(path);
+
+        result = type.newInstance();
+
+        String urlPath = path.value();
+
+        if (!urlPath.startsWith("/"))
+          throw new IllegalStateException(L.l(
+            "path value in annotation {0} must start with a '/'",
+            path));
+
+        final String wsUrl = wsUrl() + urlPath;
+
+        WebSocketClient.open(wsUrl, (ServiceWebSocket<Object,Object>) result);
+      }
+      else {
+        throw new IllegalArgumentException(L.l("type {0} is not supported",
+                                               type));
+      }
+
+      return result;
+    } catch (InstantiationException | IllegalAccessException | IOException e) {
+      String message = L.l(
+        "can't resolve object of type {0} with annotations {1} due to {2}",
+        type,
+        Arrays.asList(annotations),
+        e.getMessage());
+
+      log.log(Level.SEVERE, message, e);
+
+      throw new RuntimeException(message, e);
+    }
+  }
+
+  @Override
   public void runChild(FrameworkMethod child, RunNotifier notifier)
   {
     Thread thread = Thread.currentThread();
     ClassLoader oldLoader = thread.getContextClassLoader();
-    EnvironmentClassLoader envLoader = EnvironmentClassLoader.create(oldLoader,
-                                                                     "test-loader");
+    EnvironmentClassLoader envLoader
+      = EnvironmentClassLoader.create(oldLoader,
+                                      "test-loader");
 
     try {
       thread.setContextClassLoader(envLoader);
@@ -160,126 +204,4 @@ public class WebRunnerBaratine extends BaseRunner
     }
   }
 
-  class WebTestClass extends TestClass
-  {
-    public WebTestClass(Class<?> clazz)
-    {
-      super(clazz);
-    }
-
-    @Override
-    protected void scanAnnotatedMembers(Map<Class<? extends Annotation>,List<FrameworkMethod>> methodsForAnnotations,
-                                        Map<Class<? extends Annotation>,List<FrameworkField>> fieldsForAnnotations)
-    {
-      super.scanAnnotatedMembers(methodsForAnnotations, fieldsForAnnotations);
-
-      for (Map.Entry<Class<? extends Annotation>,List<FrameworkMethod>> entry
-        : methodsForAnnotations.entrySet()) {
-        if (Test.class.equals(entry.getKey())) {
-          List<FrameworkMethod> methods = new ArrayList<>();
-          for (FrameworkMethod method : entry.getValue()) {
-            Method javaMethod = method.getMethod();
-            if (javaMethod.getParameterTypes().length > 0) {
-              methods.add(new WebFrameworkMethod(javaMethod));
-            }
-            else {
-              methods.add(method);
-            }
-          }
-
-          entry.setValue(methods);
-        }
-      }
-    }
-  }
-
-  class WebFrameworkMethod extends FrameworkMethod
-  {
-    public WebFrameworkMethod(Method method)
-    {
-      super(method);
-    }
-
-    @Override
-    public void validatePublicVoidNoArg(boolean isStatic,
-                                        List<Throwable> errors)
-    {
-      if (!Modifier.isPublic(getModifiers()))
-        errors.add(new Exception(L.l("Method {0} must be public",
-                                     getMethod())));
-
-      if (!void.class.equals(getReturnType())) {
-        errors.add(new Exception(L.l("Method {0} must return void",
-                                     getMethod())));
-      }
-    }
-
-    @Override
-    public Object invokeExplosively(Object target, Object... params)
-      throws Throwable
-    {
-      Object[] args = fillParams(params);
-
-      return super.invokeExplosively(target, args);
-    }
-
-    public Object[] fillParams(Object... v)
-      throws IllegalAccessException, InstantiationException, IOException
-    {
-      Method method = getMethod();
-      Class<?>[] types = method.getParameterTypes();
-
-      Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-
-      if (v.length == types.length)
-        return v;
-
-      Object[] args = new Object[types.length];
-
-      int vStart = types.length - v.length;
-
-      System.arraycopy(v, 0, args, vStart, v.length);
-
-      for (int i = 0; i < vStart; i++) {
-        Class type = types[i];
-        Annotation[] annotations = parameterAnnotations[i];
-
-        if (HttpClient.class.equals(type)) {
-          args[i] = new HttpClient(httpPort());
-        }
-        else if (ServiceWebSocket.class.isAssignableFrom(type)) {
-          Path path = null;
-          for (Annotation ann : annotations) {
-            if (Path.class.isAssignableFrom(ann.annotationType())) {
-              path = (Path) ann;
-              break;
-            }
-          }
-
-          Objects.requireNonNull(path);
-
-          Object arg = type.newInstance();
-
-          String urlPath = path.value();
-
-          if (!urlPath.startsWith("/"))
-            throw new IllegalStateException(L.l(
-              "path value in annotation {0} must start with a '/'",
-              path));
-
-          final String wsUrl = wsUrl() + urlPath;
-
-          WebSocketClient.open(wsUrl, (ServiceWebSocket<Object,Object>) arg);
-
-          args[i] = arg;
-        }
-        else {
-          throw new IllegalArgumentException(L.l("type {0} is not supported",
-                                                 type));
-        }
-      }
-
-      return args;
-    }
-  }
 }
