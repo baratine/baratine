@@ -226,7 +226,8 @@ public class SocketChannelWrapperBar extends SocketBar
       try {
         return (InetSocketAddress) s.getRemoteAddress();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        return null;
+        //throw new RuntimeException(e);
       }
     }
     else {

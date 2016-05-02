@@ -288,11 +288,13 @@ public class ConnectionHttp implements ConnectionProtocol
       return StateConnection.CLOSE;
     }
   }
-  
+
+  /*
   public void closeWrite()
   {
     _sequenceClose.set(_sequenceWrite.get());
   }
+  */
 
   /**
    * The last write has completed after the read. 
@@ -361,7 +363,6 @@ public class ConnectionHttp implements ConnectionProtocol
     _sequenceFlush.set(_sequenceWrite.get());
 
     if (_isClosePending.compareAndSet(true, false)) {
-      // XXX: wake?
       connTcp().proxy().requestWake();
     }
   }

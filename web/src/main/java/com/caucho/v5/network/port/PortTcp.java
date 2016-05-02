@@ -825,7 +825,7 @@ public class PortTcp implements PortSocket
     if (removeConnection(conn)) {
       _idleConn.free(conn);
     }
-    else if (isActive()){
+    else if (isActive()) {
       // Thread.dumpStack();
       System.out.println("Possible Double Close: " + this + " " + conn);
     }
@@ -1053,7 +1053,7 @@ public class PortTcp implements PortSocket
         //_connThreadPool.wake();
 
         _suspendSet.addAll(_activeConnectionSet.keySet());
-
+        
         for (int i = _suspendSet.size() - 1; i >= 0; i--) {
           ConnectionTcp conn = _suspendSet.get(i);
 

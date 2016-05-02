@@ -110,7 +110,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     _readStream.reuseBuffer(true);
 
     _connectionId = connId;
-
+    
     _port = port;
 
     _loader = port.classLoader();
@@ -129,6 +129,8 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
 
     //_connectionTask = new TaskConnection(this);
     _pollHandle = new PollControllerTcp(this);
+    
+    System.out.println("*CTCP: " + this);
   }
 
   /**
@@ -200,14 +202,14 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   /**
    * Returns the request for the connection.
    */
-  public final ConnectionProtocol protocol()
+  public final ConnectionProtocol connProtocol()
   {
     return _protocol;
   }
 
   public String getRequestUrl()
   {
-    ConnectionProtocol request = protocol();
+    ConnectionProtocol request = connProtocol();
 
     String url = request.url();
     
@@ -448,7 +450,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   /**
    * Returns the user statistics state
    */
-  public String getDisplayState()
+  public String displayState()
   {
     return _state.toString();
   }
@@ -516,7 +518,11 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   }
 
   /**
-   * Wake a connection from a comet suspend.
+   * Wake a connection.
+   * 
+   * The connection may be idle because it's received a close-read but 
+   * HTTP is still processing. When the HTTP write completes, it will
+   * wake the read thread.
    */
   @Override
   public void requestWake()
@@ -604,6 +610,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
           break;
 
         case POLL:
+          System.out.println("POLL: " + this + " " + port().pollManager());
           ServiceRef.flushOutbox();
           tailState = state;
           return tailState;
@@ -628,6 +635,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
         case FREE:
           tailState = state;
           ServiceRef.flushOutboxAndExecuteLast();
+          System.out.println("FREE: " + this);
           return tailState;
       
           /*
@@ -712,9 +720,9 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
         _idleExpireTime = now + 600 * 1000L;
       }
       
-      StateConnection stateNext = protocol().service();
+      StateConnection stateNext = connProtocol().service();
 
-      _state = _state.onServiceNext(stateNext);
+      _state = _state.next(stateNext);
       
       return _state;
     }
@@ -731,11 +739,16 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     // Thread thread = Thread.currentThread();
 
     try {
-      StateConnection stateNext = protocol().onCloseRead();
+      StateConnection stateNext = connProtocol().onCloseRead();
 
-      _state = _state.onServiceNext(stateNext);
-      
+      StateConnection oldState = _state;
+      _state = _state.next(stateNext);
+
       return _state;
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      throw e;
     }
     finally {
       _socket.setRequestExpireTime(0);
@@ -820,14 +833,15 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
         log.finest("keepalive data available (poll) [" + dbgId() + "]");
       }
 
-      _state = _state.toWake();
+      //_state = _state.toWake();
+      //System.out.println("DATA: " + _state);
       /*
         if (_stateRef.get().toPollSleep(_stateRef)) {
           throw new IllegalStateException();
         }
        */
 
-      return _state;
+      return StateConnection.ACTIVE;
     }
 
     case CLOSED: {
@@ -835,7 +849,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
         log.finest(dbgId() + " keepalive close (poll)");
       }
 
-      _state = _state.toWake();
+      //_state = _state.toWake();
 
       /*
         if (_stateRef.get().toPollSleep(_stateRef)) {
@@ -843,7 +857,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
         }
        */
 
-      return StateConnection.CLOSE;
+      return StateConnection.CLOSE_READ_A;
     }
 
     default:
@@ -969,6 +983,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     }
     
     _state = _state.toClose();
+    System.out.println("DISCON: " + _state);
     
     // synchronized because shutdown can call disconnect on multiple threads
     synchronized (this) {
@@ -1008,7 +1023,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
       }
 
       try {
-        protocol().onClose();
+        connProtocol().onClose();
       } catch (Throwable e) {
         log.warning(e.toString());
 
@@ -1075,7 +1090,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
       }
 
       try {
-        protocol().onClose();
+        connProtocol().onClose();
       } catch (Throwable e) {
         log.warning(e.toString());
 
@@ -1093,20 +1108,32 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
         else
           log.finer("closing connection " + id());
       }
-      
+
+      StateConnection oldState = _state;
       _state = _state.toFree();
       
       if (_state.isFree()) {
         _port.freeConnection(this);
       }
+      else {
+        System.out.println("UNFREE: " + oldState + " " + this);
+      }
     }
   }
 
+  /**
+   * Destroy kills the connection and drops it from the †connection pool.
+   * 
+   * Destroy should only occur if the connection state machine has failed or
+   * 
+   */
   private void destroy()
   {
     if (log.isLoggable(Level.FINEST)) {
       log.finest(this + " destroying connection");
     }
+    
+    System.out.println("DESTROY: " + _state);
 
     try {
       _socket.forceShutdown();

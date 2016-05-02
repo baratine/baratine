@@ -157,8 +157,9 @@ public class RequestHttpWeb implements ConnectionProtocol
       }
       */
     } catch (Throwable e) {
-      log.log(Level.WARNING, e.toString(), e);
-      e.printStackTrace();
+      log.warning(e.toString());
+      log.log(Level.FINER, e.toString(), e);
+      //e.printStackTrace();
       
       toClose();
       
@@ -233,9 +234,10 @@ public class RequestHttpWeb implements ConnectionProtocol
         return StateConnection.CLOSE_READ_A;
       }
     } catch (Throwable e) {
-      log.log(Level.WARNING, e.toString(), e);
+      log.warning(e.toString());
+      log.log(Level.FINER, e.toString(), e);
       
-      e.printStackTrace();
+      //e.printStackTrace();
       
       //toClose();
       

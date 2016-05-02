@@ -19,7 +19,7 @@ import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.CurrentTime;
 
 /**
- * Represents a protocol connection.
+ * poll manager that spawns a thread
  */
 public class PollTcpManagerThread
   extends PollTcpManagerBase
@@ -32,7 +32,7 @@ public class PollTcpManagerThread
   
   private final ThreadPool _threadPool;
   
-  private final Executor _executor;
+  //private final Executor _executor;
 
   private int _selectMax;
   private long _maxSelectTime = 60000L;
@@ -51,7 +51,7 @@ public class PollTcpManagerThread
     
     _selectMax = _threadPool.getThreadMax() / 2;
     
-    _executor = _threadPool; // XXX: s/b a throttle
+    //_executor = _threadPool; // XXX: s/b a throttle
   }
 
   /**
@@ -160,10 +160,38 @@ public class PollTcpManagerThread
       return PollResult.CLOSED;
     }
 
-    // XXX: check for full
-    _executor.execute(new PollTask(conn));
+    return poll(conn);
+  }
+  
+  private PollResult poll(PollController conn)
+  {
+    try {
+      long expireTime = conn.getIdleExpireTime();
+      int result;
+      
+      long timeout = expireTime - CurrentTime.currentTime();
+      
+      timeout = Math.max(timeout, 0);
+      
+      result = conn.fillWithTimeout(timeout);
+
+      if (result > 0) {
+        System.out.println("RES: " + result);
+        return PollResult.DATA;
+      }
+      else if (expireTime <= CurrentTime.currentTime()) {
+        log.finer("timeout " + conn);
+      }
+      else {
+        log.fine("close-read " + conn);
+      }
+    } catch (IOException e) {
+      log.log(Level.FINER, e.toString(), e);
+    } finally {
+      _connectionCount.decrementAndGet();
+    }
     
-    return PollResult.START;
+    return PollResult.CLOSED;
   }
 
   @Override
@@ -212,54 +240,5 @@ public class PollTcpManagerThread
   public String toString()
   {
     return getClass().getSimpleName() + "[max=" + _selectMax + "]";
-  }
-  
-  private class PollTask implements Runnable
-  {
-    private PollController _conn;
-    
-    PollTask(PollController conn)
-    {
-      _conn = conn;
-    }
-    
-    @Override
-    public void run()
-    {
-      boolean isValid = false;
-      
-      try {
-        long expireTime = _conn.getIdleExpireTime();
-        int result;
-        
-        long timeout = expireTime - CurrentTime.currentTime();
-        
-        timeout = Math.max(timeout, 0);
-        
-        result = _conn.fillWithTimeout(timeout);
-
-        if (result > 0) {
-          isValid = true;
-        }
-        else if (expireTime <= CurrentTime.currentTime()) {
-          log.finer("timeout " + _conn);
-        }
-        else {
-          log.fine("close-read " + _conn);
-        }
-      } catch (IOException e) {
-        log.log(Level.FINER, e.toString(), e);
-      } finally {
-        _connectionCount.decrementAndGet();
-        
-        if (isValid) {
-          _conn.onPollRead();
-        }
-        else {
-          // _conn.onKeepaliveTimeout();
-          _conn.onPollReadClose();
-        }
-      }
-    }
   }
 }

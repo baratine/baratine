@@ -51,8 +51,8 @@ public class ThreadDumpPro extends ThreadDump
       ConnectionTcp conn
         = networkSystem.findConnectionByThreadId(info.getThreadId());
 
-      if (conn != null && conn.protocol() instanceof RequestHttpBase) {
-        RequestHttpBase req = (RequestHttpBase) conn.protocol();
+      if (conn != null && conn.connProtocol() instanceof RequestHttpBase) {
+        RequestHttpBase req = (RequestHttpBase) conn.connProtocol();
 
         if (true) throw new UnsupportedOperationException();
         /* XXX:

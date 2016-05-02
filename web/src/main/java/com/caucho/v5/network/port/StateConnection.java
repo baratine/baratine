@@ -90,7 +90,7 @@ public enum StateConnection
     public boolean isClose() { return true; }
 
     @Override
-    public StateConnection onServiceNext(StateConnection result)
+    public StateConnection next(StateConnection result)
     {
       return this;
     }
@@ -117,7 +117,7 @@ public enum StateConnection
     public boolean isDestroy() { return true; }
 
     @Override
-    public StateConnection onServiceNext(StateConnection result)
+    public StateConnection next(StateConnection result)
     {
       return this;
     }
@@ -171,7 +171,7 @@ public enum StateConnection
     return this;
   }
 
-  public StateConnection onServiceNext(StateConnection result)
+  public StateConnection next(StateConnection result)
   {
     Objects.requireNonNull(result);
     

@@ -31,17 +31,23 @@ package com.caucho.v5.http.protocol;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.caucho.v5.network.port.ConnectionTcp;
 
 import io.baratine.io.Buffer;
 import io.baratine.service.AfterBatch;
+import sun.util.logging.resources.logging;
 
 /**
  * Handles a HTTP connection.
  */
 class OutHttpProxyImpl implements OutHttpProxy
 {
+  private static final Logger log 
+    = Logger.getLogger(OutHttpProxyImpl.class.getName());
+  
   private final ConnectionHttp _connHttp;
   
   private ArrayList<Pending> _pendingList = new ArrayList<>();
@@ -88,7 +94,7 @@ class OutHttpProxyImpl implements OutHttpProxy
     }
     
     if (isClose) {
-      connHttp().closeWrite();
+      //connHttp().closeWrite();
     }
   }
 
@@ -159,7 +165,8 @@ class OutHttpProxyImpl implements OutHttpProxy
         conn().writeStream().flush();
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      log.log(Level.FINER, e.toString(), e);
+      conn().requestDestroy();
     } finally {
       _connHttp.onFlush();
     }

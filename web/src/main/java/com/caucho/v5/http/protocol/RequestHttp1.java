@@ -880,7 +880,7 @@ public class RequestHttp1 extends RequestHttpBase
                     + ") (IP=" + connTcp().ipRemote() + ")");
         log.warning(new String(readBuffer, 0, readLength));
         
-        throw new BadRequestException("Invalid Request(Remote IP=" + connTcp().ipRemote() + ")");
+        throw new BadRequestException("Invalid Request (Remote IP=" + connTcp().ipRemote() + ")");
       }
 
       if (readLength <= readOffset) {
