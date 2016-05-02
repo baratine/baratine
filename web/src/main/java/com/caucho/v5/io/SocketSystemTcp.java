@@ -97,19 +97,20 @@ public class SocketSystemTcp extends SocketSystem
                            boolean isSSL)
     throws IOException
   {
-    throw new UnsupportedOperationException();
-    /*
+//    throw new UnsupportedOperationException();
+
     Socket s;
     
     s = new Socket();
 
     if (connectTimeout > 0)
-      s.connect(addr, (int) connectTimeout);
+      s.connect(addressRemote, (int) connectTimeout);
     else
-      s.connect(addr);
+      s.connect(addressRemote);
 
     if (isSSL) {
-      s = connectSSL(s, addr);
+      throw new UnsupportedOperationException();
+      //s = connectSSL(s, addressRemote);
     }
     
     if (! s.isConnected()) {
@@ -117,7 +118,7 @@ public class SocketSystemTcp extends SocketSystem
     }
 
     return new SocketWrapperBar(s);
-    */
+
   }
   
   private Socket connectSSL(Socket s, SocketBarBuilderTcp builder)

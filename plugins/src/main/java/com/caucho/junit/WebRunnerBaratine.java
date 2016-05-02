@@ -32,12 +32,14 @@ package com.caucho.junit;
 import static io.baratine.web.Web.port;
 import static io.baratine.web.Web.start;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,15 +47,16 @@ import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import com.caucho.v5.vfs.VfsOld;
+import com.caucho.v5.websocket.WebSocketClient;
+import io.baratine.web.Path;
+import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Web;
 import io.baratine.web.WebServer;
 import org.junit.Test;
-import org.junit.internal.runners.statements.InvokeMethod;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 public class WebRunnerBaratine extends BaseRunner
@@ -81,12 +84,6 @@ public class WebRunnerBaratine extends BaseRunner
     return new WebTestClass(testClass);
   }
 
-  @Override
-  protected Statement methodInvoker(FrameworkMethod method, Object test)
-  {
-    return new InvokeWebMethod(method, test);
-  }
-
   private String httpHost()
   {
     return "localhost";
@@ -98,6 +95,11 @@ public class WebRunnerBaratine extends BaseRunner
   }
 
   private String httpUrl()
+  {
+    return "http://" + httpHost() + ':' + httpPort();
+  }
+
+  private String wsUrl()
   {
     return "http://" + httpHost() + ':' + httpPort();
   }
@@ -155,26 +157,6 @@ public class WebRunnerBaratine extends BaseRunner
       }
 
       thread.setContextClassLoader(oldLoader);
-    }
-  }
-
-  class InvokeWebMethod extends InvokeMethod
-  {
-    private Object _target;
-    private FrameworkMethod _testMethod;
-
-    public InvokeWebMethod(FrameworkMethod testMethod, Object target)
-    {
-      super(testMethod, target);
-
-      _target = target;
-      _testMethod = testMethod;
-    }
-
-    @Override
-    public void evaluate() throws Throwable
-    {
-      this._testMethod.invokeExplosively(this._target, new Object[0]);
     }
   }
 
@@ -242,8 +224,12 @@ public class WebRunnerBaratine extends BaseRunner
     }
 
     public Object[] fillParams(Object... v)
+      throws IllegalAccessException, InstantiationException, IOException
     {
-      Class<?>[] types = getMethod().getParameterTypes();
+      Method method = getMethod();
+      Class<?>[] types = method.getParameterTypes();
+
+      Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 
       if (v.length == types.length)
         return v;
@@ -256,9 +242,36 @@ public class WebRunnerBaratine extends BaseRunner
 
       for (int i = 0; i < vStart; i++) {
         Class type = types[i];
+        Annotation[] annotations = parameterAnnotations[i];
 
         if (HttpClient.class.equals(type)) {
           args[i] = new HttpClient(httpPort());
+        }
+        else if (ServiceWebSocket.class.isAssignableFrom(type)) {
+          Path path = null;
+          for (Annotation ann : annotations) {
+            if (Path.class.isAssignableFrom(ann.annotationType())) {
+              path = (Path) ann;
+              break;
+            }
+          }
+
+          Objects.requireNonNull(path);
+
+          Object arg = type.newInstance();
+
+          String urlPath = path.value();
+
+          if (!urlPath.startsWith("/"))
+            throw new IllegalStateException(L.l(
+              "path value in annotation {0} must start with a '/'",
+              path));
+
+          final String wsUrl = wsUrl() + urlPath;
+
+          WebSocketClient.open(wsUrl, (ServiceWebSocket<Object,Object>) arg);
+
+          args[i] = arg;
         }
         else {
           throw new IllegalArgumentException(L.l("type {0} is not supported",
