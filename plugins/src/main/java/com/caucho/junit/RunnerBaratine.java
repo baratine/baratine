@@ -32,7 +32,7 @@ package com.caucho.junit;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +52,7 @@ import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
 import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.inject.BaratineProducer;
+import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.loader.EnvironmentClassLoader;
@@ -83,6 +84,9 @@ public class RunnerBaratine extends BaseRunner
 
   private static final L10N L = new L10N(RunnerBaratine.class);
 
+  private Map<ServiceDescriptor,ServiceRef> _descriptors;
+  private Services _manager;
+
   public RunnerBaratine(Class<?> cl) throws InitializationError
   {
     super(cl);
@@ -96,6 +100,12 @@ public class RunnerBaratine extends BaseRunner
     initialize(test);
 
     return test;
+  }
+
+  @Override
+  protected Object resolve(Class type, Annotation[] annotations)
+  {
+    return findService(_manager, _descriptors, type, annotations);
   }
 
   private class VaultResourceDriver
@@ -159,10 +169,13 @@ public class RunnerBaratine extends BaseRunner
 
     serviceBuilder.start();
 
-    Map<ServiceDescriptor,ServiceRef> descriptors = deployServices(
-      serviceManager);
+    Map<ServiceDescriptor,ServiceRef> descriptors
+      = deployServices(serviceManager);
 
     bindFields(test, testClass, serviceManager, descriptors);
+
+    _descriptors = descriptors;
+    _manager = serviceManager;
   }
 
   private void bindFields(Object test,
@@ -176,17 +189,20 @@ public class RunnerBaratine extends BaseRunner
     for (FrameworkField field : fields) {
       Object inject;
 
-      if (field.getAnnotation(Service.class) != null) {
-        inject = findService(manager, descriptors, field);
+      Field javaField = field.getField();
+
+      if (javaField.getAnnotation(Service.class) != null) {
+        inject = findService(manager,
+                             descriptors,
+                             javaField.getType(),
+                             javaField.getAnnotations());
       }
-      else if (field.getAnnotation(Inject.class) != null) {
-        inject = findInject(manager, field);
+      else if (javaField.getAnnotation(Inject.class) != null) {
+        inject = findInject(manager, javaField.getType());
       }
       else {
         continue;
       }
-
-      Field javaField = field.getField();
 
       javaField.setAccessible(true);
 
@@ -213,11 +229,23 @@ public class RunnerBaratine extends BaseRunner
 
   public Object findService(Services manager,
                             Map<ServiceDescriptor,ServiceRef> map,
-                            FrameworkField field)
+                            Class<?> type,
+                            Annotation[] annotations)
   {
-    final Service binding = field.getAnnotation(Service.class);
+    Service binding = null;
 
-    final Class type = field.getType();
+    for (int i = 0; i < annotations.length; i++) {
+      Annotation annotation = annotations[i];
+      if (Service.class.isAssignableFrom(annotation.annotationType())) {
+        binding = (Service) annotation;
+
+        break;
+      }
+    }
+
+    if (binding == null) {
+      binding = ServiceLiteral.LITERAL;
+    }
 
     ServiceRef service = null;
 
@@ -234,8 +262,8 @@ public class RunnerBaratine extends BaseRunner
 
     if (service == null)
       throw new IllegalStateException(L.l(
-        "unable to bind field {0}, make sure corresponding service is deployed.",
-        field.getField()));
+        "unable to bind type {0} with annotations {1}, make sure corresponding service is deployed.",
+        Arrays.asList(annotations)));
 
     if (ServiceRef.class == type)
       return service;
@@ -297,10 +325,8 @@ public class RunnerBaratine extends BaseRunner
     return null;
   }
 
-  private Object findInject(Services manager, FrameworkField field)
+  private Object findInject(Services manager, final Class<?> type)
   {
-    final Class type = field.getType();
-
     Object inject = null;
 
     if (type == Services.class) {
@@ -308,8 +334,8 @@ public class RunnerBaratine extends BaseRunner
     }
 
     if (inject == null)
-      throw new IllegalStateException(L.l("unable to bind field {0}",
-                                          field.getField()));
+      throw new IllegalStateException(L.l("unable to bind field of type {0}",
+                                          type));
 
     return inject;
   }
@@ -502,6 +528,22 @@ public class RunnerBaratine extends BaseRunner
         expr));
 
     return System.getProperty(expr.substring(1, expr.length() - 1));
+  }
+
+  private static class ServiceLiteral extends AnnotationLiteral<Service>
+    implements Service
+  {
+    private final static ServiceLiteral LITERAL = new ServiceLiteral();
+
+    private ServiceLiteral()
+    {
+    }
+
+    @Override
+    public String value()
+    {
+      return "";
+    }
   }
 }
 
