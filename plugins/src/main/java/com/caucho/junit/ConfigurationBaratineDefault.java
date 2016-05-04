@@ -37,7 +37,7 @@ class ConfigurationBaratineDefault
 {
   public static final long TEST_TIME = 894621091000L;
 
-  static final ConfigurationBaratine INSTNANCE
+  static final ConfigurationBaratine INSTANCE
     = new ConfigurationBaratineDefault();
 
   private ConfigurationBaratineDefault()

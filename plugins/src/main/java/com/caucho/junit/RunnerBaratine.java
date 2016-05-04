@@ -561,36 +561,6 @@ public class RunnerBaratine extends BaseRunner
     }
   }
 
-  private String getWorkDir()
-  {
-    final ConfigurationBaratine config = getConfiguration();
-
-    String workDir = config.workDir();
-
-    if (workDir.charAt(0) == '{') {
-      workDir = eval(workDir);
-    }
-
-    return workDir;
-  }
-
-  private long getStartTime()
-  {
-    final ConfigurationBaratine config = getConfiguration();
-
-    return config.testTime();
-  }
-
-  private String eval(String expr)
-  {
-    if (expr.charAt(0) != '{' || expr.charAt(expr.length() - 1) != '}')
-      throw new IllegalArgumentException(L.l(
-        "property {0} does not match expected format of {property}",
-        expr));
-
-    return System.getProperty(expr.substring(1, expr.length() - 1));
-  }
-
   private static class ServiceLiteral extends AnnotationLiteral<Service>
     implements Service
   {

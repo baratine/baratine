@@ -171,8 +171,7 @@ public class WebRunnerBaratine extends BaseRunner
       Logger.getLogger("").setLevel(Level.FINER);
       Logger.getLogger("javax.management").setLevel(Level.INFO);
 
-      String user = System.getProperty("user.name");
-      String baratineRoot = "/tmp/" + user + "/qa";
+      String baratineRoot = getWorkDir();
       System.setProperty("baratine.root", baratineRoot);
 
       try {
