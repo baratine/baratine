@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
  * This file is part of Baratine(TM)
  *
@@ -24,18 +24,23 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Nam Nguyen
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.kraken.table;
+package com.caucho.junit;
 
-import io.baratine.service.Result;
-import io.baratine.service.Service;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Service
-public interface DatabaseKraken
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface Http
 {
-  void execute(Result<Object> result, String sql, Object... params);
+  String host() default "localhost";
 
-  void query(Result<ResultSetKraken> result, String sql, Object... params);
+  int port() default 8080;
+
+  boolean secure() default false;
 }
