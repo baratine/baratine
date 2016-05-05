@@ -112,14 +112,16 @@ public interface StubStateAmp
   {
   }
 
-  default void onSave(StubAmp stub, SaveResult saveResult)
+  default void onSave(StubAmp stub, Result<Void> result)
   {
   }
 
+  /*
   default boolean onSave(StubAmp stub)
   {
     return false;
   }
+  */
 
   default void onSaveComplete(StubAmp stub)
   {

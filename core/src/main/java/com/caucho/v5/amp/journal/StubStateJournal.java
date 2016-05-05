@@ -45,19 +45,19 @@ import com.caucho.v5.amp.stub.StubAmp;
 /**
  * State/dispatch for a loadable actor.
  */
-public class LoadStateJournal implements StubStateAmp
+public class StubStateJournal implements StubStateAmp
 {
-  private StubJournal _journalActor;
+  private StubJournal _stubJournal;
   
-  LoadStateJournal(StubJournal journalActor)
+  StubStateJournal(StubJournal stubJournal)
   {
-    Objects.requireNonNull(journalActor);
+    Objects.requireNonNull(stubJournal);
     
-    _journalActor = journalActor;
+    _stubJournal = stubJournal;
   }
   
   @Override
-  public StubStateAmp load(StubAmp actor,
+  public StubStateAmp load(StubAmp stub,
                         InboxAmp inbox,
                         MessageAmp msg)
   {
@@ -65,7 +65,7 @@ public class LoadStateJournal implements StubStateAmp
   }
 
   @Override
-  public void onModify(StubAmp  actorAmpBase)
+  public void onModify(StubAmp stub)
   {
   }
 
@@ -115,7 +115,7 @@ public class LoadStateJournal implements StubStateAmp
 
   @Override
   public void send(StubAmp actorDeliver,
-                   StubAmp actorMessage,
+                   StubAmp stubMessage,
                    MethodAmp method, 
                    HeadersAmp headers, 
                    Object []args)
@@ -125,18 +125,18 @@ public class LoadStateJournal implements StubStateAmp
     }
     
     // ActorAmp actorInvoke = method.getActorInvoke(actorMessage);
-    StubAmp actorInvoke = actorMessage;
+    StubAmp stubInvoke = stubMessage;
     
-    StubJournal journalActor = _journalActor;
+    StubJournal stubJournal = _stubJournal;
     
-    JournalAmp journal = journalActor.journal();
-    InboxAmp inbox = journalActor.getInbox();
+    JournalAmp journal = stubJournal.journal();
+    InboxAmp inbox = stubJournal.inbox();
     
-    journal.writeSend(actorInvoke, method.name(), args, inbox);
+    journal.writeSend(stubInvoke, method.name(), args, inbox);
     
     JournalAmp toPeerJournal = getToPeerJournal();
     if (toPeerJournal != null) {
-      toPeerJournal.writeSend(actorInvoke, method.name(), args, 
+      toPeerJournal.writeSend(stubInvoke, method.name(), args, 
                               getJournalInbox());
     }
   }
@@ -206,10 +206,10 @@ public class LoadStateJournal implements StubStateAmp
     // ActorAmp actorInvoke = method.getActorInvoke(actorMessage);
     StubAmp actorInvoke = actorMessage;
     
-    StubJournal journalActor = _journalActor;
+    StubJournal journalActor = _stubJournal;
     
     JournalAmp journal = journalActor.journal();
-    InboxAmp inbox = journalActor.getInbox();
+    InboxAmp inbox = journalActor.inbox();
 
     journal.writeQuery(actorInvoke, method.name(), args, inbox);
     
@@ -233,11 +233,11 @@ public class LoadStateJournal implements StubStateAmp
   
   private JournalAmp getToPeerJournal()
   {
-    return _journalActor.getToPeerJournal();
+    return _stubJournal.getToPeerJournal();
   }
   
   private InboxAmp getJournalInbox()
   {
-    return _journalActor.getInbox();
+    return _stubJournal.inbox();
   }
 }

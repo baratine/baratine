@@ -46,7 +46,7 @@ import com.caucho.v5.amp.inbox.OutboxAmpDirect;
 import com.caucho.v5.amp.inbox.OutboxAmpExecutorFactory;
 import com.caucho.v5.amp.inbox.OutboxAmpImpl;
 import com.caucho.v5.amp.journal.JournalAmp;
-import com.caucho.v5.amp.journal.JournalFactoryAmp;
+import com.caucho.v5.amp.journal.JournalDriverAmp;
 import com.caucho.v5.amp.message.DebugQueryMap;
 import com.caucho.v5.amp.message.SystemMessage;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
@@ -110,7 +110,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   private final ProxyFactoryAmp _proxyFactory;
   private final StubClassFactoryAmp _stubFactory;
   private final ShimFactory _shims = new ShimFactory();
-  private final JournalFactoryAmp _journalFactory;
+  private final JournalDriverAmp _journalDriver;
   // private final ContextSessionFactory _channelFactory;
   
   private final StubGenerator []_stubGenerators;
@@ -177,8 +177,9 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     
     _proxyFactory = new ProxyFactoryAmpImpl(this);
     _stubFactory = new StubClassFactoryAmpImpl(this);
-    _journalFactory = builder.journalFactory();
-    _journalDelay = builder.getJournalDelay();
+    _journalDriver = builder.journalDriver();
+
+    _journalDelay = builder.journalDelay();
     
     //_channelFactory = new ContextSessionFactory(this);
     
@@ -291,12 +292,6 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   public boolean isAutoStart()
   {
     return _isAutoStart;
-  }
-  
-  @Override
-  public void setAutoStart(boolean isAutoStart)
-  {
-    _isAutoStart = isAutoStart;
   }
   
   /*
@@ -729,7 +724,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
       return (ServiceRefAmp) worker;
     }
     
-    ServiceConfig config = null;
+    ServiceConfig config = ServiceConfig.NULL;
     
     StubAmp stub;
     
@@ -829,25 +824,23 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   @Override
   public JournalAmp openJournal(String name)
   {
-    if (_journalFactory != null) {
-      return _journalFactory.open(name, -1, -1);
+    if (_journalDriver != null) {
+      return _journalDriver.open(name);
     }
     else {
       return null;
     }
   }
 
-  public JournalAmp journal(String name, 
-                            int journalMaxCount,
-                            long journalDelay)
+  public JournalAmp journal(String name)
   {
-    return _journalFactory.open(name, journalMaxCount, journalDelay);
+    return _journalDriver.open(name);
   }
   
   @Override
   public void addAutoStart(ServiceRef serviceRef)
   {
-    if (_lifecycle.isActive()) {
+    if (_lifecycle.isActive() && isAutoStart()) {
       serviceRef.start();
     }
     else {
@@ -855,6 +848,26 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     }
     
     // _lazyStart.add(serviceRef);
+  }
+  
+  @Override
+  public void autoStart(boolean isAutoStart)
+  {
+    _isAutoStart = isAutoStart;
+    
+    autoStart();
+  }
+  
+  private void autoStart()
+  {
+    if (_lifecycle.isActive() && isAutoStart()) {
+      ArrayList<ServiceRefAmp> services = new ArrayList(_autoStart);
+      _autoStart.clear();
+      
+      for (ServiceRefAmp serviceRef : services) {
+        serviceRef.start();
+      }
+    }
   }
   
   @Override

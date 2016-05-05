@@ -29,15 +29,17 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Cancel;
-import io.baratine.service.Result;
-import io.baratine.service.Services;
-import io.baratine.service.ServiceRef;
-import io.baratine.timer.Timers;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+
+import com.caucho.v5.amp.service.ServiceConfig;
+
+import io.baratine.service.Cancel;
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
+import io.baratine.service.Services;
+import io.baratine.timer.Timers;
 
 /**
  * Baratine actor container for children.
@@ -55,11 +57,11 @@ public class StubContainerJournal extends StubContainerBase
   
   private boolean _isActive;
   
-  public StubContainerJournal(String path, long journalDelay)
+  public StubContainerJournal(String path, ServiceConfig config)
   {
     super(path);
     
-    _journalDelay = journalDelay;
+    _journalDelay = config.journalDelay();
   }
   
   @Override
@@ -103,7 +105,7 @@ public class StubContainerJournal extends StubContainerBase
   }
   
   @Override
-  public void afterBatch(StubAmp actor)
+  public void afterBatch(StubAmp stub)
   {
     if (isSaveRequired()
         && _serviceSelf != null
@@ -125,10 +127,10 @@ public class StubContainerJournal extends StubContainerBase
   }
 
   @Override
-  public void onSave(SaveResult saveResult)
+  public void onSave(Result<Void> result)
   {
     _isCheckpointStarted.compareAndSet(true, false);
     
-    super.onSave(saveResult);
+    super.onSave(result);
   }
 }

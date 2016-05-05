@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.journal.JournalFactoryAmp;
+import com.caucho.v5.amp.journal.JournalDriverAmp;
 import com.caucho.v5.amp.journal.JournalFactoryBase;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
@@ -86,7 +86,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   private String _debugId;
   
   private ProxyFactoryAmp _proxyFactory;
-  private JournalFactoryAmp _journalFactory;
+  private JournalDriverAmp _journalFactory;
   private QueueFullHandler _queueFullHandler;
   private boolean _isContextManager = true;
   private ServiceNode _podNode;
@@ -112,10 +112,11 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   
   private ConcurrentArrayList<StubGenerator> _stubGenerators
     = new ConcurrentArrayList<>(StubGenerator.class);
+  private long _journalDelay;
   
   public ServicesBuilderImpl()
   {
-    journalFactory(new JournalFactoryBase());
+    journalDriver(new JournalFactoryBase());
     name("system");
     
     if (log.isLoggable(Level.FINER)) {
@@ -218,13 +219,13 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   }
 
   @Override
-  public JournalFactoryAmp journalFactory()
+  public JournalDriverAmp journalDriver()
   {
     return _journalFactory;
   }
 
   @Override
-  public ServiceManagerBuilderAmp journalFactory(JournalFactoryAmp factory)
+  public ServiceManagerBuilderAmp journalDriver(JournalDriverAmp factory)
   {
     Objects.requireNonNull(factory);
 
@@ -242,23 +243,23 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   @Override
   public ServiceManagerBuilderAmp journalMaxCount(int maxCount)
   {
-    _journalFactory.setMaxCount(maxCount);
+    //_journalFactory.setMaxCount(maxCount);
 
     return this;
   }
 
   @Override
-  public ServiceManagerBuilderAmp setJournalDelay(long timeout)
+  public ServiceManagerBuilderAmp journalDelay(long timeout)
   {
-    _journalFactory.setDelay(timeout);
+    _journalDelay = timeout;
 
     return this;
   }
 
   @Override
-  public long getJournalDelay()
+  public long journalDelay()
   {
-    return _journalFactory.getDelay();
+    return _journalDelay;
   }
   
   @Override
@@ -444,16 +445,21 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   {
     ServicesAmp manager = getRaw();
     
-    ArrayList<ServiceBuilderStart> services = new ArrayList<>(_services);
+    ArrayList<ServiceBuilderStart<?>> services = new ArrayList<>(_services);
     _services.clear();
-    
+
+    boolean isAutoStart = manager.isAutoStart();
     try {
-      for (ServiceBuilderStart service : services) {
-        ServiceRef ref = service.ref();
+      manager.autoStart(false);
+      
+      for (ServiceBuilderStart<?> service : services) {
+        service.ref();
       }
     } catch (Exception e) {
       e.printStackTrace();
       throw e;
+    } finally {
+      manager.autoStart(isAutoStart);
     }
     
     return manager;

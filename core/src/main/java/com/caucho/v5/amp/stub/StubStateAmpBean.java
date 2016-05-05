@@ -29,7 +29,6 @@
 
 package com.caucho.v5.amp.stub;
 
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,7 +40,6 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.spi.StubStateAmp;
 
-import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionClosed;
@@ -243,11 +241,25 @@ public enum StubStateAmpBean implements StubStateAmp
 
   MODIFY {
     @Override
-    public void onSave(StubAmp stub, SaveResult saveResult)
+    public void onSave(StubAmp stub, Result<Void> result)
     {
       stub.state(ACTIVE);
 
-      stub.onSaveStartImpl(saveResult.addBean());
+      stub.onSave(result);
+    }
+    
+    @Override
+    public void onSaveComplete(StubAmp stub)
+    {
+      stub.state(ACTIVE);
+    }
+
+    @Override
+    public void onDelete(StubAmp stub)
+    {
+      StubAmpBase stubBean = (StubAmpBase) stub;
+
+      stubBean.state(DELETE);
     }
     
     @Override
@@ -273,12 +285,12 @@ public enum StubStateAmpBean implements StubStateAmp
     }
 
     @Override
-    public void onSave(StubAmp stub, SaveResult saveResult)
+    public void onSave(StubAmp stub, Result<Void> result)
     {
       //System.out.println("DELSV: " + stub);
       //stub.state(ACTIVE_UNLOAD);
       
-      stub.onSaveStartImpl(saveResult.addBean());
+      stub.onSave(result);
     }
     
     @Override
@@ -286,8 +298,6 @@ public enum StubStateAmpBean implements StubStateAmp
     {
       stub.state(ACTIVE_UNLOAD);
     }
-
-    
     
     @Override
     public boolean isActive()
@@ -641,7 +651,7 @@ public enum StubStateAmpBean implements StubStateAmp
                              InboxAmp inbox,
                              MessageAmp msg)
     {
-      return onActiveImpl(stub, inbox, null, MODIFY);
+      return onActiveImpl(stub, inbox, null, ACTIVE);
     }
 
     @Override
@@ -665,9 +675,9 @@ public enum StubStateAmpBean implements StubStateAmp
     = Logger.getLogger(StubStateAmpBean.class.getName());
 
   @Override
-  public void onSave(StubAmp stub, SaveResult saveResult)
+  public void onSave(StubAmp stub, Result<Void> result)
   {
-    stub.onSaveChildren(saveResult);
+    stub.onSave(result);
   }
 
   @Override
@@ -751,9 +761,9 @@ public enum StubStateAmpBean implements StubStateAmp
   }
 
   private static StubStateAmp onActiveImpl(StubAmp stub, 
-                                        InboxAmp inbox,
-                                        MessageAmp msg, 
-                                        StubStateAmpBean nextState)
+                                           InboxAmp inbox,
+                                           MessageAmp msg, 
+                                           StubStateAmpBean nextState)
   {
     StubStatePending pending
       = new StubStatePending(nextState, stub, inbox, msg);
@@ -773,7 +783,7 @@ public enum StubStateAmpBean implements StubStateAmp
     private StubAmp _stub;
     private InboxAmp _inbox;
     private MessageAmp _msg;
-    private SaveResult _saveResult;
+    private Result<Void> _saveResult;
     
     private boolean _isComplete;
     private boolean _isPending;
@@ -852,11 +862,11 @@ public enum StubStateAmpBean implements StubStateAmp
     
 
     @Override
-    public void onSave(StubAmp stub, SaveResult saveResult)
+    public void onSave(StubAmp stub, Result<Void> result)
     {
       StubAmpBase stubBean = (StubAmpBase) stub;
       
-      stubBean.queuePendingSave(saveResult);
+      stubBean.queuePendingSave(result);
     }
 
     @Override

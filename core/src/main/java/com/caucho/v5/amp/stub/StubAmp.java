@@ -237,9 +237,6 @@ public interface StubAmp
   {
   }
   
-  boolean onSave(Result<Boolean> result);
-  void onSaveEnd(boolean isValid);
-  
   void onShutdown(ShutdownModeAmp mode);
 
   StubAmp worker(StubAmp stubMessage);
@@ -301,11 +298,6 @@ public interface StubAmp
   {
   }
   
-  default boolean onSaveStartImpl(Result<Boolean> addBean)
-  {
-    return false;
-  }
-  
   default void onLoad(Result<? super Boolean> result)
   {
   }
@@ -314,8 +306,30 @@ public interface StubAmp
   {
   }
   
+  default void onSave(Result<Void> result)
+  {
+    onSaveChild(result);
+  }
+  
+  default void onSaveChild(Result<Void> result)
+  {
+    result.ok(null);
+  }
+  
+  void onSaveEnd(boolean isValid);
+  
   default void onSaveChildren(SaveResult saveResult)
   {
     
+  }
+  
+  default boolean onSaveStartImpl(Result<Boolean> addBean)
+  {
+    return false;
+  }
+
+  default void onSaveRequest(Result<Void> result)
+  {
+    onSave(result);
   }
 }

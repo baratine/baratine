@@ -170,9 +170,10 @@ public interface ServicesAmp extends Services, LookupAmp
   
   void start();
 
+  // used to batch addition of auto-start services
   boolean isAutoStart();
-  void setAutoStart(boolean isAutoStart);
-
+  void autoStart(boolean isAutoStart);
+  
   /*
   String getSelfServer();
   void setSelfServer(String hostName);

@@ -423,9 +423,9 @@ abstract public class ServiceManagerAmpWrapper implements ServicesAmp
   }
   
   @Override
-  public void setAutoStart(boolean isAutoStart)
+  public void autoStart(boolean isAutoStart)
   {
-    delegate().setAutoStart(isAutoStart);
+    delegate().autoStart(isAutoStart);
   }
   
   /*

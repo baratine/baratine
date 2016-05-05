@@ -38,13 +38,14 @@ import com.caucho.v5.util.L10N;
 /**
  * Factory for opening and restoring journals.
  */
-public class JournalFactoryImpl implements JournalFactoryAmp
+public class JournalDriverImpl implements JournalDriverAmp
 {
-  private static final L10N L = new L10N(JournalFactoryImpl.class);
+  private static final L10N L = new L10N(JournalDriverImpl.class);
   
-  private int _maxCount = -1;
-  private long _timeout = -1;
+  //private int _maxCount = -1;
+  //private long _timeout = -1;
   
+  /*
   @Override
   public void setMaxCount(int maxCount)
   {
@@ -62,12 +63,14 @@ public class JournalFactoryImpl implements JournalFactoryAmp
   {
     return _timeout;
   }
+  */
   
   @Override
-  public JournalAmp open(String name, int maxCount, long timeout)
+  public JournalAmp open(String name) // , int maxCount, long timeout)
   {
     JournalSystem system = JournalSystem.getCurrent();
     
+    /*
     if (maxCount < 0) {
       maxCount = _maxCount;
     }
@@ -75,9 +78,10 @@ public class JournalFactoryImpl implements JournalFactoryAmp
     if (timeout < 0) {
       timeout = _timeout;
     }
+    */
     
     if (system != null) {
-      return new JournalImpl(system.openJournal(name), maxCount, timeout);
+      return new JournalImpl(system.openJournal(name)); // , maxCount, timeout);
     }
     else {
       throw new ServiceException(L.l("Journals are not supported on this system."));
@@ -95,7 +99,7 @@ public class JournalFactoryImpl implements JournalFactoryAmp
     }
     
     if (peerJournal != null) {  
-      return new JournalImpl(peerJournal, -1, -1);
+      return new JournalImpl(peerJournal); // , -1, -1);
     }
     else {
       throw new ServiceException(L.l("Peer journals are not supported on this system."));

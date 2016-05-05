@@ -29,14 +29,14 @@
 
 package com.caucho.v5.amp.spi;
 
-import io.baratine.service.ServiceRef;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.SaveResult;
+
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 /**
- * Lifecycle container for actors.
+ * Lifecycle container for stubs
  */
 public interface StubContainerAmp
 {
@@ -44,11 +44,11 @@ public interface StubContainerAmp
 
   ServiceRef getService(String path);
 
-  void addModifiedChild(StubAmp actor);
+  void addModifiedChild(StubAmp stub);
 
-  void afterBatch(StubAmp actor);
+  void afterBatch(StubAmp stub);
   
-  void onSave(SaveResult saveResultø);
+  void onSave(Result<Void> result);
 
   boolean isJournalReplay();
 

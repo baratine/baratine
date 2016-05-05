@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,37 +27,20 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.service;
+package com.caucho.v5.amp.journal;
 
-import io.baratine.service.QueueFullHandler;
-
-public interface ServiceConfig
+/**
+ * Factory for opening and restoring journals.
+ */
+public interface JournalDriverAmp
 {
-  public static final ServiceConfig NULL = ServiceBuilderImpl.nullConfig();
+  //void setMaxCount(int maxCount);
   
-  String address();
+  //void setDelay(long timeout);
+  //long getDelay();
   
-  String name();
+  JournalAmp open(String name); // , int maxCount, long timeout);
   
-  Class<?> api();
-  
-  int queueSizeMax();
-  
-  int queueSize();
-  
-  long queueTimeout();
-  
-  QueueFullHandler queueFullHandler();
-  
-  int workers();
-  
-  boolean isPublic();
+  JournalAmp openPeer(String name, String peerName);
 
-  boolean isAutoStart();
-  
-  boolean isJournal();
-  
-  int journalMaxCount();
-  
-  long journalDelay();
 }

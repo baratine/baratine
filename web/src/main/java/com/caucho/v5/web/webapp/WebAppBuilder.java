@@ -48,7 +48,7 @@ import javax.inject.Provider;
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.journal.JournalFactoryAmp;
+import com.caucho.v5.amp.journal.JournalDriverAmp;
 import com.caucho.v5.amp.manager.InjectAutoBindService;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -152,7 +152,6 @@ public class WebAppBuilder
     view(new ViewPrimitive(), Void.class, -1000);
     view(new ViewPrimitive(), Boolean.class, -1000);
     view(new ViewPrimitive(), Character.class, -1000);
-    
   }
   
   protected void init()
@@ -217,19 +216,8 @@ public class WebAppBuilder
     }
   }
 
-  private static void addJournalFactory(ServiceManagerBuilderAmp builder)
+  protected void addJournalFactory(ServiceManagerBuilderAmp builder)
   {
-    try {
-      JournalFactoryAmp factory;
-
-      Class<?> journal = Class.forName("com.caucho.v5.amp.journal.JournalFactoryImpl");
-
-      factory = (JournalFactoryAmp) journal.newInstance();
-
-      builder.journalFactory(factory);
-    } catch (Exception e) {
-      log.finer(e.toString());
-    }
   }
 
   protected void addStubVault(ServiceManagerBuilderAmp builder)

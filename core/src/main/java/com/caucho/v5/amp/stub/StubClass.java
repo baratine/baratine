@@ -805,7 +805,7 @@ public class StubClass
   }
   */
   
-  public void checkpointStart(StubAmp stub, Result<Boolean> result)
+  public void onSave(StubAmp stub, Result<Void> result)
   {
     try {
       MethodAmp onDelete = _onDelete;
@@ -816,11 +816,10 @@ public class StubClass
       }
       else if (onSave != null) {
         //QueryRefAmp queryRef = new QueryRefChainAmpCompletion(result);
-        
         onSave.query(HeadersNull.NULL, result, stub);
       }
       else {
-        result.ok(true);
+        result.ok(null);
       }
       
       stub.state().onSaveComplete(stub);

@@ -43,30 +43,30 @@ import com.caucho.v5.amp.stub.StubAmp;
  */
 public interface JournalAmp
 {
-  void writeSend(StubAmp actor,
+  //long delay();
+
+  long sequenceReplay();
+  
+  void writeSend(StubAmp stub,
                  String methodName,
                  Object[] args, 
                  InboxAmp inbox);
   
-  void writeQuery(StubAmp actor,
+  void writeQuery(StubAmp stub,
                   String methodName,
                   Object[] args,
                   InboxAmp inbox);
   
-  void replayStart(Result<Boolean> cont,
+  void replayStart(Result<Boolean> result,
                    InboxAmp inbox,
                    QueueDeliver<MessageAmp> queue); 
 
-  void setInbox(InboxAmp inbox);
+  //void inbox(InboxAmp inbox);
 
-  boolean isSaveRequest();
+  //boolean isSaveRequest();
   
   boolean saveStart();
   void saveEnd(boolean isComplete);
   
   void flush();
-
-  long  getDelay();
-
-  long getReplaySequence();
 }

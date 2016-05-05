@@ -57,16 +57,6 @@ public class ServiceRefLazy extends ServiceRefLazyBase
     return _address;
   }
   
-  /*
-  @Override
-  public ServiceManagerAmp getManager()
-  {
-    // baratine/a240 vs baratine/2102
-    
-    return Amp.getContextManager();
-  }
-  */
-  
   @Override
   protected ServiceRefAmp newDelegate()
   {
@@ -84,7 +74,7 @@ public class ServiceRefLazy extends ServiceRefLazyBase
   public StubAmp stub()
   {
     ServiceRefAmp delegate = delegate();
-    
+
     if (! delegate.isClosed()) {
       return delegate.stub();
     }

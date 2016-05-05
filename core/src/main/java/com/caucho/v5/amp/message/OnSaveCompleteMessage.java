@@ -45,23 +45,31 @@ public class OnSaveCompleteMessage extends MessageAmpBase
   
   private final boolean _isValid;
 
-  public OnSaveCompleteMessage(boolean isValid)
+  private InboxAmp _inbox;
+
+  private StubAmp _stubMessage;
+
+  public OnSaveCompleteMessage(InboxAmp inbox,
+                               StubAmp stub,
+                               boolean isValid)
   {
+    _inbox = inbox;
+    _stubMessage = stub;
     _isValid = isValid;
   }
   
   @Override
   public InboxAmp inboxTarget()
   {
-    return null;
+    return _inbox;
   }
   
   @Override
   public void invoke(InboxAmp inbox, 
-                     StubAmp actor)
+                     StubAmp stub)
   {
     try {
-      actor.onSaveEnd(_isValid);
+      stub.onSaveEnd(_isValid);
     } catch (Throwable e) {
       log.log(Level.FINE, e.toString(), e);
     }

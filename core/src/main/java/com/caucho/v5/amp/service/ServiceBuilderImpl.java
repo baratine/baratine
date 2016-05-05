@@ -51,7 +51,6 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.StubAmp;
-import com.caucho.v5.amp.stub.StubAmpJournal;
 import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
@@ -227,6 +226,11 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     validator.serviceClass(serviceClass);
   }
   
+  public static final ServiceConfig nullConfig()
+  {
+    return new ServiceBuilderImpl();
+  }
+  
   /**
    * snapshot/DTO to protect against changes. 
    */
@@ -260,6 +264,33 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     _isJournal = builder.isJournal();
     _journalMaxCount = builder.journalMaxCount();
     _journalDelay = builder.journalDelay();
+  }
+  
+  /**
+   * snapshot/DTO to protect against changes. 
+   */
+  private ServiceBuilderImpl()
+  {
+    _services = null;
+    
+    _address = "null";
+    _name = _address;
+    
+    _workers = 0;
+    
+    _api = null;
+    
+    _queueSize = 0;
+    _queueSizeMax = 0;
+    
+    _offerTimeout = 0;
+    _queueFullHandler = null;
+    
+    _isPublic = false;
+    _isAutoStart = false;
+    _isJournal = false;
+    _journalMaxCount = 0;
+    _journalDelay = 0;
   }
   
   private void queueSizeMax(int size)
@@ -1130,9 +1161,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       journalDelay = _journalDelay;
     }
     
-    JournalAmp journal = _services.journal(journalName, 
-                                          config.journalMaxCount(),
-                                          journalDelay);
+    JournalAmp journal = _services.journal(journalName);
     
     final StubJournal stubJournal = stubJournal(stubMain, journal);
 
@@ -1145,14 +1174,16 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     skel.introspect();
     
     // XXX: 
-    StubAmp stubTop = new StubAmpJournal(skel, journal, stubMain, _name);
+    //StubAmp stubTop = new StubJournalTop(skel, journal, stubMain, _name);
+
+    StubAmp stubTop = stubMain;
     
     QueueServiceFactoryInbox serviceFactory
       = new JournalServiceFactory(stubTop, stubJournal, stubMain, config);
 
     ServiceRefAmp serviceRef = service(serviceFactory, config);
 
-    stubJournal.setInbox(serviceRef.inbox());
+    stubJournal.inbox(serviceRef.inbox());
 
     return serviceRef;
   }

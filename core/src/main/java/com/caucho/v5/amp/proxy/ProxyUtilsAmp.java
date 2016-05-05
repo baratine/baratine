@@ -82,7 +82,7 @@ abstract public class ProxyUtilsAmp implements ServiceRef
                                                    Class<?> retType,
                                                    Class<?> []paramTypes)
   {
-    return serviceRef.method(methodName, retType, paramTypes).method();
+    return serviceRef.stub().method(methodName, paramTypes);
   }
   
   public static boolean __caucho_toBoolean(Object value)

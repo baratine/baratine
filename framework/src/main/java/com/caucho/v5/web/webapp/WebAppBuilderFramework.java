@@ -33,6 +33,8 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.journal.JournalDriverAmp;
+import com.caucho.v5.amp.journal.JournalDriverImpl;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
@@ -71,6 +73,12 @@ public class WebAppBuilderFramework extends WebAppBuilder
   public WebSocketManager webSocketManager()
   {
     return new WebSocketManagerFramework();
+  }
+
+  @Override
+  protected void addJournalFactory(ServiceManagerBuilderAmp builder)
+  {
+    builder.journalDriver(new JournalDriverImpl());
   }
 
   /**

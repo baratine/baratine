@@ -130,8 +130,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
 
     //_connectionTask = new TaskConnection(this);
     _pollHandle = port.createPollHandle(this); // new PollControllerTcpPoll(this);
-    
-    System.out.println("*CTCP: " + this);
   }
 
   /**
@@ -984,7 +982,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     }
     
     _state = _state.toClose();
-    System.out.println("DISCON: " + _state);
     
     // synchronized because shutdown can call disconnect on multiple threads
     synchronized (this) {
@@ -1134,8 +1131,6 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
       log.finest(this + " destroying connection");
     }
     
-    System.out.println("DESTROY: " + _state);
-
     try {
       _socket.forceShutdown();
     } catch (Throwable e) {

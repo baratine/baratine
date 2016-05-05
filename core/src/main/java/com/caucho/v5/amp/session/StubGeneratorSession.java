@@ -78,7 +78,8 @@ public class StubGeneratorSession implements StubGenerator
     StubAmpBean stubVault = new StubAmpBean(stubClassVault, 
                                             new SessionVaultImpl(sessionClass),
                                             configService.name(),
-                                            children);
+                                            children,
+                                            configService);
     return new StubFactoryImpl(()->stubVault, configService);
   }
   

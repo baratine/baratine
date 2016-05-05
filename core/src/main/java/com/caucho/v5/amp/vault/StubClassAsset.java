@@ -204,14 +204,19 @@ public class StubClassAsset extends StubClass
     @Override
     public void query(HeadersAmp headers,
                       ResultChain<?> result,
-                      StubAmp actor)
+                      StubAmp stub)
     {
-      Object bean = actor.bean();
+      Object bean = stub.bean();
     
       try {
         Serializable id = (Serializable) _idGetter.invoke(bean);
         
-        ((VaultDriver) _driver).save(id, bean, Result.ignore());
+        if (stub.state().isDelete()) {
+          ((VaultDriver) _driver).delete(id, bean, Result.ignore());
+        }
+        else {
+          ((VaultDriver) _driver).save(id, bean, Result.ignore());
+        }
         
         result.ok(null);
       } catch (Throwable e) {

@@ -75,7 +75,7 @@ public class QueryWithResultMessage_N<V> extends QueryWithResultMessage<V>
   public final void invokeQuery(InboxAmp inbox, StubAmp stubDeliver)
   {
     StubAmp stubMessage = serviceRef().stub();
-
+    
     StubStateAmp state = stubDeliver.load(stubMessage, this);
 
     state.query(stubDeliver, stubMessage,

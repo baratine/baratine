@@ -29,73 +29,98 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.Result;
-
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.Result;
 
 /**
  * Message to shut down an instance.
  */
 public class OnSaveMessage extends MessageAmpBase
-  implements Result<Boolean>
 {
-  private static final Logger log
-    = Logger.getLogger(OnSaveMessage.class.getName());
-  
-  private final JournalAmp _journal;
-
-  //private final ServiceQueue<RampMessage> _queue;
-  private final InboxAmp _inbox;
-
   private boolean _isDisable;
 
-  public OnSaveMessage(JournalAmp journal,
-                                InboxAmp inbox)
+  private final StubAmp _stubMessage;
+  private final Result<Void> _result;
+
+  private InboxAmp _inbox;
+
+  public OnSaveMessage(InboxAmp inbox,
+                              StubAmp stubMessage,
+                              Result<Void> result)
   {
-    Objects.requireNonNull(inbox);
+    Objects.requireNonNull(stubMessage);
+    Objects.requireNonNull(result);
     
-    _journal = journal;
     _inbox = inbox;
+    _stubMessage = stubMessage;
+    _result = result;
   }
   
   @Override
   public InboxAmp inboxTarget()
   {
-    return null;
+    return _inbox;
+  }
+  
+  public void setDisable(boolean isDisable)
+  {
+    _isDisable = isDisable;
+  }
+  
+  private boolean isDisable()
+  {
+    return _isDisable;
   }
   
   @Override
   public void invoke(InboxAmp inbox, 
-                     StubAmp actor)
+                     StubAmp stubDeliver)
   {
-    if (! _isDisable) {
-      _isDisable = ! actor.load(this).onSave(actor);
-    }
+    StubAmp stub = stubDeliver.worker(_stubMessage);
+    
+    stub.onSaveRequest((v,exn)->afterSave(exn));
   }
   
+  private void afterSave(Throwable exn)
+  {
+    if (exn != null) {
+      exn.printStackTrace();
+      _result.fail(exn);
+    }
+    else {
+      _result.ok(null);
+    }
+    
+    long timeout = 10000;
+    inboxTarget().offer(new OnSaveCompleteMessage(inboxTarget(), 
+                                                  _stubMessage, 
+                                                  exn == null),
+                        timeout);
+  }
+  
+  /*
   public void offer()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
 
+  /*
   @Override
-  public void handle(Boolean result, Throwable exn)
+  public void handle(Void result, Throwable exn)
   {
     long timeout = InboxAmp.TIMEOUT_INFINITY;
     
-    if (! _isDisable && ! _inbox.isClosed()) {
-      _inbox.offerAndWake(new OnSaveCompleteMessage(exn == null), timeout);
-      // _mailbox.wake();
-    }
-    
     if (exn != null) {
-      log.log(Level.FINER, exn.toString(), exn);
+      _result.fail(exn);
+    }
+    else {
+      _result.ok(null);
     }
   }
+  */
 }

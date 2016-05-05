@@ -226,9 +226,9 @@ public class StubStateAmpNull implements StubStateAmp
   }
 
   @Override
-  public boolean onSave(StubAmp stub)
+  public void onSave(StubAmp stub, Result<Void> result)
   {
-    return false;
+    result.ok(null);
   }
 
   @Override
@@ -246,5 +246,11 @@ public class StubStateAmpNull implements StubStateAmp
   public void shutdown(StubAmp stub, ShutdownModeAmp mode)
   {
     stub.onShutdown(mode);
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[]";
   }
 }

@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.manager.ServicesAmpImpl;
-import com.caucho.v5.amp.message.OnSaveRequestMessage;
+import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
@@ -299,7 +299,7 @@ abstract class ServiceRefStub extends ServiceRefBase
     
     // JournalAmp journal = getActor().getJournal();
     
-    offer(new OnSaveRequestMessage(inbox(), result));
+    offer(new OnSaveMessage(inbox(), stub(), result));
 
     // offer(new CheckpointMessage(getMailbox()));
     

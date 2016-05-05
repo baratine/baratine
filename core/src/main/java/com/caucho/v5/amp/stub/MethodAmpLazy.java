@@ -27,20 +27,44 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.journal;
+package com.caucho.v5.amp.stub;
 
 /**
- * Factory for opening and restoring journals.
+ * lazy init for a method.
  */
-public interface JournalFactoryAmp
+public class MethodAmpLazy extends MethodAmpWrapper
 {
-  void setMaxCount(int maxCount);
+  private final StubAmpLazyProxy _stubLazy;
   
-  void setDelay(long timeout);
-  long getDelay();
-  
-  JournalAmp open(String name, int maxCount, long timeout);
-  
-  JournalAmp openPeer(String name, String peerName);
+  private MethodAmp _delegate;
 
+  private String _methodName;
+
+  private Class<?>[] _paramType;
+
+  public MethodAmpLazy(StubAmpLazyProxy stubLazy,
+                       String methodName,
+                       Class<?> []paramType)
+  {
+    _stubLazy = stubLazy;
+    
+    _methodName = methodName;
+    _paramType = paramType;
+  }
+
+  @Override
+  protected MethodAmp delegate()
+  {
+    MethodAmp delegate = _delegate;
+    
+    if (delegate == null) {
+      StubAmp stub = _stubLazy.delegate();
+      
+      if (stub != null) {
+        delegate = _delegate = stub.method(_methodName, _paramType);
+      }
+    }
+    
+    return delegate;
+  }
 }

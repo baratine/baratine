@@ -37,8 +37,8 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.proxy.ProxyHandleAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
-import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 
 import io.baratine.service.OnLookup;
 import io.baratine.service.OnSave;
@@ -63,7 +63,8 @@ public class StubAmpBean extends StubAmpBase
   public StubAmpBean(StubClass stub,
                      Object bean,
                      String name,
-                     StubContainerAmp container)
+                     StubContainerAmp container,
+                     ServiceConfig config)
   {
     Objects.requireNonNull(bean);
     Objects.requireNonNull(stub);
@@ -83,22 +84,19 @@ public class StubAmpBean extends StubAmpBase
     _stubClass = stub;
     _name = name;
     
-    boolean isJournal = false; // config.isJournal();
-    long journalDelay = 0; // config.getJournalDelay();
+    boolean isJournal = config.isJournal();
+    long journalDelay = config.journalDelay();
     
     _isAutoCreate = _stubClass.isAutoCreate() || container == null;
     
     if (container != null) {
     }
+    else if (config.isJournal()) {
+      container = new StubContainerJournal(name, config);
+    }
     else if (_stubClass.isImplemented(OnLookup.class)
-             || _stubClass.isImplemented(OnSave.class)
-             || isJournal) {
-      if (isJournal) {
-        container = new StubContainerJournal(name, journalDelay);
-      }
-      else {
-        container = new StubContainerBase(name);
-      }
+             || _stubClass.isImplemented(OnSave.class)) {
+      container = new StubContainerBase(name);
     }
     
     _container = container;
@@ -112,10 +110,10 @@ public class StubAmpBean extends StubAmpBase
                       Object bean,
                       ServiceConfig config)
   {
-    this(stubClass, bean, config.name(), null);
+    this(stubClass, bean, config.name(), null, config);
   }
   
-  public StubContainerAmp getContainer()
+  public StubContainerAmp container()
   {
     return _container;
   }
@@ -255,13 +253,13 @@ public class StubAmpBean extends StubAmpBase
     return checkpointStartImpl(cont);
   }
   */
-  
+  /*
   @Override
   public boolean onSaveStartImpl(Result<Boolean> result)
   {
     SaveResult saveResult = new SaveResult(result);
     
-    _stubClass.checkpointStart(this, saveResult.addBean());
+    _stubClass.onSaveStart(this, saveResult.addBean());
 
     onSaveChildren(saveResult);
     
@@ -269,15 +267,39 @@ public class StubAmpBean extends StubAmpBase
     
     return true;
   }
+  */
+  
+  @Override
+  public void onSave(Result<Void> result)
+  {
+    StubContainerAmp container = _container;
+    
+    if (container != null) {
+      container.onSave(result);
+    }
+    else {
+      onSaveChild(result);
+    }
+  }
+  
+  @Override
+  public void onSaveChild(Result<Void> result)
+  {
+    _stubClass.onSave(this, result);
+    
+    state().onSaveComplete(this);
+  }
 
   @Override
   public void onSaveChildren(SaveResult saveResult)
   {
+    /*
     StubContainerAmp container = _container;
     
     if (container != null) {
       container.onSave(saveResult);
     }
+    */
   }
 
   /*

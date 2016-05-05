@@ -154,7 +154,7 @@ public class ServiceBuilderWebImpl
       builder.addressAuto();
     }
 
-    builder.ref();
+    //builder.ref();
   }
 
   @Override

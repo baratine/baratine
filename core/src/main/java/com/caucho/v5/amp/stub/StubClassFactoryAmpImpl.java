@@ -82,6 +82,7 @@ public class StubClassFactoryAmpImpl implements StubClassFactoryAmp
     return _stubClassFactory.stubClass(type, api);
   }
 
+  @Override
   public StubAmp stub(Object bean,
                       String path,
                       String childPath,
@@ -119,7 +120,7 @@ public class StubClassFactoryAmpImpl implements StubClassFactoryAmp
         path = config.name(); 
       }
       
-      return new StubAmpBean(stubClass, bean, path, container);
+      return new StubAmpBean(stubClass, bean, path, container, config);
     }
   }
 

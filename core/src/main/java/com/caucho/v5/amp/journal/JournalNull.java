@@ -42,36 +42,40 @@ import com.caucho.v5.amp.stub.StubAmp;
 public class JournalNull implements JournalAmp
 {
   @Override
-  public void writeSend(StubAmp actor,
+  public void writeSend(StubAmp stub,
                         String methodName, 
                         Object[] args,
-                        InboxAmp mailbox)
+                        InboxAmp inbox)
   {
   }
   
   @Override
-  public void writeQuery(StubAmp actor,
+  public void writeQuery(StubAmp stub,
                          String methodName, 
                          Object[] args,
-                         InboxAmp mailbox)
+                         InboxAmp inbox)
   {
   }
 
+  /*
   @Override
-  public void setInbox(InboxAmp inbox)
+  public void inbox(InboxAmp inbox)
   {
   }
+  */
 
   @Override
   public void flush()
   {
   }
   
+  /*
   @Override
   public boolean isSaveRequest()
   {
     return false;
   }
+  */
 
   @Override
   public boolean saveStart()
@@ -92,14 +96,16 @@ public class JournalNull implements JournalAmp
     cont.ok(true);
   }
 
+  /*
   @Override
-  public long getDelay()
+  public long delay()
   {
     return 0;
   }
+  */
 
   @Override
-  public long getReplaySequence()
+  public long sequenceReplay()
   {
     return 0;
   }

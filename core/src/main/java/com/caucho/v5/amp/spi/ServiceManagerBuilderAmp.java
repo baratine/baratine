@@ -33,7 +33,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.journal.JournalFactoryAmp;
+import com.caucho.v5.amp.journal.JournalDriverAmp;
 import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.stub.StubGenerator;
@@ -81,19 +81,19 @@ public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
   ServiceManagerBuilderAmp proxyFactory(ProxyFactoryAmp factory);
 
   /**
-   * Returns the actor journal factory.
+   * Returns the stub journal factory.
    */
-  JournalFactoryAmp journalFactory();
+  JournalDriverAmp journalDriver();
 
   /**
    * Sets the journal context factory.
    */
-  ServiceManagerBuilderAmp journalFactory(JournalFactoryAmp factory);
+  ServiceManagerBuilderAmp journalDriver(JournalDriverAmp factory);
   
   ServiceManagerBuilderAmp journalMaxCount(int journalMaxCount);
   
-  ServiceManagerBuilderAmp setJournalDelay(long journalTimeout);
-  long getJournalDelay();
+  ServiceManagerBuilderAmp journalDelay(long journalTimeout);
+  long journalDelay();
 
   QueueFullHandler getQueueFullHandler();
   ServiceManagerBuilderAmp queueFullHandler(QueueFullHandler handler);

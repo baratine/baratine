@@ -29,14 +29,13 @@
 
 package com.caucho.v5.amp.message;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.journal.StubJournal;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+
+import io.baratine.service.ServiceRef;
 
 /**
  * Handle to an amp instance.

@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.message.OnSaveMessage;
-import com.caucho.v5.amp.message.OnSaveRequestMessage;
+import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.message.ReplayQueryMessage;
 import com.caucho.v5.amp.message.ReplaySendMessage;
 import com.caucho.v5.amp.spi.InboxAmp;
@@ -54,7 +54,6 @@ import com.caucho.v5.h3.OutH3;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.util.Alarm;
 import com.caucho.v5.util.AlarmListener;
-import com.caucho.v5.util.WeakAlarm;
 
 import io.baratine.service.Result;
 
@@ -77,11 +76,12 @@ public class JournalImpl implements JournalAmp
   //private static final int CODE_CHECKPOINT_START = 5;
   //private static final int CODE_CHECKPOINT_END = 6;
   
-  private InH3 _hIn;
-  private OutH3 _hOut;
+  //private InH3 _hIn;
+  //private OutH3 _hOut;
   private final JournalStream _jOut;
   private final OutputStreamJournal _jOs;
-  
+
+  /*
   private final int _maxCount;
   
   private long _count;
@@ -93,21 +93,25 @@ public class JournalImpl implements JournalAmp
   
   private Alarm _timeoutAlarm;
   private TimeoutListener _timeoutListener;
+  */
 
   private OutFactoryH3 _serializer;
   
+  /*
   protected JournalImpl()
   {
     this(null, -1, -1);
   }
+  */
   
-  public JournalImpl(JournalStream jOut,
-                     int maxCount,
-                     long timeout)
+  public JournalImpl(JournalStream jOut)
   {
+    Objects.requireNonNull(jOut);
+    /*
     if (jOut == null) {
       jOut = createJournalStream();
     }
+    */
 
     _jOut = jOut;
     
@@ -121,6 +125,7 @@ public class JournalImpl implements JournalAmp
      * 
      */
     
+    /*
     if (maxCount < 0) {
       maxCount = Integer.MAX_VALUE;
     }
@@ -133,32 +138,37 @@ public class JournalImpl implements JournalAmp
     }
 
     _delay = timeout;
+    */
 
     _jOs = new OutputStreamJournal(_jOut);
   }
   
-  protected JournalStream createJournalStream()
+  /*
+  private JournalStream createJournalStream()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
   
   @Override
-  public long getDelay()
+  public long delay()
   {
     return _delay;
   }
+  */
 
+  /*
   @Override
-  public void setInbox(InboxAmp inbox)
+  public void inbox(InboxAmp inbox)
   {
     if (_delay > 0 && inbox != null) {
       _timeoutListener = new TimeoutListener(inbox);
       _timeoutAlarm = new WeakAlarm(_timeoutListener);
     }
   }
+    */
   
-  @Override
-  public boolean isSaveRequest()
+  //@Override
+  private boolean isSaveRequest()
   {
     /*
     boolean result = false;
@@ -219,7 +229,7 @@ public class JournalImpl implements JournalAmp
         }
       }
       
-      _count++;
+      //_count++;
     } catch (IOException e) {
       log.log(Level.FINER, e.toString(), e);
     }
@@ -253,7 +263,7 @@ public class JournalImpl implements JournalAmp
       
         //out.flush();
       
-        _count++;
+        //_count++;
       }
     } catch (IOException e) {
       log.log(Level.FINER, e.toString(), e);
@@ -354,7 +364,7 @@ public class JournalImpl implements JournalAmp
   }
   
   @Override
-  public long getReplaySequence()
+  public long sequenceReplay()
   {
     return _jOs.getReplaySequence();
   }
@@ -428,15 +438,16 @@ public class JournalImpl implements JournalAmp
       
       _jOut.complete();
       
-      
+      /*
       if (inbox != null && _jOut.isSaveRequired()) {
         JournalAmp journal = JournalImpl.this;
         
         long timeout = InboxAmp.TIMEOUT_INFINITY;
 
-        inbox.offer(new OnSaveMessage(journal, inbox), timeout);
+        inbox.offer(new OnSaveMessage(journal, inbox), timeout, Result.ignore());
         // queue.getQueueWorker().wake();
       }
+      */
     }
   }
   
@@ -489,7 +500,7 @@ public class JournalImpl implements JournalAmp
     @Override
     public void handleAlarm(Alarm alarm)
     {
-      _inbox.offerAndWake(new OnSaveRequestMessage(_inbox, Result.ignore()), 0);
+      _inbox.offerAndWake(new OnSaveMessage(_inbox, _inbox.serviceRef().stub(), Result.ignore()), 0);
     }
   }
 }

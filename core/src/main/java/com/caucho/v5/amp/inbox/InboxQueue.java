@@ -267,7 +267,7 @@ public class InboxQueue extends InboxBase
                         serviceRef().api().getType()));
         }
 
-        onActiveMsg = new OnActiveReplayMessage(this, isSingle());
+        onActiveMsg = new OnActiveReplayMessage(this, stub, isSingle());
 
         ActiveResult activeResult = new ActiveResult(onActiveMsg);
 

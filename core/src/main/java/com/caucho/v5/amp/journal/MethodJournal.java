@@ -48,20 +48,25 @@ public final class MethodJournal extends MethodAmpWrapper
     = Logger.getLogger(MethodJournal.class.getName());
   
   private final MethodAmp _delegate;
-  private final JournalAmp _journal;
-  private final JournalAmp _toPeerJournal;
-  private final InboxAmp _inbox;
   
-  public MethodJournal(MethodAmp delegate,
+  private JournalAmp _journal;
+  private JournalAmp _toPeerJournal;
+  private InboxAmp _inbox;
+  
+  public MethodJournal(MethodAmp delegate)
+  /*
                            JournalAmp journal,
                            JournalAmp toPeerJournal,
                            InboxAmp mailbox)
+                           */
   {
     _delegate = delegate;
 
+    /*
     _journal = journal;
     _toPeerJournal = toPeerJournal;
     _inbox = mailbox;
+    */
     
     System.out.println("MJ:" + _delegate);
   }
@@ -82,7 +87,7 @@ public final class MethodJournal extends MethodAmpWrapper
     if (actor instanceof ActorJournal) {
       _journal.writeSend(getName(), args, _mailbox);
       
-      if (_toPeerJournal != null) {
+      if (_toPee//rJournal != null) {
         _toPeerJournal.writeSend(getName(), args, _mailbox);
       }
     }

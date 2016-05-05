@@ -315,14 +315,15 @@ public class StubVault extends StubClass
       }
 
       StubAmpBean stubBean = (StubAmpBean) stub;
-      StubContainerAmp container = stubBean.getContainer();
+      StubContainerAmp container = stubBean.container();
 
-      StubAmp actorChild = new StubAmpBean(_skelEntity,
-                                             entity,
-                                             null,
-                                             container);
+      StubAmp stubChild = new StubAmpBean(_skelEntity,
+                                           entity,
+                                           null,
+                                           container,
+                                           ServiceConfig.NULL);
 
-      ((Result) result).ok(actorChild);
+      ((Result) result).ok(stubChild);
     }
   }
   

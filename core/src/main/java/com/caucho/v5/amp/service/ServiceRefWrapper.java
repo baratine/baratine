@@ -159,6 +159,12 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
       return new MethodRefException(this, methodName, e);
     }
   }
+  
+  @Override
+  public MethodRefAmp methodByName(String methodName, Type returnType)
+  {
+    return delegate().methodByName(methodName, returnType);
+  }
 
   @Override
   public MethodRefAmp method(String methodName, 
@@ -167,13 +173,8 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   {
     return delegate().method(methodName, returnType, param);
   }
-  
+
   @Override
-  public MethodRefAmp methodByName(String methodName, Type returnType)
-  {
-    return delegate().methodByName(methodName, returnType);
-  }
-  
   public Iterable<? extends MethodRefAmp> getMethods()
   {
     return delegate().getMethods();

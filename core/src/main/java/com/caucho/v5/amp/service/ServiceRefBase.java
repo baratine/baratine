@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.message.OnSaveRequestMessage;
+import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
@@ -296,8 +296,8 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
       long timeout = 0;
     
       if (mode == ShutdownModeAmp.GRACEFUL) {
-        OnSaveRequestMessage checkpointMsg
-          = new OnSaveRequestMessage(inbox(), Result.ignore());
+        OnSaveMessage checkpointMsg
+          = new OnSaveMessage(inbox(), stub(), Result.ignore());
     
         inbox().offerAndWake(checkpointMsg, timeout);
       }

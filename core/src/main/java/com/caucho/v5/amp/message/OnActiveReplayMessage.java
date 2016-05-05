@@ -40,10 +40,14 @@ import com.caucho.v5.amp.stub.StubAmp;
 public class OnActiveReplayMessage extends MessageAmpBase
 {
   private InboxAmp _inbox;
+  private StubAmp _stubTop;
 
-  public OnActiveReplayMessage(InboxAmp inbox, boolean isSingle)
+  public OnActiveReplayMessage(InboxAmp inbox, 
+                               StubAmp stubTop,
+                               boolean isSingle)
   {
     _inbox = inbox;
+    _stubTop = stubTop;
   }
   
   @Override
@@ -53,12 +57,13 @@ public class OnActiveReplayMessage extends MessageAmpBase
   }
   
   @Override
-  public void invoke(InboxAmp inbox, StubAmp actor)
+  public void invoke(InboxAmp inbox, StubAmp stubDeliver)
   {
-    actor = actor.worker(actor);
+    StubAmp stub = stubDeliver.worker(_stubTop);
+    
       //actor.load(this).onActive(this);
     try {
-      actor.state().onActive(actor, inbox);
+      stub.state().onActive(stub, inbox);
       
       //System.out.println("AREP: " + actor + " " + actor.loadReplay(this));
     } catch (Exception e) {
@@ -72,12 +77,16 @@ public class OnActiveReplayMessage extends MessageAmpBase
       }
       */
     
-    OnSaveRequestMessage onSave
-      = new OnSaveRequestMessage(_inbox, Result.ignore());
+    /*
+    if (stubDeliver.isMain()) {
+      OnSaveMessage onSave
+        = new OnSaveMessage(_inbox, _stubTop, Result.ignore());
     
-    long timeout = 1000;
+      long timeout = 1000;
     
-    onSave.offer(timeout);
+      onSave.offer(timeout);
+    }
+    */
   }
   
   public void offer()

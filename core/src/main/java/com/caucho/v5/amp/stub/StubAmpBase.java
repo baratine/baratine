@@ -263,30 +263,30 @@ public class StubAmpBase implements StubAmp
   }
   
   @Override
-  public boolean onSave(Result<Boolean> result)
+  public void onSave(Result<Void> result)
   {
-    SaveResult saveResult = new SaveResult(result);
-    
-    state().onSave(this, saveResult);
-    
-    saveResult.completeBean();
-    
-    return true;
+    onSaveChild(result);
   }
   
+  @Override
+  public void onSaveChild(Result<Void> result)
+  {
+    result.ok(null);
+  }
+  
+  /*
   public boolean onSaveStartImpl(Result<Boolean> cont)
   {
     cont.ok(true);
     
     return true;
   }
+  */
   
+  @Override
   public void state(StubStateAmp loadState)
   {
     _state = loadState;
-    if (loadState instanceof StubStateAmpNull) {
-      System.out.println("LSN: " + this);
-    }
   }
   
   //
@@ -470,7 +470,7 @@ public class StubAmpBase implements StubAmp
     _pendingMessages.addMessage(msg);
   }
 
-  void queuePendingSave(SaveResult saveResult)
+  void queuePendingSave(Result<Void> saveResult)
   {
     if (saveResult == null) {
       return;
@@ -536,7 +536,7 @@ public class StubAmpBase implements StubAmp
   {
     private ArrayList<MessageAmp> _pendingReplay = new ArrayList<>();
     private ArrayList<MessageAmp> _pendingMessages = new ArrayList<>();
-    private SaveResult _saveResult;
+    private Result<Void> _saveResult;
     
     boolean addReplay(MessageAmp msg)
     {
@@ -547,7 +547,7 @@ public class StubAmpBase implements StubAmp
       return isNew;
     }
     
-    public void addSave(SaveResult saveResult)
+    public void addSave(Result<Void> saveResult)
     {
       Objects.requireNonNull(saveResult);
 
@@ -580,7 +580,7 @@ public class StubAmpBase implements StubAmp
     
     void deliverSave()
     {
-      SaveResult saveResult = _saveResult;
+      Result<Void> saveResult = _saveResult;
       
       if (saveResult != null) {
         _saveResult = null;

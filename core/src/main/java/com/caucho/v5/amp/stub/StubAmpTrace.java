@@ -241,9 +241,9 @@ public class StubAmpTrace implements StubAmp
   }
   
   @Override
-  public boolean onSave(Result<Boolean> result)
+  public void onSave(Result<Void> result)
   {
-    return delegate().onSave(result);
+    delegate().onSave(result);
   }
   
   @Override

@@ -32,6 +32,7 @@ package com.caucho.v5.amp.stub;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.StubContainerAmp;
 
 /**
@@ -47,7 +48,7 @@ public class StubAmpBeanChild extends StubAmpBean
                               String childPath,
                               StubContainerAmp container)
   {
-    super(skel, bean, path, container);
+    super(skel, bean, path, container, ServiceConfig.NULL);
     
     Objects.requireNonNull(container);
     
@@ -57,7 +58,7 @@ public class StubAmpBeanChild extends StubAmpBean
   @Override
   public boolean isJournalReplay()
   {
-    return getContainer().isJournalReplay();
+    return container().isJournalReplay();
   }
   
   @Override
@@ -74,7 +75,7 @@ public class StubAmpBeanChild extends StubAmpBean
   @Override
   public void onLru(ServiceRefAmp serviceRef)
   {
-    StubContainerAmp container = getContainer();
+    StubContainerAmp container = container();
     
     if (state().isModified()) {
       container.onLruModified(serviceRef);

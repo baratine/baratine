@@ -32,10 +32,10 @@ package com.caucho.v5.amp.journal;
 import java.util.Objects;
 
 import com.caucho.v5.amp.deliver.QueueDeliver;
-import com.caucho.v5.amp.message.OnSaveRequestMessage;
+import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpBase;
@@ -43,6 +43,7 @@ import com.caucho.v5.amp.thread.ThreadPool;
 
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
+import io.baratine.service.ServiceRef;
 
 /**
  * Journaling stub
@@ -50,12 +51,12 @@ import io.baratine.service.ResultChain;
 public final class StubJournal extends StubAmpBase
   // implements ActorAmp
 {
-  private final StubAmp _actor;
+  private final StubAmp _stubMain;
   private final JournalAmp _journal;
   private InboxAmp _inbox;
   private JournalAmp _toPeerJournal;
   private JournalAmp _fromPeerJournal;
-  private LoadStateJournal _loadState;
+  private StubStateJournal _loadState;
   
   public StubJournal(StubAmp actor, 
                       JournalAmp journal,
@@ -65,13 +66,13 @@ public final class StubJournal extends StubAmpBase
     Objects.requireNonNull(actor);
     Objects.requireNonNull(journal);
     
-    _actor = actor;
+    _stubMain = actor;
     _journal = journal;
     
     _toPeerJournal = toPeerJournal;
     _fromPeerJournal = fromPeerJournal;
     
-    _loadState = new LoadStateJournal(this);
+    _loadState = new StubStateJournal(this);
   }
   
   @Override
@@ -95,7 +96,7 @@ public final class StubJournal extends StubAmpBase
   */
   
   @Override
-  public StubStateAmp load(StubAmp actorMessage, MessageAmp msg)
+  public StubStateAmp load(StubAmp stubMessage, MessageAmp msg)
   {
     return state();
   }
@@ -106,14 +107,14 @@ public final class StubJournal extends StubAmpBase
     return state();
   }
   
-  public void setInbox(InboxAmp inbox)
+  public void inbox(InboxAmp inbox)
   {
     _inbox = inbox;
     
-    journal().setInbox(inbox);
+    //journal().inbox(inbox);
   }
 
-  public InboxAmp getInbox()
+  public InboxAmp inbox()
   {
     return _inbox;
   }
@@ -121,7 +122,7 @@ public final class StubJournal extends StubAmpBase
   @Override
   public boolean isUp()
   {
-    return _actor.isUp();
+    return _stubMain.isUp();
   }
   
   @Override
@@ -174,12 +175,31 @@ public final class StubJournal extends StubAmpBase
     return method;
     */
     
-    MethodAmp method = _actor.methodByName(methodName);
+    MethodAmp method = _stubMain.methodByName(methodName);
+    System.out.println("MJ0: " + methodName);
     
-    return new MethodJournal(method, 
+    return new MethodJournal(method);
+    /*
                              _journal,
                              _toPeerJournal,
                              _inbox);
+                             */
+  }
+
+  /**
+   * Journal getMethod returns null because the replay bypasses the journal.
+   */
+  @Override
+  public MethodAmp method(String methodName, Class<?> []paramTypes)
+  {
+    MethodAmp method = _stubMain.method(methodName, paramTypes);
+    System.out.println("MJ: " + methodName);
+    return new MethodJournal(method);
+    /*
+                             _journal,
+                             _toPeerJournal,
+                             _inbox);
+                             */
   }
 
   @Override
@@ -196,9 +216,11 @@ public final class StubJournal extends StubAmpBase
       _toPeerJournal.flush();
     }
     
+    /*
     if (_journal.isSaveRequest()) {
       _inbox.offerAndWake(new OnSaveRequestMessage(_inbox, Result.ignore()), 0);
     }
+    */
   }
 
   /*
@@ -230,18 +252,29 @@ public final class StubJournal extends StubAmpBase
   }
   
   @Override
-  public boolean onSave(Result<Boolean> cont)
+  public void onSave(Result<Void> result)
   {
     if (! _journal.saveStart()) {
-      return false;
+      return;
     }
     
     if (_toPeerJournal != null) {
       _toPeerJournal.saveStart();
     }
-    
-    return true;
   }
+  
+  /*
+  @Override
+  public void onSaveRequest(Result<Void> result)
+  {
+    if (! _journal.saveStart()) {
+    }
+    
+    if (_toPeerJournal != null) {
+      _toPeerJournal.saveStart();
+    }
+  }
+  */
   
   @Override
   public void onSaveEnd(boolean isValid)
@@ -256,7 +289,7 @@ public final class StubJournal extends StubAmpBase
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _actor + "]";
+    return getClass().getSimpleName() + "[" + _stubMain + "]";
   }
   
   private class JournalTask implements Runnable {
@@ -282,8 +315,8 @@ public final class StubJournal extends StubAmpBase
     {
       try {
         if (_fromPeerJournal != null) {
-          long peerSequence = _fromPeerJournal.getReplaySequence();
-          long selfSequence = _journal.getReplaySequence();
+          long peerSequence = _fromPeerJournal.sequenceReplay();
+          long selfSequence = _journal.sequenceReplay();
           
           if (peerSequence < selfSequence) {
             _journal.replayStart(_result, _inbox, _queue);
@@ -299,9 +332,10 @@ public final class StubJournal extends StubAmpBase
         else {
           _journal.replayStart(_result, _inbox, _queue);
         }
-    
       } catch (Throwable e) {
         _result.fail(e);
+      } finally {
+        ServiceRef.flushOutboxAndExecuteLast();
       }
     }
   }

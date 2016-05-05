@@ -35,6 +35,7 @@ import java.lang.reflect.Modifier;
 import javax.inject.Provider;
 
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
@@ -196,12 +197,13 @@ public class StubClassSessionVault<T> extends StubClass
       }
 
       StubAmpBean stubBean = (StubAmpBean) stub;
-      StubContainerAmp container = stubBean.getContainer();
+      StubContainerAmp container = stubBean.container();
 
       StubAmp stubChild = new StubAmpBean(_stubClassSession,
                                            session,
                                            null,
-                                           container);
+                                           container,
+                                           ServiceConfig.NULL);
 
       ((Result) result).ok(stubChild);
     }

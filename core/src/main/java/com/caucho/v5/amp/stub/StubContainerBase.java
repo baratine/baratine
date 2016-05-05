@@ -44,7 +44,7 @@ import com.caucho.v5.util.LruCache;
 import com.caucho.v5.util.LruCache.Entry;
 
 /**
- * Baratine actor container for children.
+ * Baratine stub container for children.
  */
 public class StubContainerBase implements StubContainerAmp
 {
@@ -68,7 +68,8 @@ public class StubContainerBase implements StubContainerAmp
   {
     _path = path;
     
-    _lruCache = new LruCache<String,ServiceRef>(64);
+    // XXX: needs to be larger and configurable
+    _lruCache = new LruCache<>(64);
   }
   
   @Override
@@ -158,17 +159,17 @@ public class StubContainerBase implements StubContainerAmp
   }
   
   @Override
-  public boolean isModifiedChild(StubAmp actor)
+  public boolean isModifiedChild(StubAmp stub)
   {
-    Objects.requireNonNull(actor);
+    Objects.requireNonNull(stub);
     
-    return _modifiedList.contains(actor);
+    return _modifiedList.contains(stub);
   }
   
   @Override
-  public void afterBatch(StubAmp actor)
+  public void afterBatch(StubAmp stub)
   {
-    onSave(null);
+    onSave(Result.ignore());
   }
   
   protected boolean isSaveRequired()
@@ -177,26 +178,26 @@ public class StubContainerBase implements StubContainerAmp
   }
 
   @Override
-  public void onSave(SaveResult saveResult)
+  public void onSave(Result<Void> result)
   {
     _isSaveRequested.compareAndSet(true, false);
-    
+
     if (_modifiedList.size() == 0) {
+      result.ok(null);
       return;
     }
 
     _modifiedWorkList.clear();
     _modifiedWorkList.addAll(_modifiedList);
     _modifiedList.clear();
+    
+    Result.Fork<Void,Void> fork = result.fork();
       
-    for (StubAmp actor : _modifiedWorkList) {
-      if (saveResult != null) {
-        actor.onSave(saveResult.addBean());
-      }
-      else {
-        actor.onSave(Result.ignore());
-      }
+    for (StubAmp stub : _modifiedWorkList) {
+      stub.onSaveChild(fork.branch());
     }
+    
+    fork.join(x->null);
   }
 
   @Override

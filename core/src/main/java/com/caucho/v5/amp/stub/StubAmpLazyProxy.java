@@ -55,15 +55,15 @@ public class StubAmpLazyProxy extends StubAmpBase implements StubAmp
     _serviceRefLazy = serviceRefLazy;
   }
   
-  protected StubAmp getDelegate()
+  protected StubAmp delegate()
   {
     StubAmp delegate = _delegate;
   
     if (delegate == null) {
-      StubAmp actor = _serviceRefLazy.stub();
+      StubAmp stub = _serviceRefLazy.stub();
       
-      if (! actor.isClosed()) {
-        _delegate = delegate = actor;
+      if (! stub.isClosed()) {
+        _delegate = delegate = stub;
       }
     }
     
@@ -73,22 +73,52 @@ public class StubAmpLazyProxy extends StubAmpBase implements StubAmp
   @Override
   public boolean isUp()
   {
-    StubAmp delegate = getDelegate();
+    StubAmp delegate = delegate();
     
     return delegate != null && delegate.isUp();
   }
+  
+  @Override
+  public boolean isClosed()
+  {
+    return _delegate == null || _delegate.isClosed();
+  }
+  
+  /*
+  @Override
+  public boolean isClosed()
+  {
+    StubAmp delegate = delegate();
+    
+    return delegate == null || delegate.isClosed();
+  }
+  */
 
   @Override
   public MethodAmp methodByName(String methodName)
   {
-    StubAmp delegate = getDelegate();
+    StubAmp delegate = delegate();
     
     if (delegate != null) {
       return delegate.methodByName(methodName);
     }
     else {
-      System.out.println("EEP: " + methodName);
+      System.out.println("EEP:");
       return null;
+    }
+  }
+
+  @Override
+  public MethodAmp method(String methodName, 
+                          Class<?> []paramTypes)
+  {
+    StubAmp delegate = delegate();
+    
+    if (delegate != null && ! delegate.isClosed()) {
+      return delegate.method(methodName, paramTypes);
+    }
+    else {
+      return new MethodAmpLazy(this, methodName, paramTypes);
     }
   }
 
