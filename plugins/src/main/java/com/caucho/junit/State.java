@@ -102,7 +102,16 @@ public class State
     TestTime.addTime(sec, TimeUnit.SECONDS);
   }
 
-  public static String getState()
+  public static void sleep(long ms)
+  {
+    try {
+      Thread.sleep(ms);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static String state()
   {
     String value = _state;
     _state = "";

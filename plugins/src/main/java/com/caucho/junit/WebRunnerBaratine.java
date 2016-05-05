@@ -40,6 +40,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
@@ -75,14 +76,24 @@ public class WebRunnerBaratine extends BaseRunner
     super.validatePublicVoidNoArgMethods(annotation, isStatic, errors);
   }
 
+  private Http getHttpConfiguration()
+  {
+    Http http = this.getTestClass().getAnnotation(Http.class);
+
+    if (http == null)
+      http = HttpDefault.INSTANCE;
+
+    return http;
+  }
+
   private String httpHost()
   {
-    return "localhost";
+    return getHttpConfiguration().host();
   }
 
   private int httpPort()
   {
-    return 8080;
+    return getHttpConfiguration().port();
   }
 
   private String httpUrl()
@@ -92,7 +103,7 @@ public class WebRunnerBaratine extends BaseRunner
 
   private String wsUrl()
   {
-    return "http://" + httpHost() + ':' + httpPort();
+    return "ws://" + httpHost() + ':' + httpPort();
   }
 
   @Override
@@ -171,8 +182,7 @@ public class WebRunnerBaratine extends BaseRunner
       Logger.getLogger("").setLevel(Level.FINER);
       Logger.getLogger("javax.management").setLevel(Level.INFO);
 
-      String user = System.getProperty("user.name");
-      String baratineRoot = "/tmp/" + user + "/qa";
+      String baratineRoot = getWorkDir();
       System.setProperty("baratine.root", baratineRoot);
 
       try {
@@ -204,4 +214,30 @@ public class WebRunnerBaratine extends BaseRunner
     }
   }
 
+  static class HttpDefault extends AnnotationLiteral<Http> implements Http
+  {
+    private final static Http INSTANCE = new HttpDefault();
+
+    private HttpDefault()
+    {
+    }
+
+    @Override
+    public String host()
+    {
+      return "localhost";
+    }
+
+    @Override
+    public int port()
+    {
+      return 8080;
+    }
+
+    @Override
+    public boolean secure()
+    {
+      return false;
+    }
+  }
 }

@@ -34,7 +34,7 @@ import io.baratine.service.Service;
 @Service
 public interface DatabaseKrakenSync extends DatabaseKraken
 {
-  Object execute(String sql, Object ... params);
+  Object execute(String sql, Object... params);
 
-  ResultSetKraken query(String sql, Object ... params);
+  ResultSetKraken query(String sql, Object... params);
 }

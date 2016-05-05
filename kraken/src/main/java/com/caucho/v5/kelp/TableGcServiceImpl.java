@@ -49,7 +49,7 @@ import com.caucho.v5.util.L10N;
  * Actor for doing a segment garbage collection
  */
 @Service
-public class TableGcServiceImpl
+public class TableGcServiceImpl implements TableGcService
 {
   private static final L10N L = new L10N(TableGcServiceImpl.class);
   

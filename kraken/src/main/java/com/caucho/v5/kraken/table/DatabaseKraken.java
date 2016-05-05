@@ -35,7 +35,7 @@ import io.baratine.service.Service;
 @Service
 public interface DatabaseKraken
 {
-  void execute(Result<Object> result, String sql, Object ... params);
+  void execute(Result<Object> result, String sql, Object... params);
 
-  void query(Result<ResultSetKraken> result, String sql, Object ... params);
+  void query(Result<ResultSetKraken> result, String sql, Object... params);
 }

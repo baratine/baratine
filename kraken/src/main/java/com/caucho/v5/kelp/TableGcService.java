@@ -43,5 +43,5 @@ public interface TableGcService
   
   void waitForGc(Result<Boolean> result);
   
-  void close();
+  boolean close();
 }

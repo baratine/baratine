@@ -29,30 +29,18 @@
 
 package com.caucho.junit;
 
-import com.caucho.v5.inject.AnnotationLiteral;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-class ConfigurationBaratineDefault
-  extends AnnotationLiteral<ConfigurationBaratine>
-  implements ConfigurationBaratine
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface Http
 {
-  public static final long TEST_TIME = 894621091000L;
+  String host() default "localhost";
 
-  static final ConfigurationBaratine INSTANCE
-    = new ConfigurationBaratineDefault();
+  int port() default 8080;
 
-  private ConfigurationBaratineDefault()
-  {
-  }
-
-  @Override
-  public String workDir()
-  {
-    return "{java.io.tmpdir}";
-  }
-
-  @Override
-  public long testTime()
-  {
-    return TEST_TIME;
-  }
+  boolean secure() default false;
 }

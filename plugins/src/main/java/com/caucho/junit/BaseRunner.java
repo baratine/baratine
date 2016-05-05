@@ -63,8 +63,9 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
     ConfigurationBaratine config
       = getTestClass().getAnnotation(ConfigurationBaratine.class);
 
-    if (config == null)
-      config = ConfigurationBaratineDefault.INSTNANCE;
+    if (config == null) {
+      config = ConfigurationBaratineDefault.INSTANCE;
+    }
 
     return config;
   }
@@ -98,6 +99,36 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
   }
 
   abstract protected Object resolve(Class type, Annotation[] annotations);
+
+  protected long getStartTime()
+  {
+    final ConfigurationBaratine config = getConfiguration();
+
+    return config.testTime();
+  }
+
+  protected String getWorkDir()
+  {
+    final ConfigurationBaratine config = getConfiguration();
+
+    String workDir = config.workDir();
+
+    if (workDir.charAt(0) == '{') {
+      workDir = eval(workDir);
+    }
+
+    return workDir;
+  }
+
+  private String eval(String expr)
+  {
+    if (expr.charAt(0) != '{' || expr.charAt(expr.length() - 1) != '}')
+      throw new IllegalArgumentException(L.l(
+        "property {0} does not match expected format of {property}",
+        expr));
+
+    return System.getProperty(expr.substring(1, expr.length() - 1));
+  }
 
   class BaratineTestClass extends TestClass
   {
@@ -191,5 +222,4 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
       return args;
     }
   }
-
 }
