@@ -208,9 +208,19 @@ public class State
   /**
    * Adds String value to internal state
    *
-   * @param v String value ot add
+   * @param v String value to add
    */
   public static void addState(String v)
+  {
+    add(v);
+  }
+
+  /**
+   * Adds String value to internal state
+   *
+   * @param v String value to add
+   */
+  public static void add(String v)
   {
     synchronized (Startup.class) {
       _state += v;
