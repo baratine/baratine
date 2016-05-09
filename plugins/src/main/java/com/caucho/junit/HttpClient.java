@@ -31,7 +31,6 @@ package com.caucho.junit;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -54,6 +53,10 @@ import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.util.L10N;
 
+/**
+ * Class {@code HttpClient} is used for making HTTP requests to Baratine
+ * Services exposed via HTTP e.g. using {@code WebRunnerBaratine}.
+ */
 public class HttpClient implements AutoCloseable
 {
   private static final Logger log
@@ -79,6 +82,11 @@ public class HttpClient implements AutoCloseable
 
   private String[] _sslProtocols;
 
+  /**
+   * Constructs {@code HttpClient} that will make request to localhost at specified port.
+   *
+   * @param port
+   */
   public HttpClient(int port)
   {
     _system = SocketSystem.current();
@@ -186,13 +194,6 @@ public class HttpClient implements AutoCloseable
 
     _out.close();
 
-/*
-    FileOutputStream f = new FileOutputStream("/tmp/junk.dat");
-    f.write(os.toByteArray());
-
-    f.close();
-*/
-
     return new Response(new ByteArrayInputStream(os.toByteArray()));
   }
 
@@ -280,6 +281,13 @@ public class HttpClient implements AutoCloseable
     }
   }
 
+  /**
+   * Performs multipart post
+   *
+   * @param url
+   * @param map
+   * @throws Exception
+   */
   public void postMultipart(String url, Map<String,String> map)
     throws Exception
   {
@@ -330,6 +338,10 @@ public class HttpClient implements AutoCloseable
     close();
   }
 
+  /**
+   * Class {@code Request} is an HTTP request builder that allows specifiying
+   * url, method, body and content type of the request.
+   */
   public static class Request
   {
     private HttpClient _tcp;
@@ -377,6 +389,13 @@ public class HttpClient implements AutoCloseable
       return this;
     }
 
+    /**
+     * Supplied String will be used as the body for posting to the specified URL
+     * using content-type configure with type() method.
+     *
+     * @param body String value to submit
+     * @return
+     */
     public Request body(String body)
     {
       Objects.requireNonNull(body);
@@ -386,6 +405,12 @@ public class HttpClient implements AutoCloseable
       return this;
     }
 
+    /**
+     * Supplied bean will be JSONencoded for posting to the specified URL
+     * using application/json content-type
+     *
+     * @param bean bean to json-encode for submission
+     */
     public void body(Object bean)
     {
       Objects.requireNonNull(bean);
@@ -405,6 +430,13 @@ public class HttpClient implements AutoCloseable
       _type = "application/json";
     }
 
+    /**
+     * Sets a header to use with HTTP request
+     *
+     * @param key
+     * @param value
+     * @return
+     */
     public Request header(String key, String value)
     {
       Objects.requireNonNull(key);
@@ -415,6 +447,13 @@ public class HttpClient implements AutoCloseable
       return this;
     }
 
+    /**
+     * Sets a cookie to use with HTTP request
+     *
+     * @param key
+     * @param value
+     * @return
+     */
     public Request cookie(String key, String value)
     {
       Objects.requireNonNull(key);
@@ -425,6 +464,12 @@ public class HttpClient implements AutoCloseable
       return this;
     }
 
+    /**
+     * Sets session id
+     *
+     * @param value
+     * @return
+     */
     public Request session(String value)
     {
       Objects.requireNonNull(value);
@@ -434,6 +479,12 @@ public class HttpClient implements AutoCloseable
       return this;
     }
 
+    /**
+     * Executes request and returns Response representing HTTP response.
+     *
+     * @return
+     * @throws IOException
+     */
     public Response go() throws IOException
     {
       StringBuilder sb = new StringBuilder();
@@ -472,6 +523,12 @@ public class HttpClient implements AutoCloseable
     }
   }
 
+  /**
+   * Class {@code Response} represents HTTP response and provides methods to
+   * read headers and body of the response. The body of the response can be
+   * read as a String using body() method or as a JSON object using methods
+   * readMap() and readObject().
+   */
   public static class Response
   {
     private InputStream _in;
@@ -484,6 +541,11 @@ public class HttpClient implements AutoCloseable
       _in = in;
     }
 
+    /**
+     * Returns HTTP response status
+     *
+     * @return
+     */
     public int status()
     {
       if (_headers == null)
@@ -492,6 +554,11 @@ public class HttpClient implements AutoCloseable
       return _status;
     }
 
+    /**
+     * Returns HTTP response headers
+     *
+     * @return
+     */
     public Map<String,String> headers()
     {
       if (_headers == null)
@@ -575,11 +642,25 @@ public class HttpClient implements AutoCloseable
       return _in;
     }
 
+    /**
+     * Returns {@code java.util.Map} representation of the JSON response.
+     *
+     * @return
+     * @throws IOException
+     */
     public Map readMap() throws IOException
     {
       return readObject(Map.class);
     }
 
+    /**
+     * Returns JSON decoded instance of the specified type.
+     *
+     * @param type specifies the type for decoding from JSON
+     * @param <T>
+     * @return decoded object
+     * @throws IOException
+     */
     public <T> T readObject(Class<T> type) throws IOException
     {
       if (_headers == null)
@@ -591,6 +672,12 @@ public class HttpClient implements AutoCloseable
       return (T) reader.readObject(type);
     }
 
+    /**
+     * Returns body as a string.
+     *
+     * @return body as String.
+     * @throws IOException
+     */
     public String body() throws IOException
     {
       if (_headers == null)
@@ -605,6 +692,11 @@ public class HttpClient implements AutoCloseable
       return builder.toString();
     }
 
+    /**
+     * Returns body as string including the headers
+     * @return
+     * @throws IOException
+     */
     public String rawBody() throws IOException
     {
       StringBuilder builder = new StringBuilder();
@@ -615,22 +707,5 @@ public class HttpClient implements AutoCloseable
 
       return builder.toString();
     }
-  }
-
-  public static void main(String[] args) throws IOException
-  {
-    FileInputStream in = new FileInputStream("/tmp/junk.dat");
-
-    Response r = new Response(in);
-
-    System.out.println("HttpClient2.main " + r.status());
-
-    System.out.println("HttpClient2.main " + r.headers());
-
-    System.out.println("HttpClient2.main " + r.body());
-
-    int i = '\n';
-
-    System.out.println("HttpClient.main " + String.format("0x%02x", i));
   }
 }

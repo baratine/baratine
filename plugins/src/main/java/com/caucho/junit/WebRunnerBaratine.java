@@ -54,6 +54,12 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
+/**
+ * Class {@code WebRunnerBaratine} is a JUnit Runner that will deployed services
+ * into a Baratine Web Container and expose them via http endpoints.
+ *
+ * @see RunnerBaratine
+ */
 public class WebRunnerBaratine extends BaseRunner
 {
   private final static Logger log

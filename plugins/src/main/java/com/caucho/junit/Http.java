@@ -34,6 +34,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation {@code Http} specifies http related parameters used with {@code WebRunnerBaratine}.
+ * The annotation is expected to be specified on a class representing JUnit test.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Http

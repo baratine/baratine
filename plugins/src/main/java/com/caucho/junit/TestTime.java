@@ -35,8 +35,10 @@ import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.CurrentTimeTest;
 
 /**
- * Class TestTime is used to control Baratine time during the test. This is useful
+ * Class TestTime is used to control Baratine Clock during the test. This is useful
  * when testing time sensitive behaviour such as time-outs, timers etc.
+ *
+ * Baratine clock can be fast forwarded using method addTime().
  */
 public class TestTime
 {

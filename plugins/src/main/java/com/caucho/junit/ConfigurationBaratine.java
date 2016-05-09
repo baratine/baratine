@@ -42,6 +42,10 @@ import java.lang.annotation.Target;
 public @interface ConfigurationBaratine
 {
   /**
+   * Convenience value that helps generate testable sequences
+   */
+  public static final long TEST_TIME = 894621091000L;
+  /**
    * Specifies working directory for Baratine
    *
    * @return

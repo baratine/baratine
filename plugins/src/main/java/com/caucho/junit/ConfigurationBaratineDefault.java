@@ -35,8 +35,6 @@ class ConfigurationBaratineDefault
   extends AnnotationLiteral<ConfigurationBaratine>
   implements ConfigurationBaratine
 {
-  public static final long TEST_TIME = 894621091000L;
-
   static final ConfigurationBaratine INSTANCE
     = new ConfigurationBaratineDefault();
 

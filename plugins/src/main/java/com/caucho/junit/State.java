@@ -39,6 +39,14 @@ import java.util.logging.Logger;
 import com.caucho.v5.util.IntMap;
 import io.baratine.service.Startup;
 
+/**
+ * Class {@code State} is used to accumulate user code state as the test progresses.
+ * State can be altered by using one of the add methods or method clear().
+ * <p>
+ * State is available for reading using method state().
+ * <p>
+ * Once state() method is called the internal state variable is cleared.
+ */
 public class State
 {
   private static Logger log = Logger.getLogger(State.class.getName());
@@ -49,6 +57,9 @@ public class State
 
   private static IntMap _featureMap = new IntMap();
 
+  /**
+   * Clears the internal state
+   */
   public static void clear()
   {
     _clearCount++;
@@ -57,11 +68,22 @@ public class State
     _featureMap.clear();
   }
 
+  /**
+   * Returns value of the state counter
+   *
+   * @return
+   * @see #addCount()
+   */
   public static int getStateCount()
   {
     return _stateCount;
   }
 
+  /**
+   * Returns number of times method clear() was called
+   *
+   * @return
+   */
   public static int getClearCount()
   {
     return _clearCount;
@@ -72,11 +94,21 @@ public class State
     return _clearCount;
   }
 
+  /**
+   * Increments state counter
+   *
+   * @return
+   */
   public static int addCount()
   {
     return _stateCount++;
   }
 
+  /**
+   * Retrieves next unique id value, based on state counter.
+   *
+   * @return
+   */
   public static int generateId()
   {
     return addCount();
@@ -97,11 +129,21 @@ public class State
     return _featureMap.get(name) > 0;
   }
 
+  /**
+   * Fast forward test clock by supplied interval, in seconds
+   *
+   * @param sec
+   */
   public static void addTime(int sec)
   {
     TestTime.addTime(sec, TimeUnit.SECONDS);
   }
 
+  /**
+   * Sleeps specified number of milliseconds
+   *
+   * @param ms
+   */
   public static void sleep(long ms)
   {
     try {
@@ -111,6 +153,13 @@ public class State
     }
   }
 
+  /**
+   * Returns state and clears internal state variable
+   *
+   * @return String state representation
+   * @see #addText(String)
+   * @see #addState(String)
+   */
   public static String state()
   {
     String value = _state;
@@ -124,6 +173,13 @@ public class State
     return sortAndGetState();
   }
 
+  /**
+   * Splits state at new line character ('\n'), sorts the resulting array and
+   * returns joined array. Array is joined using '\n' as a delimiter between its
+   * members.
+   *
+   * @return
+   */
   public static String sortAndGetState()
   {
     if (_state.length() == 0) {
@@ -145,31 +201,33 @@ public class State
     }
 
     _state = "";
+
     return value;
   }
 
+  /**
+   * Adds String value to internal state
+   *
+   * @param v String value ot add
+   */
   public static void addState(String v)
-  {
-    add(v);
-  }
-
-  public static void add(String v)
   {
     synchronized (Startup.class) {
       _state += v;
     }
   }
 
+  /**
+   * Adds String value to internal state if state is empty. If state is not empty
+   * value is prepended with new line character ('\n') and then added.
+   *
+   * @param v String value to add
+   */
   public static void addText(String v)
   {
     if (_state.length() == 0)
-      add(v);
+      addState(v);
     else
-      add("\n" + v);
-  }
-
-  public void setValue(String v)
-  {
-    addText(v);
+      addState("\n" + v);
   }
 }
