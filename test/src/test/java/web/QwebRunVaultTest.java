@@ -30,96 +30,92 @@
 package web;
 
 import java.io.IOException;
-import java.util.Map;
 
 import com.caucho.junit.Http;
 import com.caucho.junit.HttpClient;
 import com.caucho.junit.ServiceTest;
 import com.caucho.junit.WebRunnerBaratine;
+import io.baratine.service.Modify;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-import io.baratine.web.Body;
+import io.baratine.vault.Asset;
+import io.baratine.vault.Id;
+import io.baratine.vault.IdAsset;
+import io.baratine.vault.Vault;
 import io.baratine.web.Get;
-import io.baratine.web.Post;
+import io.baratine.web.Path;
 import io.baratine.web.Query;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(WebRunnerBaratine.class)
-@ServiceTest(QwebRunJsonTest.Q_basicService.class)
+@ServiceTest(QwebRunVaultTest.Q_fooVault.class)
 @Http(port = 8086)
-public class QwebRunJsonTest
+public class QwebRunVaultTest
 {
   @Test
-  public void testMap() throws IOException
+  public void test(HttpClient client) throws IOException
   {
-    HttpClient client = new HttpClient(8086);
+    HttpClient.Response response = client.get("/create?v=Hello+World!").go();
 
-    HttpClient.Response response = client.get("/get?v=Hello+World!").go();
+    String x = response.body();
 
-    final Map map = response.readMap();
+    Assert.assertEquals("\"DVS1aMAAR3I\"", x);
 
-    Assert.assertEquals("Hello World!", map.get("_value"));
-  }
+    response = client.get("/foo/DVS1aMAAR3I").go();
 
-  @Test
-  public void getBean(HttpClient client) throws IOException
-  {
-    HttpClient.Response response = client.get("/get?v=Hello+World!").go();
+    x = response.body();
 
-    Q_fooBean bean = response.readObject(Q_fooBean.class);
+    Assert.assertEquals("{\"id\":\"DVS1aMAAR3I\",\"value\":\"Hello World!\"}",
+                        x);
 
-    Assert.assertEquals("Q_fooBean[Hello World!]", bean.toString());
-  }
-
-  @Test
-  public void postBean(HttpClient client) throws Exception
-  {
-    final HttpClient.Request post = client.post("/post");
-
-    post.body(new Q_fooBean("Who is there?"));
-
-    final HttpClient.Response response = post.go();
-
-    final Q_fooBean bean = response.readObject(Q_fooBean.class);
-
-    Assert.assertEquals("Q_fooBean[Who is there?]", bean.toString());
   }
 
   @Service
-  public static class Q_basicService
+  public abstract static class Q_fooVault implements Vault<IdAsset,Q_fooBean>
   {
-    @Get
-    public void get(@Query("v") String value, Result<Q_fooBean> result)
-    {
-      result.ok(new Q_fooBean(value));
-    }
+    @Get("/create")
+    public abstract void createWithValue(@Query("v") String value,
+                                         Result<IdAsset> result);
 
-    @Post
-    public void post(@Body Q_fooBean bean, Result<Q_fooBean> result)
+    @Get("/foo/{id}")
+    public void get(@Path("id") Q_fooBean foo, Result<Q_fooBean> result)
     {
-      result.ok(bean);
+      foo.value(result.of());
     }
   }
 
+  @Asset
+  @Path("/foo")
   public static class Q_fooBean
   {
-    private String _value;
+    @Id
+    private IdAsset id;
+
+    private String value;
 
     public Q_fooBean()
     {
     }
 
-    public Q_fooBean(String value)
+    @Modify
+    public void createWithValue(String value, Result<IdAsset> result)
     {
-      _value = value;
+      this.value = value;
+
+      result.ok(id);
+    }
+
+    public void value(Result<Q_fooBean> result)
+    {
+      result.ok(this);
     }
 
     @Override
     public String toString()
     {
-      return this.getClass().getSimpleName() + "[" + _value + "]";
+      return this.getClass().getSimpleName() + "[" + value + "]";
     }
   }
 }

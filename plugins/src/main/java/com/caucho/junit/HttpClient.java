@@ -604,6 +604,17 @@ public class HttpClient implements AutoCloseable
 
       return builder.toString();
     }
+
+    public String rawBody() throws IOException
+    {
+      StringBuilder builder = new StringBuilder();
+
+      for (int i = _in.read(); i > -1; i = _in.read()) {
+        builder.append((char) i);
+      }
+
+      return builder.toString();
+    }
   }
 
   public static void main(String[] args) throws IOException
