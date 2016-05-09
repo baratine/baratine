@@ -50,7 +50,7 @@ public class QpipeTest
   {
     pipes.send(Message.newMessage("hello"));
 
-    State.sleep(10);
+    State.sleep(50);
 
     assertEquals("\nonMessage(hello)", State.state());
   }
