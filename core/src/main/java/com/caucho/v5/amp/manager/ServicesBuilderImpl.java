@@ -444,8 +444,8 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   public ServicesAmp get()
   {
     ServicesAmp manager = getRaw();
-    
-    ArrayList<ServiceBuilderStart<?>> services = new ArrayList<>(_services);
+
+    ArrayList<ServiceBuilderStart> services = new ArrayList<>(_services);
     _services.clear();
 
     boolean isAutoStart = manager.isAutoStart();
