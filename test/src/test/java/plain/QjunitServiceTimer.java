@@ -59,11 +59,11 @@ public class QjunitServiceTimer
                     Result.ignore());
 
     TestTime.addTime(1, TimeUnit.SECONDS);
-    Thread.sleep(10);
+    Thread.sleep(100);
     Assert.assertEquals("", State.state());
 
     TestTime.addTime(2, TimeUnit.SECONDS);
-    Thread.sleep(10);
+    Thread.sleep(100);
 
     Assert.assertEquals("\n  timer!", State.state());
   }
@@ -77,11 +77,11 @@ public class QjunitServiceTimer
                    Result.ignore());
 
     TestTime.addTime(1, TimeUnit.SECONDS);
-    Thread.sleep(10);
+    Thread.sleep(100);
     Assert.assertEquals("", State.state());
 
     TestTime.addTime(2, TimeUnit.SECONDS);
-    Thread.sleep(10);
+    Thread.sleep(100);
 
     Assert.assertEquals("\n  timer!", State.state());
   }
