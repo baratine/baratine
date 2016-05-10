@@ -34,7 +34,61 @@ import com.caucho.v5.kraken.table.DatabaseKrakenSync;
 import com.caucho.v5.kraken.table.KrakenBuilderImpl;
 
 /**
- * Standalone kraken.
+ * Interface {@Kraken} is a bootstrap class for Kraken database. It provides methods
+ * to create {@KrakenBuilder}, start and stop Kraken database.
+ * <p>
+ * Kraken supports a subset of SQL standard and provides methods with asynchronous
+ * execution. Results of executing the statements are obtained via callbacks.
+ * <p>
+ * Kraken supports most of the regular SQL types and an Object type. Columns of
+ * type Object are capable of storing Java Beans using H3 representation. Internally
+ * H3 is a Map which allows querying Object type columns using dotted notation e.g.
+ * <p>
+ * <code> where user.name = ? </code>
+ * <p>
+ * Other types supported are double, integer, blob, string, object, char, varbinary,
+ * binary, mediumtext, longtext, tinyint, smallint, integer, bigint, double, datetime,
+ * text and identity.
+ * <p>
+ * Kraken supports CREATE, INSERT, SELECT, UPDATE, REPLACE and DELETE queries.
+ * <p>
+ * <code>create table test(id int primary key, data varchar)'</code>
+ * <code>insert into test (id, data) values (0, 'Hello World!')</code>
+ * <code>select data from test where id = ?</code>
+ * <p>
+ * E.g.
+ * <code>
+ * <pre>
+ *  public void example()
+ *  {
+ *    KrakenBuilder krakenBuilder = Kraken.newDatabase();
+ *
+ *    Kraken kraken = krakenBuilder.get();
+ *
+ *    DatabaseKraken db = kraken.database();
+ *    db.execute(Result.ignore(),
+ *             "create table test(id int primary key, data varchar)");
+ *    db.execute(Result.ignore(),
+ *             "insert into test (id, data) values (0, 'Hello World!')");
+ *
+ *    db.query((rs, e)->processResult(rs, e), "select id, data from test");
+ *  }
+ *
+ *  private void processResult(ResultSetKraken rs, Throwable e)
+ *  {
+ *    for (List<Object> row : rs) {
+ *      //process row
+ *    }
+ *   }
+ *
+ * </pre>
+ * </code>
+ *
+ * In the code above method example doesn't wait for the results of query execution
+ * but exits immediately after submitting the queries to {@DatabaseKraken}
+ *
+ * Method {@processResult} is called asynchronously when the ResultSetKraken
+ * becomes available.
  */
 public interface Kraken
 {
