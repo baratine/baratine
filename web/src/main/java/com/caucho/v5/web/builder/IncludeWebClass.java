@@ -53,6 +53,7 @@ import io.baratine.service.Api;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef.ServiceBuilder;
+import io.baratine.service.Session;
 import io.baratine.service.Workers;
 import io.baratine.vault.Vault;
 import io.baratine.web.Body;
@@ -142,8 +143,10 @@ class IncludeWebClass implements IncludeWebAmp
     else if (_type.isAnnotationPresent(Service.class)) {
       Service service = _type.getAnnotation(Service.class);
       String address = service.value();
+
+      Session session = _type.getAnnotation(Session.class);
       
-      if (address.startsWith("session:")) {
+      if (address.startsWith("session:") || session != null) {
         builder.service(_type);
         beanSupplier = null;
         beanFactory = req->req.session(_type);
