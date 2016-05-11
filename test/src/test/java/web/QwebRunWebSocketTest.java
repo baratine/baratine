@@ -60,7 +60,7 @@ public class QwebRunWebSocketTest
 
     client.close();
 
-    Thread.sleep(10);
+    Thread.sleep(100);
 
     System.out.println("state: " + State.state());
   }
