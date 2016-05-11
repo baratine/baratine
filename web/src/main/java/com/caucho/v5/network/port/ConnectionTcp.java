@@ -68,16 +68,16 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   private final PortTcp _port;
   private final SocketBar _socket;
   private final ConnectionProtocol _protocol;
-  
+
   private ReadStream _readStream;
   private WriteStream _writeStream;
-  
+
   //private final PollControllerTcpPoll _pollHandle;
   private final PollController _pollHandle;
   private final ClassLoader _loader;
-  
+
   private final ConnectionTcpProxy _connProxy;
-  
+
   private StateConnection _state = StateConnection.FREE;
 
   private long _idleTimeout;
@@ -111,7 +111,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     _readStream.reuseBuffer(true);
 
     _connectionId = connId;
-    
+
     _port = port;
 
     _loader = port.classLoader();
@@ -122,10 +122,10 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
 
     // _id = listener.getDebugId() + "-" + _idCount;
     _id = protocol.name() + "-" + _port.port() + "-" + _connectionId;
-    
+
     _inRef = port.services().newService(this).name(_id).ref();
     _connProxy = _inRef.as(ConnectionTcpProxy.class);
-    
+
     _name = _id;
 
     //_connectionTask = new TaskConnection(this);
@@ -183,7 +183,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     return _name;
   }
-  
+
   public String getThreadName()
   {
     return dbgId();
@@ -211,7 +211,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     ConnectionProtocol request = connProtocol();
 
     String url = request.url();
-    
+
     if (url != null && ! "".equals(url)) {
       return url;
     }
@@ -219,7 +219,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     PortTcp port = port();
 
     String protocolName = port.protocolName();
-    
+
     if (protocolName == null) {
       protocolName = "request";
     }
@@ -316,13 +316,13 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     return _socket;
   }
-  
+
   @Override
   public InetSocketAddress ipLocal()
   {
     return _socket.ipLocal();
   }
-  
+
   @Override
   public InetSocketAddress ipRemote()
   {
@@ -477,13 +477,13 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
                  + ", idle=" + _port.getIdleThreadCount() + ")");
     }
     */
-    
+
     try {
       requestLoop();
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
     }
-    
+
     /*
     if (_stateRef.get().toWake(_stateRef)) {
       offer(getConnectionTask());
@@ -518,8 +518,8 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
 
   /**
    * Wake a connection.
-   * 
-   * The connection may be idle because it's received a close-read but 
+   *
+   * The connection may be idle because it's received a close-read but
    * HTTP is still processing. When the HTTP write completes, it will
    * wake the read thread.
    */
@@ -559,7 +559,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     try {
       _state = _state.toAccepted();
-      
+
       initSocket();
       _pollHandle.initKeepalive();
 
@@ -568,13 +568,13 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
                   + "<" + ipRemote()
                   + "#" + _connectionId);
       }
-      
+
       _protocol.onAccept();
-        
+
       requestLoop();
     } catch (Exception e) {
       e.printStackTrace();
-      
+
       throw new RuntimeException(e);
     }
   }
@@ -588,7 +588,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     StateConnection state = _state;
     StateConnection tailState = state;
     //Thread thread = Thread.currentThread();
-    
+
     //startThread(thread);
 
     try {
@@ -597,7 +597,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
         case IDLE:
           tailState = state;
           return tailState;
-          
+
         case ACTIVE:
           ServiceRef.flushOutbox();
           state = dispatchRequest();
@@ -613,16 +613,16 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
           ServiceRef.flushOutbox();
           tailState = state;
           return tailState;
-          
+
         case CLOSE_READ_S:
           ServiceRef.flushOutboxAndExecuteLast();
           tailState = state;
           return tailState;
-          
+
         case CLOSE_READ_A:
           state = closeRead();
           break;
-          
+
         case CLOSE:
           _state = state;
           tailState = state;
@@ -630,13 +630,13 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
           close();
           tailState = _state;
           return tailState;
-          
+
         case FREE:
           tailState = state;
           ServiceRef.flushOutboxAndExecuteLast();
           System.out.println("FREE: " + this);
           return tailState;
-      
+
           /*
         case TIMEOUT:
           ServiceRef.flushOutbox();
@@ -663,7 +663,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
       }
     } catch (ClientDisconnectException e) {
     //  state = NextState.DESTROY;
-      
+
       _port.stats().addLifetimeClientDisconnectCount();
 
       if (log.isLoggable(Level.FINER)) {
@@ -688,12 +688,12 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     } finally {
       _state = tailState;
       //thread.setContextClassLoader(_loader);
-      
+
       //finishThread(tailState);
-      
+
       //ServiceRef.flushOutboxAndExecuteLast();
     }
-    
+
     return state;
   }
 
@@ -706,23 +706,23 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
       thread.setContextClassLoader(_loader);
 
       long requestTimeout = port().getRequestTimeout();
-      
+
       long now = CurrentTime.currentTime();
 
       if (requestTimeout > 0) {
         long expireTime = now + requestTimeout;
         _socket.setRequestExpireTime(expireTime);
-        
+
         _idleExpireTime = expireTime;
       }
       else {
         _idleExpireTime = now + 600 * 1000L;
       }
-      
+
       StateConnection stateNext = connProtocol().service();
 
       _state = _state.next(stateNext);
-      
+
       return _state;
     }
     finally {
@@ -753,7 +753,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
       _socket.setRequestExpireTime(0);
     }
   }
-  
+
   //
   // keepalives: read blocking and polling
   //
@@ -774,7 +774,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     if (port.isClosed()) {
       return StateConnection.DESTROY;
     }
-   
+
     if (readStream().available() > 0) {
       return StateConnection.ACTIVE;
     }
@@ -787,7 +787,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     // _state = _state.toKeepalive(this);
 
     PollTcpManagerBase pollManager = port.pollManager();
-    
+
     // use poll manager if available
     if (pollManager == null) {
       port().stats().addLifetimeKeepaliveCount();
@@ -797,7 +797,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
 
     if (! _pollHandle.isKeepaliveStarted()) {
       ServiceRef.flushOutbox();
-      
+
       if (_port.keepaliveThreadRead(readStream(), _idleTimeout) > 0) {
         return StateConnection.ACTIVE;
       }
@@ -820,10 +820,10 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
       if (log.isLoggable(Level.FINEST)) {
         log.finest(dbgId() + "keepalive (poll)");
       }
-      
+
       port().stats().addLifetimeKeepaliveCount();
       port().stats().addLifetimeKeepalivePollCount();
-      
+
       return StateConnection.POLL;
     }
 
@@ -872,7 +872,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     if (log.isLoggable(Level.FINEST)) {
       log.finest(dbgId() + " keepalive (thread, " + timeout + "ms)");
     }
-    
+
     ServiceRef.flushOutbox();
 
     do {
@@ -914,7 +914,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   {
     return readStream().fillWithTimeout(timeout);
   }
-  
+
   //
   // state transitions
   //
@@ -926,16 +926,16 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     throws IOException
   {
     _idleTimeout = _port.getKeepaliveTimeout();
-    
+
     _port.ssl(_socket);
 
     writeStream().init(_socket.stream());
-    
+
     // ReadStream cannot use getWriteStream or auto-flush
     // because of duplex mode
     // ReadStream is = getReadStream();
     _readStream.init(_socket.stream());
-    
+
     if (log.isLoggable(Level.FINEST)) {
       log.finest(dbgId() + "starting connection " + this
                  + ", total=" + _port.getConnectionCount());
@@ -955,7 +955,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     }
     */
   }
-  
+
   //
   // close operations
   //
@@ -966,8 +966,8 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   private void closeConnection()
   {
     disconnect();
-    
-    
+
+
     if (log.isLoggable(Level.FINE)) {
       _dbgId = (port().address() + ":" + port().port() + "-" + _connectionId);
       Thread.currentThread().setName(_dbgId);
@@ -980,9 +980,9 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
     if (_state.isClose()) {
       return;
     }
-    
+
     _state = _state.toClose();
-    
+
     // synchronized because shutdown can call disconnect on multiple threads
     synchronized (this) {
       _protocol.onCloseRead();
@@ -998,7 +998,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
 
       try {
         ReadStream readStream = readStream();
-        
+
         if (readStream != null) {
           readStream.close();
         }
@@ -1051,9 +1051,9 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
       Thread.dumpStack();
       throw new IllegalStateException(_state.toString());
     }
-    
+
     //_state = _state.toFree();
-    
+
     // synchronized because shutdown can call disconnect on multiple threads
     synchronized (this) {
       //_protocol.onCloseRead();
@@ -1096,7 +1096,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
           log.log(Level.FINER, e.toString(), e);
         }
       }
-      
+
       // XXX: recycle
 
       if (log.isLoggable(Level.FINER)) {
@@ -1109,7 +1109,7 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
 
       StateConnection oldState = _state;
       _state = _state.toFree();
-      
+
       if (_state.isFree()) {
         _port.freeConnection(this);
       }
@@ -1120,17 +1120,17 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
   }
 
   /**
-   * Destroy kills the connection and drops it from the †connection pool.
-   * 
+   * Destroy kills the connection and drops it from the connection pool.
+   *
    * Destroy should only occur if the connection state machine has failed or
-   * 
+   *
    */
   private void destroy()
   {
     if (log.isLoggable(Level.FINEST)) {
       log.finest(this + " destroying connection");
     }
-    
+
     try {
       _socket.forceShutdown();
     } catch (Throwable e) {
@@ -1169,13 +1169,13 @@ public class ConnectionTcp implements ConnectionTcpApi, ConnectionTcpProxy
 
     return _dbgId;
   }
-  
+
   @Override
   public int hashCode()
   {
     return (int) _connectionId;
   }
-  
+
   public boolean equals(Object obj)
   {
     return this == obj;
