@@ -29,6 +29,8 @@
 
 package com.caucho.junit;
 
+import static com.caucho.v5.util.DebugUtil.isDebug;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,6 +66,10 @@ public class HttpClient implements AutoCloseable
     = Logger.getLogger(HttpClient.class.getName());
 
   private static final L10N L = new L10N(HttpClient.class);
+
+  private static long DEBUG_SO_TIMEOUT = TimeUnit.MINUTES.toMillis(15);
+
+  private static final long soTimeout = isDebug() ? DEBUG_SO_TIMEOUT : 2000;
 
   private SocketSystem _system;
 
@@ -262,7 +269,7 @@ public class HttpClient implements AutoCloseable
     }
 
     try (SocketBar socket = socketBuilder.get()) {
-      socket.setSoTimeout(2000);
+      socket.setSoTimeout(soTimeout);
 
       try (ReadStream sIn = socket.getInputStream()) {
         try (WriteStream sOut = socket.getOutputStream()) {
@@ -694,6 +701,7 @@ public class HttpClient implements AutoCloseable
 
     /**
      * Returns body as string including the headers
+     *
      * @return
      * @throws IOException
      */
