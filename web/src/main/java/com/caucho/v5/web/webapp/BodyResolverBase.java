@@ -29,12 +29,14 @@
 
 package com.caucho.v5.web.webapp;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +44,12 @@ import java.util.function.Function;
 
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Utf8Util;
-
+import com.caucho.v5.vfs.MultipartStream;
+import com.caucho.v5.vfs.ReadStreamOld;
+import com.caucho.v5.vfs.VfsOld;
+import com.caucho.v5.vfs.WriteStreamOld;
 import io.baratine.web.Form;
+import io.baratine.web.Part;
 
 /**
  * Reads a body
@@ -53,6 +59,7 @@ public class BodyResolverBase implements BodyResolver
   private static final L10N L = new L10N(BodyResolverBase.class);
 
   public static final String FORM_TYPE = "application/x-www-form-urlencoded";
+  public static final char[] boundary = "boundary".toCharArray();
 
   @Override
   public <T> T body(RequestWebSpi request, Class<T> type)
@@ -84,11 +91,14 @@ public class BodyResolverBase implements BodyResolver
       String contentType = request.header("content-type");
 
       //TODO: parse and use the encoding of the content type e.g. application/x-www-form-urlencoded; UTF-8
-      if (contentType == null || ! contentType.startsWith(FORM_TYPE)) {
+      if (contentType == null || !contentType.startsWith(FORM_TYPE)) {
         throw new IllegalStateException(L.l("Form expects {0}", FORM_TYPE));
       }
 
       return (T) parseForm(request);
+    }
+    else if (Part.class.equals(type) || Part[].class.equals(type)) {
+      return (T) parseMultipart(request);
     }
     /*
     else if (header("content-type").startsWith("application/json")) {
@@ -167,18 +177,18 @@ public class BodyResolverBase implements BodyResolver
     throws InstantiationException, IllegalAccessException
   {
     Map<String,String> map;
-    
+
     if (Modifier.isAbstract(type.getModifiers())) {
       map = new HashMap<>();
     }
     else {
       map = (Map) type.newInstance();
     }
-    
+
     for (Map.Entry<String,List<String>> entry : form.entrySet()) {
       map.put(entry.getKey(), entry.getValue().get(0));
     }
-    
+
     return (T) map;
   }
 
@@ -210,10 +220,14 @@ public class BodyResolverBase implements BodyResolver
       result = transform(str, null, v -> Short.parseShort(v));
     }
     else if (type == char.class) {
-      result = transform(str, (char) 0, v -> str.length() > 0 ? str.charAt(0) : (char) 0);
+      result = transform(str,
+                         (char) 0,
+                         v -> str.length() > 0 ? str.charAt(0) : (char) 0);
     }
     else if (type == Character.class) {
-      result = transform(str, null, v -> str.length() > 0 ? str.charAt(0) : null);
+      result = transform(str,
+                         null,
+                         v -> str.length() > 0 ? str.charAt(0) : null);
     }
     else if (type == int.class) {
       result = transform(str, 0, v -> Integer.parseInt(v));
@@ -243,7 +257,9 @@ public class BodyResolverBase implements BodyResolver
     return (T) result;
   }
 
-  public static <T> Object transform(String str, Object defaultV, Function<String,T> fun)
+  public static <T> Object transform(String str,
+                                     Object defaultV,
+                                     Function<String,T> fun)
   {
     return str != null ? fun.apply(str) : defaultV;
 
@@ -322,6 +338,71 @@ public class BodyResolverBase implements BodyResolver
       return form;
     } catch (Exception e) {
       throw new BodyException(e);
+    }
+  }
+
+  private Part[] parseMultipart(RequestWebSpi request)
+  {
+    //Content-Type: multipart/form-data; boundary=----WebKitFormBoundarysO1e5Wbw760Ku6Ah
+    final String contentType = request.header("Content-Type");
+    char[] contentTypeBuf = contentType.toCharArray();
+
+    int i;
+    for (i = 0; i < contentTypeBuf.length; i++) {
+      char c = contentTypeBuf[i];
+      if ('=' == c && i > boundary.length) {
+        boolean match = true;
+        for (int j = 0; j < boundary.length && match; j++) {
+          match &= boundary[j] == contentTypeBuf[i - boundary.length + j];
+        }
+
+        if (match)
+          break;
+      }
+    }
+
+    if (i + 1 >= contentTypeBuf.length)
+      throw new IllegalStateException(L.l("boundary is not found in <>"));
+
+    int start = ++i;
+
+    char c = ';';
+    if (contentTypeBuf[i] == '\'' || contentTypeBuf[i] == '"') {
+      c = contentTypeBuf[i++];
+      start = i;
+    }
+
+    for (;
+         i < contentTypeBuf.length
+         && contentTypeBuf[i] != c
+         && contentTypeBuf[i] != ' ';
+         i++)
+      ;
+
+    String boundary = new String(contentTypeBuf, start, i - start);
+
+    System.out.println("BodyResolverBase.parseMultipart "
+                       + new String(boundary));
+
+    InputStream in = request.inputStream();
+
+    try {
+      MultipartStream parser = new MultipartStream(VfsOld.openRead(in),
+                                                   boundary);
+      List<Part> parts = new ArrayList<>();
+      ReadStreamOld stream;
+      while ((stream = parser.openRead()) != null) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        WriteStreamOld writer = VfsOld.openWrite(out);
+        writer.writeStream(stream);
+        writer.close();
+        Part part = new PartImpl(out.toByteArray());
+        parts.add(part);
+      }
+
+      return parts.toArray(new Part[parts.size()]);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 }

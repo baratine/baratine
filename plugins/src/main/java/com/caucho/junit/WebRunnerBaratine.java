@@ -97,7 +97,7 @@ public class WebRunnerBaratine extends BaseRunner
     return getHttpConfiguration().host();
   }
 
-  private int httpPort()
+  protected int httpPort()
   {
     return getHttpConfiguration().port();
   }
@@ -196,13 +196,14 @@ public class WebRunnerBaratine extends BaseRunner
       } catch (Exception e) {
       }
 
-      //
       port(httpPort());
 
       for (ServiceTest serviceTest : getServices()) {
         Web.include(serviceTest.value());
       }
-
+      
+      networkSetup();
+      
       _web = start();
 
       super.runChild(child, notifier);
@@ -218,6 +219,10 @@ public class WebRunnerBaratine extends BaseRunner
 
       thread.setContextClassLoader(oldLoader);
     }
+  }
+
+  protected void networkSetup()
+  {
   }
 
   static class HttpDefault extends AnnotationLiteral<Http> implements Http
