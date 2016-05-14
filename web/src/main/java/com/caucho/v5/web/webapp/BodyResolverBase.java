@@ -29,7 +29,6 @@
 
 package com.caucho.v5.web.webapp;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -44,10 +43,6 @@ import java.util.function.Function;
 
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Utf8Util;
-import com.caucho.v5.vfs.MultipartStream;
-import com.caucho.v5.vfs.ReadStreamOld;
-import com.caucho.v5.vfs.VfsOld;
-import com.caucho.v5.vfs.WriteStreamOld;
 import io.baratine.web.Form;
 import io.baratine.web.Part;
 
@@ -387,9 +382,12 @@ public class BodyResolverBase implements BodyResolver
     InputStream in = request.inputStream();
 
     try {
+      List<Part> parts = new ArrayList<>();
+
+/*
       MultipartStream parser = new MultipartStream(VfsOld.openRead(in),
                                                    boundary);
-      List<Part> parts = new ArrayList<>();
+
       ReadStreamOld stream;
       while ((stream = parser.openRead()) != null) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -399,9 +397,10 @@ public class BodyResolverBase implements BodyResolver
         Part part = new PartImpl(out.toByteArray());
         parts.add(part);
       }
+*/
 
       return parts.toArray(new Part[parts.size()]);
-    } catch (IOException e) {
+    } catch (Throwable e) {
       throw new RuntimeException(e);
     }
   }
