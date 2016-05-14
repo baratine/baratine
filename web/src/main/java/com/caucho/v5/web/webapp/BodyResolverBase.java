@@ -29,6 +29,15 @@
 
 package com.caucho.v5.web.webapp;
 
+import com.caucho.v5.io.MultipartStream;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
+import com.caucho.v5.util.L10N;
+import com.caucho.v5.util.Utf8Util;
+import io.baratine.web.Form;
+import io.baratine.web.Part;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,11 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import com.caucho.v5.util.L10N;
-import com.caucho.v5.util.Utf8Util;
-import io.baratine.web.Form;
-import io.baratine.web.Part;
 
 /**
  * Reads a body
@@ -376,31 +380,27 @@ public class BodyResolverBase implements BodyResolver
 
     String boundary = new String(contentTypeBuf, start, i - start);
 
-    System.out.println("BodyResolverBase.parseMultipart "
-                       + new String(boundary));
-
-    InputStream in = request.inputStream();
-
     try {
       List<Part> parts = new ArrayList<>();
 
-/*
-      MultipartStream parser = new MultipartStream(VfsOld.openRead(in),
+      InputStream in = request.inputStream();
+
+      MultipartStream parser = new MultipartStream(new ReadStream(in),
                                                    boundary);
 
-      ReadStreamOld stream;
+      ReadStream stream;
       while ((stream = parser.openRead()) != null) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        WriteStreamOld writer = VfsOld.openWrite(out);
+        WriteStream writer = new WriteStream(out);
         writer.writeStream(stream);
         writer.close();
         Part part = new PartImpl(out.toByteArray());
         parts.add(part);
       }
-*/
 
       return parts.toArray(new Part[parts.size()]);
     } catch (Throwable e) {
+      // FIXME what's proper exception handling?
       throw new RuntimeException(e);
     }
   }
