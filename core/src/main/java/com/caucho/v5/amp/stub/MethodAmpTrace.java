@@ -95,6 +95,12 @@ public class MethodAmpTrace implements MethodAmp
   }
   
   @Override
+  public Class<?> declaringClass()
+  {
+    return delegate().declaringClass();
+  }
+  
+  @Override
   public Annotation[] getAnnotations()
   {
     return delegate().getAnnotations();

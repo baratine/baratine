@@ -35,6 +35,7 @@ import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.stub.StubClass;
 
 import io.baratine.db.Cursor;
 import io.baratine.service.Result;
@@ -154,5 +155,10 @@ public interface VaultDriver<ID,T>
          String address)
   {
     return (VaultDriver) this;
+  }
+
+  default StubClass stubClassAsset()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
   }
 }

@@ -32,6 +32,7 @@ package com.caucho.v5.amp.stub;
 import java.lang.annotation.Annotation;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 
 import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
@@ -82,6 +83,12 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
   }
   
   @Override
+  public Class<?> declaringClass()
+  {
+    return delegate().declaringClass();
+  }
+  
+  @Override
   public Annotation [] getAnnotations()
   {
     return delegate().getAnnotations();
@@ -91,6 +98,16 @@ abstract public class MethodAmpWrapper extends MethodAmpBase
   public ParameterAmp[] parameters()
   {
     return delegate().parameters();
+  }
+  
+  //
+  // lifecycle methods
+  //
+  
+  @Override
+  public void onActive(StubContainerAmp container)
+  {
+    delegate().onActive(container);
   }
   
   //

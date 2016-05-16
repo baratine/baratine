@@ -49,7 +49,7 @@ public interface StubClassFactoryAmp
     
     StubClass stubClass = stubClass(bean.getClass(), api);
     
-    return new StubAmpBean(stubClass, bean, path, null, config);
+    return new StubAmpBean(stubClass, bean, path, null, null);
   }
   
   StubClass stubClass(Class<?> type, Class<?> api);

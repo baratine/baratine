@@ -36,7 +36,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
 
 import com.caucho.v5.amp.Direct;
 import com.caucho.v5.amp.ServicesAmp;
@@ -58,6 +57,7 @@ abstract class MethodStubBase extends MethodAmpBase
   private final boolean _isDirect;
   private final boolean _isModify;
   private ParameterAmp[] _parameters;
+  private int _hash;
   
   protected MethodStubBase(Method method)
   {
@@ -83,6 +83,12 @@ abstract class MethodStubBase extends MethodAmpBase
   public boolean isModify()
   {
     return _isModify;
+  }
+  
+  @Override
+  public Class<?> declaringClass()
+  {
+    return _method.getDeclaringClass();
   }
   
   @Override
@@ -204,11 +210,25 @@ abstract class MethodStubBase extends MethodAmpBase
   @Override
   public int hashCode()
   {
-    int hash = _method.getName().hashCode();
+    int hash = _hash;
     
-    for (ParameterAmp param : _parameters) {
-      hash = 65521 * hash + param.hashCode();
+    if (hash != 0) {
+      return hash;
     }
+    
+    hash = _method.getName().hashCode();
+    
+    if (_parameters != null) {
+      for (ParameterAmp param : _parameters) {
+        hash = 65521 * hash + param.hashCode();
+      }
+    }
+    
+    if (hash == 0) {
+      hash = 1;
+    }
+    
+    _hash = hash;
     
     return hash;
   }
@@ -218,6 +238,9 @@ abstract class MethodStubBase extends MethodAmpBase
   {
     if (! (obj instanceof MethodAmp)) {
       return false;
+    }
+    else if (this == obj) {
+      return true;
     }
     
     MethodAmp method = (MethodAmp) obj;

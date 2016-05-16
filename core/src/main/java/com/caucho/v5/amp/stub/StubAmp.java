@@ -33,13 +33,14 @@ import java.lang.reflect.AnnotatedType;
 import java.util.List;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.InboxAmp;
-import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.spi.StubStateAmp;
 
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
@@ -195,6 +196,11 @@ public interface StubAmp
   String journalKey();
   // boolean requestCheckpoint();
   
+  default ServicesAmp services()
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+  
   //
   // lifecycle
   //
@@ -217,6 +223,11 @@ public interface StubAmp
    * The service is valid unless it's been deleted.
    */
   boolean isClosed();
+
+  default boolean isAutoStart()
+  {
+    return false;
+  }
   
   void onInit(Result<? super Boolean> result);
   void replay(InboxAmp inbox,
@@ -331,5 +342,12 @@ public interface StubAmp
   default void onSaveRequest(Result<Void> result)
   {
     onSave(result);
+  }
+
+  default ResultChain<?> ensure(MethodAmp methodAmp,
+                                ResultChain<?> result, 
+                                Object ...args)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
   }
 }

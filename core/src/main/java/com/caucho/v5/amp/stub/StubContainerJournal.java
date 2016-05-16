@@ -57,9 +57,11 @@ public class StubContainerJournal extends StubContainerBase
   
   private boolean _isActive;
   
-  public StubContainerJournal(String path, ServiceConfig config)
+  public StubContainerJournal(StubAmpBean stub,
+                              String path, 
+                              ServiceConfig config)
   {
-    super(path);
+    super(stub, path);
     
     _journalDelay = config.journalDelay();
   }

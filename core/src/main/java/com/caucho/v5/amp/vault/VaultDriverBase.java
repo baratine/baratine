@@ -48,6 +48,7 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.ShimConverter;
 import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.config.ConfigException;
 import com.caucho.v5.convert.bean.FieldBean;
 import com.caucho.v5.convert.bean.FieldBeanFactory;
@@ -77,17 +78,18 @@ public class VaultDriverBase<ID,T>
   
   private FieldBean<T> _idField;
   private FieldBean<T> _stateField;
+  private StubClass _stubClassAsset;
 
-  public VaultDriverBase(ServicesAmp ampManager,
+  public VaultDriverBase(ServicesAmp services,
                          Class<T> assetClass,
                          Class<ID> idClass,
                          String address)
   {
-    Objects.requireNonNull(ampManager);
+    Objects.requireNonNull(services);
     Objects.requireNonNull(assetClass);
     Objects.requireNonNull(idClass);
 
-    _services = ampManager;
+    _services = services;
     _assetClass = assetClass;
     _idClass = idClass;
     
@@ -101,6 +103,8 @@ public class VaultDriverBase<ID,T>
     _idField = introspectId(assetClass);
     _stateField = introspectState(assetClass);
     Objects.requireNonNull(_stateField);
+    
+    _stubClassAsset = _services.stubFactory().stubClass(_assetClass, _assetClass);
     
     if (_idField == null && ! Void.class.equals(idClass)) {
       throw new VaultException(L.l("Missing @Id for asset '{0}'",
@@ -156,7 +160,13 @@ public class VaultDriverBase<ID,T>
   {
     return _address;
   }
-  
+
+  @Override
+  public StubClass stubClassAsset()
+  {
+    return _stubClassAsset;
+  }
+
   @Override
   public <S> MethodVault<S> newMethod(Method method)
   {

@@ -33,11 +33,13 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.StubFactoryAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.stub.StubAmpBean;
 import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
@@ -75,30 +77,31 @@ public class StubGeneratorVault implements StubGenerator
     }
   }
 
-  private StubFactoryAmp factoryResource(Class<?> serviceClass,
-                                          ServicesAmp ampManager,
+  private StubFactoryAmp factoryResource(Class<?> vaultClass,
+                                          ServicesAmp services,
                                           ServiceConfig configService)
   {
-    if (! Vault.class.isAssignableFrom(serviceClass)) {
+    if (! Vault.class.isAssignableFrom(vaultClass)) {
       throw new IllegalStateException();
     }
     
-    TypeRef typeRef = TypeRef.of(serviceClass);
+    TypeRef typeRef = TypeRef.of(vaultClass);
     TypeRef resourceRef = typeRef.to(Vault.class);
-    TypeRef entityRef = resourceRef.param("T");
+    TypeRef assetRef = resourceRef.param("T");
     TypeRef idRef = resourceRef.param("ID");
     
     VaultConfig configResource = new VaultConfig();
-    configResource.entityType(entityRef.rawClass());
+    configResource.assetType(assetRef.rawClass());
     configResource.idType(idRef.rawClass());
     
-    VaultDriver<?,?> driver = driver(ampManager,
-                                        serviceClass, 
-                                        entityRef.rawClass(),
-                                        idRef.rawClass(),
-                                        configService.address());
-    //driver must not be null because ActorAmpBean expects not null
-    //for bean parameter
+    VaultDriver<?,?> driver = driver(services,
+                                     vaultClass, 
+                                     assetRef.rawClass(),
+                                     idRef.rawClass(),
+                                     configService.address());
+    
+    // driver must not be null because ActorAmpBean expects not null
+    // for bean parameter
     //if (driver != null) {
     Objects.requireNonNull(driver);
     configResource.driver(driver);
@@ -106,20 +109,20 @@ public class StubGeneratorVault implements StubGenerator
 
     Object bean;
     
-    if (Modifier.isAbstract(serviceClass.getModifiers())) {
+    if (Modifier.isAbstract(vaultClass.getModifiers())) {
       ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
       
-      bean = ClassGeneratorVault.create(serviceClass, 
-                                             classLoader,
-                                             driver);
+      bean = ClassGeneratorVault.create(vaultClass, 
+                                        classLoader,
+                                        driver);
       
       Consumer<Object> injector = 
-        (Consumer) ampManager.injector().injector(bean.getClass());
+        (Consumer) services.injector().injector(bean.getClass());
       
       injector.accept(bean);
     }
     else {
-      bean = ampManager.injector().instance(Key.of(serviceClass, ServiceImpl.class));
+      bean = services.injector().instance(Key.of(vaultClass, ServiceImpl.class));
     }
     
     if (bean instanceof VaultBase && driver instanceof VaultStore) {
@@ -128,19 +131,23 @@ public class StubGeneratorVault implements StubGenerator
       beanData.store((VaultStore) driver);
     }
         
-    StubClass skeleton;
+    StubClass stubClassVault;
 
-    skeleton = new StubVault(ampManager,
-                                    serviceClass,
-                                    configService,
-                                    configResource);
-    skeleton.introspect();
+    stubClassVault = new StubVault(services,
+                             vaultClass,
+                             configService,
+                             configResource);
+    stubClassVault.introspect();
+    
+    Function<StubAmpBean,StubContainerAmp> factory;
+    
+    StubAmpBean stub = new StubAmpVault(stubClassVault,
+                                        driver.stubClassAsset(),
+                                        bean,
+                                        configService.name(),
+                                        configService);
 
-    StubAmpBean actor = new StubAmpBean(skeleton, 
-                                          bean,
-                                          configService);
-
-    return new StubFactoryImpl(()->actor, configService);
+    return new StubFactoryImpl(()->stub, configService);
   }
 
   private StubFactoryAmp factoryStore(Class<?> serviceClass,
@@ -152,7 +159,7 @@ public class StubGeneratorVault implements StubGenerator
     }
     
     VaultConfig configResource = new VaultConfig();
-    configResource.entityType(serviceClass);
+    configResource.assetType(serviceClass);
     configResource.idType(Void.class);
     
     VaultDriver<?,?> driver = driver(ampManager, 
@@ -167,21 +174,23 @@ public class StubGeneratorVault implements StubGenerator
     configResource.driver(driver);
     //}
         
-    StubClass skeleton;
+    StubClass stubClass;
 
-    skeleton = new StubAssetSolo(ampManager,
+    stubClass = new StubAssetSolo(ampManager,
                                       serviceClass,
                                       configService,
                                       driver);
     
-    skeleton.introspect();
+    stubClass.introspect();
       
     Key<?> key = Key.of(serviceClass, ServiceImpl.class);
-    StubAmpBean actor = new StubAmpBean(skeleton, 
-                                          ampManager.injector().instance(key),
-                                          configService);
+    StubAmpBean stub = new StubAmpBean(stubClass, 
+                                       ampManager.injector().instance(key),
+                                       configService.name(),
+                                       null,
+                                       configService);
 
-    return new StubFactoryImpl(()->actor, configService);
+    return new StubFactoryImpl(()->stub, configService);
   }
   
   private VaultDriver<?,?> driver(ServicesAmp ampManager,

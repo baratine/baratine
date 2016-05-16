@@ -27,57 +27,28 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.stub;
+package com.caucho.v5.amp.ensure;
 
-import java.util.Objects;
+import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.StubContainerAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.util.L10N;
 
 /**
- * Baratine actor skeleton
+ * Driver for the @Ensure reliable message annotation.
  */
-public class StubAmpBeanChild extends StubAmpBean
+public class EnsureDriverNull implements EnsureDriverAmp
 {
-  private String _childPath;
+  private static final L10N L = new L10N(EnsureDriverNull.class);
+  private static final Logger log
+  = Logger.getLogger(EnsureDriverNull.class.getName());
   
-  public StubAmpBeanChild(StubClass skel,
-                              Object bean,
-                              String path,
-                              String childPath,
-                              StubContainerAmp container)
+  @Override
+  public MethodEnsureAmp ensure(MethodAmp method)
   {
-    super(skel, bean, path, container, null);
+    log.warning(L.l("@Ensure method '{0}' with null driver",
+                    method));
     
-    Objects.requireNonNull(container);
-    
-    _childPath = childPath;
-  }
-  
-  @Override
-  public boolean isJournalReplay()
-  {
-    return container().isJournalReplay();
-  }
-  
-  @Override
-  public String journalKey()
-  {
-    return _childPath;
-  }
-
-  @Override
-  public void onSaveChildren(SaveResult saveResult)
-  {
-  }
-  
-  @Override
-  public void onLru(ServiceRefAmp serviceRef)
-  {
-    StubContainerAmp container = container();
-    
-    if (state().isModified()) {
-      container.onLruModified(serviceRef);
-    }
+    return new MethodEnsureNull(method);
   }
 }

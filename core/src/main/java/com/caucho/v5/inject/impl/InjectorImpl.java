@@ -75,7 +75,7 @@ import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 
 /**
- * The injection manager for a given environment.
+ * The injector returns new dependency injection beans.
  */
 public class InjectorImpl implements InjectorAmp
 {
@@ -132,6 +132,8 @@ public class InjectorImpl implements InjectorAmp
       for (InjectAutoBind autoBind : builder.autoBind()) {
         autoBindList.add(autoBind);
       }
+      
+      autoBindList.add(new AutoBindVar());
       
       InjectAutoBind []autoBind = new InjectAutoBind[autoBindList.size()];
       autoBindList.toArray(autoBind);
@@ -260,13 +262,15 @@ public class InjectorImpl implements InjectorAmp
   /**
    * The configuration object.
    */
-  
   @Override
   public Config config()
   {
     return _config;
   }
-
+  
+  /**
+   * Creates a new instance for a given type.
+   */
   @Override
   public <T> T instance(Class<T> type)
   {
@@ -274,7 +278,10 @@ public class InjectorImpl implements InjectorAmp
 
     return instance(key);
   }
-
+  
+  /**
+   * Creates a new instance for a given key.
+   */
   @Override
   public <T> T instance(Key<T> key)
   {
@@ -298,7 +305,11 @@ public class InjectorImpl implements InjectorAmp
       return null;
     }
   }
-
+  
+  /**
+   * Creates a new bean instance for a given InjectionPoint, such as a
+   * method or field.
+   */
   @Override
   public <T> T instance(InjectionPoint<T> ip)
   {
@@ -313,30 +324,11 @@ public class InjectorImpl implements InjectorAmp
       return null;
     }
   }
-
-  /*
-  @Override
-  public <T,X> T instance(Class<T> type, X param)
-  {
-    Key<T> key = Key.of(type);
-
-    return instance(key, param);
-  }
-
-  public <T,X> T instance(Key<T> type, X param)
-  {
-    Class<X> paramType = (Class<X>) param.getClass();
-
-    Function<X,T> fun = function(type, paramType);
-
-    if (fun != null) {
-      return fun.apply(param);
-    }
-    else {
-      return null;
-    }
-  }
-  */
+  
+  /**
+   * Creates an instance provider for a given InjectionPoint, such as a
+   * method or field.
+   */
 
   @Override
   public <T> Provider<T> provider(InjectionPoint<T> ip)
@@ -352,6 +344,9 @@ public class InjectorImpl implements InjectorAmp
     return autoProvider(ip);
   }
 
+  /**
+   * Returns a bean instance provider for a key.
+   */
   @Override
   public <T> Provider<T> provider(Key<T> key)
   {
@@ -374,6 +369,9 @@ public class InjectorImpl implements InjectorAmp
     return provider;
   }
 
+  /**
+   * Search for a matching provider for a key.
+   */
   private <T> Provider<T> lookupProvider(Key<T> key)
   {
     BindingInject<T> bean = findBean(key);
@@ -398,6 +396,9 @@ public class InjectorImpl implements InjectorAmp
     return null;
   }
 
+  /**
+   * Create a provider for an injection point.
+   */
   private <T> Provider<T> lookupProvider(InjectionPoint<T> ip)
   {
     Key<T> key = ip.key();
@@ -485,7 +486,7 @@ public class InjectorImpl implements InjectorAmp
       return ()->null;
     }
     
-    int priority = 0;
+    int priority = -10;
     
     // auto-provider is factory
     InjectScope<T> scope = findScope(type);
@@ -496,7 +497,11 @@ public class InjectorImpl implements InjectorAmp
     
     return binding.provider();
   }
-  
+
+  /**
+   * Finds the scope for a bean producing declaration, either a method or
+   * a type.
+   */
   private <T> InjectScope<T> findScope(AnnotatedElement annElement)
   {
     for (Annotation ann : annElement.getAnnotations()) {
@@ -517,6 +522,9 @@ public class InjectorImpl implements InjectorAmp
     return new InjectScopeFactory<>();
   }
   
+  /**
+   * Returns all bindings matching a type.
+   */
   @Override
   public <T> Iterable<Binding<T>> bindings(Class<T> type)
   {
@@ -529,7 +537,10 @@ public class InjectorImpl implements InjectorAmp
       return Collections.EMPTY_LIST;
     }
   }
-
+  
+  /**
+   * Returns all bindings matching a key.
+   */
   @Override
   public <T> List<Binding<T>> bindings(Key<T> key)
   {
@@ -543,6 +554,9 @@ public class InjectorImpl implements InjectorAmp
     }
   }
 
+  /**
+   * Returns the scope given a scope annotation.
+   */
   <T> InjectScope<T> scope(Class<? extends Annotation> scopeType)
   {
     Supplier<InjectScope<T>> scopeGen = (Supplier) _scopeMap.get(scopeType);
@@ -555,6 +569,10 @@ public class InjectorImpl implements InjectorAmp
     return scopeGen.get();
   }
   
+  /**
+   * Create an injector for a bean type. The consumer will inject the
+   * bean's fields.
+   */
   @Override
   public <T> Consumer<T> injector(Class<T> type)
   {
@@ -566,7 +584,10 @@ public class InjectorImpl implements InjectorAmp
     
     return new InjectProgramImpl<T>(injectList);
   }
-  
+
+  /**
+   * Create a program for method arguments.
+   */
   @Override
   public Provider<?> []program(Parameter []params)
   {
@@ -581,6 +602,9 @@ public class InjectorImpl implements InjectorAmp
     return program;
   }
   
+  /**
+   * Find a binding by the key.
+   */
   private <T> BindingInject<T> findBean(Key<T> key)
   {
     for (InjectProvider provider : _providerList) {
@@ -791,6 +815,11 @@ public class InjectorImpl implements InjectorAmp
     return getClass().getSimpleName() + "[" + EnvLoader.getId(_loader) + "]";
   }
   
+  /**
+   * Injection program for a bean.
+   * 
+   * The program is a list of InjectProgram, which inject fields.
+   */
   private static class InjectProgramImpl<T> implements Consumer<T>
   {
     private InjectProgram []_program;
@@ -814,6 +843,9 @@ public class InjectorImpl implements InjectorAmp
     }
   }
   
+  /**
+   * Set of bindings for a raw class.
+   */
   static class BindingSet<T> implements Iterable<BindingAmp<T>>
   {
     private Class<T> _type;
@@ -894,18 +926,6 @@ public class InjectorImpl implements InjectorAmp
     public String toString()
     {
       return getClass().getSimpleName() + "[" + _type.getName() + "]";
-    }
-  }
-  
-  private static class KeyFunction
-  {
-    private Key<?> _key;
-    private Class<?> _paramType;
-    
-    KeyFunction(Key<?> key, Class<?> paramType)
-    {
-      _key = key;
-      _paramType = paramType;
     }
   }
 }

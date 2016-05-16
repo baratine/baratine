@@ -41,14 +41,14 @@ public class MethodAmpChild extends MethodAmpWrapper
 {
   private final MethodAmp _delegate;
   
-  private StubAmp _actorChild;
+  private StubAmp _stubChild;
   
   MethodAmpChild(MethodAmp method,
-                 StubAmp actorChild)
+                 StubAmp stubChild)
   {
     _delegate = method;
     
-    _actorChild = actorChild;
+    _stubChild = stubChild;
   }
   
   @Override
@@ -61,7 +61,7 @@ public class MethodAmpChild extends MethodAmpWrapper
   public void send(HeadersAmp headers,
                    StubAmp actorDeliver)
   {
-    delegate().send(headers, _actorChild);
+    delegate().send(headers, _stubChild);
   }
 
   @Override
@@ -69,7 +69,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                    StubAmp actorDeliver,
                    Object arg1)
   {
-    delegate().send(headers, _actorChild, arg1);
+    delegate().send(headers, _stubChild, arg1);
   }
 
   @Override
@@ -78,7 +78,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                    Object arg1,
                    Object arg2)
   {
-    delegate().send(headers, _actorChild, arg1, arg2);
+    delegate().send(headers, _stubChild, arg1, arg2);
   }
 
   @Override
@@ -88,7 +88,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                    Object arg2,
                    Object arg3)
   {
-    delegate().send(headers, _actorChild, arg1, arg2, arg3);
+    delegate().send(headers, _stubChild, arg1, arg2, arg3);
   }
 
   @Override
@@ -96,7 +96,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                    StubAmp actorDeliver,
                    Object []args)
   {
-    delegate().send(headers, _actorChild, args);
+    delegate().send(headers, _stubChild, args);
   }
 
   @Override
@@ -104,7 +104,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                     ResultChain<?> result,
                     StubAmp actorDeliver)
   {
-    delegate().query(headers, result, _actorChild);
+    delegate().query(headers, result, _stubChild);
   }
 
   @Override
@@ -113,7 +113,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                     StubAmp actorDeliver,
                     Object arg1)
   {
-    delegate().query(headers, result, _actorChild, arg1);
+    delegate().query(headers, result, _stubChild, arg1);
   }
 
   @Override
@@ -123,7 +123,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                     Object arg1,
                     Object arg2)
   {
-    delegate().query(headers, result, _actorChild, arg1, arg2);
+    delegate().query(headers, result, _stubChild, arg1, arg2);
   }
 
   @Override
@@ -134,7 +134,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                     Object arg2,
                     Object arg3)
   {
-    delegate().query(headers, result, _actorChild, arg1, arg2, arg3);
+    delegate().query(headers, result, _stubChild, arg1, arg2, arg3);
   }
 
   @Override
@@ -158,7 +158,7 @@ public class MethodAmpChild extends MethodAmpWrapper
                          StubAmp actor,
                          Object []args)
   {
-    delegate().stream(headers, result, _actorChild, args);
+    delegate().stream(headers, result, _stubChild, args);
   }
   
   //

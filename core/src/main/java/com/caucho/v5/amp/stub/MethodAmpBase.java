@@ -73,6 +73,12 @@ public class MethodAmpBase implements MethodAmp
   }
   
   @Override
+  public Class<?> declaringClass()
+  {
+    return Object.class;
+  }
+  
+  @Override
   public Class<?> getReturnType()
   {
     return Object.class;

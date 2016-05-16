@@ -29,9 +29,6 @@
 
 package com.caucho.v5.amp.stub;
 
-import io.baratine.service.Result;
-import io.baratine.service.ServiceRef;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
@@ -39,9 +36,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.util.LruCache;
 import com.caucho.v5.util.LruCache.Entry;
+
+import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
+import io.baratine.service.ServiceRef;
 
 /**
  * Baratine stub container for children.
@@ -63,9 +65,15 @@ public class StubContainerBase implements StubContainerAmp
   
   private boolean _isActive;
   private AtomicBoolean _isSaveRequested = new AtomicBoolean();
+
+  private StubContainerEnsure _ensure;
+
+  private StubAmpBean _stub;
   
-  public StubContainerBase(String path)
+  public StubContainerBase(StubAmpBean stub,
+                           String path)
   {
+    _stub = stub;
     _path = path;
     
     // XXX: needs to be larger and configurable
@@ -99,8 +107,8 @@ public class StubContainerBase implements StubContainerAmp
     
     ServiceRefAmp serviceRef = (ServiceRefAmp) ServiceRef.current();
     
-    for (StubAmp actor : children) {
-      actor.state().onActive(actor, serviceRef.inbox());
+    for (StubAmp stub : children) {
+      stub.state().onActive(stub, serviceRef.inbox());
     }
   }
   
@@ -208,6 +216,44 @@ public class StubContainerBase implements StubContainerAmp
       
       parentRef.save(Result.ignore());
     }
+  }
+  
+  //
+  // ensure/reliable messaging
+  //
+
+  @Override
+  public void onActiveEnsure(MethodAmp method)
+  {
+    ensure().onActive(method);
+  }
+
+  @Override
+  public ResultChain<?> ensure(StubAmpBean stub, 
+                               MethodAmp method,
+                               ResultChain<?> result, 
+                               Object[] args)
+  {
+    return ensure().ensure(stub, method, result, args);
+  }
+  
+  private StubContainerEnsure ensure()
+  {
+    if (_ensure == null) {
+      _ensure = new StubContainerEnsure(this);
+    }
+    
+    return _ensure;
+  }
+
+  public StubAmpBean stub()
+  {
+    return _stub;
+  }
+
+  public static StubContainerAmp factory(StubAmpBean stub, ServiceConfig config)
+  {
+    return new StubContainerBase(stub, stub.name());
   }
   
   @Override

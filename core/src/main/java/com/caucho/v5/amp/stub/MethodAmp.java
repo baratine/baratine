@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import com.caucho.v5.amp.spi.HeadersAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 
 import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
@@ -74,14 +75,19 @@ public interface MethodAmp
     return null;
   }
   
+  default Class<?> declaringClass()
+  {
+    return Object.class;
+  }
+  
   default Class<?> getReturnType()
   {
-    return null;
+    return Object.class;
   }
 
   default ParameterAmp []parameters()
   {
-    return null;
+    return new ParameterAmp[0];
   }
   
   /*
@@ -96,43 +102,47 @@ public interface MethodAmp
   {
     return false;
   }
+
+  default void onActive(StubContainerAmp container)
+  {
+  }
   
   //
   // send methods
   //
   
   default void send(HeadersAmp headers,
-                    StubAmp actor)
+                    StubAmp stub)
   {
-    send(headers, actor, new Object[0]);
+    send(headers, stub, new Object[0]);
   }
 
   default void send(HeadersAmp headers,
-                    StubAmp actor,
+                    StubAmp stub,
                     Object arg1)
   {
-    send(headers, actor, new Object[] { arg1 });
+    send(headers, stub, new Object[] { arg1 });
   }
 
   default void send(HeadersAmp headers,
-                    StubAmp actor,
+                    StubAmp stub,
                     Object arg1, 
                     Object arg2)
   {
-    send(headers, actor, new Object[] { arg1, arg2 });
+    send(headers, stub, new Object[] { arg1, arg2 });
   }
 
   default void send(HeadersAmp headers,
-                    StubAmp actor,
+                    StubAmp stub,
                     Object arg1,
                     Object arg2, 
                     Object arg3)
   {
-    send(headers, actor, new Object[] { arg1, arg2, arg3 });
+    send(headers, stub, new Object[] { arg1, arg2, arg3 });
   }
 
   default void send(HeadersAmp headers,
-                    StubAmp actor,
+                    StubAmp stub,
                     Object []args)
   {
     throw new UnsupportedOperationException(getClass().getName());
@@ -144,41 +154,41 @@ public interface MethodAmp
   
   default void query(HeadersAmp headers,
                      ResultChain<?> result,
-                     StubAmp actor)
+                     StubAmp stub)
   {
-    query(headers, result, actor, new Object[0]);
+    query(headers, result, stub, new Object[0]);
   }
   
   default void query(HeadersAmp headers,
                      ResultChain<?> result,
-                     StubAmp actor,
+                     StubAmp stub,
                      Object arg1)
   {
-    query(headers, result, actor, new Object[] { arg1 });
+    query(headers, result, stub, new Object[] { arg1 });
   }
   
   default void query(HeadersAmp headers,
                      ResultChain<?> result,
-                     StubAmp actor,
+                     StubAmp stub,
                      Object arg1,
                      Object arg2)
   {
-    query(headers, result, actor, new Object[] { arg1, arg2 });
+    query(headers, result, stub, new Object[] { arg1, arg2 });
   }
   
   default void query(HeadersAmp headers,
                      ResultChain<?> result,
-                     StubAmp actor,
+                     StubAmp stub,
                      Object arg1,
                      Object arg2,
                      Object arg3)
   {
-    query(headers, result, actor, new Object[] { arg1, arg2, arg3 });
+    query(headers, result, stub, new Object[] { arg1, arg2, arg3 });
   }
   
   default void query(HeadersAmp headers,
                      ResultChain<?> result,
-                     StubAmp actor,
+                     StubAmp stub,
                      Object []args)
   {
     throw new UnsupportedOperationException(getClass().getName());
@@ -195,7 +205,7 @@ public interface MethodAmp
   
   default <T> void stream(HeadersAmp headers,
                           ResultStream<T> result,
-                          StubAmp actor,
+                          StubAmp stub,
                           Object []args)
   {
     throw new UnsupportedOperationException(getClass().getName());
@@ -207,7 +217,7 @@ public interface MethodAmp
   
   default <T> void outPipe(HeadersAmp headers,
                            ResultPipeOut<T> result,
-                           StubAmp actor,
+                           StubAmp stub,
                            Object []args)
   {
     throw new UnsupportedOperationException(getClass().getName());
@@ -215,7 +225,7 @@ public interface MethodAmp
   
   default <T> void inPipe(HeadersAmp headers,
                           ResultPipeIn<T> result,
-                          StubAmp actor,
+                          StubAmp stub,
                           Object []args)
   {
     throw new UnsupportedOperationException(getClass().getName());

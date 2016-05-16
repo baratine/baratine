@@ -27,57 +27,45 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.stub;
+package com.caucho.v5.amp.ensure;
 
 import java.util.Objects;
 
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.StubContainerAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
+import com.caucho.v5.amp.stub.StubAmpBean;
+
+import io.baratine.service.ResultChain;
 
 /**
- * Baratine actor skeleton
+ * Ensure method driver.
  */
-public class StubAmpBeanChild extends StubAmpBean
+class MethodEnsureNull implements MethodEnsureAmp
 {
-  private String _childPath;
+  private MethodAmp _method;
   
-  public StubAmpBeanChild(StubClass skel,
-                              Object bean,
-                              String path,
-                              String childPath,
-                              StubContainerAmp container)
+  MethodEnsureNull(MethodAmp method)
   {
-    super(skel, bean, path, container, null);
+    Objects.requireNonNull(method);
     
-    Objects.requireNonNull(container);
-    
-    _childPath = childPath;
-  }
-  
-  @Override
-  public boolean isJournalReplay()
-  {
-    return container().isJournalReplay();
-  }
-  
-  @Override
-  public String journalKey()
-  {
-    return _childPath;
+    _method = method;
   }
 
   @Override
-  public void onSaveChildren(SaveResult saveResult)
+  public void onActive(StubAmpBean stub)
   {
   }
   
   @Override
-  public void onLru(ServiceRefAmp serviceRef)
+  public <T> ResultChain<T> ensure(StubAmpBean stub, 
+                                   ResultChain<T> result, 
+                                   Object[] args)
   {
-    StubContainerAmp container = container();
-    
-    if (state().isModified()) {
-      container.onLruModified(serviceRef);
-    }
+    return result;
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _method + "]";
   }
 }

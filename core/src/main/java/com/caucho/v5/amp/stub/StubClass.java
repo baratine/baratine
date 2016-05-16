@@ -49,6 +49,7 @@ import com.caucho.v5.amp.AmpException;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.inject.type.AnnotatedTypeClass;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
@@ -58,6 +59,7 @@ import io.baratine.pipe.ResultPipeIn;
 import io.baratine.pipe.ResultPipeOut;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
+import io.baratine.service.Ensure;
 import io.baratine.service.MethodRef;
 import io.baratine.service.Modify;
 import io.baratine.service.OnActive;
@@ -124,6 +126,7 @@ public class StubClass
   private boolean _isLifecycleAware;
   
   private long _timeout;
+  private boolean _isEnsure;
   
   public StubClass(ServicesAmp services,
                    Class<?> type,
@@ -175,6 +178,11 @@ public class StubClass
   public boolean isAutoCreate()
   {
     return _isAutoCreate;
+  }
+
+  public boolean isEnsure()
+  {
+    return _isEnsure;
   }
   
   protected boolean isLocalPodNode()
@@ -542,6 +550,10 @@ public class StubClass
     else if (method.isAnnotationPresent(Modify.class)) {
       methodAmp = new FilterMethodModify(methodAmp);
     }
+    else if (method.isAnnotationPresent(Ensure.class)) {
+      _isEnsure = true;
+      methodAmp = new FilterMethodEnsure(methodAmp);
+    }
     
     return methodAmp;
   }
@@ -734,7 +746,7 @@ public class StubClass
     return _isLifecycleAware;
   }
   
-  public void onActive(StubAmp actor, ResultChain<? super Boolean> result)
+  public void onActive(StubAmp stub, ResultChain<? super Boolean> result)
   {
     try {
       MethodAmp onActive = _onActive;
@@ -748,12 +760,21 @@ public class StubClass
       
       // QueryRefAmp queryRef = new QueryRefChainAmpCompletion(result);
 
-      onActive.query(HeadersNull.NULL, result, actor);
+      onActive.query(HeadersNull.NULL, result, stub);
       
       // future.get(_timeout, TimeUnit.SECONDS);
     } catch (Throwable e) {
       e.printStackTrace();
       log.log(Level.FINE, e.toString(), e);
+    }
+  }
+
+  public void onActive(StubContainerAmp container)
+  {
+    for (List<MethodAmp> methods : _stubMethodMap.values()) {
+      for (MethodAmp method : methods) {
+        method.onActive(container);
+      }
     }
   }
   

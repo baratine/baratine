@@ -27,56 +27,19 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.vault;
+package com.caucho.v5.amp.ensure;
 
-import java.io.Serializable;
-import java.util.Objects;
+import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 
 /**
- * Configuration for the resource factory
+ * Driver for the @Ensure reliable message annotation.
  */
-public class VaultConfig<T,ID extends Serializable>
+public interface EnsureDriverAmp
 {
-  private Class<T> _entityType;
-  private Class<ID> _idType;
-  private VaultDriver<T,ID> _driver;
-
-  public VaultConfig<T,ID> assetType(Class<T> entityType)
+  default void init(ServicesAmp services)
   {
-    Objects.requireNonNull(entityType);
-    _entityType = entityType;
-    
-    return this;
-  }
-
-  public Class<?> entityType()
-  {
-    return _entityType;
-  }
-
-  public VaultConfig<T,ID> idType(Class<ID> idType)
-  {
-    Objects.requireNonNull(idType);
-    _idType = idType;
-    
-    return this;
-  }
-
-  public Class<?> idType()
-  {
-    return _idType;
   }
   
-  public VaultConfig<T,ID> driver(VaultDriver<T,ID> driver)
-  {
-    Objects.requireNonNull(driver);
-    _driver = driver;
-    
-    return this;
-  }
-  
-  public VaultDriver<T,ID> driver()
-  {
-    return _driver;
-  }
+  MethodEnsureAmp ensure(MethodAmp method);
 }

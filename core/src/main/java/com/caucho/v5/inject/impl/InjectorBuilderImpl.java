@@ -86,7 +86,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
   
   private HashSet<Class<?>> _qualifierSet = new HashSet<>();
   
-  private Config.ConfigBuilder _env = Configs.config();
+  private Config.ConfigBuilder _config = Configs.config();
   
   private ConcurrentHashMap<Class<?>,BindingSet> _producerMap
     = new ConcurrentHashMap<>();
@@ -221,9 +221,17 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     return _includeList;
   }
   
+  @Override
+  public InjectorBuilderImpl property(String var, String value)
+  {
+    _config.add(var, value);
+    
+    return this;
+  }
+  
   Config config()
   {
-    return _env.get();
+    return _config.get();
   }
   
   @Override

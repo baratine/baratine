@@ -27,57 +27,22 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.stub;
-
-import java.util.Objects;
-
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.StubContainerAmp;
+package com.caucho.v5.amp.journal;
 
 /**
- * Baratine actor skeleton
+ * Factory for opening and restoring journals.
  */
-public class StubAmpBeanChild extends StubAmpBean
+public class JournalDriverNull implements JournalDriverAmp
 {
-  private String _childPath;
-  
-  public StubAmpBeanChild(StubClass skel,
-                              Object bean,
-                              String path,
-                              String childPath,
-                              StubContainerAmp container)
-  {
-    super(skel, bean, path, container, null);
-    
-    Objects.requireNonNull(container);
-    
-    _childPath = childPath;
-  }
-  
   @Override
-  public boolean isJournalReplay()
+  public JournalAmp open(String name)
   {
-    return container().isJournalReplay();
-  }
-  
-  @Override
-  public String journalKey()
-  {
-    return _childPath;
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
-  public void onSaveChildren(SaveResult saveResult)
+  public JournalAmp openPeer(String name, String peerName)
   {
-  }
-  
-  @Override
-  public void onLru(ServiceRefAmp serviceRef)
-  {
-    StubContainerAmp container = container();
-    
-    if (state().isModified()) {
-      container.onLruModified(serviceRef);
-    }
+    throw new UnsupportedOperationException(getClass().getName());
   }
 }

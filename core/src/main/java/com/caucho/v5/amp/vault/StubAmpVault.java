@@ -27,57 +27,43 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.stub;
+package com.caucho.v5.amp.vault;
 
-import java.util.Objects;
+import com.caucho.v5.amp.service.ServiceConfig;
+import com.caucho.v5.amp.stub.StubAmpBean;
+import com.caucho.v5.amp.stub.StubClass;
 
-import com.caucho.v5.amp.ServiceRefAmp;
-import com.caucho.v5.amp.spi.StubContainerAmp;
+import io.baratine.service.Result;
 
 /**
- * Baratine actor skeleton
+ * Stub for a vault bean.
  */
-public class StubAmpBeanChild extends StubAmpBean
+public class StubAmpVault extends StubAmpBean
 {
-  private String _childPath;
-  
-  public StubAmpBeanChild(StubClass skel,
-                              Object bean,
-                              String path,
-                              String childPath,
-                              StubContainerAmp container)
-  {
-    super(skel, bean, path, container, null);
-    
-    Objects.requireNonNull(container);
-    
-    _childPath = childPath;
-  }
-  
-  @Override
-  public boolean isJournalReplay()
-  {
-    return container().isJournalReplay();
-  }
-  
-  @Override
-  public String journalKey()
-  {
-    return _childPath;
-  }
+  private StubClass _stubClassAsset;
 
-  @Override
-  public void onSaveChildren(SaveResult saveResult)
+  public StubAmpVault(StubClass stubClassVault,
+                      StubClass stubClassAsset,
+                      Object bean,
+                      String path,
+                      ServiceConfig config)
   {
+    super(stubClassVault, bean, path, null, config);
+    
+    _stubClassAsset = stubClassAsset;
   }
   
   @Override
-  public void onLru(ServiceRefAmp serviceRef)
+  public void onActive(Result<? super Boolean> result)
   {
-    StubContainerAmp container = container();
+    super.onActive(result);
     
-    if (state().isModified()) {
-      container.onLruModified(serviceRef);
-    }
+    _stubClassAsset.onActive(container());
+  }
+  
+  @Override
+  public boolean isLifecycleAware()
+  {
+    return true;
   }
 }

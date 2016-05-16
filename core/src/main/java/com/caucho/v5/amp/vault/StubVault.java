@@ -42,11 +42,11 @@ import javax.inject.Provider;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.amp.spi.StubContainerAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.MethodAmpBase;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpBean;
+import com.caucho.v5.amp.stub.StubAmpBeanChild;
 import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.convert.ConvertException;
 import com.caucho.v5.util.L10N;
@@ -275,7 +275,7 @@ public class StubVault extends StubClass
 
   private static class MethodOnLookup extends MethodAmpBase
   {
-    private StubClass _skelEntity;
+    private StubClass _stubClass;
     private Provider<Object> _provider;
     private MethodHandle _fieldSetter;
     private Convert<String,?> _converter;
@@ -285,7 +285,7 @@ public class StubVault extends StubClass
                    Convert<String,?> converter,
                    MethodHandle fieldSetter)
     {
-      _skelEntity = skel;
+      _stubClass = skel;
       _provider = provider;
       _converter = converter;
       _fieldSetter = fieldSetter;
@@ -297,7 +297,7 @@ public class StubVault extends StubClass
                       StubAmp stub,
                       Object arg1)
     {
-      Object entity = _provider.get();
+      Object bean = _provider.get();
 
       String path = (String) arg1;
 
@@ -307,7 +307,7 @@ public class StubVault extends StubClass
 
       if (_fieldSetter != null) {
         try {
-          _fieldSetter.invoke(entity, _converter.convert(path));
+          _fieldSetter.invoke(bean, _converter.convert(path));
         } catch (Throwable e) {
           result.fail(e);
           return;
@@ -315,13 +315,12 @@ public class StubVault extends StubClass
       }
 
       StubAmpBean stubBean = (StubAmpBean) stub;
-      StubContainerAmp container = stubBean.container();
 
-      StubAmp stubChild = new StubAmpBean(_skelEntity,
-                                           entity,
-                                           null,
-                                           container,
-                                           ServiceConfig.NULL);
+      StubAmp stubChild = new StubAmpBeanChild(_stubClass,
+                                           bean,
+                                           stubBean.name() + "/" + path,
+                                           path,
+                                           stubBean.container());
 
       ((Result) result).ok(stubChild);
     }

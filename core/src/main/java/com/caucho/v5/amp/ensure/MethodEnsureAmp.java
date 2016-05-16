@@ -27,56 +27,20 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.vault;
+package com.caucho.v5.amp.ensure;
 
-import java.io.Serializable;
-import java.util.Objects;
+import com.caucho.v5.amp.stub.StubAmpBean;
+
+import io.baratine.service.ResultChain;
 
 /**
- * Configuration for the resource factory
+ * Ensure method driver.
  */
-public class VaultConfig<T,ID extends Serializable>
+public interface MethodEnsureAmp
 {
-  private Class<T> _entityType;
-  private Class<ID> _idType;
-  private VaultDriver<T,ID> _driver;
+  <T> ResultChain<T> ensure(StubAmpBean stub, 
+                            ResultChain<T> result, 
+                            Object[] args);
 
-  public VaultConfig<T,ID> assetType(Class<T> entityType)
-  {
-    Objects.requireNonNull(entityType);
-    _entityType = entityType;
-    
-    return this;
-  }
-
-  public Class<?> entityType()
-  {
-    return _entityType;
-  }
-
-  public VaultConfig<T,ID> idType(Class<ID> idType)
-  {
-    Objects.requireNonNull(idType);
-    _idType = idType;
-    
-    return this;
-  }
-
-  public Class<?> idType()
-  {
-    return _idType;
-  }
-  
-  public VaultConfig<T,ID> driver(VaultDriver<T,ID> driver)
-  {
-    Objects.requireNonNull(driver);
-    _driver = driver;
-    
-    return this;
-  }
-  
-  public VaultDriver<T,ID> driver()
-  {
-    return _driver;
-  }
+  void onActive(StubAmpBean stub);
 }

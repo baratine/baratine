@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,49 +27,46 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.amp.journal;
+package io.baratine.service;
 
-import com.caucho.v5.util.L10N;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Factory for opening and restoring journals.
+ * {@code @Modify} marks any service method that updates the state.
+ * <br>
+ * <br>
+ * The annotation helps Baratine optimize its performance by only storing
+ * the Services' state in its database when changes occur.
+ * <br>
+ * <br>
+ * Sample usage:
+ * <blockquote><pre>
+ *  &#64;Service("public:///counter/{_id}")
+ *  &#64;Journal
+ *  public class CounterImpl
+ *  {
+ *    private int _id;
+ *    private long _counter;
+ * 
+ *    &#64;Modify
+ *    public long incretementAndGet()
+ *    {
+ *      return _counter++;
+ *    }
+ *  }
+ * </pre></blockquote>
+ *
+ * @see io.baratine.service.Journal
  */
-public class JournalFactoryBase implements JournalDriverAmp
+
+@Documented
+@Retention(RUNTIME)
+@Target({METHOD})
+public @interface Ensure
 {
-  private static final L10N L = new L10N(JournalFactoryBase.class);
-  
-  //private int _maxCount = -1;
-  //private long _timeout = -1;
-  
-  /*
-  @Override
-  public void setMaxCount(int maxCount)
-  {
-    _maxCount = maxCount;
-  }
-  
-  @Override
-  public void setDelay(long timeout)
-  {
-    _timeout = timeout;
-  }
-  
-  @Override
-  public long getDelay()
-  {
-    return _timeout;
-  }
-  */
-  
-  @Override
-  public JournalAmp open(String name)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-  
-  @Override
-  public JournalAmp openPeer(String name, String peerName)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
 }

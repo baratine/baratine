@@ -31,10 +31,14 @@ package com.caucho.v5.amp.stub;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.spi.StubContainerAmp;
+
+import io.baratine.service.OnLookup;
+import io.baratine.service.OnSave;
 
 /**
  * Creates service stubs for service implementation beans..
@@ -120,7 +124,9 @@ public class StubClassFactoryAmpImpl implements StubClassFactoryAmp
         path = config.name(); 
       }
       
-      return new StubAmpBean(stubClass, bean, path, container, config);
+      String name = path;
+      
+      return new StubAmpBean(stubClass, bean, name, null, config);
     }
   }
 

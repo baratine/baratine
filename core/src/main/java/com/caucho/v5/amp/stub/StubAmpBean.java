@@ -43,6 +43,7 @@ import com.caucho.v5.amp.spi.StubContainerAmp;
 import io.baratine.service.OnLookup;
 import io.baratine.service.OnSave;
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceRef;
 
 /**
@@ -51,7 +52,6 @@ import io.baratine.service.ServiceRef;
 public class StubAmpBean extends StubAmpBase
 {
   private final StubClass _stubClass;
-  
   private final StubContainerAmp _container;
   
   private JournalAmp _journal;
@@ -59,59 +59,65 @@ public class StubAmpBean extends StubAmpBase
   private String _name;
 
   private boolean _isAutoCreate;
-  
-  public StubAmpBean(StubClass stub,
+
+  public StubAmpBean(StubClass stubClass,
                      Object bean,
                      String name,
                      StubContainerAmp container,
                      ServiceConfig config)
   {
     Objects.requireNonNull(bean);
-    Objects.requireNonNull(stub);
+    Objects.requireNonNull(stubClass);
     
     if (bean instanceof ProxyHandleAmp) {
       throw new IllegalArgumentException(String.valueOf(bean));
     }
     
     _bean = bean;
+    _stubClass = stubClass;
     
     if (name == null) {
-      name = "anon:" + bean().getClass().getSimpleName();
+      name = "anon:" + bean.getClass().getSimpleName();
     }
     
     _name = name;
-    
-    _stubClass = stub;
-    _name = name;
-    
-    boolean isJournal = config.isJournal();
-    long journalDelay = config.journalDelay();
-    
-    _isAutoCreate = _stubClass.isAutoCreate() || container == null;
     
     if (container != null) {
     }
-    else if (config.isJournal()) {
-      container = new StubContainerJournal(name, config);
+    else if (config != null && config.isJournal()) {
+      container = new StubContainerJournal(this, name, config);
     }
     else if (_stubClass.isImplemented(OnLookup.class)
              || _stubClass.isImplemented(OnSave.class)) {
-      container = new StubContainerBase(name);
+      container = new StubContainerBase(this, name);
     }
+    /*
+    else if (isContainer) {
+      container = new StubContainerBase(this, name);
+    }
+    */
     
     _container = container;
     
-    if (! _stubClass.isLifecycleAware()) {
+    /*
+    _isAutoCreate = (_stubClass.isAutoCreate()
+        || ! isContainer && container == null);
+        */
+    _isAutoCreate = _stubClass.isAutoCreate() || _container == null;
+    
+    if (! isLifecycleAware()) {
       state(StubStateAmpBean.ACTIVE);
     }
   }
   
+  /*
   public StubAmpBean(StubClass stubClass,
-                      Object bean,
-                      ServiceConfig config)
+                     Object bean,
+                     ServiceConfig config)
   {
-    this(stubClass, bean, config.name(), null, config);
+    this(stubClass, bean, config.name(), x->null);
   }
+  */
   
   public StubContainerAmp container()
   {
@@ -121,6 +127,12 @@ public class StubAmpBean extends StubAmpBase
   protected final StubClass stubClass()
   {
     return _stubClass;
+  }
+  
+  @Override
+  public ServicesAmp services()
+  {
+    return stubClass().services();
   }
 
   /*
@@ -141,6 +153,13 @@ public class StubAmpBean extends StubAmpBase
   public boolean isAutoCreate()
   {
     return _isAutoCreate;
+  }
+  
+  @Override
+  public boolean isAutoStart()
+  {
+    return (_stubClass.isEnsure()
+            || _container != null && _container.isAutoStart());
   }
   
   @Override
@@ -223,6 +242,8 @@ public class StubAmpBean extends StubAmpBase
     
     if (_container != null) {
       _container.onActive();
+      
+      _stubClass.onActive(_container);
     }
   }
   
@@ -410,6 +431,14 @@ public class StubAmpBean extends StubAmpBase
     else {
       return false;
     }
+  }
+
+  @Override
+  public ResultChain<?> ensure(MethodAmp methodAmp,
+                                ResultChain<?> result, 
+                                Object ...args)
+  {
+    return _container.ensure(this, methodAmp, result, args);
   }
 
   @Override
