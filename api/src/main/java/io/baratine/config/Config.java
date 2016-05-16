@@ -42,6 +42,8 @@ public interface Config extends Map<String,String>
   String get(String key, String defaultValue);
 
   <T> T get(String key, Class<T> type, T defaultValue);
+  
+  <T> T get(String key, Class<T> type, String defaultValue);
 
   /*
   static ConfigBuilder config()
