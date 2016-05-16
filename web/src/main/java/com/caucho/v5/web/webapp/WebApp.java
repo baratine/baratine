@@ -101,7 +101,7 @@ public class WebApp
     // initialize context
     injectBuilder.get();
     
-    _services = builder.serviceBuilder().getRaw();
+    _services = builder.serviceBuilder().raw();
     
     builder.build(this);
     

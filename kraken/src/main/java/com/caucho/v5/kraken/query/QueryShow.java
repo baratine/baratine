@@ -107,7 +107,7 @@ public class QueryShow extends QueryKraken
     
     boolean isFirst = true;
     
-    for (Column col : table.getRow().getColumns()) {
+    for (Column col : table.row().columns()) {
       if (! isFirst) {
         sb.append(",");
       }
@@ -120,6 +120,20 @@ public class QueryShow extends QueryKraken
         sb.append("(" + col.size() + ")");
       }
     }
+    
+    sb.append("\n  primary key (");
+    
+    isFirst = true;
+    for (Column col : table.row().keys()) {
+      if (! isFirst) {
+        sb.append(", ");
+      }
+      isFirst = false;
+      
+      sb.append(col.name());
+    }
+    
+    sb.append(")");
     
     sb.append("\n)");
 
@@ -139,7 +153,7 @@ public class QueryShow extends QueryKraken
     
     TableInfo tableInfo = new TableInfo(tableKraken.getName());
     
-    for (Column col : table.getRow().getColumns()) {
+    for (Column col : table.row().columns()) {
       if (col.name().startsWith(":") || col.name().equals("_row_state")) {
         continue;
       }

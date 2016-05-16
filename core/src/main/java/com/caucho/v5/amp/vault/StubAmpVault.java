@@ -58,7 +58,9 @@ public class StubAmpVault extends StubAmpBean
   {
     super.onActive(result);
     
-    _stubClassAsset.onActive(container());
+    if (_stubClassAsset != null) {
+      _stubClassAsset.onActive(container());
+    }
   }
   
   @Override

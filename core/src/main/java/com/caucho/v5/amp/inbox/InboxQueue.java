@@ -155,7 +155,7 @@ public class InboxQueue extends InboxBase
     QueueFullHandler handler = config.queueFullHandler();
 
     if (handler == null) {
-      handler = manager.getQueueFullHandler();
+      handler = manager.queueFullHandler();
     }
 
     _fullHandler = handler;

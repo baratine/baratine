@@ -154,9 +154,9 @@ public class DatabaseServiceKelpImpl
     _tableKeyMap.put(HashKey.create(table.getTableKey()), table);
     
     _db.getSegmentService().addTable(table.getTableKey(),
-                                     table.getRow().getLength(),
-                                     table.getRow().getKeyOffset(),
-                                     table.getRow().getKeyLength());
+                                     table.row().getLength(),
+                                     table.row().getKeyOffset(),
+                                     table.row().getKeyLength());
     
     return table;
   }

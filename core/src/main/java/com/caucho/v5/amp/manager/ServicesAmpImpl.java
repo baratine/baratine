@@ -42,6 +42,8 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.ensure.EnsureDriverAmp;
+import com.caucho.v5.amp.ensure.MethodEnsureAmp;
 import com.caucho.v5.amp.inbox.OutboxAmpDirect;
 import com.caucho.v5.amp.inbox.OutboxAmpExecutorFactory;
 import com.caucho.v5.amp.inbox.OutboxAmpImpl;
@@ -65,6 +67,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.ShimConverter;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.amp.stub.StubAmpSystem;
@@ -111,6 +114,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   private final StubClassFactoryAmp _stubFactory;
   private final ShimFactory _shims = new ShimFactory();
   private final JournalDriverAmp _journalDriver;
+  private final EnsureDriverAmp _ensureDriver;
   // private final ContextSessionFactory _channelFactory;
   
   private final StubGenerator []_stubGenerators;
@@ -168,7 +172,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     if (_isDebug) {
       int capacity = 4096;
       
-      _debugQueryMap = new DebugQueryMap(capacity, builder.getDebugQueryTimeout());
+      _debugQueryMap = new DebugQueryMap(capacity, builder.debugQueryTimeout());
     }
     
     _registry = new RegistryImpl(this);
@@ -178,9 +182,8 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     _proxyFactory = new ProxyFactoryAmpImpl(this);
     _stubFactory = new StubClassFactoryAmpImpl(this);
     _journalDriver = builder.journalDriver();
+    _ensureDriver = builder.ensureDriver();
 
-    _journalDelay = builder.journalDelay();
-    
     //_channelFactory = new ContextSessionFactory(this);
     
     _stubGenerators = builder.stubGenerators();
@@ -212,7 +215,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
       _outboxFactory = ()->createOutbox();
     }
         
-    QueueFullHandler queueFullHandler = builder.getQueueFullHandler();
+    QueueFullHandler queueFullHandler = builder.queueFullHandler();
     
     if (queueFullHandler == null) {
       queueFullHandler = new QueueFullHandlerAmp(); 
@@ -322,11 +325,6 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     return _inboxSystem;
   }
 
-  public long journalDelay()
-  {
-    return _journalDelay;
-  }
-
   @Override
   public InjectorAmp injector()
   {
@@ -367,7 +365,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   }
 
   @Override
-  public final OutboxAmp getOutboxSystem()
+  public final OutboxAmp outboxSystem()
   {
     return _systemContext;
   }
@@ -386,7 +384,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   }
   
   @Override
-  public QueueFullHandler getQueueFullHandler()
+  public QueueFullHandler queueFullHandler()
   {
     return _queueFullHandler;
   }
@@ -836,6 +834,12 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   {
     return _journalDriver.open(name);
   }
+
+  @Override
+  public MethodEnsureAmp ensureMethod(MethodAmp method)
+  {
+    return _ensureDriver.ensure(method);
+  }
   
   @Override
   public void addAutoStart(ServiceRef serviceRef)
@@ -887,6 +891,8 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     _autoStart.clear();
     
     _lifecycle.toActive();
+
+    _ensureDriver.init(this);
     
     for (ServiceRef service : startList) {
       service.start();

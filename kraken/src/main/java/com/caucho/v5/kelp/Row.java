@@ -81,17 +81,17 @@ public final class Row {
     return _db;
   }
   
-  public final Column []getColumns()
+  public final Column []columns()
   {
     return _columns;
   }
   
-  public final Column []getBlobs()
+  public final Column []blobs()
   {
     return _blobs;
   }
   
-  public final ArrayList<Column> getKeys()
+  public final ArrayList<Column> keys()
   {
     ArrayList<Column> keys = new ArrayList<>();
     
@@ -140,7 +140,7 @@ public final class Row {
 
   public Column findColumn(String name)
   {
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       if (column.name().equals(name)) {
         return column;
       }
@@ -160,7 +160,7 @@ public final class Row {
   
   void init(DatabaseKelp db)
   {
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       column.init(db);
     }
   }
@@ -176,7 +176,7 @@ public final class Row {
       return blobLast;
     }
     
-    Column []columns = getColumns();
+    Column []columns = columns();
     int len = columns.length;
     
     for (int i = 0; i < len && blobLast >= 0; i++) {
@@ -204,7 +204,7 @@ public final class Row {
                 int targetRowOffset,
                 int targetBlobTail)
   {
-    for (Column column : getBlobs()) {
+    for (Column column : blobs()) {
       targetBlobTail = column.insertBlob(sourceBuffer, sourceRowOffset,
                                          targetBuffer, targetRowOffset, 
                                          targetBlobTail);
@@ -220,7 +220,7 @@ public final class Row {
   @InService(PageServiceImpl.class)
   void remove(PageServiceImpl pageActor, byte[] buffer, int rowOffset)
   {
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       column.remove(pageActor, buffer, rowOffset);
     }
   }
@@ -233,7 +233,7 @@ public final class Row {
                     BlobOutputStream[] blobs)
     throws IOException
   {
-    Column []columns = getColumns();
+    Column []columns = columns();
     int len = columns.length;
     
     for (int i = 0; i < len; i++) {
@@ -249,7 +249,7 @@ public final class Row {
                    RowCursor cursor)
     throws IOException
   {
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       column.readJournal(pageActor, is, buffer, offset, cursor);
     }
   }
@@ -268,11 +268,11 @@ public final class Row {
                   RowCursor cursor)
     throws IOException
   {
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       column.readStream(is, buffer, offset, cursor);
     }
     
-    for (Column column : getBlobs()) {
+    for (Column column : blobs()) {
       column.readStreamBlob(is, buffer, offset, cursor);
     }
   }
@@ -281,11 +281,11 @@ public final class Row {
                    byte[] blobBuffer, PageServiceImpl tableService)
     throws IOException
   {
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       column.writeStream(os, buffer, offset);
     }
     
-    for (Column column : getBlobs()) {
+    for (Column column : blobs()) {
       column.writeStreamBlob(os, buffer, offset, blobBuffer, tableService);
     }
   }
@@ -294,7 +294,7 @@ public final class Row {
   {
     long length = 0;
     
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       length = column.getLength(length, buffer, rowOffset, pageService);
     }
     
@@ -315,7 +315,7 @@ public final class Row {
   void writeCheckpoint(WriteStream os, byte[] buffer, int offset)
     throws IOException
   {
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       column.writeCheckpoint(os, buffer, offset);
     }
   }
@@ -337,7 +337,7 @@ public final class Row {
       return -1;
     }
     
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       blobTail = column.readCheckpoint(is, 
                                        blockBuffer, 
                                        rowOffset, rowLength, 
@@ -352,7 +352,7 @@ public final class Row {
    */
   public void validate(byte[] buffer, int rowOffset, int rowHead, int blobTail)
   {
-    for (Column column : getColumns()) {
+    for (Column column : columns()) {
       column.validate(buffer, rowOffset, rowHead, blobTail);
     }
   }

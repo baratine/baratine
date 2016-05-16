@@ -36,7 +36,6 @@ import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.StubFactoryAmp;
 import com.caucho.v5.amp.stub.StubAmpBean;
 import com.caucho.v5.amp.stub.StubClass;
-import com.caucho.v5.amp.stub.StubContainerBase;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
 import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.config.Priority;
@@ -73,13 +72,12 @@ public class StubGeneratorSession implements StubGenerator
 
     stubClassVault.introspect();
     
-    StubContainerBase children = new StubContainerBase(configService.address());
-
     StubAmpBean stubVault = new StubAmpBean(stubClassVault, 
                                             new SessionVaultImpl(sessionClass),
                                             configService.name(),
-                                            children,
+                                            null,
                                             configService);
+
     return new StubFactoryImpl(()->stubVault, configService);
   }
   

@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.caucho.v5.amp.ensure.MethodEnsureAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
@@ -43,6 +44,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 
 import io.baratine.convert.Convert;
@@ -148,20 +150,15 @@ public interface ServicesAmp extends Services, LookupAmp
     }
   }
 
-  
-  //ServiceRefAmp toRef(Object proxy);
-  
-  QueueFullHandler getQueueFullHandler();
+  QueueFullHandler queueFullHandler();
   
   Supplier<OutboxAmp> outboxFactory();
 
-  OutboxAmp getOutboxSystem();
+  OutboxAmp outboxSystem();
   
   JournalAmp openJournal(String name);
+  MethodEnsureAmp ensureMethod(MethodAmp method);
 
-  //MessageAmp systemMessage();
-  // OutboxAmp getSystemOutbox();
-  
   boolean isClosed();
   void close();
   void shutdown(ShutdownModeAmp mode);
@@ -173,11 +170,6 @@ public interface ServicesAmp extends Services, LookupAmp
   // used to batch addition of auto-start services
   boolean isAutoStart();
   void autoStart(boolean isAutoStart);
-  
-  /*
-  String getSelfServer();
-  void setSelfServer(String hostName);
-  */
   
   //
   // debug/stats
@@ -208,4 +200,5 @@ public interface ServicesAmp extends Services, LookupAmp
     @Override
     void close();
   }
+
 }

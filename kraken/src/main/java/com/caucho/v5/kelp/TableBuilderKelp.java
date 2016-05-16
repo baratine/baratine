@@ -187,7 +187,7 @@ public class TableBuilderKelp
     keyGen.updateInt32(row.getKeyOffset());
     keyGen.updateInt32(row.getKeyLength());
     
-    for (Column col : row.getColumns()) {
+    for (Column col : row.columns()) {
       keyGen.update(col.name());
       keyGen.updateInt32(col.type().ordinal());
       keyGen.updateInt32(col.length());

@@ -89,7 +89,7 @@ class JournalKelpImpl
   
   private int getKeyLength()
   {
-    return _table.getRow().getKeyLength();
+    return _table.row().getKeyLength();
   }
   
   boolean isCheckpointRequired()

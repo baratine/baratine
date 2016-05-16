@@ -240,7 +240,7 @@ public final class RowCursor
   
   private ColumnState getColumnState()
   {
-    return (ColumnState) _row.getColumns()[0];
+    return (ColumnState) _row.columns()[0];
   }
   
   public void setRemoveState()
@@ -258,52 +258,52 @@ public final class RowCursor
 
   public int getOffset(int index)
   {
-    return _row.getColumns()[index].getOffset();
+    return _row.columns()[index].getOffset();
   }
 
   public final void setInt(int index, int value)
   {
-    _row.getColumns()[index].setInt(_data, 0, value);
+    _row.columns()[index].setInt(_data, 0, value);
   }
   
   public final int getInt(int index)
   {
-    return _row.getColumns()[index].getInt(_data, 0);
+    return _row.columns()[index].getInt(_data, 0);
   }
   
   public final void setLong(int index, long value)
   {
-    _row.getColumns()[index].setLong(_data, 0, value);
+    _row.columns()[index].setLong(_data, 0, value);
   }
   
   public final long getLong(int index)
   {
-    return _row.getColumns()[index].getLong(_data, 0);
+    return _row.columns()[index].getLong(_data, 0);
   }
   
   public final void setDouble(int index, double value)
   {
-    _row.getColumns()[index].setDouble(_data, 0, value);
+    _row.columns()[index].setDouble(_data, 0, value);
   }
   
   public final double getDouble(int index)
   {
-    return _row.getColumns()[index].getDouble(_data, 0);
+    return _row.columns()[index].getDouble(_data, 0);
   }
 
   public final void setBytes(int index, byte[] buffer, int offset)
   {
-    _row.getColumns()[index].setBytes(_data, 0, buffer, offset);
+    _row.columns()[index].setBytes(_data, 0, buffer, offset);
   }
 
   public void getBytes(int index, byte[] buffer, int offset)
   {
-    _row.getColumns()[index].getBytes(_data, 0, buffer, offset);
+    _row.columns()[index].getBytes(_data, 0, buffer, offset);
   }
 
   public byte []getBytes(int index)
   {
-    byte[] buffer = new byte[_row.getColumns()[index].length()];
+    byte[] buffer = new byte[_row.columns()[index].length()];
     
     getBytes(index, buffer, 0);
     
@@ -319,7 +319,7 @@ public final class RowCursor
    */
   public final OutputStream openOutputStream(int index)
   {
-    Column column = _row.getColumns()[index];
+    Column column = _row.columns()[index];
     
     return column.openOutputStream(this);
   }
@@ -327,7 +327,7 @@ public final class RowCursor
   void setBlob(int index, BlobOutputStream os)
   {
     if (_blobs == null) {
-      _blobs = new BlobOutputStream[_row.getColumns().length];
+      _blobs = new BlobOutputStream[_row.columns().length];
     }
     
     _blobs[index] = os;
@@ -341,7 +341,7 @@ public final class RowCursor
 
   public final InputStream openInputStream(int index)
   {
-    Column column = _row.getColumns()[index];
+    Column column = _row.columns()[index];
 
     BlockLeaf leaf = _leafBlock;
 
@@ -355,7 +355,7 @@ public final class RowCursor
 
   public final BlobReader openBlobReader(int index)
   {
-    Column column = _row.getColumns()[index];
+    Column column = _row.columns()[index];
 
     BlockLeaf leaf = _leafBlock;
 
@@ -380,7 +380,7 @@ public final class RowCursor
 
   public void setString(int index, String value)
   {
-    _row.getColumns()[index].setString(this, value);
+    _row.columns()[index].setString(this, value);
   }
 
   public String getString(int index)
@@ -723,7 +723,7 @@ public final class RowCursor
 
   ColumnBlob getInodeColumn(int i)
   {
-    Column []columns = _row.getColumns();
+    Column []columns = _row.columns();
     
     for (; i < columns.length; i++) {
       Column column = columns[i];

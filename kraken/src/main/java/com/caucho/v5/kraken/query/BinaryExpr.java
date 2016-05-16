@@ -161,7 +161,7 @@ public class BinaryExpr extends ExprKraken
   private boolean isKey(TableKraken table,
                         Column column)
   {
-    Row row = table.getTableKelp().getRow();
+    Row row = table.getTableKelp().row();
     
     int keyOffset = row.getKeyOffset();
     int keyLength = row.getKeyLength();

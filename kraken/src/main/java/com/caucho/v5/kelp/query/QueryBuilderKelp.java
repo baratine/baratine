@@ -62,7 +62,7 @@ public class QueryBuilderKelp extends QueryBuilder
   public QueryBuilderKelp(TableKelp table)
   {
     _table = table;
-    _row = table.getRow();
+    _row = table.row();
   }
 
   public ExprBuilderKelp literal(Object value)

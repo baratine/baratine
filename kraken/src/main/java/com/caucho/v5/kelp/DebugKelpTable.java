@@ -48,7 +48,7 @@ public class DebugKelpTable
   
   public DebugLeaf createLeaf(int pid, int next, RowCursor min, RowCursor max)
   {
-    Row row = _table.getRow();
+    Row row = _table.row();
     
     int keyLength = row.getKeyLength();
     

@@ -80,6 +80,12 @@ public class MethodAmpAdapter implements MethodAmp
   {
     return false;
   }
+  
+  @Override
+  public Class<?> declaringClass()
+  {
+    return (Class<?>) _methodRef.serviceRef().api().getType();
+  }
 
   @Override
   public Annotation[] getAnnotations()

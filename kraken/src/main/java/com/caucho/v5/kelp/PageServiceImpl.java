@@ -1050,7 +1050,7 @@ public class PageServiceImpl implements PageService
       PageTree treePage = (PageTree) page;
       
       while (true) {
-        int nextPid = treePage.get(_table.getRow(), rowBuffer, keyOffset);
+        int nextPid = treePage.get(_table.row(), rowBuffer, keyOffset);
         /*
         System.out.println("NEXT: next:" + nextPid + " pid:" + pid
                            + " " + Hex.toShortHex(rowBuffer, keyOffset, _db.getRow().getKeyLength())
@@ -1250,7 +1250,7 @@ public class PageServiceImpl implements PageService
               BackupKelp backupCallback,
               Result<Boolean> result)
   {
-    Row row = _table.getRow();
+    Row row = _table.row();
     
     int keyLen = row.getKeyLength();
     
@@ -1267,7 +1267,7 @@ public class PageServiceImpl implements PageService
                     BackupKelp backupCallback,
                     Result<? super Boolean> result)
   {
-    Row row = _table.getRow();
+    Row row = _table.row();
     
     int keyLen = row.getKeyLength();
     
@@ -1304,7 +1304,7 @@ public class PageServiceImpl implements PageService
 
   StreamSource toStream(byte[] buffer, int rowOffset, byte []blobBuffer)
   {
-    Row row = _table.getRow();
+    Row row = _table.row();
     
     return new RowStreamSource(row.getInSkeleton(), buffer, rowOffset,
                                _table.getPageActor());
@@ -1487,7 +1487,7 @@ public class PageServiceImpl implements PageService
   private void splitTreePage(PageTree treePage)
   {
     if (treePage.getSize() <= _table.getMaxNodeLength()
-        && treePage.getDeltaTreeCount(_table.getRow()) < _table.getDeltaTreeMax()) {
+        && treePage.getDeltaTreeCount(_table.row()) < _table.getDeltaTreeMax()) {
       
       // treePage.write(_db, this, 0);
       return;
@@ -1604,7 +1604,7 @@ public class PageServiceImpl implements PageService
   
   private void validateAndRepair()
   {
-    Row row = _table.getRow();
+    Row row = _table.row();
     int keyLength = row.getKeyLength();
     
     byte []minKey = new byte[keyLength];
@@ -2026,7 +2026,7 @@ public class PageServiceImpl implements PageService
     void insert(byte []nextMaxKey, int pidLeaf)
     {
       if (! _block.insert(_nextKey, nextMaxKey, pidLeaf)) {
-        _block.toSorted(_table.getRow());
+        _block.toSorted(_table.row());
         _blockList.add(_block);
         
         if (_maxBlockLength <= _blockList.size()) {
@@ -2128,7 +2128,7 @@ public class PageServiceImpl implements PageService
       PageTree oldTree = _pageList.get(0);
       
       PageTree rootTree = oldTree.copy(ROOT_TREE);
-      rootTree.toSorted(_table.getRow());
+      rootTree.toSorted(_table.row());
       _pages.set(rootTree.getId(), rootTree);
     }
   }

@@ -50,9 +50,9 @@ abstract public class Column {
   private final int _offset;
   
   protected Column(int index,
-                       String name, 
-                       ColumnType type,
-                       int offset)
+                   String name, 
+                   ColumnType type,
+                   int offset)
   {
     _index = index;
     _name = name;

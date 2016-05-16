@@ -77,7 +77,7 @@ public class StubContainerBase implements StubContainerAmp
     _path = path;
     
     // XXX: needs to be larger and configurable
-    _lruCache = new LruCache<>(64);
+    _lruCache = new LruCache<>(4096);
   }
   
   @Override
@@ -259,6 +259,6 @@ public class StubContainerBase implements StubContainerAmp
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[]";
+    return getClass().getSimpleName() + "[" + _stub + "]";
   }
 }

@@ -32,16 +32,13 @@ package com.caucho.v5.inject;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.inject.Provider;
 
 import com.caucho.v5.inject.impl.InjectorImpl;
 
 import io.baratine.config.Config;
-import io.baratine.convert.Convert;
 import io.baratine.inject.Binding;
-import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.spi.ServiceManagerProvider;
@@ -85,11 +82,11 @@ public interface InjectorAmp extends Injector
     InjectBuilderAmp context(boolean isContext);
     
     <U> void include(Key<U> keyParent, Method method);
+    
+    InjectBuilderAmp property(String key, String value);
 
     @Override
     InjectorAmp get();
-
-    //<T,X> BindingBuilder<T> function(Function<InjectionPoint<X>, T> function);
   }
  
   //

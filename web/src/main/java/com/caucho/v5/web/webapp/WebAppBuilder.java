@@ -181,7 +181,7 @@ public class WebAppBuilder
       _serviceBuilder.autoServices(true);
       _serviceBuilder.injector(_injectBuilder);
       //_serviceBuilder.setJournalFactory(new JournalFactoryImpl());
-      addJournalFactory(_serviceBuilder);
+      addFactories(_serviceBuilder);
       addStubVault(_serviceBuilder);
       _serviceBuilder.contextManager(true);
 
@@ -216,7 +216,7 @@ public class WebAppBuilder
     }
   }
 
-  protected void addJournalFactory(ServiceManagerBuilderAmp builder)
+  protected void addFactories(ServiceManagerBuilderAmp builder)
   {
   }
 

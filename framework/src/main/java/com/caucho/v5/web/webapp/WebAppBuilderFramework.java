@@ -33,7 +33,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.journal.JournalDriverAmp;
+import com.caucho.v5.amp.ensure.EnsureDriverImpl;
 import com.caucho.v5.amp.journal.JournalDriverImpl;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
@@ -76,9 +76,10 @@ public class WebAppBuilderFramework extends WebAppBuilder
   }
 
   @Override
-  protected void addJournalFactory(ServiceManagerBuilderAmp builder)
+  protected void addFactories(ServiceManagerBuilderAmp builder)
   {
     builder.journalDriver(new JournalDriverImpl());
+    builder.ensureDriver(new EnsureDriverImpl());
   }
 
   /**

@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.ensure.MethodEnsureAmp;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
@@ -42,6 +43,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 
 import io.baratine.convert.Convert;
@@ -241,9 +243,9 @@ abstract public class ServiceManagerAmpWrapper implements ServicesAmp
   */
   
   @Override
-  public QueueFullHandler getQueueFullHandler()
+  public QueueFullHandler queueFullHandler()
   {
-    return delegate().getQueueFullHandler();
+    return delegate().queueFullHandler();
   }
 
   /*
@@ -362,15 +364,21 @@ abstract public class ServiceManagerAmpWrapper implements ServicesAmp
   }
 
   @Override
-  public OutboxAmp getOutboxSystem()
+  public OutboxAmp outboxSystem()
   {
-    return delegate().getOutboxSystem();
+    return delegate().outboxSystem();
   }
 
   @Override
   public JournalAmp openJournal(String name)
   {
     return delegate().openJournal(name);
+  }
+
+  @Override
+  public MethodEnsureAmp ensureMethod(MethodAmp method)
+  {
+    return delegate().ensureMethod(method);
   }
 
   /*

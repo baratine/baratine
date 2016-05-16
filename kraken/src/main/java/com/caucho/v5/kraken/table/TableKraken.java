@@ -474,8 +474,8 @@ public class TableKraken
   
   private ExprKelp []createSelectExpr()
   {
-    Row row = _tableKelp.getRow();
-    Column []columns = row.getColumns();
+    Row row = _tableKelp.row();
+    Column []columns = row.columns();
     
     ExprKelp []exprs = new ExprKelp[columns.length - 1];
     

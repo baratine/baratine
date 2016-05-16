@@ -30,9 +30,12 @@
 package com.caucho.v5.amp.spi;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.StubAmp;
+import com.caucho.v5.amp.stub.StubAmpBean;
 
 import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceRef;
 
 /**
@@ -59,4 +62,16 @@ public interface StubContainerAmp
   String getChildPath(String path);
 
   void onLruModified(ServiceRefAmp serviceRef);
+
+  ResultChain<?> ensure(StubAmpBean stub, 
+                        MethodAmp method,
+                        ResultChain<?> result, 
+                        Object[] args);
+
+  void onActiveEnsure(MethodAmp method);
+
+  default boolean isAutoStart()
+  {
+    return false;
+  }
 }

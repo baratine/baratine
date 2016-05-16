@@ -86,12 +86,18 @@ public class ConfigImpl extends AbstractMap<String,String>
     _converter = ConvertStringDefault.get();
   }
   
+  /**
+   * Return the configuration value for the given key.
+   */
   @Override
   public String get(Object key)
   {
     return _map.get(key);
   }
   
+  /**
+   * Configuration value with a default value.
+   */
   @Override
   public String get(String key, String defaultValue)
   {
@@ -105,6 +111,9 @@ public class ConfigImpl extends AbstractMap<String,String>
     }
   }
   
+  /**
+   * Gets a configuration value converted to a type.
+   */
   @SuppressWarnings("unchecked")
   public <T> T get(String key, Class<T> type, T defaultValue)
   {
@@ -135,6 +144,30 @@ public class ConfigImpl extends AbstractMap<String,String>
                                     */
       return defaultValue;
     }
+  }
+  
+  /**
+   * Gets a configuration value converted to a type.
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T get(String key, Class<T> type, String defaultValue)
+  {
+    Objects.requireNonNull(key);
+    Objects.requireNonNull(type);
+    
+    String value = _map.get(key);
+    
+    if (value == null) {
+      value = defaultValue;
+    }
+    
+    if (type.equals(String.class)) {
+      return (T) value;
+    }
+    
+    T valueType = _converter.convert(type, value);
+    
+    return valueType;
   }
   
   @Override

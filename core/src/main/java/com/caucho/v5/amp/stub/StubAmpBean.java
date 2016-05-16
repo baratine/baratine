@@ -82,6 +82,8 @@ public class StubAmpBean extends StubAmpBase
     
     _name = name;
     
+    _isAutoCreate = _stubClass.isAutoCreate() || container == null;
+    
     if (container != null) {
     }
     else if (config != null && config.isJournal()) {
@@ -103,8 +105,6 @@ public class StubAmpBean extends StubAmpBase
     _isAutoCreate = (_stubClass.isAutoCreate()
         || ! isContainer && container == null);
         */
-    _isAutoCreate = _stubClass.isAutoCreate() || _container == null;
-    
     if (! isLifecycleAware()) {
       state(StubStateAmpBean.ACTIVE);
     }

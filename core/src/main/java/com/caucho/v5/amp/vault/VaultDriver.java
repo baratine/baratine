@@ -159,6 +159,6 @@ public interface VaultDriver<ID,T>
 
   default StubClass stubClassAsset()
   {
-    throw new UnsupportedOperationException(getClass().getName());
+    return null;
   }
 }

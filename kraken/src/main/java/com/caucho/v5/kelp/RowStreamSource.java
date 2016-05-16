@@ -61,7 +61,7 @@ public class RowStreamSource extends StreamSource
   @Override
   public long getLength()
   {
-    Row row = _pageService.getTable().getRow();
+    Row row = _pageService.getTable().row();
     
     return row.getLength(_block, _rowOffset, _pageService);
   }

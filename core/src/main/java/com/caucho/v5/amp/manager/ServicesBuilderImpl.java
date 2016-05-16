@@ -42,8 +42,10 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.ensure.EnsureDriverAmp;
+import com.caucho.v5.amp.ensure.EnsureDriverNull;
 import com.caucho.v5.amp.journal.JournalDriverAmp;
-import com.caucho.v5.amp.journal.JournalFactoryBase;
+import com.caucho.v5.amp.journal.JournalDriverNull;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.service.ServiceBuilderAmp;
 import com.caucho.v5.amp.session.StubGeneratorSession;
@@ -86,7 +88,8 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   private String _debugId;
   
   private ProxyFactoryAmp _proxyFactory;
-  private JournalDriverAmp _journalFactory;
+  private JournalDriverAmp _journalDriver;
+  private EnsureDriverAmp _ensureDriver;
   private QueueFullHandler _queueFullHandler;
   private boolean _isContextManager = true;
   private ServiceNode _podNode;
@@ -112,12 +115,15 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   
   private ConcurrentArrayList<StubGenerator> _stubGenerators
     = new ConcurrentArrayList<>(StubGenerator.class);
-  private long _journalDelay;
+  
+  //private long _journalDelay;
   
   public ServicesBuilderImpl()
   {
-    journalDriver(new JournalFactoryBase());
     name("system");
+    
+    journalDriver(new JournalDriverNull());
+    ensureDriver(new EnsureDriverNull());
     
     if (log.isLoggable(Level.FINER)) {
       debug(true);
@@ -127,7 +133,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     stubGenerator(new StubGeneratorSession());
     stubGenerator(new StubGeneratorVault());
     
-    _holder = new Holder<>(()->getRaw());
+    _holder = new Holder<>(()->raw());
   }
   
   @Override
@@ -221,15 +227,31 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   @Override
   public JournalDriverAmp journalDriver()
   {
-    return _journalFactory;
+    return _journalDriver;
   }
 
   @Override
-  public ServiceManagerBuilderAmp journalDriver(JournalDriverAmp factory)
+  public ServiceManagerBuilderAmp journalDriver(JournalDriverAmp driver)
   {
-    Objects.requireNonNull(factory);
+    Objects.requireNonNull(driver);
 
-    _journalFactory = factory;
+    _journalDriver = driver;
+
+    return this;
+  }
+
+  @Override
+  public EnsureDriverAmp ensureDriver()
+  {
+    return _ensureDriver;
+  }
+
+  @Override
+  public ServiceManagerBuilderAmp ensureDriver(EnsureDriverAmp driver)
+  {
+    Objects.requireNonNull(driver);
+
+    _ensureDriver = driver;
 
     return this;
   }
@@ -240,6 +262,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
    * maxCount is used to limit journal flushes, so checkpoints are
    * issued after maxCount requests.
    */
+  /*
   @Override
   public ServiceManagerBuilderAmp journalMaxCount(int maxCount)
   {
@@ -247,7 +270,9 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
 
     return this;
   }
+  */
 
+  /*
   @Override
   public ServiceManagerBuilderAmp journalDelay(long timeout)
   {
@@ -261,6 +286,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   {
     return _journalDelay;
   }
+  */
   
   @Override
   public ServiceManagerBuilderAmp queueFullHandler(QueueFullHandler handler)
@@ -271,7 +297,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public QueueFullHandler getQueueFullHandler()
+  public QueueFullHandler queueFullHandler()
   {
     return _queueFullHandler;
   }
@@ -336,7 +362,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public long getDebugQueryTimeout()
+  public long debugQueryTimeout()
   {
     return _debugQueryTimeout;
   }
@@ -423,7 +449,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   }
   
   @Override
-  public ServicesAmp getRaw()
+  public ServicesAmp raw()
   {
     ServicesAmp manager = _manager;
     
@@ -443,7 +469,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   @Override
   public ServicesAmp get()
   {
-    ServicesAmp manager = getRaw();
+    ServicesAmp manager = raw();
     
     ArrayList<ServiceBuilderStart<?>> services = new ArrayList<>(_services);
     _services.clear();

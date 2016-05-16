@@ -398,7 +398,7 @@ public final class PageLeafImpl extends PageLeaf
       
       if ((code & CODE_MASK) == BlockLeaf.INSERT) {
         buffer[foundPtr] = (byte) ((code & ~ CODE_MASK) | INSERT_DEAD);
-        table.getRow().remove(tableService, buffer, foundPtr);
+        table.row().remove(tableService, buffer, foundPtr);
       }
     }
     
@@ -414,7 +414,7 @@ public final class PageLeafImpl extends PageLeaf
       result.ok(true);
     }
     
-    if (table.getDeltaLeafMax() < getDeltaLeafCount(table.getRow())) {
+    if (table.getDeltaLeafMax() < getDeltaLeafCount(table.row())) {
       return compact(table);
     }
 
@@ -466,7 +466,7 @@ public final class PageLeafImpl extends PageLeaf
       if (code == INSERT) {
         buffer[foundPtr] = (byte) ((buffer[foundPtr] & ~CODE_MASK) | INSERT_DEAD);
 
-        table.getRow().remove(pageActor, buffer, foundPtr);
+        table.row().remove(pageActor, buffer, foundPtr);
       }
     }
     
@@ -501,7 +501,7 @@ public final class PageLeafImpl extends PageLeaf
     
     blocks.add(block);
     
-    Row row = table.getRow();
+    Row row = table.row();
     byte []splitKey = new byte[row.getKeyLength()];
     int splitCount = size / 2;
     
@@ -604,7 +604,7 @@ public final class PageLeafImpl extends PageLeaf
   private void toSorted(TableKelp table)
   {
     for (BlockLeaf block : _blocks) {
-      block.toSorted(table.getRow());
+      block.toSorted(table.row());
     }
   }
 
@@ -626,7 +626,7 @@ public final class PageLeafImpl extends PageLeaf
     Set<PageLeafEntry> entries = new TreeSet<>();
     
     for (BlockLeaf block : _blocks) {
-      block.fillEntryTree(entries, table.getRow());
+      block.fillEntryTree(entries, table.row());
     }
     
     return entries;
@@ -643,7 +643,7 @@ public final class PageLeafImpl extends PageLeaf
     
     int tailIndex = _blocks.length - tailBlocks;
     
-    Row row = table.getRow();
+    Row row = table.row();
     
     for (int i = 0; i < tailIndex; i++) {
       BlockLeaf block = _blocks[i];
@@ -930,7 +930,7 @@ public final class PageLeafImpl extends PageLeaf
     
     blocks.add(block);
     
-    Row row = table.getRow();
+    Row row = table.row();
     
     for (PageLeafEntry entry : entries) {
       if (entry.getCode() != INSERT && entry.getExpires() <= now) {
@@ -1062,7 +1062,7 @@ public final class PageLeafImpl extends PageLeaf
                            int length)
     throws IOException
   {
-    Row row = table.getRow();
+    Row row = table.row();
     
     // int keyLength = row.getKeyLength();
     int removeLength = row.getRemoveLength();
@@ -1187,7 +1187,7 @@ public final class PageLeafImpl extends PageLeaf
       return;
     }
     
-    Row row = table.getRow();
+    Row row = table.row();
     
     for (BlockLeaf block : _blocks) {
       block.validateBlock(row);

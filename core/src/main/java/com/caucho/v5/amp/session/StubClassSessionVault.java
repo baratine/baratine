@@ -197,13 +197,12 @@ public class StubClassSessionVault<T> extends StubClass
       }
 
       StubAmpBean stubBean = (StubAmpBean) stub;
-      StubContainerAmp container = stubBean.container();
 
       StubAmp stubChild = new StubAmpBean(_stubClassSession,
                                            session,
                                            null,
-                                           container,
-                                           ServiceConfig.NULL);
+                                           stubBean.container(),
+                                           null);
 
       ((Result) result).ok(stubChild);
     }

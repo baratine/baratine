@@ -33,6 +33,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.ensure.EnsureDriverAmp;
 import com.caucho.v5.amp.journal.JournalDriverAmp;
 import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
@@ -56,7 +57,7 @@ public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
   /**
    * Gets the name of the manager.
    */
-  public String name();
+  String name();
 
   /**
    * Sets the name of the manager
@@ -80,22 +81,13 @@ public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
    */
   ServiceManagerBuilderAmp proxyFactory(ProxyFactoryAmp factory);
 
-  /**
-   * Returns the stub journal factory.
-   */
   JournalDriverAmp journalDriver();
+  ServiceManagerBuilderAmp journalDriver(JournalDriverAmp driver);
 
-  /**
-   * Sets the journal context factory.
-   */
-  ServiceManagerBuilderAmp journalDriver(JournalDriverAmp factory);
+  EnsureDriverAmp ensureDriver();
+  ServiceManagerBuilderAmp ensureDriver(EnsureDriverAmp driver);
   
-  ServiceManagerBuilderAmp journalMaxCount(int journalMaxCount);
-  
-  ServiceManagerBuilderAmp journalDelay(long journalTimeout);
-  long journalDelay();
-
-  QueueFullHandler getQueueFullHandler();
+  QueueFullHandler queueFullHandler();
   ServiceManagerBuilderAmp queueFullHandler(QueueFullHandler handler);
   
   Supplier<Executor> systemExecutor();
@@ -130,7 +122,7 @@ public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
   boolean isDebug();
   ServiceManagerBuilderAmp debug(boolean isDebug);
 
-  long getDebugQueryTimeout();
+  long debugQueryTimeout();
   ServiceManagerBuilderAmp debugQueryTimeout(long timeout);
   
   /**
@@ -145,11 +137,5 @@ public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
   @Override
   ServicesAmp get();
 
-  ServicesAmp getRaw();
-
-
-  /**
-   * returns the build manager
-   */
-  //ServiceManagerAmp managerBuild();
+  ServicesAmp raw();
 }

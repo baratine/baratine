@@ -268,7 +268,7 @@ public class PageTree extends Page
     
     tree.setDirty();
     
-    Row row = table.getRow();
+    Row row = table.row();
     
     tree.toSorted(row);
     /*
@@ -357,7 +357,7 @@ public class PageTree extends Page
                                       firstBlocks);
     
     firstPage.setDirty();
-    firstPage.toSorted(table.getRow());
+    firstPage.toSorted(table.row());
     
     byte []nextKey = incrementKey(splitKey);
     
@@ -369,7 +369,7 @@ public class PageTree extends Page
                                      restBlocks);
     
     restPage.setDirty();
-    restPage.toSorted(table.getRow());
+    restPage.toSorted(table.row());
     
     return new SplitTree(firstPage, restPage);
   }

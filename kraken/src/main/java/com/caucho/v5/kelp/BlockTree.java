@@ -359,7 +359,7 @@ public class BlockTree extends Block
     byte []buffer = getBuffer();
     
     int keyLength = table.getKeyLength();
-    int len = table.getRow().getTreeItemLength();
+    int len = table.row().getTreeItemLength();
     
     for (int ptr = index; ptr < BLOCK_SIZE; ptr += len) {
       int code = buffer[ptr] & 0xff;
@@ -385,7 +385,7 @@ public class BlockTree extends Block
   public void copyTo(TableKelp table,
                      PageTree tree)
   {
-    Row row = table.getRow();
+    Row row = table.row();
     
     int keyLength = row.getKeyLength();
     int len = row.getTreeItemLength();

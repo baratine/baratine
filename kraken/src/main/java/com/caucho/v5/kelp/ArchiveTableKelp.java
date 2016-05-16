@@ -160,9 +160,9 @@ public class ArchiveTableKelp
     columns.add("__timeout");
     columns.add("TIMEOUT");
     
-    Row row = _table.getRow();
+    Row row = _table.row();
     
-    for (Column col : row.getColumns()) {
+    for (Column col : row.columns()) {
       if (col.name().equals("_row_state")) {
         continue;
       }
@@ -175,7 +175,7 @@ public class ArchiveTableKelp
     out.writeObject(columns);
     
     ArrayList<String> keyNames = new ArrayList<>();
-    for (Column col : row.getKeys()) {
+    for (Column col : row.keys()) {
       keyNames.add(col.name());
     }
     
@@ -188,8 +188,8 @@ public class ArchiveTableKelp
   {
     out.writeString(DATA);
     
-    Row row = _table.getRow();
-    Column []columns = row.getColumns();
+    Row row = _table.row();
+    Column []columns = row.columns();
     
     RowCursor minCursor = _table.cursor();
     RowCursor maxCursor = _table.cursor();

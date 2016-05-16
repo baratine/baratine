@@ -164,7 +164,7 @@ public class TableKelp
     return _db.getDeltaLeafMax();
   }
   
-  public Row getRow()
+  public Row row()
   {
     return _row;
   }
@@ -176,17 +176,17 @@ public class TableKelp
 
   public Column []getColumns()
   {
-    return _row.getColumns();
+    return _row.columns();
   }
   
   public int getKeyOffset()
   {
-    return getRow().getKeyOffset();
+    return row().getKeyOffset();
   }
   
   public int getKeyLength()
   {
-    return getRow().getKeyLength();
+    return row().getKeyLength();
   }
   
   public long getMemorySize()

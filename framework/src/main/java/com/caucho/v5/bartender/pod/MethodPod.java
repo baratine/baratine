@@ -96,6 +96,19 @@ public class MethodPod implements MethodAmp
   }
   
   @Override
+  public Class<?> declaringClass()
+  {
+    MethodRefAmp localMethod = findLocalMethod();
+    
+    if (localMethod != null) {
+      return localMethod.method().declaringClass();
+    }
+    else {
+      return null;
+    }
+  }
+  
+  @Override
   public ParameterAmp []parameters()
   {
     MethodRefAmp localMethod = findLocalMethod();

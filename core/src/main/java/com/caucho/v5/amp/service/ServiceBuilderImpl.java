@@ -213,10 +213,6 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     
     queueSizeMax(16 * 1024);
     queueSize(64);
-    
-    if (_services.journalDelay() >= 0) {
-      journalDelay(_services.journalDelay(), TimeUnit.MILLISECONDS);
-    }
   }
   
   private void validateServiceClass(Class<T> serviceClass)
@@ -755,6 +751,9 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return new ServiceBuilderImpl(this);
   }
 
+  /**
+   * Build the service and return the service ref.
+   */
   @Override
   public ServiceRefAmp ref()
   {
@@ -762,17 +761,6 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
       return null;
     }
 
-    /*
-    if (_address != null && _address.startsWith("session://")) {
-      return buildSession();
-    }
-    */
-    
-    /*
-    if (_serviceSupplier != null) {
-      return buildWorkers();
-    }
-    */
     if (workers() > 1) {
       return buildWorkers();
     }
@@ -811,8 +799,6 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   
   private StubAmp createStub(Object bean, ServiceConfig config)
   {
-    String path = null;
-    
     if (bean instanceof StubAmp) {
       return (StubAmp) bean;
     }
@@ -855,86 +841,24 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     return _journalDelay;
   }
   
-  /*
-  private ServiceRefAmp buildSession()
-  {
-    Thread thread = Thread.currentThread();
-    ClassLoader oldLoader = thread.getContextClassLoader();
-    
-    try {
-      thread.setContextClassLoader(_services.classLoader());
-    
-      return buildSessionImpl();
-    } finally {
-      thread.setContextClassLoader(oldLoader);
-    }
-  }
-  */
-  
-  /*
-  private ServiceRefAmp buildSessionImpl()
-  {
-    Supplier<?> supplier = newSupplier(_serviceClass);
-
-    String address = _address;
-    
-    ServiceConfig config = config();
-    
-    SessionVaultImpl context;
-    
-    context = new SessionVaultImpl(address,
-                                            _services,
-                                            _serviceClass,
-                                            supplier,
-                                            config);
-
-    ServiceRefAmp serviceRef = _services.newService(context).ref();
-    
-    context.setServiceRef(serviceRef);
-    
-    if (address != null) {
-      if (_services.service(_address).isClosed()) {
-        // XXX:
-        serviceRef.bind(address);
-      }
-    }
-
-    return (ServiceRefAmp) serviceRef;
-  }
-  */
-  
   private ServiceRefAmp buildService()
   {
     ServiceConfig config = config();
     
-    //StubFactoryAmp factory = pluginFactory(_serviceClass, config);
     StubFactoryAmp factory = null;;
     
     factory = pluginFactory(_type, _serviceSupplier, config);
 
-    if (factory != null) {
-      return service(factory);
+    if (factory == null) {
+      Object worker = newWorker(_serviceClass);
+      Objects.requireNonNull(worker,
+                             L.l("unable to create worker for class {0}",
+                                 _serviceClass));
+    
+      factory = new StubFactoryImpl(()->createStub(worker), config);
     }
     
-    Object worker = newWorker(_serviceClass);
-    Objects.requireNonNull(worker,
-                           L.l("unable to create worker for class {0}",
-                               _serviceClass));
-    
-    //ActorAmp actor = _manager.createActor(worker, config);
-    
-    factory = new StubFactoryImpl(()->createStub(worker), config);
-    
-    //ServiceRefAmp serviceRef = _manager.service(()->_worker, _address, config);
     ServiceRefAmp serviceRef = service(factory);
-
-    /*
-    if (_address != null) {
-      if (_manager.service(_address).isClosed()) {
-        serviceRef = serviceRef.bind(_address);
-      }
-    }
-    */
     
     return serviceRef;
   }
@@ -981,8 +905,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     }
   }
   
-  private <T> StubFactoryAmp pluginFactory(Class<T> serviceClass,
-                                           Supplier<? extends T> serviceSupplier,
+  private StubFactoryAmp pluginFactory(Class<T> serviceClass,
+                                       Supplier<? extends T> serviceSupplier,
                                        ServiceConfig config)
   {
     if (serviceClass == null) {
@@ -1015,11 +939,6 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   /**
    * Main service builder. Called from ServiceBuilder and ServiceRefBean.
    */
-  /*
-  ServiceRefAmp service(Supplier<?> beanFactory,
-                        String address,
-                        ServiceConfig config)
-                        */
   private ServiceRefAmp service(StubFactoryAmp stubFactory)
   {
     validateOpen();
@@ -1045,7 +964,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
         _services.bind(serviceRef, address);
       }
       
-      if (stubFactory.config().isAutoStart()) {
+      if (serviceRef.stub().isAutoStart()
+          || stubFactory.config().isAutoStart()) {
         _services.addAutoStart(serviceRef);
       }
       
@@ -1059,27 +979,9 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     }
   }    
 
-  /*
-  private ServiceRefAmp serviceImpl(Supplier<?> supplier,
-                                    String address,
-                                    ServiceConfig config)
-                                    */
-  
   private ServiceRefAmp serviceImpl(StubFactoryAmp stubFactory)
   {
-    //Object bean = supplier.get();
-    
-    //ActorAmp mainActor = createActor(address, bean, config);
-    
     ServiceRefAmp serviceRef;
-    
-    /*
-    if (isDebug()) {
-      mainActor = new ActorAmpTrace(mainActor);
-    }
-    */
-    
-    //String name = mainActor.getName();
     
     if (stubFactory.config().isJournal()) {
       serviceRef = serviceJournal(stubFactory);
@@ -1114,20 +1016,8 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
                                       queueBuilder,
                                       serviceFactory,
                                       config);
-      /*
-      InboxAmp inbox = inboxFactory.create(this, 
-                                           serviceFactory);
-                                           */
-      
-      //InboxAmp inbox = new InboxQueue(this, actorFactory);
   
       serviceRef = inbox.serviceRef();
-
-      /*
-       if (config.isAutoStart()) {
-        //addAutoStart(serviceRef);
-      }
-      */
     }
     
     if (log.isLoggable(Level.FINEST)) {
