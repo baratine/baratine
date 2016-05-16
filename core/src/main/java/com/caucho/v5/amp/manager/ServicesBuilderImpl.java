@@ -107,7 +107,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   private long _debugQueryTimeout;
   private Supplier<Executor> _systemExecutor;
   
-  private ArrayList<ServiceBuilderStart> _services = new ArrayList<>();
+  private ArrayList<ServiceBuilderStart<?>> _services = new ArrayList<>();
 
   //private ServiceManagerBuildTemp _buildManager;
 
