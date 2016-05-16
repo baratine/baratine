@@ -31,18 +31,55 @@ package com.caucho.v5.web.webapp;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import io.baratine.web.Part;
 
 public class PartImpl implements Part
 {
   private byte[] _data;
+  private String _name;
+  private String _fileName;
+  private String _contentType;
+  private long _size;
+  private Map<String,List<String>> _headers;
 
-  public PartImpl(byte[] data)
+  public PartImpl()
+  {
+  }
+
+  void setData(byte[] data)
   {
     _data = data;
   }
 
+  void setName(String name)
+  {
+    _name = name;
+  }
+
+  void setFileName(String fileName)
+  {
+    _fileName = fileName;
+  }
+
+  void setContentType(String contentType)
+  {
+    _contentType = contentType;
+  }
+
+  void setSize(long size)
+  {
+    _size = size;
+  }
+
+  void setHeaders(Map<String,List<String>> headers)
+  {
+    _headers = headers;
+  }
+  
   @Override
   public String contentType()
   {
@@ -50,27 +87,34 @@ public class PartImpl implements Part
   }
 
   @Override
-  public String header(String header)
+  public String header(String name)
   {
-    return null;
+    List<String> headers = _headers.get(name);
+
+    String header = null;
+
+    if (headers != null || headers.size() > 0)
+      header = headers.get(0);
+
+    return header;
   }
 
   @Override
-  public String[] headers(String header)
+  public Collection<String> headers(String name)
   {
-    return new String[0];
+    return _headers.get(name);
   }
 
   @Override
-  public String[] headers()
+  public Collection<String> headerNames()
   {
-    return new String[0];
+    return _headers.keySet();
   }
 
   @Override
   public String name()
   {
-    return null;
+    return _name;
   }
 
   @Override

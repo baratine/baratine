@@ -30,16 +30,17 @@
 package io.baratine.web;
 
 import java.io.InputStream;
+import java.util.Collection;
 
 public interface Part
 {
   String contentType();
 
-  String header(String header);
+  String header(String name);
 
-  String[] headers(String header);
+  Collection<String> headers(String name);
 
-  String[] headers();
+  Collection<String> headerNames();
 
   String name();
 

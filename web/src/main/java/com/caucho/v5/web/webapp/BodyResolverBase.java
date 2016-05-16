@@ -29,14 +29,6 @@
 
 package com.caucho.v5.web.webapp;
 
-import com.caucho.v5.io.MultipartStream;
-import com.caucho.v5.io.ReadStream;
-import com.caucho.v5.io.WriteStream;
-import com.caucho.v5.util.L10N;
-import com.caucho.v5.util.Utf8Util;
-import io.baratine.web.Form;
-import io.baratine.web.Part;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +41,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import com.caucho.v5.io.MultipartStream;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
+import com.caucho.v5.util.L10N;
+import com.caucho.v5.util.Utf8Util;
+import io.baratine.web.Form;
+import io.baratine.web.Part;
 
 /**
  * Reads a body
@@ -342,8 +342,44 @@ public class BodyResolverBase implements BodyResolver
 
   private Part[] parseMultipart(RequestWebSpi request)
   {
+    String boundary = getBoundary(request.header("Content-Type"));
+
+    try {
+      List<Part> parts = new ArrayList<>();
+
+      InputStream in = request.inputStream();
+
+      MultipartStream parser = new MultipartStream(new ReadStream(in),
+                                                   boundary);
+
+      ReadStream stream;
+      while ((stream = parser.openRead()) != null) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        WriteStream writer = new WriteStream(out);
+        writer.writeStream(stream);
+        writer.close();
+
+        PartImpl part = new PartImpl();
+
+        fillContentDisp(part, parser.getAttribute("Content-Disposition"));
+        
+        // FIXME: 2016-05-16 should be temp file
+        part.setData(out.toByteArray());
+        part.setHeaders(parser.getHeaders());
+          
+        parts.add(part);
+      }
+
+      return parts.toArray(new Part[parts.size()]);
+    } catch (Throwable e) {
+      // FIXME what's proper exception handling?
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String getBoundary(String contentType)
+  {
     //Content-Type: multipart/form-data; boundary=----WebKitFormBoundarysO1e5Wbw760Ku6Ah
-    final String contentType = request.header("Content-Type");
     char[] contentTypeBuf = contentType.toCharArray();
 
     int i;
@@ -378,30 +414,75 @@ public class BodyResolverBase implements BodyResolver
          i++)
       ;
 
-    String boundary = new String(contentTypeBuf, start, i - start);
+    return new String(contentTypeBuf, start, i - start);
+  }
 
-    try {
-      List<Part> parts = new ArrayList<>();
+  private void fillContentDisp(PartImpl part, String disposition)
+  {
+    char[] buf = disposition.toCharArray();
+    int i;
+    int start = -1;
+    int len = 0;
 
-      InputStream in = request.inputStream();
+    String name = null;
+    String value = null;
 
-      MultipartStream parser = new MultipartStream(new ReadStream(in),
-                                                   boundary);
-
-      ReadStream stream;
-      while ((stream = parser.openRead()) != null) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        WriteStream writer = new WriteStream(out);
-        writer.writeStream(stream);
-        writer.close();
-        Part part = new PartImpl(out.toByteArray());
-        parts.add(part);
+    for (i = 0; i < buf.length; i++) {
+      char c = buf[i];
+      switch (c) {
+      case ' ': {
+        break;
+      }
+      case '=': {
+        name = new String(buf, start, len);
+        start = -1;
+        len = 0;
+        break;
+      }
+      case ';': {
+        value = new String(buf, start, len);
+        break;
+      }
+      case '"': {
+        break;
+      }
+      case '\'': {
+        break;
+      }
+      default: {
+        if (start == -1)
+          start = i;
+        len++;
+      }
       }
 
-      return parts.toArray(new Part[parts.size()]);
-    } catch (Throwable e) {
-      // FIXME what's proper exception handling?
-      throw new RuntimeException(e);
+      if (value != null) {
+        fillName(part, name, value);
+        name = null;
+        value = null;
+        start = -1;
+        len = 0;
+      }
+    }
+
+    if (start > 0 && len > 0) {
+      value = new String(buf, start, len);
+    }
+
+    if (value != null)
+      fillName(part, name, value);
+  }
+
+  private void fillName(PartImpl part, String name, String value)
+  {
+    if ("name".equals(name)) {
+      part.setName(value);
+    }
+    else if ("file-name".equals(name)) {
+      part.setFileName(value);
+    }
+    else {
+
     }
   }
 }
