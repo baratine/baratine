@@ -37,8 +37,6 @@ import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.io.Buffers;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
-import io.baratine.stream.ResultStream;
-import io.baratine.stream.ResultStreamBuilder;
 
 /**
  * Provider for AMP services.
@@ -117,10 +115,12 @@ abstract public class ServiceManagerProvider implements AutoCloseable
     return true;
   }
 
+/*
   public <V> ResultStreamBuilder<V> newStream(ResultStream<V> result)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+*/
 
   public Buffers bytesFactory()
   {

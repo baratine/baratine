@@ -27,30 +27,50 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.junit;
+package plain;
 
-import com.caucho.v5.inject.AnnotationLiteral;
+import java.util.concurrent.TimeUnit;
 
-class ConfigurationBaratineDefault
-  extends AnnotationLiteral<ConfigurationBaratine>
-  implements ConfigurationBaratine
+import javax.inject.Inject;
+
+import com.caucho.junit.RunnerBaratine;
+import com.caucho.junit.ServiceTest;
+import io.baratine.service.Result;
+import io.baratine.service.ResultFuture;
+import io.baratine.service.Service;
+import io.baratine.service.Services;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(RunnerBaratine.class)
+@ServiceTest(QjunitServices.Q_basicServiceImpl.class)
+public class QjunitServices
 {
-  static final ConfigurationBaratine INSTANCE
-    = new ConfigurationBaratineDefault();
+  @Inject
+  private Services _services;
 
-  private ConfigurationBaratineDefault()
+  @Test
+  public void test()
   {
+    ResultFuture<String> result = new ResultFuture<>();
+
+    _services.service("/hello").as(Q_basicService.class).test(result);
+
+    Assert.assertEquals("Hello World!", result.get(1, TimeUnit.SECONDS));
   }
 
-  @Override
-  public String workDir()
+  public interface Q_basicService
   {
-    return "{java.io.tmpdir}";
+    public void test(Result<String> result);
   }
 
-  @Override
-  public long testTime()
+  @Service("/hello")
+  public static class Q_basicServiceImpl
   {
-    return TEST_TIME;
+    public void test(Result<String> result)
+    {
+      result.ok("Hello World!");
+    }
   }
 }

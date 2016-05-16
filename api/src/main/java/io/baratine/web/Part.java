@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
  * This file is part of Baratine(TM)
  *
@@ -27,36 +27,24 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.junit;
+package io.baratine.web;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.InputStream;
+import java.util.Collection;
 
-/**
- * Configures instance of Baratine used for running tests
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface ConfigurationBaratine
+public interface Part
 {
-  /**
-   * Convenience value that helps generate testable sequences
-   */
-  public static final long TEST_TIME = 894621091000L;
-  /**
-   * Specifies working directory for Baratine
-   *
-   * @return
-   */
-  String workDir() default "{java.io.tmpdir}";
+  String contentType();
 
-  /**
-   * Specifies initial value for Baratine clock. By default, Baratine clock will
-   * be set to system time.
-   *
-   * @return
-   */
-  long testTime() default -1;
+  String header(String name);
+
+  Collection<String> headers(String name);
+
+  Collection<String> headerNames();
+
+  String name();
+
+  long size();
+
+  InputStream data();
 }

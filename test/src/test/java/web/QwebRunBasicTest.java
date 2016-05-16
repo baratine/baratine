@@ -27,36 +27,26 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.junit;
+package web;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.caucho.junit.HttpClient;
+import com.caucho.junit.WebRunnerBaratine;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-/**
- * Configures instance of Baratine used for running tests
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface ConfigurationBaratine
+@RunWith(WebRunnerBaratine.class)
+public class QwebRunBasicTest
 {
-  /**
-   * Convenience value that helps generate testable sequences
-   */
-  public static final long TEST_TIME = 894621091000L;
-  /**
-   * Specifies working directory for Baratine
-   *
-   * @return
-   */
-  String workDir() default "{java.io.tmpdir}";
+  @Test
+  public void test404() throws Exception
+  {
+    HttpClient client = new HttpClient(8080);
 
-  /**
-   * Specifies initial value for Baratine clock. By default, Baratine clock will
-   * be set to system time.
-   *
-   * @return
-   */
-  long testTime() default -1;
+    final HttpClient.Request request = client.get("/test");
+
+    int status = request.go().status();
+
+    Assert.assertEquals(404, status);
+  }
 }

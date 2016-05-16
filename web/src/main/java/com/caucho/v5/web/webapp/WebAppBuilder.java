@@ -48,7 +48,6 @@ import javax.inject.Provider;
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.journal.JournalDriverAmp;
 import com.caucho.v5.amp.manager.InjectAutoBindService;
 import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
@@ -82,6 +81,7 @@ import io.baratine.io.Buffers;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
+import io.baratine.service.Session;
 import io.baratine.vault.Vault;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.IncludeWeb;
@@ -1010,6 +1010,7 @@ public class WebAppBuilder
       }
       else {
         Service serviceAnn = _serviceType.getAnnotation(Service.class);
+        Session sessionAnn = _serviceType.getAnnotation(Session.class);
         
         type = itemType(_serviceType);
         
@@ -1019,7 +1020,7 @@ public class WebAppBuilder
         else {
           ServiceRef ref = service(_serviceType).addressAuto().ref();
 
-          if (serviceAnn.value().startsWith("session:")) {
+          if (serviceAnn.value().startsWith("session:") || sessionAnn != null) {
             fun = req->req.session(_serviceType);
           }
           else {

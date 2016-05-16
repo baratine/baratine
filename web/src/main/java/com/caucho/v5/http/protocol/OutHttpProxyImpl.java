@@ -38,7 +38,6 @@ import com.caucho.v5.network.port.ConnectionTcp;
 
 import io.baratine.io.Buffer;
 import io.baratine.service.AfterBatch;
-import sun.util.logging.resources.logging;
 
 /**
  * Handles a HTTP connection.

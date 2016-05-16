@@ -43,6 +43,8 @@ public class DebugUtil {
   private static Object _javaLangAccess;
   private static Method _getStackTraceDepth;
   private static Method _getStackTraceElement;
+  
+  private final static boolean isDebug;
 
   public static String callerEntry(int depth)
   {
@@ -80,6 +82,11 @@ public class DebugUtil {
       return null;
     }
   }
+
+  public static boolean isDebug()
+  {
+    return isDebug;
+  }
   
   static {
     Object javaLangAccessObj = null;
@@ -114,5 +121,11 @@ public class DebugUtil {
                              _getStackTraceDepth,
                              _getStackTraceElement));
                              */
+  }
+
+  //_isDebug
+  static {
+    isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
+      getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
   }
 }

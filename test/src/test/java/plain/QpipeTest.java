@@ -27,36 +27,41 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.junit;
+package plain;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import static org.junit.Assert.assertEquals;
 
-/**
- * Configures instance of Baratine used for running tests
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface ConfigurationBaratine
+import com.caucho.junit.RunnerBaratine;
+import com.caucho.junit.ServiceTest;
+import com.caucho.junit.State;
+import io.baratine.pipe.Message;
+import io.baratine.pipe.PipeIn;
+import io.baratine.pipe.PipesSync;
+import io.baratine.service.Service;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(RunnerBaratine.class)
+@ServiceTest(QpipeTest.Q_subString.class)
+public class QpipeTest
 {
-  /**
-   * Convenience value that helps generate testable sequences
-   */
-  public static final long TEST_TIME = 894621091000L;
-  /**
-   * Specifies working directory for Baratine
-   *
-   * @return
-   */
-  String workDir() default "{java.io.tmpdir}";
+  @Test
+  public void test(@Service("pipe:///test") PipesSync<Message<String>> pipes)
+  {
+    pipes.send(Message.newMessage("hello"));
 
-  /**
-   * Specifies initial value for Baratine clock. By default, Baratine clock will
-   * be set to system time.
-   *
-   * @return
-   */
-  long testTime() default -1;
+    State.sleep(50);
+
+    assertEquals("\nonMessage(hello)", State.state());
+  }
+
+  @Service
+  public static class Q_subString
+  {
+    @PipeIn("pipe:///test")
+    private void onMessage(String msg)
+    {
+      State.add("\nonMessage(" + msg + ")");
+    }
+  }
 }

@@ -15,6 +15,9 @@ dependencies {
   compile 'org.thymeleaf:thymeleaf:2.1.4.RELEASE'
   compile 'de.neuland-bfi:jade4j:1.1.4'
   compile 'com.github.subchen:jetbrick-template:2.1.0'
+  
+  // pipes
+  compile 'com.rabbitmq:amqp-client:3.6.1'
 
   // gradle/maven
   compile 'org.gradle:gradle-core:2.5'

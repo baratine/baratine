@@ -29,21 +29,26 @@
 
 package com.caucho.v5.web.webapp;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.caucho.v5.io.MultipartStream;
+import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Utf8Util;
-
 import io.baratine.web.Form;
+import io.baratine.web.Part;
 
 /**
  * Reads a body
@@ -84,11 +89,14 @@ public class BodyResolverBase implements BodyResolver
       String contentType = request.header("content-type");
 
       //TODO: parse and use the encoding of the content type e.g. application/x-www-form-urlencoded; UTF-8
-      if (contentType == null || ! contentType.startsWith(FORM_TYPE)) {
+      if (contentType == null || !contentType.startsWith(FORM_TYPE)) {
         throw new IllegalStateException(L.l("Form expects {0}", FORM_TYPE));
       }
 
       return (T) parseForm(request);
+    }
+    else if (Part.class.equals(type) || Part[].class.equals(type)) {
+      return (T) parseMultipart(request);
     }
     /*
     else if (header("content-type").startsWith("application/json")) {
@@ -167,18 +175,18 @@ public class BodyResolverBase implements BodyResolver
     throws InstantiationException, IllegalAccessException
   {
     Map<String,String> map;
-    
+
     if (Modifier.isAbstract(type.getModifiers())) {
       map = new HashMap<>();
     }
     else {
       map = (Map) type.newInstance();
     }
-    
+
     for (Map.Entry<String,List<String>> entry : form.entrySet()) {
       map.put(entry.getKey(), entry.getValue().get(0));
     }
-    
+
     return (T) map;
   }
 
@@ -210,10 +218,14 @@ public class BodyResolverBase implements BodyResolver
       result = transform(str, null, v -> Short.parseShort(v));
     }
     else if (type == char.class) {
-      result = transform(str, (char) 0, v -> str.length() > 0 ? str.charAt(0) : (char) 0);
+      result = transform(str,
+                         (char) 0,
+                         v -> str.length() > 0 ? str.charAt(0) : (char) 0);
     }
     else if (type == Character.class) {
-      result = transform(str, null, v -> str.length() > 0 ? str.charAt(0) : null);
+      result = transform(str,
+                         null,
+                         v -> str.length() > 0 ? str.charAt(0) : null);
     }
     else if (type == int.class) {
       result = transform(str, 0, v -> Integer.parseInt(v));
@@ -243,7 +255,9 @@ public class BodyResolverBase implements BodyResolver
     return (T) result;
   }
 
-  public static <T> Object transform(String str, Object defaultV, Function<String,T> fun)
+  public static <T> Object transform(String str,
+                                     Object defaultV,
+                                     Function<String,T> fun)
   {
     return str != null ? fun.apply(str) : defaultV;
 
@@ -322,6 +336,59 @@ public class BodyResolverBase implements BodyResolver
       return form;
     } catch (Exception e) {
       throw new BodyException(e);
+    }
+  }
+
+  private Part[] parseMultipart(RequestWebSpi request)
+  {
+    try {
+      List<Part> parts = new ArrayList<>();
+
+      InputStream in = request.inputStream();
+
+      String boundary
+        = MultipartStream.parseBoundary(request.header("Content-Type"));
+
+      MultipartStream parser = new MultipartStream(new ReadStream(in),
+                                                   boundary);
+
+      ReadStream stream;
+      while ((stream = parser.openRead()) != null) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        WriteStream writer = new WriteStream(out);
+        writer.writeStream(stream);
+        writer.close();
+
+        final MultipartStream.Attribute[] attributes
+          = parser.parseAttribute("Content-Disposition");
+
+        PartImpl part = new PartImpl();
+
+        fillAttributes(part, attributes);
+
+        // FIXME: 2016-05-16 should be temp file
+        part.setData(out.toByteArray());
+        part.setHeaders(parser.getHeaders());
+
+        parts.add(part);
+      }
+
+      return parts.toArray(new Part[parts.size()]);
+    } catch (Throwable e) {
+      // FIXME what's proper exception handling?
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void fillAttributes(PartImpl part,
+                              MultipartStream.Attribute[] attributes)
+  {
+    for (MultipartStream.Attribute attribute : attributes) {
+      String name = attribute.getName();
+      if ("name".equals(name))
+        part.setName(attribute.getValue());
+      else if ("filename".equals(name))
+        part.setFileName(attribute.getValue());
     }
   }
 }

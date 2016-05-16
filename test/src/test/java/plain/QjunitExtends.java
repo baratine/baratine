@@ -27,36 +27,48 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.junit;
+package plain;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
-/**
- * Configures instance of Baratine used for running tests
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface ConfigurationBaratine
+import javax.inject.Inject;
+
+import com.caucho.junit.RunnerBaratine;
+import com.caucho.junit.ServiceTest;
+import io.baratine.service.Result;
+import io.baratine.service.ResultFuture;
+import io.baratine.service.Service;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(RunnerBaratine.class)
+@ServiceTest(QjunitExtends.Q_basicService.class)
+public class QjunitExtends extends QjunitSuper
 {
-  /**
-   * Convenience value that helps generate testable sequences
-   */
-  public static final long TEST_TIME = 894621091000L;
-  /**
-   * Specifies working directory for Baratine
-   *
-   * @return
-   */
-  String workDir() default "{java.io.tmpdir}";
+  @Test
+  public void test()
+  {
+    ResultFuture<String> result = new ResultFuture<>();
 
-  /**
-   * Specifies initial value for Baratine clock. By default, Baratine clock will
-   * be set to system time.
-   *
-   * @return
-   */
-  long testTime() default -1;
+    _service.test(result);
+
+    Assert.assertEquals("Hello World!", result.get(1, TimeUnit.SECONDS));
+  }
+
+  @Service
+  public static class Q_basicService
+  {
+    public void test(Result<String> result)
+    {
+      result.ok("Hello World!");
+    }
+  }
+}
+
+class QjunitSuper
+{
+  @Inject
+  @Service
+  QjunitExtends.Q_basicService _service;
 }

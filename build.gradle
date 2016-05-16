@@ -66,6 +66,19 @@ project(':framework') {
   mainClassName = 'com.caucho.v5.cli.baratine.BaratineCommandLine'
 }
 
+project(':test') {
+  dependencies {
+    compile project(':api')
+    compile project(':core')
+    compile project(':web')
+    compile project(':kraken')
+    compile project(':framework')
+    compile project(':plugins')
+
+    testCompile 'junit:junit:4.12'
+  }
+}
+
 configurations {
   provided
   compile.extendsFrom provided

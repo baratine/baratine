@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
  * This file is part of Baratine(TM)
  *
@@ -24,39 +24,16 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Alex Rojkov
+ * @author Nam Nguyen
  */
 
-package com.caucho.junit;
+package com.caucho.v5.pipe.rabbit;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import io.baratine.service.Services;
+import io.baratine.vault.IdAsset;
+import io.baratine.vault.Vault;
 
-/**
- * Configures instance of Baratine used for running tests
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface ConfigurationBaratine
+public class RabbitVault implements Vault<String,RabbitPipeImpl>
 {
-  /**
-   * Convenience value that helps generate testable sequences
-   */
-  public static final long TEST_TIME = 894621091000L;
-  /**
-   * Specifies working directory for Baratine
-   *
-   * @return
-   */
-  String workDir() default "{java.io.tmpdir}";
 
-  /**
-   * Specifies initial value for Baratine clock. By default, Baratine clock will
-   * be set to system time.
-   *
-   * @return
-   */
-  long testTime() default -1;
 }

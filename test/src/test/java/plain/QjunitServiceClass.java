@@ -27,49 +27,55 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.junit;
+package plain;
 
 import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.CurrentTimeTest;
+import javax.inject.Inject;
 
-/**
- * Class TestTime is used to control Baratine Clock during the test. This is useful
- * when testing time sensitive behaviour such as time-outs, timers etc.
- *
- * Baratine clock can be fast forwarded using method addTime().
- */
-public class TestTime
+import com.caucho.junit.RunnerBaratine;
+import com.caucho.junit.ServiceTest;
+import io.baratine.service.Result;
+import io.baratine.service.ResultFuture;
+import io.baratine.service.Service;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(RunnerBaratine.class)
+@ServiceTest(QjunitServiceClass.Q_basicService.class)
+public class QjunitServiceClass
 {
-  /**
-   * Clears all alarms
-   */
-  public static void clear()
+  @Inject
+  @Service
+  private Q_basicService _service;
+
+  @Test
+  public void test()
   {
-    CurrentTimeTest.clear();
+    ResultFuture<String> result = new ResultFuture<>();
+
+    _service.test(result);
+
+    Assert.assertEquals("Hello World!", result.get(1, TimeUnit.SECONDS));
   }
 
-  /**
-   * Sets Baratine time
-   * @param time
-   */
-  public static void setTime(long time)
+  @Test
+  public void test(Q_basicService service)
   {
-    CurrentTimeTest.setTime(time);
+    ResultFuture<String> result = new ResultFuture<>();
+
+    service.test(result);
+
+    Assert.assertEquals("Hello World!", result.get(1, TimeUnit.SECONDS));
   }
 
-  /**
-   * Adds time to Baratine time
-   * @param delta
-   * @param timeUnit
-   */
-  public static void addTime(long delta, TimeUnit timeUnit)
+  @Service
+  public static class Q_basicService
   {
-    delta = timeUnit.toMillis(delta);
-
-    long time = CurrentTime.currentTime() + delta;
-
-    CurrentTimeTest.setTime(time);
+    public void test(Result<String> result)
+    {
+      result.ok("Hello World!");
+    }
   }
 }

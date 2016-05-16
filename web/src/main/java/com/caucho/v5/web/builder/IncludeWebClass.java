@@ -41,7 +41,6 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import javax.inject.Qualifier;
-import javax.inject.Qualifier;
 
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
@@ -53,32 +52,10 @@ import io.baratine.service.Api;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef.ServiceBuilder;
+import io.baratine.service.Session;
 import io.baratine.service.Workers;
 import io.baratine.vault.Vault;
-import io.baratine.web.Body;
-import io.baratine.web.Cookie;
-import io.baratine.web.Delete;
-import io.baratine.web.FilterAfter;
-import io.baratine.web.FilterBefore;
-import io.baratine.web.Form;
-import io.baratine.web.Get;
-import io.baratine.web.Header;
-import io.baratine.web.HttpMethod;
-import io.baratine.web.IncludeWeb;
-import io.baratine.web.Options;
-import io.baratine.web.Patch;
-import io.baratine.web.Path;
-import io.baratine.web.Post;
-import io.baratine.web.Put;
-import io.baratine.web.Query;
-import io.baratine.web.RequestWeb;
-import io.baratine.web.Route;
-import io.baratine.web.RouteBuilder;
-import io.baratine.web.ServiceWeb;
-import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.Trace;
-import io.baratine.web.WebBuilder;
-import io.baratine.web.WebSocketPath;
+import io.baratine.web.*;
 
 class IncludeWebClass implements IncludeWebAmp
 {
@@ -142,8 +119,10 @@ class IncludeWebClass implements IncludeWebAmp
     else if (_type.isAnnotationPresent(Service.class)) {
       Service service = _type.getAnnotation(Service.class);
       String address = service.value();
+
+      Session session = _type.getAnnotation(Session.class);
       
-      if (address.startsWith("session:")) {
+      if (address.startsWith("session:") || session != null) {
         builder.service(_type);
         beanSupplier = null;
         beanFactory = req->req.session(_type);
@@ -419,8 +398,11 @@ class IncludeWebClass implements IncludeWebAmp
     }
     else if (param.isAnnotationPresent(Body.class)) {
       Body body = param.getAnnotation(Body.class);
-      
-      if (body.value().isEmpty()) {
+
+      if (Part.class.equals(param.getType())) {
+        return new WebParamBodyNamedPart<>(body.value());
+      }
+      else if (body.value().isEmpty()) {
         return new WebParamBody<>(param.getType());
       }
       else {
@@ -582,6 +564,44 @@ class IncludeWebClass implements IncludeWebAmp
     public void evalAsync(RequestWeb request, Result<Object> result)
     {
       request.body(_type, (Result<T>) result);
+    }
+  }
+
+  private static class WebParamBodyNamedPart<T> implements WebParam
+  {
+    private final String _name;
+
+    WebParamBodyNamedPart(String name)
+    {
+      _name = name;
+    }
+
+    @Override
+    public boolean isAsync()
+    {
+      return true;
+    }
+
+    @Override
+    public Object eval(RequestWeb request)
+    {
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public void evalAsync(RequestWeb request, Result<Object> result)
+    {
+      request.body(Part[].class, result.of(x -> getPart(x)));
+    }
+
+    public Part getPart(Part[] parts)
+    {
+      for (Part part : parts) {
+        if (_name.equals(part.name()))
+          return part;
+      }
+
+      return null;
     }
   }
 
