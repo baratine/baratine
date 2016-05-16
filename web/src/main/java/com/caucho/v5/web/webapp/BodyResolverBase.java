@@ -58,7 +58,6 @@ public class BodyResolverBase implements BodyResolver
   private static final L10N L = new L10N(BodyResolverBase.class);
 
   public static final String FORM_TYPE = "application/x-www-form-urlencoded";
-  public static final char[] boundary = "boundary".toCharArray();
 
   @Override
   public <T> T body(RequestWebSpi request, Class<T> type)
@@ -342,12 +341,13 @@ public class BodyResolverBase implements BodyResolver
 
   private Part[] parseMultipart(RequestWebSpi request)
   {
-    String boundary = getBoundary(request.header("Content-Type"));
-
     try {
       List<Part> parts = new ArrayList<>();
 
       InputStream in = request.inputStream();
+
+      String boundary
+        = MultipartStream.parseBoundary(request.header("Content-Type"));
 
       MultipartStream parser = new MultipartStream(new ReadStream(in),
                                                    boundary);
@@ -359,14 +359,17 @@ public class BodyResolverBase implements BodyResolver
         writer.writeStream(stream);
         writer.close();
 
+        final MultipartStream.Attribute[] attributes
+          = parser.parseAttribute("Content-Disposition");
+
         PartImpl part = new PartImpl();
 
-        fillContentDisp(part, parser.getAttribute("Content-Disposition"));
-        
+        fillAttributes(part, attributes);
+
         // FIXME: 2016-05-16 should be temp file
         part.setData(out.toByteArray());
         part.setHeaders(parser.getHeaders());
-          
+
         parts.add(part);
       }
 
@@ -377,112 +380,15 @@ public class BodyResolverBase implements BodyResolver
     }
   }
 
-  private String getBoundary(String contentType)
+  private void fillAttributes(PartImpl part,
+                              MultipartStream.Attribute[] attributes)
   {
-    //Content-Type: multipart/form-data; boundary=----WebKitFormBoundarysO1e5Wbw760Ku6Ah
-    char[] contentTypeBuf = contentType.toCharArray();
-
-    int i;
-    for (i = 0; i < contentTypeBuf.length; i++) {
-      char c = contentTypeBuf[i];
-      if ('=' == c && i > boundary.length) {
-        boolean match = true;
-        for (int j = 0; j < boundary.length && match; j++) {
-          match &= boundary[j] == contentTypeBuf[i - boundary.length + j];
-        }
-
-        if (match)
-          break;
-      }
-    }
-
-    if (i + 1 >= contentTypeBuf.length)
-      throw new IllegalStateException(L.l("boundary is not found in <>"));
-
-    int start = ++i;
-
-    char c = ';';
-    if (contentTypeBuf[i] == '\'' || contentTypeBuf[i] == '"') {
-      c = contentTypeBuf[i++];
-      start = i;
-    }
-
-    for (;
-         i < contentTypeBuf.length
-         && contentTypeBuf[i] != c
-         && contentTypeBuf[i] != ' ';
-         i++)
-      ;
-
-    return new String(contentTypeBuf, start, i - start);
-  }
-
-  private void fillContentDisp(PartImpl part, String disposition)
-  {
-    char[] buf = disposition.toCharArray();
-    int i;
-    int start = -1;
-    int len = 0;
-
-    String name = null;
-    String value = null;
-
-    for (i = 0; i < buf.length; i++) {
-      char c = buf[i];
-      switch (c) {
-      case ' ': {
-        break;
-      }
-      case '=': {
-        name = new String(buf, start, len);
-        start = -1;
-        len = 0;
-        break;
-      }
-      case ';': {
-        value = new String(buf, start, len);
-        break;
-      }
-      case '"': {
-        break;
-      }
-      case '\'': {
-        break;
-      }
-      default: {
-        if (start == -1)
-          start = i;
-        len++;
-      }
-      }
-
-      if (value != null) {
-        fillName(part, name, value);
-        name = null;
-        value = null;
-        start = -1;
-        len = 0;
-      }
-    }
-
-    if (start > 0 && len > 0) {
-      value = new String(buf, start, len);
-    }
-
-    if (value != null)
-      fillName(part, name, value);
-  }
-
-  private void fillName(PartImpl part, String name, String value)
-  {
-    if ("name".equals(name)) {
-      part.setName(value);
-    }
-    else if ("file-name".equals(name)) {
-      part.setFileName(value);
-    }
-    else {
-
+    for (MultipartStream.Attribute attribute : attributes) {
+      String name = attribute.getName();
+      if ("name".equals(name))
+        part.setName(attribute.getValue());
+      else if ("filename".equals(name))
+        part.setFileName(attribute.getValue());
     }
   }
 }

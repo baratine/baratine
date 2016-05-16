@@ -43,6 +43,8 @@ import com.caucho.v5.util.L10N;
 
 public class MultipartStream extends StreamImpl
 {
+  public static final char[] boundary = "boundary".toCharArray();
+
   private static final L10N L = new L10N(MultipartStream.class);
   private ByteArrayBuffer _boundary = new ByteArrayBuffer();
   private byte[] _boundaryBuffer;
@@ -449,5 +451,129 @@ public class MultipartStream extends StreamImpl
     }
 
     return value.close();
+  }
+
+  public static String parseBoundary(String contentType)
+  {
+    //Content-Type: multipart/form-data; boundary=----WebKitFormBoundarysO1e5Wbw760Ku6Ah
+    char[] contentTypeBuf = contentType.toCharArray();
+
+    int i;
+    for (i = 0; i < contentTypeBuf.length; i++) {
+      char c = contentTypeBuf[i];
+      if ('=' == c && i > boundary.length) {
+        boolean match = true;
+        for (int j = 0; j < boundary.length && match; j++) {
+          match &= boundary[j] == contentTypeBuf[i - boundary.length + j];
+        }
+
+        if (match)
+          break;
+      }
+    }
+
+    if (i + 1 >= contentTypeBuf.length)
+      throw new IllegalStateException(L.l("boundary is not found in <>"));
+
+    int offset = ++i;
+
+    char c = ';';
+    if (contentTypeBuf[i] == '\'' || contentTypeBuf[i] == '"') {
+      c = contentTypeBuf[i++];
+      offset = i;
+    }
+
+    for (;
+         i < contentTypeBuf.length
+         && contentTypeBuf[i] != c
+         && contentTypeBuf[i] != ' ';
+         i++)
+      ;
+
+    return new String(contentTypeBuf, offset, i - offset);
+  }
+
+  public Attribute[] parseAttribute(String key)
+  {
+    String attribute = getAttribute(key);
+    
+    char[] buf = attribute.toCharArray();
+    int i;
+    int offset = -1;
+    int len = 0;
+
+    String name = null;
+    String value = null;
+
+    List<Attribute> attributes = new ArrayList<>();
+
+    for (i = 0; i < buf.length; i++) {
+      char c = buf[i];
+      switch (c) {
+      case ' ': {
+        break;
+      }
+      case '=': {
+        name = new String(buf, offset, len);
+        offset = -1;
+        len = 0;
+        break;
+      }
+      case ';': {
+        value = new String(buf, offset, len);
+        break;
+      }
+      case '"': {
+        break;
+      }
+      case '\'': {
+        break;
+      }
+      default: {
+        if (offset == -1)
+          offset = i;
+        len++;
+      }
+      }
+
+      if (value != null) {
+        attributes.add(new Attribute(name, value));
+        name = null;
+        value = null;
+        offset = -1;
+        len = 0;
+      }
+    }
+
+    if (offset > 0 && len > 0) {
+      value = new String(buf, offset, len);
+    }
+
+    if (value != null)
+      attributes.add(new Attribute(name, value));
+
+    return attributes.toArray(new Attribute[attributes.size()]);
+  }
+
+  public static class Attribute
+  {
+    private final String _name;
+    private final String _value;
+
+    public Attribute(String name, String value)
+    {
+      _name = name;
+      _value = value;
+    }
+
+    public String getName()
+    {
+      return _name;
+    }
+
+    public String getValue()
+    {
+      return _value;
+    }
   }
 }
