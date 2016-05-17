@@ -47,6 +47,11 @@ public class Names extends AnnotationLiteral<Named> implements Named {
   {
     _name = name;
   }
+  
+  public static Named of(String name)
+  {
+    return new Names(name);
+  }
 
   @Override
   public String value()

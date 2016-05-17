@@ -39,6 +39,8 @@ import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Qualifier;
 
@@ -47,16 +49,22 @@ import javax.inject.Qualifier;
  */
 public class Key<T>
 {
+  private static final Logger log = Logger.getLogger(Key.class.getName());
+  
   private static final Class<? extends Annotation> []DEFAULT_ANN_TYPES
     = new Class[] { Bean.class };
+  private static final Annotation []DEFAULT_ANNS
+    = new Annotation[0];
   
   private final Type _type;
   private final Class<? extends Annotation> []_annTypes;
+  private final Annotation []_anns;
   
   protected Key()
   {
     _type = calculateType();
     _annTypes = DEFAULT_ANN_TYPES;
+    _anns = DEFAULT_ANNS;
   }
   
   private Key(Type type)
@@ -65,6 +73,7 @@ public class Key<T>
     
     _type = type;
     _annTypes = DEFAULT_ANN_TYPES;
+    _anns = DEFAULT_ANNS;
   }
   
   private Key(Type type, Class<? extends Annotation> []annTypes)
@@ -78,6 +87,7 @@ public class Key<T>
     }
     
     _annTypes = annTypes;
+    _anns = DEFAULT_ANNS;
   }
   
   public Key(Type type, Annotation []anns)
@@ -85,6 +95,7 @@ public class Key<T>
     Objects.requireNonNull(type);
     
     _type = type;
+    _anns = anns;
     
     if (anns == null || anns.length == 0) {
       _annTypes = DEFAULT_ANN_TYPES;
@@ -145,7 +156,7 @@ public class Key<T>
     Objects.requireNonNull(type);
     Objects.requireNonNull(ann);
     
-    return new Key<>(type, new Class[] { ann.annotationType() });
+    return new Key<>(type, new Annotation[] { ann });
   }
   
   public static <T> Key<T> of(Method method)
@@ -294,6 +305,10 @@ public class Key<T>
         return false;
       }
     }
+    
+    if (_anns.length > 0 && key._anns.length > 0) {
+      return isAssignableFrom(_anns, key._anns);
+    }
 
     return true;
   }
@@ -315,6 +330,66 @@ public class Key<T>
       if (! classA.equals(classB)
           && ! classA.equals(Object.class)
           && ! classB.equals(Object.class)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  private boolean isAssignableFrom(Annotation []annsA, Annotation []annsB)
+  {
+    for (Annotation annA : annsA) {
+      if (! isAnnotation(annA, annsB)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  private boolean isAnnotation(Annotation annA, Annotation []annsB)
+  {
+    for (Annotation annB : annsB) {
+      if (annB.annotationType().equals(annA.annotationType())) {
+        return isMatch(annA, annB);
+      }
+    }
+    
+    return false;
+  }
+  
+  private boolean isMatch(Annotation annA, Annotation annB)
+  {
+    for (Method method : annA.annotationType().getMethods()) {
+      if (! method.getDeclaringClass().equals(annA.annotationType())) {
+        continue;
+      }
+      else if (method.getParameterTypes().length != 0) {
+        continue;
+      }
+      else if (method.getName().equals("toString")) {
+        continue;
+      }
+      else if (method.getName().equals("hashCode")) {
+        continue;
+      }
+      
+      try {
+        Object valueA = method.invoke(annA);
+        Object valueB = method.invoke(annB);
+        
+        if (valueA == valueB) {
+        }
+        else if (valueA == null || valueB == null) {
+          return false;
+        }
+        else if (! valueA.equals(valueB)) {
+          return false;
+        }
+      } catch (Exception e) {
+        log.log(Level.FINER, e.toString(), e);
+        
         return false;
       }
     }
@@ -407,9 +482,17 @@ public class Key<T>
       sb.append(type);
     }
     
-    for (int i = 0; i < _annTypes.length; i++) {
-      sb.append(",@");
-      sb.append(_annTypes[i].getSimpleName());
+    if (false && _anns.length > 0) {
+      for (int i = 0; i < _anns.length; i++) {
+        sb.append(",");
+        sb.append(_anns[i]);
+      }
+    }
+    else {
+      for (int i = 0; i < _annTypes.length; i++) {
+        sb.append(",@");
+        sb.append(_annTypes[i].getSimpleName());
+      }
     }
     sb.append("]");
     
