@@ -59,6 +59,12 @@ public class ConfigImpl extends AbstractMap<String,String>
   private final Map<String,String> _map;
   private final ConvertFrom<String> _converter;
   
+  /**
+   * A new configuration from a map and converter.
+   * 
+   * @param map the contents of the configuration
+   * @param converter converts from strings to types 
+   */
   ConfigImpl(Map<String,String> map,
              ConvertFrom<String> converter)
   {
@@ -170,16 +176,35 @@ public class ConfigImpl extends AbstractMap<String,String>
     return valueType;
   }
   
+  /**
+   * Inject a bean from the configuration
+   */
+  @Override
+  public <T> void inject(T bean)
+  {
+    Objects.requireNonNull(bean);
+    
+    ConfigStub stub = new ConfigStub(bean.getClass());
+    
+    stub.inject(bean, this);
+  }
+  
+  /**
+   * Configuration entries as a map set.
+   */
   @Override
   public Set<Map.Entry<String, String>> entrySet()
   {
     return _map.entrySet();
   }
   
+  /**
+   * Child configuration with additional data.
+   */
   @Override
-  public ConfigBuilder subEnv()
+  public ConfigBuilder newChild()
   {
-    return new ConfigBuilderImpl(_map);
+    return new ConfigBuilderImpl(new HashMap<>(_map));
   }
   
   @Override

@@ -44,22 +44,10 @@ public interface Config extends Map<String,String>
   <T> T get(String key, Class<T> type, T defaultValue);
   
   <T> T get(String key, Class<T> type, String defaultValue);
-
-  /*
-  static ConfigBuilder config()
-  {
-    return ServiceManagerProvider.current().config();
-  }
-  */
   
-  /*
-  static Config system()
-  {
-    return ConfigProvider.system();
-  }
-  */
+  <T> void inject(T bean);
   
-  ConfigBuilder subEnv();
+  ConfigBuilder newChild();
   
   public interface ConfigBuilder
   {
