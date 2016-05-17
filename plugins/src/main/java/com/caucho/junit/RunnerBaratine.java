@@ -33,7 +33,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +86,7 @@ public class RunnerBaratine extends BaseRunner
 
   private static final L10N L = new L10N(RunnerBaratine.class);
 
-  private Map<ServiceDescriptor,ServiceRef> _descriptors;
+  private Map<ServiceTestDescriptor,ServiceRef> _descriptors;
   private Services _manager;
 
   public RunnerBaratine(Class<?> cl) throws InitializationError
@@ -108,7 +107,7 @@ public class RunnerBaratine extends BaseRunner
   @Override
   protected Object resolve(Class type, Annotation[] annotations)
   {
-    return findService(_manager, _descriptors, type, annotations);
+    return findService(new InjectionTestPoint(type, annotations));
   }
 
   private class VaultResourceDriver
@@ -172,40 +171,36 @@ public class RunnerBaratine extends BaseRunner
 
     serviceBuilder.start();
 
-    Map<ServiceDescriptor,ServiceRef> descriptors
+    Map<ServiceTestDescriptor,ServiceRef> descriptors
       = deployServices(serviceManager);
-
-    bindFields(test, testClass, serviceManager, descriptors);
 
     _descriptors = descriptors;
     _manager = serviceManager;
+
+    bindFields(test, testClass);
   }
 
   private void bindFields(Object test,
-                          TestClass testClass,
-                          Services manager,
-                          Map<ServiceDescriptor,ServiceRef> descriptors)
+                          TestClass testClass)
     throws IllegalAccessException
   {
     List<FrameworkField> fields = testClass.getAnnotatedFields();
 
     for (FrameworkField field : fields) {
-      Object inject;
+      Object inject = null;
 
       Field javaField = field.getField();
 
-      if (javaField.getAnnotation(Service.class) != null) {
-        inject = findService(manager,
-                             descriptors,
-                             javaField.getType(),
-                             javaField.getAnnotations());
-      }
-      else if (javaField.getAnnotation(Inject.class) != null) {
-        inject = findInject(manager, javaField.getType());
-      }
-      else {
+      InjectionTestPoint ip
+        = new InjectionTestPoint(javaField.getType(),
+                                 javaField.getAnnotations());
+
+      if (ip.getService() != null)
+        inject = findService(ip);
+      else if (ip.getInject() != null)
+        inject = findInject(ip);
+      else
         continue;
-      }
 
       javaField.setAccessible(true);
 
@@ -213,22 +208,22 @@ public class RunnerBaratine extends BaseRunner
     }
   }
 
-  private Map<ServiceDescriptor,ServiceRef> deployServices(Services manager)
+  private Map<ServiceTestDescriptor,ServiceRef> deployServices(Services manager)
   {
-    Map<ServiceDescriptor,ServiceRef> descriptors = new HashMap<>();
+    Map<ServiceTestDescriptor,ServiceRef> descriptors = new HashMap<>();
 
     for (ServiceTest service : getServices()) {
       Class serviceClass = service.value();
 
-      ServiceDescriptor descriptor = ServiceDescriptor.of(serviceClass);
+      ServiceTestDescriptor descriptor = ServiceTestDescriptor.of(serviceClass);
 
       ServiceRef ref = manager.newService(serviceClass).addressAuto().ref();
 
       descriptors.put(descriptor, ref);
     }
 
-    for (Map.Entry<ServiceDescriptor,ServiceRef> e : descriptors.entrySet()) {
-      ServiceDescriptor desc = e.getKey();
+    for (Map.Entry<ServiceTestDescriptor,ServiceRef> e : descriptors.entrySet()) {
+      ServiceTestDescriptor desc = e.getKey();
 
       if (desc.isStart()) {
         e.getValue().start();
@@ -238,67 +233,50 @@ public class RunnerBaratine extends BaseRunner
     return descriptors;
   }
 
-  public Object findService(Services manager,
-                            Map<ServiceDescriptor,ServiceRef> map,
-                            Class<?> type,
-                            Annotation[] annotations)
+  public Object findService(InjectionTestPoint ip)
   {
-    if (Services.class.equals(type))
+    if (Services.class.equals(ip.getType()))
       return _manager;
 
-    Service binding = null;
+    Map.Entry<ServiceTestDescriptor,ServiceRef> match = null;
 
-    for (int i = 0; i < annotations.length; i++) {
-      Annotation annotation = annotations[i];
-      if (Service.class.isAssignableFrom(annotation.annotationType())) {
-        binding = (Service) annotation;
+    for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : _descriptors.entrySet()) {
+      if (ip.isMatch(entry.getKey())) {
+        match = entry;
 
         break;
       }
     }
 
-    if (binding == null) {
-      binding = ServiceLiteral.LITERAL;
+    ServiceRef service = null;
+    if (match != null) {
+      service = match.getValue();
     }
 
-    ServiceRef service = matchServiceByImpl(map, type);
-
     if (service == null)
-      service = matchServiceByAddress(map, binding);
-
-    if (service == null)
-      service = matchServiceByApi(map, type);
-
-    if (service == null)
-      service = matchDefaultService(manager, binding);
+      service = matchDefaultService(ip);
 
     if (service == null)
       throw new IllegalStateException(L.l(
-        "unable to bind type {0} with annotations {1}, make sure corresponding service is deployed.",
-        Arrays.asList(annotations)));
+        "unable to bind {0}, make sure corresponding service is deployed.",
+        ip));
 
-    if (ServiceRef.class == type)
+    if (ServiceRef.class == ip.getType())
       return service;
     else
-      return service.as(type);
+      return service.as(ip.getType());
   }
 
-  private ServiceRef matchDefaultService(Services manager,
-                                         Service binding)
+  private ServiceRef matchDefaultService(InjectionTestPoint ip)
   {
-    String address = binding.value();
-
-    if (address == null)
-      return null;
-
-    return manager.service(address);
+    return _manager.service(ip.address());
   }
 
-  private ServiceRef matchServiceByApi(Map<ServiceDescriptor,ServiceRef> map,
+  private ServiceRef matchServiceByApi(Map<ServiceTestDescriptor,ServiceRef> map,
                                        Class type)
   {
-    for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
-      ServiceDescriptor descriptor = entry.getKey();
+    for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : map.entrySet()) {
+      ServiceTestDescriptor descriptor = entry.getKey();
       Class api = descriptor.getApi();
 
       if (api != null && type.isAssignableFrom(descriptor.getApi())) {
@@ -309,12 +287,12 @@ public class RunnerBaratine extends BaseRunner
     return null;
   }
 
-  private ServiceRef matchServiceByAddress(Map<ServiceDescriptor,ServiceRef> map,
+  private ServiceRef matchServiceByAddress(Map<ServiceTestDescriptor,ServiceRef> map,
                                            Service binding)
   {
     if (!binding.value().isEmpty()) {
-      for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
-        ServiceDescriptor descriptor = entry.getKey();
+      for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : map.entrySet()) {
+        ServiceTestDescriptor descriptor = entry.getKey();
 
         if (descriptor.getAddress().equals(binding.value())) {
           return entry.getValue();
@@ -325,11 +303,11 @@ public class RunnerBaratine extends BaseRunner
     return null;
   }
 
-  private ServiceRef matchServiceByImpl(Map<ServiceDescriptor,ServiceRef> map,
+  private ServiceRef matchServiceByImpl(Map<ServiceTestDescriptor,ServiceRef> map,
                                         Class type)
   {
-    for (Map.Entry<ServiceDescriptor,ServiceRef> entry : map.entrySet()) {
-      ServiceDescriptor descriptor = entry.getKey();
+    for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : map.entrySet()) {
+      ServiceTestDescriptor descriptor = entry.getKey();
 
       if (descriptor.getServiceClass().equals(type)) {
         return entry.getValue();
@@ -339,33 +317,33 @@ public class RunnerBaratine extends BaseRunner
     return null;
   }
 
-  private Object findInject(Services manager, final Class<?> type)
+  private Object findInject(InjectionTestPoint ip)
   {
     Object inject = null;
 
-    if (type == Services.class) {
-      inject = manager;
+    if (Services.class.equals(ip.getType())) {
+      inject = _manager;
     }
 
     if (inject == null)
-      throw new IllegalStateException(L.l("unable to bind field of type {0}",
-                                          type));
+      throw new IllegalStateException(L.l("unable to bind {0}",
+                                          ip));
 
     return inject;
   }
 
-  static class ServiceDescriptor
+  static class ServiceTestDescriptor
   {
     private Class<?> _api;
     private Class<?> _serviceClass;
     private Service _service;
 
-    private ServiceDescriptor(final Class serviceClass)
+    private ServiceTestDescriptor(final Class serviceClass)
     {
       Objects.requireNonNull(serviceClass);
 
       _serviceClass = serviceClass;
-      _service = (Service) serviceClass.getAnnotation(Service.class);
+      _service = getServiceAnnotation(serviceClass);
 
       if (_service == null)
         throw new IllegalStateException(L.l(
@@ -376,19 +354,43 @@ public class RunnerBaratine extends BaseRunner
         _api = serviceClass;
       }
       else {
-        _api = getApi(serviceClass);
+        _api = discoverApi();
       }
     }
 
-    private Class getApi(Class serviceClass)
+    private Service getServiceAnnotation(Class serviceClass)
+    {
+      Service service;
+      Class t = serviceClass;
+
+      do {
+        service = (Service) t.getAnnotation(Service.class);
+      } while (service == null
+               && t.getSuperclass() != null
+               && (t = t.getSuperclass()) != Object.class);
+
+      if (service == null) {
+        Class[] interfaces = serviceClass.getInterfaces();
+        for (Class face : interfaces) {
+          service = (Service) face.getAnnotation(Service.class);
+
+          if (service != null)
+            break;
+        }
+      }
+
+      return service;
+    }
+
+    private Class discoverApi()
     {
       Api api;
-      Class t = serviceClass;
+      Class t = _serviceClass;
 
       do {
         api = (Api) t.getAnnotation(Api.class);
       } while (api == null
-               && (t = serviceClass.getSuperclass()) != Object.class);
+               && (t = t.getSuperclass()) != Object.class);
 
       Class type = null;
 
@@ -396,7 +398,7 @@ public class RunnerBaratine extends BaseRunner
         type = api.value();
 
       if (type == null) {
-        Class[] interfaces = serviceClass.getInterfaces();
+        Class[] interfaces = _serviceClass.getInterfaces();
         out:
         for (Class face : interfaces) {
           final Method[] methods = face.getDeclaredMethods();
@@ -412,6 +414,9 @@ public class RunnerBaratine extends BaseRunner
           }
         }
       }
+
+      if (type == null)
+        type = _serviceClass;
 
       return type;
     }
@@ -446,9 +451,9 @@ public class RunnerBaratine extends BaseRunner
       return false;
     }
 
-    public static ServiceDescriptor of(Class t)
+    public static ServiceTestDescriptor of(Class t)
     {
-      return new ServiceDescriptor(t);
+      return new ServiceTestDescriptor(t);
     }
 
     @Override
@@ -457,7 +462,7 @@ public class RunnerBaratine extends BaseRunner
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
 
-      ServiceDescriptor that = (ServiceDescriptor) o;
+      ServiceTestDescriptor that = (ServiceTestDescriptor) o;
 
       return _serviceClass.equals(that._serviceClass);
     }
@@ -488,6 +493,89 @@ public class RunnerBaratine extends BaseRunner
              + ", "
              + _service
              + ']';
+    }
+  }
+
+  class InjectionTestPoint
+  {
+    private final Class _type;
+    private final Annotation[] _annotations;
+
+    public InjectionTestPoint(Class type, Annotation[] annotations)
+    {
+      _type = type;
+
+      _annotations = annotations;
+    }
+
+    public Class<?> getType()
+    {
+      return _type;
+    }
+
+    public boolean isMatch(ServiceTestDescriptor descriptor)
+    {
+      boolean isMatch = isMatchType(descriptor) ||
+                        isMatchName(descriptor) ||
+                        isMatchInterface(descriptor);
+
+      return isMatch;
+    }
+
+    private boolean isMatchName(ServiceTestDescriptor descriptor)
+    {
+      return descriptor.getAddress().equals(address());
+    }
+
+    private boolean isMatchType(ServiceTestDescriptor descriptor)
+    {
+      return descriptor.getApi().equals(getType());
+    }
+
+    private boolean isMatchInterface(ServiceTestDescriptor descriptor)
+    {
+      return getType().isAssignableFrom(descriptor.getApi());
+    }
+
+    public Service getService()
+    {
+      return getAnnotation(Service.class);
+    }
+
+    public String address()
+    {
+      Service service = getService();
+
+      String address = service.value();
+
+      if (address == null) {
+        String name = getType().getSimpleName();
+        if (name.endsWith("Impl"))
+          name = name.substring(0, name.length() - 4);
+
+        address = "/" + name;
+      }
+
+      return address;
+    }
+
+    public Inject getInject()
+    {
+      return getAnnotation(Inject.class);
+    }
+
+    private <A extends Annotation> A getAnnotation(Class<A> target)
+    {
+      A result = null;
+      for (Annotation annotation : _annotations) {
+        if (target.isAssignableFrom(annotation.annotationType())) {
+          result = (A) annotation;
+
+          break;
+        }
+      }
+
+      return result;
     }
   }
 
