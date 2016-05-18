@@ -72,6 +72,9 @@ abstract public class CommandBase<A extends ArgsBase>
 
   protected void initBootOptions()
   {
+    addValueOption("conf", "file", "alternate config file");
+    addValueOption("stage", "stage", "configuration stage");
+    
     /*
     addOption(new HomeDir()).alias("home-directory");
                             //.alias(getProgramName() + "-home")

@@ -78,18 +78,24 @@ public class YamlParser
   {
     _config = Configs.config();
     
-    parse("", -1);
+    parseTop();
     
     _configList.add(_config.get());
     
     return _configList;
   }
   
+  private void parseTop()
+      throws IOException
+  {
+    while (parse("", -1) >= 0) {
+    }
+  }
+  
   private int parse(String prefix, int depth)
-    throws IOException
+      throws IOException
   {
     int ch;
-    int count = 0;
     
     int subDepth = 0;
     
@@ -114,8 +120,7 @@ public class YamlParser
           break;
         }
 
-        throw error(ch);
-        
+        throw error("depth: " + subDepth + " '" + ch + "'");
         
       default:
         if (isIdentifierStart(ch)) {
@@ -152,7 +157,7 @@ public class YamlParser
       }
     }
     
-    return 0;
+    return -1;
   }
   
   private void parseValues(String fullKey)

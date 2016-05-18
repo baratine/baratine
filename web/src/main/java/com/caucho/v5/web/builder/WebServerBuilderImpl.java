@@ -93,6 +93,7 @@ import com.caucho.v5.web.webapp.HttpBaratineBuilder;
 
 import io.baratine.config.Config;
 import io.baratine.config.Include;
+import io.baratine.config.Stage;
 import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertFrom;
 import io.baratine.convert.ConvertFrom.ConvertFromBuilder;
@@ -182,32 +183,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     } catch (Throwable e) {
     }
     
-    Path path = Vfs.path("classpath:META-INF/baratine-default.yml");
-    
-    try {
-      if (Files.isReadable(path)) {
-        List<Config> configList = YamlParser.parse(path);
-      
-        _configBuilder.add(configList.get(0));
-      }
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-      throw new IllegalStateException(e);
-    }
-    
-    path = Vfs.path("classpath:/baratine.yml");
-    
-    try {
-      if (Files.isReadable(path)) {
-        List<Config> configList = YamlParser.parse(path);
-      
-        _configBuilder.add(configList.get(0));
-      }
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-    }
-    
-    _configBuilder.add(Configs.system());
+    //_configBuilder.add(Configs.system());
     
     initLogs();
   }
@@ -287,8 +263,54 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     _args.parse();
     
     _configBuilder.add(_args.config());
+
+    addConfigs();
     
     return this;
+  }
+  
+  private void addConfigs()
+  {
+    addConfigFile("classpath:META-INF/baratine-default.yml");
+    addConfigFile("classpath:/baratine.yml");
+    
+    String config = _args.getArg("conf");
+    
+    if (config != null) {
+      addConfigFile(config);
+    }
+  }
+  
+  private void addConfigFile(String pathName)
+  {
+    String stage = _args.getArg("stage", "main");
+    
+    Path path = Vfs.path(pathName);
+
+    try {
+      if (Files.isReadable(path)) {
+        List<Config> configList = YamlParser.parse(path);
+        
+        _configBuilder.add(findStage(configList, stage));
+      }
+    } catch (Exception e) {
+      log.log(Level.FINER, e.toString(), e);
+      throw new IllegalStateException(e);
+    }
+  }
+  
+  private Config findStage(List<Config> list, String stage)
+  {
+    for (Config config : list) {
+      if (stage.equals(config.get("stage"))) {
+        return config;
+      }
+      else if (stage.equals("main") && config.get("stage") == null) {
+        return config;
+      }
+    }
+    
+    return list.get(0);
   }
   
   protected ArgsBase args()

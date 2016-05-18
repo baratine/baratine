@@ -67,7 +67,7 @@ public class ArgsBase
   
   private final EnvCli _env;
   
-  private final Config.ConfigBuilder _envBuilder = Configs.config();
+  private final Config.ConfigBuilder _configBuilder = Configs.config();
 
   private HashMap<String,ValueCliArg> _valueMap = new HashMap<>();
   private ArrayList<String> _tailArgs = new ArrayList<>();
@@ -124,17 +124,17 @@ public class ArgsBase
 
   public void property(String envName, String value)
   {
-    _envBuilder.add(envName, value);
+    _configBuilder.add(envName, value);
   }
   
   public Config config()
   {
-    return _envBuilder.get();
+    return _configBuilder.get();
   }
   
   public void config(Config env)
   {
-    _envBuilder.add(env);
+    _configBuilder.add(env);
   }
 
 

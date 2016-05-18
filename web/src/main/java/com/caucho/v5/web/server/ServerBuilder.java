@@ -79,8 +79,9 @@ import io.baratine.config.Config;
  */
 public class ServerBuilder
 {
-  private static Logger log = Logger.getLogger(ServerBuilder.class.getName());
-  private static L10N L = new L10N(ServerBuilder.class);
+  private static final Logger log
+    = Logger.getLogger(ServerBuilder.class.getName());
+  private static final L10N L = new L10N(ServerBuilder.class);
   
   //private final ArgsServerBase _args;
   
