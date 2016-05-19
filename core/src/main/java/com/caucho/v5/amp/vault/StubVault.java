@@ -280,12 +280,12 @@ public class StubVault extends StubClass
     private MethodHandle _fieldSetter;
     private Convert<String,?> _converter;
 
-    MethodOnLookup(StubClass skel,
+    MethodOnLookup(StubClass stubClass,
                    Provider<Object> provider,
                    Convert<String,?> converter,
                    MethodHandle fieldSetter)
     {
-      _stubClass = skel;
+      _stubClass = stubClass;
       _provider = provider;
       _converter = converter;
       _fieldSetter = fieldSetter;
@@ -301,7 +301,9 @@ public class StubVault extends StubClass
 
       String path = (String) arg1;
 
-      if (path.startsWith("/")) {
+      if (path.startsWith("//")) {
+      }
+      else if (path.startsWith("/")) {
         path = path.substring(1);
       }
 

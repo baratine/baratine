@@ -174,7 +174,7 @@ public class VaultDriverBase<ID,T>
       throw new IllegalStateException(String.valueOf(method));
     }
     else if (method.getName().startsWith("create")) {
-      Method target = entityMethod(method);
+      Method target = assetMethod(method);
 
       if (target != null) {
         return newCreateMethod(target);
@@ -184,7 +184,7 @@ public class VaultDriverBase<ID,T>
       }
     }
     else if (method.getName().startsWith("delete")) {
-      Method target = entityMethod(method);
+      Method target = assetMethod(method);
 
       if (target != null) {
         return newDeleteMethod(target);
@@ -305,7 +305,7 @@ public class VaultDriverBase<ID,T>
 
   private <S> MethodVault<S> newDeleteMethod(Method targetMethod)
   {
-    Supplier<String> idGen = idSupplier();
+    //Supplier<String> idGen = idSupplier();
 
     try {
       //targetMethod.setAccessible(true);
@@ -360,7 +360,7 @@ public class VaultDriverBase<ID,T>
     }
   }
   
-  private Method entityMethod(Method source)
+  private Method assetMethod(Method source)
   {
     try {
       return _assetClass.getMethod(source.getName(), source.getParameterTypes());

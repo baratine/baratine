@@ -696,6 +696,10 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
           if (tail.startsWith("/")) {
             address = scheme + "://" + tail;
           }
+          else if (! tail.isEmpty()) {
+            throw new IllegalArgumentException(L.l("'{0}' is an invalid address",
+                                                   address));
+          }
         }
       }
     }
