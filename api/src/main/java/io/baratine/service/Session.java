@@ -39,6 +39,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE})
+@Service("session:")
 public @interface Session
 {
 }

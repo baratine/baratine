@@ -29,6 +29,7 @@
 
 package com.caucho.v5.amp.manager;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -496,13 +497,17 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     return type;
   }
   
+  /**
+   * Calculate address from an API with an address default
+   */
   @Override
   public String address(Class<?> api, String address)
   {
     Objects.requireNonNull(address);
 
-    if (address.isEmpty() && api.getAnnotation(Session.class) != null)
-      address = "session:";
+    if (address.isEmpty()) {
+      address = addressDefault(api);
+    }
     
     int slash = address.indexOf("/");
     //int colon = address.indexOf(":");
@@ -523,21 +528,99 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     }
 
     boolean isPrefix
-      = address.startsWith("session:") || address.startsWith("pod"); 
+      = address.startsWith("session:") || address.startsWith("pod:"); 
 
     if (address.isEmpty()
         || p > 0 && q < 0 && isPrefix) {
       if (Vault.class.isAssignableFrom(api)) {
         TypeRef itemRef = TypeRef.of(api).to(Vault.class).param("T");
+        
+        Class<?> assetClass = itemRef.rawClass();
 
-        address = address + "/" + itemRef.rawClass().getSimpleName();
+        address = address + "/" + apiAddress(assetClass);
       }
       else {
-        address = address + "/" + api.getSimpleName();
+        address = address + "/" + apiAddress(api);
       }
     }
     
     return address;
+  }
+  
+  private String apiAddress(Class<?> api)
+  {
+    Class<?> serviceApi = serviceApi(api);
+    
+    if (serviceApi != null) {
+      return serviceApi.getSimpleName();
+    }
+    else {
+      return api.getSimpleName();
+    }
+  }
+  
+  private Class<?> serviceApi(Class<?> api)
+  {
+    if (api == null) {
+      return null;
+    }
+    
+    if (api.isAnnotationPresent(Service.class)) {
+      return api;
+    }
+    
+    Class<?> serviceApi = serviceApi(api.getSuperclass());
+    
+    if (serviceApi != null) {
+      return serviceApi;
+    }
+    
+    for (Class<?> iface : api.getInterfaces()) {
+      serviceApi = serviceApi(iface);
+      
+      if (serviceApi != null) {
+        return serviceApi;
+      }
+    }
+    
+    return null;
+  }
+  
+  private String addressDefault(Class<?> api)
+  {
+    if (api == null) {
+      return "";
+    }
+    
+    Service service = api.getAnnotation(Service.class);
+    
+    if (service != null) {
+      return service.value();
+    }
+    
+    for (Annotation ann : api.getAnnotations()) {
+      service = ann.annotationType().getAnnotation(Service.class);
+      
+      if (service != null) {
+        return service.value();
+      }
+    }
+    
+    String value = addressDefault(api.getSuperclass());
+    
+    if (! value.isEmpty()) {
+      return value;
+    }
+    
+    for (Class<?> iface : api.getInterfaces()) {
+      value = addressDefault(iface);
+      
+      if (! value.isEmpty()) {
+        return value;
+      }
+    }
+    
+    return "";
   }
   
   private String addressBraces(Class<?> api, String address)
