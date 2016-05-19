@@ -30,13 +30,11 @@
 package com.caucho.v5.ramp.vault;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import com.caucho.v5.amp.vault.MethodVault;
 import com.caucho.v5.amp.vault.VaultDriver;
-
 import io.baratine.db.Cursor;
 import io.baratine.service.Result;
 
@@ -102,7 +100,9 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
     {
       driver().findOne(getWhere(),
                      args,
-                     result.of(key -> driver().lookup(key).as(_api)));
+                       result.of(key -> key == null ?
+                         null :
+                         driver().lookup(key).as(_api)));
     }
   }
 

@@ -31,7 +31,6 @@ package com.caucho.v5.ramp.vault;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +48,10 @@ import com.caucho.v5.amp.vault.VaultDriverBase;
 import com.caucho.v5.amp.vault.VaultStore;
 import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.util.L10N;
-
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseServiceSync;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
-import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
 import io.baratine.stream.ResultStream;
 import io.baratine.vault.Asset;
@@ -544,8 +541,10 @@ public class VaultDriverDataImpl<ID, T>
   {
     StringBuilder sql = new StringBuilder("select ")
       .append(_entityInfo.id().columnName())
-      .append(" FROM ").append(_entityInfo.tableName())
-      .append(' ').append(where);
+      .append(" FROM ").append(_entityInfo.tableName());
+
+    if (where != null)
+      sql.append(' ').append(where);
 
     return sql.toString();
   }
