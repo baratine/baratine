@@ -22,20 +22,20 @@ public class RabbitConfig
   public static RabbitConfig from(Config config, String id)
     throws URISyntaxException
   {
-    id = RabbitConfig.class.getName() + "." + id;
+    String url = "pipe+rabbitmq:" + id;
 
     RabbitConfig r = new RabbitConfig();
 
-    r.uri(config.get(id + ".uri", "amqp://127.0.0.1"));
-    r.exchange(config.get(id + ".exchange", ""));
-    r.queue(config.get(id + ".queue", ""));
-    r.routingKey(config.get(id + ".routingKey", ""));
+    r.uri(config.get(url + ".uri", "amqp://127.0.0.1"));
+    r.exchange(config.get(url + ".exchange", ""));
+    r.queue(config.get(url + ".queue", ""));
+    r.routingKey(config.get(url + ".routingKey", ""));
 
-    r.exchangeType(config.get(id + ".exchangeType", "direct"));
+    r.exchangeType(config.get(url + ".exchangeType", "direct"));
 
-    r.durable("true".equals(config.get(id + ".durable")));
-    r.exclusive("true".equals(config.get(id + ".exclusive")));
-    r.autoDelete("true".equals(config.get(id + ".autoDelete")));
+    r.durable("true".equals(config.get(url + ".durable")));
+    r.exclusive("true".equals(config.get(url + ".exclusive")));
+    r.autoDelete("true".equals(config.get(url + ".autoDelete")));
 
     return r;
   }

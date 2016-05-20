@@ -44,6 +44,7 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import io.baratine.config.Config;
+import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
@@ -63,6 +64,10 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
   private Connection _conn;
   private Channel _channel;
 
+  private String _consumerTag;
+
+  private RabbitPipeImpl _self;
+
   @Override
   public String id()
   {
@@ -72,6 +77,8 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
   @OnInit
   public void onInit(Result<Void> result)
   {
+    _self = ServiceRef.current().service(_id).as(RabbitPipeImpl.class);
+
     try {
       _config = RabbitConfig.from(_c, _id);
 
@@ -96,8 +103,6 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
     ConnectionFactory factory = new ConnectionFactory();
     factory.setUri(_config.uri());
 
-    RabbitPipeImpl self = ServiceRef.current().service(_id).as(RabbitPipeImpl.class);
-
     try {
       _conn = factory.newConnection();
       _channel = _conn.createChannel();
@@ -110,34 +115,7 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
         _channel.queueBind(responseQueue.getQueue(), _config.exchange(), _config.routingKey());
       }
 
-      _logger.log(Level.INFO, "connect: " + _id + ", queue=" + responseQueue.getQueue() + ", " + _config + " . " + self);
-
-      boolean isAutoAck = false;
-
-      _channel.basicConsume(_config.routingKey(), isAutoAck, new DefaultConsumer(_channel) {
-        @Override
-        public void handleDelivery(String consumerTag,
-                                   Envelope envelope,
-                                   AMQP.BasicProperties properties,
-                                   byte[] body)
-          throws IOException
-        {
-          RabbitMessage msg = RabbitMessage.newMessage().body(body)
-                                                        .properties(properties)
-                                                        .redeliver(envelope.isRedeliver());
-
-          long deliveryTag = envelope.getDeliveryTag();
-
-          self.onRabbitReceive(msg, (Void, e) -> {
-            if (e != null) {
-              _channel.basicReject(deliveryTag, false);
-            }
-            else {
-              _channel.basicAck(deliveryTag, false);
-            }
-          });
-        }
-      });
+      _logger.log(Level.INFO, "connect: " + _id + ", queue=" + responseQueue.getQueue() + ", " + _config + " . " + _self);
     }
     catch (Exception e) {
       closeChannel();
@@ -203,6 +181,46 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
   }
 
   @Override
+  protected void onInitReceive()
+  {
+    if (_consumerTag != null) {
+      return;
+    }
+
+    try {
+      boolean isAutoAck = false;
+
+      _consumerTag = _channel.basicConsume(_config.routingKey(), isAutoAck, new DefaultConsumer(_channel) {
+        @Override
+        public void handleDelivery(String consumerTag,
+                                   Envelope envelope,
+                                   AMQP.BasicProperties properties,
+                                   byte[] body)
+          throws IOException
+        {
+          RabbitMessage msg = RabbitMessage.newMessage().body(body)
+                                                        .properties(properties)
+                                                        .redeliver(envelope.isRedeliver());
+
+          long deliveryTag = envelope.getDeliveryTag();
+
+          _self.onRabbitReceive(msg, (Void, e) -> {
+            if (e != null) {
+              _channel.basicReject(deliveryTag, false);
+            }
+            else {
+              _channel.basicAck(deliveryTag, false);
+            }
+          });
+        }
+      });
+    }
+    catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   protected void onSend(RabbitMessage value)
   {
     if (_logger.isLoggable(Level.FINEST)) {
@@ -217,15 +235,27 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
                             value.properties(),
                             value.body());
     }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
     catch (Exception e) {
       _logger.log(Level.WARNING, "send error: " + _id + ", " + _config + ", error=" + e.getMessage(), e);
 
       reconnect();
 
       throw new RuntimeException(e);
+    }
+  }
+
+  @OnDestroy
+  public void onShutdown()
+  {
+    try {
+      if (_consumerTag != null) {
+        _channel.basicCancel(_consumerTag);
+      }
+
+      _channel.close();
+      _conn.close();
+    }
+    catch (Exception e) {
     }
   }
 }
