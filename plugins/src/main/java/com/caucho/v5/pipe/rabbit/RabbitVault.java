@@ -29,8 +29,6 @@
 
 package com.caucho.v5.pipe.rabbit;
 
-import io.baratine.service.Services;
-import io.baratine.vault.IdAsset;
 import io.baratine.vault.Vault;
 
 public class RabbitVault implements Vault<String,RabbitPipeImpl>

@@ -30,9 +30,10 @@
 package com.caucho.v5.pipe.rabbit;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 import com.caucho.v5.ramp.pipe.PipeAsset;
 import com.rabbitmq.client.AMQP;
@@ -42,6 +43,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
+import io.baratine.config.Config;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceRef;
@@ -53,13 +55,10 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
 
   private @Id String _id;
 
-  private URI _uri;
-  private String _exchange;
-  private String _routingKey;
+  @Inject
+  private Config _c;
 
-  private boolean _isDurable;
-  private boolean _isExclusive;
-  private boolean _isAutoDelete;
+  private RabbitConfig _config;
 
   private Connection _conn;
   private Channel _channel;
@@ -73,21 +72,11 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
   @OnInit
   public void onInit(Result<Void> result)
   {
-    String url = _id;
-
-    while (url.startsWith("/")) {
-      url = url.substring(1);
-    }
-
     try {
-      _uri = new URI(url);
-
-      parseOptions(_uri.getQuery());
+      _config = RabbitConfig.from(_c, _id);
 
       if (_logger.isLoggable(Level.FINE)) {
-        _logger.log(Level.FINE, "onInit: uri=" + toDebugString(_uri)
-                                               + ", exchange=" + _exchange
-                                               + ", routingKey=" + _routingKey);
+        _logger.log(Level.FINE, "onInit: " + _id + ", " + _config);
       }
 
       connect();
@@ -95,82 +84,37 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
       result.ok(null);
     }
     catch (Exception e) {
-      _logger.log(Level.WARNING, "onInit: cannot connect, uri=" + toDebugString(_uri), e);
+      _logger.log(Level.WARNING, "onInit: cannot connect, " + _id + ", " + _config, e);
 
       result.fail(e);
     }
-  }
-
-  private void parseOptions(String query)
-  {
-    String exchange = "";
-    String routingKey = "";
-
-    boolean isDurable = false;
-    boolean isExclusive = false;
-    boolean isAutoDelete = false;
-
-    if (query != null) {
-      String[] tokens = query.split("&");
-
-      for (String token : tokens) {
-        String name;
-        String value;
-
-        int i = token.indexOf("=");
-
-        if (i >= 0) {
-          name = token.substring(0, i);
-          value = token.substring(i + 1);
-        }
-        else {
-          name = token;
-          value = "";
-        }
-
-        if (RabbitPipe.CONFIG_EXCHANGE.equals(name)) {
-          exchange = value;
-        }
-        else if (RabbitPipe.CONFIG_ROUTING_KEY.equals(name)) {
-          routingKey = value;
-        }
-        else if (RabbitPipe.CONFIG_DURABLE.equals(name)) {
-          isDurable = "true".equals(value);
-        }
-        else if (RabbitPipe.CONFIG_EXCLUSIVE.equals(name)) {
-          isExclusive = "true".equals(value);
-        }
-        else if (RabbitPipe.CONFIG_AUTO_DELETE.equals(name)) {
-          isAutoDelete = "true".equals(value);
-        }
-      }
-    }
-
-    _exchange = exchange;
-    _routingKey = routingKey;
-
-    _isDurable = isDurable;
-    _isExclusive = isExclusive;
-    _isAutoDelete = isAutoDelete;
   }
 
   private void connect()
     throws Exception
   {
     ConnectionFactory factory = new ConnectionFactory();
-    factory.setUri(_uri);
+    factory.setUri(_config.uri());
 
-    RabbitPipeImpl self = ServiceRef.current().pin(this).as(RabbitPipeImpl.class);
+    RabbitPipeImpl self = ServiceRef.current().service(_id).as(RabbitPipeImpl.class);
 
     try {
       _conn = factory.newConnection();
       _channel = _conn.createChannel();
 
-      _channel.queueDeclare(_routingKey, _isDurable, _isExclusive, _isAutoDelete, null);
+      AMQP.Queue.DeclareOk responseQueue = _channel.queueDeclare(_config.queue(), _config.durable(), _config.exclusive(), _config.autoDelete(), null);
+
+      if (! "".equals(_config.exchange())) {
+        AMQP.Exchange.DeclareOk responseExchange = _channel.exchangeDeclare(_config.exchange(), _config.exchangeType(), _config.durable(), _config.autoDelete(), false, null);
+
+        _channel.queueBind(responseQueue.getQueue(), _config.exchange(), _config.routingKey());
+      }
+
+      _logger.log(Level.INFO, "connect: " + _id + ", queue=" + responseQueue.getQueue() + ", " + _config + " . " + self);
 
       boolean isAutoAck = false;
 
-      _channel.basicConsume(_routingKey, isAutoAck, new DefaultConsumer(_channel) {
+      _channel.basicConsume(_config.routingKey(), isAutoAck, new DefaultConsumer(_channel) {
         @Override
         public void handleDelivery(String consumerTag,
                                    Envelope envelope,
@@ -205,6 +149,8 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
 
   private void reconnect()
   {
+    _logger.log(Level.INFO, "reconnect: " + _id);
+
     try {
       closeChannel();
       closeConnection();
@@ -212,14 +158,12 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
       connect();
     }
     catch (Exception e) {
-      _logger.log(Level.WARNING, "error reconnecting: uri=" + toDebugString(_uri) + ", error=" + e.getMessage(), e);
+      _logger.log(Level.WARNING, "error reconnecting: " + _config + ", error=" + e.getMessage(), e);
     }
   }
 
   public void onRabbitReceive(RabbitMessage msg, Result<Void> result)
   {
-    System.err.println("RabbitPipeImpl.onRabbitReceive0: " + msg);
-
     sendDriver(msg);
 
     result.ok(null);
@@ -261,51 +205,27 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
   @Override
   protected void onSend(RabbitMessage value)
   {
-    System.err.println("RabbitPipeImpl.onSend0: " + value + " . " + _logger.getLevel() + " . " + _logger.isLoggable(Level.FINEST));
-
     if (_logger.isLoggable(Level.FINEST)) {
-      _logger.log(Level.FINEST, "send: uri=" + toDebugString(_uri) + ", msg=" + value);
+      _logger.log(Level.FINEST, "send: " + _id + ", " + _config + ", msg=" + value);
     }
 
-    System.err.println("RabbitPipeImpl.onSend1");
-
     try {
-      _channel.basicPublish(_exchange,
-                            _routingKey,
+      _channel.basicPublish(_config.exchange(),
+                            _config.routingKey(),
                             value.mandatory(),
                             value.immediate(),
                             value.properties(),
                             value.body());
-
-      System.err.println("RabbitPipeImpl.onSend2");
     }
     catch (IOException e) {
-      System.err.println("RabbitPipeImpl.onSend3");
-
       e.printStackTrace();
     }
     catch (Exception e) {
-      System.err.println("RabbitPipeImpl.onSend4");
-      e.printStackTrace();
-
-      _logger.log(Level.WARNING, "send error: uri=" + toDebugString(_uri) + ", error=" + e.getMessage(), e);
+      _logger.log(Level.WARNING, "send error: " + _id + ", " + _config + ", error=" + e.getMessage(), e);
 
       reconnect();
 
       throw new RuntimeException(e);
     }
-  }
-
-  private static String toDebugString(URI uri)
-  {
-    String str = uri.toString();
-
-    String authority = uri.getAuthority();
-
-    if (authority != null) {
-      str = str.replace("authority", "XXX");
-    }
-
-    return str;
   }
 }
