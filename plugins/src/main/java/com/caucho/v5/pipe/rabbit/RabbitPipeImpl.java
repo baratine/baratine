@@ -183,8 +183,6 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
   @Override
   protected void onInitReceive()
   {
-    System.err.println("RabbitPipeImpl.onInitReceive0: " + _consumerTag);
-
     if (_consumerTag != null) {
       return;
     }
@@ -225,8 +223,6 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
   @Override
   protected void onSend(RabbitMessage value)
   {
-    System.err.println("RabbitPipeImpl.onSend0: " + value + " . " + _config);
-
     if (_logger.isLoggable(Level.FINEST)) {
       _logger.log(Level.FINEST, "send: " + _id + ", " + _config + ", msg=" + value);
     }
