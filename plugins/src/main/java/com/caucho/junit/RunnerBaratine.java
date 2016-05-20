@@ -165,6 +165,8 @@ public class RunnerBaratine extends BaseRunner
 
     Amp.contextManager(serviceManager);
 
+    injectBuilder.bean(serviceManager).to(Services.class);
+
     injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
 
     injectBuilder.get();
@@ -270,51 +272,6 @@ public class RunnerBaratine extends BaseRunner
   private ServiceRef matchDefaultService(InjectionTestPoint ip)
   {
     return _manager.service(ip.address());
-  }
-
-  private ServiceRef matchServiceByApi(Map<ServiceTestDescriptor,ServiceRef> map,
-                                       Class type)
-  {
-    for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : map.entrySet()) {
-      ServiceTestDescriptor descriptor = entry.getKey();
-      Class api = descriptor.getApi();
-
-      if (api != null && type.isAssignableFrom(descriptor.getApi())) {
-        return entry.getValue();
-      }
-    }
-
-    return null;
-  }
-
-  private ServiceRef matchServiceByAddress(Map<ServiceTestDescriptor,ServiceRef> map,
-                                           Service binding)
-  {
-    if (!binding.value().isEmpty()) {
-      for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : map.entrySet()) {
-        ServiceTestDescriptor descriptor = entry.getKey();
-
-        if (descriptor.getAddress().equals(binding.value())) {
-          return entry.getValue();
-        }
-      }
-    }
-
-    return null;
-  }
-
-  private ServiceRef matchServiceByImpl(Map<ServiceTestDescriptor,ServiceRef> map,
-                                        Class type)
-  {
-    for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : map.entrySet()) {
-      ServiceTestDescriptor descriptor = entry.getKey();
-
-      if (descriptor.getServiceClass().equals(type)) {
-        return entry.getValue();
-      }
-    }
-
-    return null;
   }
 
   private Object findInject(InjectionTestPoint ip)
@@ -646,22 +603,6 @@ public class RunnerBaratine extends BaseRunner
       }
 
       thread.setContextClassLoader(oldLoader);
-    }
-  }
-
-  private static class ServiceLiteral extends AnnotationLiteral<Service>
-    implements Service
-  {
-    private final static ServiceLiteral LITERAL = new ServiceLiteral();
-
-    private ServiceLiteral()
-    {
-    }
-
-    @Override
-    public String value()
-    {
-      return "";
     }
   }
 }
