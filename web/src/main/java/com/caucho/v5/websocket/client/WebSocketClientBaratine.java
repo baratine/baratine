@@ -53,7 +53,6 @@ import com.caucho.v5.websocket.WebSocketClient;
 import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 import com.caucho.v5.websocket.io.WebSocketProtocolException;
-
 import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.ServiceWebSocket;
@@ -75,6 +74,8 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   private String _host;
   private int _port;
   private String _path;
+
+  private Map<String,List<String>> _headersOut = new HashMap<>();
 
   private long _connectTimeout;
 
@@ -110,6 +111,13 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   public WebSocketClientBaratine(String address,
                                  ServiceWebSocket<T,S> service)
   {
+    this(address, new HashMap<>(), service);
+  }
+
+  public WebSocketClientBaratine(String address,
+                                 Map<String,List<String>> headers,
+                                 ServiceWebSocket<T,S> service)
+  {
     super(new WebSocketManager());
     
     //Objects.requireNonNull(container);
@@ -118,6 +126,8 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     //_container = container;
     //_endpoint = endpoint;
     //_config = config;
+    
+    _headersOut = headers;
     
     try {
       _uri = new URI(address);
@@ -379,8 +389,8 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
 
       os.print("Sec-WebSocket-Protocol: " + sb + "\r\n");
     }
-    
-    HashMap<String,List<String>> headers = new HashMap<>();
+
+    Map<String,List<String>> headers = _headersOut;//new HashMap<>();
 
     //_configurator.beforeRequest(headers);
     

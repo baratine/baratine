@@ -30,10 +30,11 @@
 package com.caucho.v5.websocket;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.caucho.v5.websocket.client.WebSocketClientBaratine;
-
 import io.baratine.web.ServiceWebSocket;
 
 /**
@@ -52,7 +53,23 @@ public interface WebSocketClient
     
     return ws;
   }
-    
+
+  static <T,S> WebSocketClient open(String address,
+                                    Map<String,List<String>> headers,
+                                    ServiceWebSocket<T,S> service)
+    throws IOException
+  {
+    Objects.requireNonNull(service);
+
+    WebSocketClientBaratine ws = new WebSocketClientBaratine(address,
+                                                             headers,
+                                                             service);
+    ws.connect();
+
+    return ws;
+  }
+
+
   void write(String text)
     throws IOException;
   

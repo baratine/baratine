@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,6 @@ import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
 import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.inject.BaratineProducer;
-import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.loader.EnvironmentClassLoader;
@@ -281,6 +281,9 @@ public class RunnerBaratine extends BaseRunner
     if (Services.class.equals(ip.getType())) {
       inject = _manager;
     }
+    else if (RunnerBaratine.class.equals(ip.getType())) {
+      inject = this;
+    }
 
     if (inject == null)
       throw new IllegalStateException(L.l("unable to bind {0}",
@@ -503,6 +506,9 @@ public class RunnerBaratine extends BaseRunner
     {
       Service service = getService();
 
+      if (service == null)
+        return null;
+
       String address = service.value();
 
       if (address == null) {
@@ -533,6 +539,16 @@ public class RunnerBaratine extends BaseRunner
       }
 
       return result;
+    }
+
+    @Override
+    public String toString()
+    {
+      return this.getClass().getSimpleName() + "["
+             + _type
+             + ", "
+             + Arrays.toString(_annotations)
+             + ']';
     }
   }
 

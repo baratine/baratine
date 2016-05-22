@@ -418,7 +418,7 @@ public class HttpClient implements AutoCloseable
      *
      * @param bean bean to json-encode for submission
      */
-    public void body(Object bean)
+    public Request body(Object bean)
     {
       Objects.requireNonNull(bean);
 
@@ -435,6 +435,8 @@ public class HttpClient implements AutoCloseable
       _body = buffer.toByteArray();
 
       _type = "application/json";
+
+      return this;
     }
 
     /**
