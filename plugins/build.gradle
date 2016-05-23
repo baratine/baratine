@@ -19,6 +19,10 @@ dependencies {
   // pipes
   compile 'com.rabbitmq:amqp-client:3.6.1'
 
+  // json
+  compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
+  
   // gradle/maven
   compile 'org.gradle:gradle-core:2.5'
   compile 'org.gradle:gradle-base-services:2.5'
