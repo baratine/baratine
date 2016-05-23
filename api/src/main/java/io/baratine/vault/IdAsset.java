@@ -34,6 +34,31 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 
+/**
+ * Class {@code IdAsset} represents an asset id. IdAsset value
+ * is auto-generated with the following pattern:
+ * <p>
+ * 34 bits of time, seconds since the epoch
+ * 4-10 bits to identify the node in multi-server configurations
+ * 20-26 bits for a per-node sequence
+ * <p>
+ * IdAsset is meant be used as a primary key for an asset.
+ * e.g.
+ * <code>
+ * <pre>
+ * @Asset
+ * public class Book {
+ *   @Id
+ *   private IdAsset id;
+ *   private String title;
+ *   private String author;
+ *   ...
+ * }
+ * </pre>
+ * </code>
+ *
+ * @see Asset
+ */
 @SuppressWarnings("serial")
 public final class IdAsset implements Serializable
 {
