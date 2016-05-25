@@ -90,7 +90,8 @@ public class StubAmpBean extends StubAmpBase
       container = new StubContainerJournal(this, name, config);
     }
     else if (_stubClass.isImplemented(OnLookup.class)
-             || _stubClass.isImplemented(OnSave.class)) {
+             || _stubClass.isImplemented(OnSave.class)
+             || _stubClass.isEnsure()) {
       container = new StubContainerBase(this, name);
     }
     /*
