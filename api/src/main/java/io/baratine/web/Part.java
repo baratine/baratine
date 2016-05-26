@@ -29,6 +29,7 @@
 
 package io.baratine.web;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
@@ -44,7 +45,9 @@ public interface Part
 
   String name();
 
+  String getFileName();
+
   long size();
 
-  InputStream data();
+  InputStream data() throws IOException;
 }
