@@ -34,6 +34,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -52,6 +53,8 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
     = Logger.getLogger(BaseRunner.class.getName());
 
   private final L10N L = new L10N(BaseRunner.class);
+
+  private Map<Class<?>,Class<?>> _replacements = new HashMap<>();
 
   public BaseRunner(Class<?> klass) throws InitializationError
   {
@@ -98,7 +101,7 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
     return new BaratineTestClass(testClass);
   }
 
-  abstract protected Object resolve(Class type, Annotation[] annotations);
+  abstract protected <T> T resolve(Class<T> type, Annotation[] annotations);
 
   protected long getStartTime()
   {
@@ -128,6 +131,29 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
         expr));
 
     return System.getProperty(expr.substring(1, expr.length() - 1));
+  }
+
+  public void replaceService(Class<?> target, Class<?> replacement)
+  {
+    _replacements.put(target, replacement);
+  }
+
+  public Class<?> resove(Class<?> target)
+  {
+    Class<?> result = _replacements.get(target);
+
+    if (result == null)
+      result = target;
+
+    return result;
+  }
+
+  public void stop()
+  {
+  }
+
+  public void start()
+  {
   }
 
   class BaratineTestClass extends TestClass

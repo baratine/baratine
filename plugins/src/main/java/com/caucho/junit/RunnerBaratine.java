@@ -45,6 +45,8 @@ import javax.inject.Inject;
 
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.ensure.EnsureDriverImpl;
+import com.caucho.v5.amp.journal.JournalDriverImpl;
 import com.caucho.v5.amp.manager.InjectAutoBindService;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -86,8 +88,8 @@ public class RunnerBaratine extends BaseRunner
 
   private static final L10N L = new L10N(RunnerBaratine.class);
 
-  private Map<ServiceTestDescriptor,ServiceRef> _descriptors;
-  private Services _manager;
+  private BaratineContainer _baratine;
+  private Object _test;
 
   public RunnerBaratine(Class<?> cl) throws InitializationError
   {
@@ -99,15 +101,297 @@ public class RunnerBaratine extends BaseRunner
   {
     Object test = super.createTest();
 
-    initialize(test);
+    _test = test;
+
+    _baratine.initialize(test);
 
     return test;
   }
 
   @Override
-  protected Object resolve(Class type, Annotation[] annotations)
+  protected <T> T resolve(Class<T> type, Annotation[] annotations)
   {
-    return findService(new InjectionTestPoint(type, annotations));
+    return (T) _baratine.findService(new InjectionTestPoint(type, annotations));
+  }
+
+  @Override
+  public void stop()
+  {
+    _baratine.stop();
+  }
+
+  @Override
+  public void start()
+  {
+    _baratine = new BaratineContainer();
+
+    try {
+      _baratine.initialize(_test);
+      _baratine.start(true);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  class BaratineContainer
+  {
+    private Map<ServiceTestDescriptor,ServiceRef> _descriptors;
+    private Services _services;
+    private SystemManager _manager;
+    private RootDirectorySystem _rootDir;
+    private EnvironmentClassLoader _envLoader;
+    private ClassLoader _oldLoader;
+
+    public void start()
+    {
+      try {
+        initialize(_test);
+
+        start(true);
+      } catch (RuntimeException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    private void start(boolean isRestart) throws Exception
+    {
+      Thread thread = Thread.currentThread();
+
+      _oldLoader = thread.getContextClassLoader();
+
+      _envLoader = EnvironmentClassLoader.create(_oldLoader, "test-loader");
+
+      String baratineRoot = getWorkDir();
+      System.setProperty("baratine.root", baratineRoot);
+
+      thread.setContextClassLoader(_envLoader);
+
+      long startTime = getStartTime();
+
+      if (startTime != -1) {
+        TestTime.setTime(startTime);
+
+        RandomUtil.setTestSeed(startTime);
+      }
+
+      Logger.getLogger("").setLevel(Level.FINER);
+      Logger.getLogger("com.caucho").setLevel(Level.FINER);
+      Logger.getLogger("javax.management").setLevel(Level.FINER);
+
+      try {
+        if (!isRestart)
+          VfsOld.lookup(baratineRoot).removeAll();
+      } catch (Exception e) {
+      }
+
+      _manager = new SystemManager("junit-test", _envLoader);
+
+      _rootDir = RootDirectorySystem.createAndAddSystem(Vfs.path(baratineRoot));
+
+      _rootDir.start();
+    }
+
+    public void stop()
+    {
+      Logger.getLogger("").setLevel(Level.INFO);
+
+      try {
+        _rootDir.stop(ShutdownModeAmp.GRACEFUL);
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
+
+      try {
+        _envLoader.close();
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
+
+      try {
+        _manager.close();
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
+
+      Thread.currentThread().setContextClassLoader(_oldLoader);
+    }
+
+    void initialize(Object test) throws IllegalAccessException
+    {
+      TestClass testClass = getTestClass();
+
+      InjectorAmp.create();
+
+      ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
+      InjectorAmp.InjectBuilderAmp injectBuilder = InjectorAmp.manager(cl);
+
+      injectBuilder.context(true);
+
+      injectBuilder.include(BaratineProducer.class);
+
+      Config.ConfigBuilder configBuilder = Configs.config();
+
+      injectBuilder.bean(configBuilder.get()).to(Config.class);
+
+      ServiceManagerBuilderAmp serviceBuilder = ServicesAmp.newManager();
+      serviceBuilder.name("junit-test");
+      serviceBuilder.autoServices(true);
+      serviceBuilder.injector(injectBuilder);
+
+      StubGeneratorVault gen = new StubGeneratorVaultDriver();
+
+      gen.driver(new VaultResourceDriver());
+
+      serviceBuilder.stubGenerator(gen);
+
+      serviceBuilder.journalDriver(new JournalDriverImpl());
+      serviceBuilder.ensureDriver(new EnsureDriverImpl());
+
+      serviceBuilder.contextManager(true);
+
+      ServicesAmp serviceManager = serviceBuilder.get();
+
+      Amp.contextManager(serviceManager);
+
+      injectBuilder.bean(serviceManager).to(Services.class);
+
+      injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
+
+      injectBuilder.get();
+
+      serviceBuilder.start();
+
+      Map<ServiceTestDescriptor,ServiceRef> descriptors
+        = deployServices(serviceManager);
+
+      _descriptors = descriptors;
+      _services = serviceManager;
+
+      bindFields(test, testClass);
+    }
+
+    private void bindFields(Object test,
+                            TestClass testClass)
+      throws IllegalAccessException
+    {
+      List<FrameworkField> fields = testClass.getAnnotatedFields();
+
+      for (FrameworkField field : fields) {
+        Object inject = null;
+
+        Field javaField = field.getField();
+
+        InjectionTestPoint ip
+          = new InjectionTestPoint(javaField.getType(),
+                                   javaField.getAnnotations());
+
+        if (ip.getService() != null)
+          inject = findService(ip);
+        else if (ip.getInject() != null)
+          inject = findInject(ip);
+        else
+          continue;
+
+        javaField.setAccessible(true);
+
+        javaField.set(test, inject);
+      }
+    }
+
+    private Map<ServiceTestDescriptor,ServiceRef> deployServices(Services manager)
+    {
+      Map<ServiceTestDescriptor,ServiceRef> descriptors = new HashMap<>();
+
+      for (ServiceTest service : getServices()) {
+        Class serviceClass = service.value();
+        serviceClass = resove(serviceClass);
+
+        ServiceTestDescriptor descriptor
+          = ServiceTestDescriptor.of(serviceClass);
+
+        ServiceRef ref = manager.newService(serviceClass).addressAuto().ref();
+
+        descriptors.put(descriptor, ref);
+      }
+
+      for (Map.Entry<ServiceTestDescriptor,ServiceRef> e : descriptors.entrySet()) {
+        ServiceTestDescriptor desc = e.getKey();
+
+        if (desc.isStart()) {
+          e.getValue().start();
+        }
+      }
+
+      return descriptors;
+    }
+
+    public <T> T findService(Class<T> type, Service service)
+    {
+      return (T) findService(new InjectionTestPoint(type,
+                                                    new Annotation[]{service}));
+    }
+
+    private Object findService(InjectionTestPoint ip)
+    {
+      if (Services.class.equals(ip.getType()))
+        return _services;
+
+      Map.Entry<ServiceTestDescriptor,ServiceRef> match = null;
+
+      for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : _descriptors.entrySet()) {
+        if (ip.isMatch(entry.getKey())) {
+          match = entry;
+
+          break;
+        }
+      }
+
+      ServiceRef service = null;
+      if (match != null) {
+        service = match.getValue();
+      }
+
+      if (service == null)
+        service = matchDefaultService(ip);
+
+      if (service == null)
+        throw new IllegalStateException(L.l(
+          "unable to bind {0}, make sure corresponding service is deployed.",
+          ip));
+
+      if (ServiceRef.class == ip.getType())
+        return service;
+      else
+        return service.as(ip.getType());
+    }
+
+    private ServiceRef matchDefaultService(InjectionTestPoint ip)
+    {
+      return _services.service(ip.address());
+    }
+
+    private Object findInject(InjectionTestPoint ip)
+    {
+      Object inject = null;
+
+      if (Services.class.equals(ip.getType())) {
+        inject = _services;
+      }
+      else if (RunnerBaratine.class.equals(ip.getType())) {
+        inject = RunnerBaratine.this;
+      }
+
+      if (inject == null)
+        throw new IllegalStateException(L.l("unable to bind {0}",
+                                            ip));
+
+      return inject;
+    }
   }
 
   private class VaultResourceDriver
@@ -128,168 +412,6 @@ public class RunnerBaratine extends BaseRunner
         return null;
       }
     }
-  }
-
-  private void initialize(Object test) throws IllegalAccessException
-  {
-    TestClass testClass = getTestClass();
-
-    InjectorAmp.create();
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-    InjectorAmp.InjectBuilderAmp injectBuilder = InjectorAmp.manager(cl);
-
-    injectBuilder.context(true);
-
-    injectBuilder.include(BaratineProducer.class);
-
-    Config.ConfigBuilder configBuilder = Configs.config();
-
-    injectBuilder.bean(configBuilder.get()).to(Config.class);
-
-    ServiceManagerBuilderAmp serviceBuilder = ServicesAmp.newManager();
-    serviceBuilder.name("junit-test");
-    serviceBuilder.autoServices(true);
-    serviceBuilder.injector(injectBuilder);
-
-    StubGeneratorVault gen = new StubGeneratorVaultDriver();
-
-    gen.driver(new VaultResourceDriver());
-
-    serviceBuilder.stubGenerator(gen);
-
-    serviceBuilder.contextManager(true);
-
-    ServicesAmp serviceManager = serviceBuilder.get();
-
-    Amp.contextManager(serviceManager);
-
-    injectBuilder.bean(serviceManager).to(Services.class);
-
-    injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
-
-    injectBuilder.get();
-
-    serviceBuilder.start();
-
-    Map<ServiceTestDescriptor,ServiceRef> descriptors
-      = deployServices(serviceManager);
-
-    _descriptors = descriptors;
-    _manager = serviceManager;
-
-    bindFields(test, testClass);
-  }
-
-  private void bindFields(Object test,
-                          TestClass testClass)
-    throws IllegalAccessException
-  {
-    List<FrameworkField> fields = testClass.getAnnotatedFields();
-
-    for (FrameworkField field : fields) {
-      Object inject = null;
-
-      Field javaField = field.getField();
-
-      InjectionTestPoint ip
-        = new InjectionTestPoint(javaField.getType(),
-                                 javaField.getAnnotations());
-
-      if (ip.getService() != null)
-        inject = findService(ip);
-      else if (ip.getInject() != null)
-        inject = findInject(ip);
-      else
-        continue;
-
-      javaField.setAccessible(true);
-
-      javaField.set(test, inject);
-    }
-  }
-
-  private Map<ServiceTestDescriptor,ServiceRef> deployServices(Services manager)
-  {
-    Map<ServiceTestDescriptor,ServiceRef> descriptors = new HashMap<>();
-
-    for (ServiceTest service : getServices()) {
-      Class serviceClass = service.value();
-
-      ServiceTestDescriptor descriptor = ServiceTestDescriptor.of(serviceClass);
-
-      ServiceRef ref = manager.newService(serviceClass).addressAuto().ref();
-
-      descriptors.put(descriptor, ref);
-    }
-
-    for (Map.Entry<ServiceTestDescriptor,ServiceRef> e : descriptors.entrySet()) {
-      ServiceTestDescriptor desc = e.getKey();
-
-      if (desc.isStart()) {
-        e.getValue().start();
-      }
-    }
-
-    return descriptors;
-  }
-
-  public Object findService(InjectionTestPoint ip)
-  {
-    if (Services.class.equals(ip.getType()))
-      return _manager;
-
-    Map.Entry<ServiceTestDescriptor,ServiceRef> match = null;
-
-    for (Map.Entry<ServiceTestDescriptor,ServiceRef> entry : _descriptors.entrySet()) {
-      if (ip.isMatch(entry.getKey())) {
-        match = entry;
-
-        break;
-      }
-    }
-
-    ServiceRef service = null;
-    if (match != null) {
-      service = match.getValue();
-    }
-
-    if (service == null)
-      service = matchDefaultService(ip);
-
-    if (service == null)
-      throw new IllegalStateException(L.l(
-        "unable to bind {0}, make sure corresponding service is deployed.",
-        ip));
-
-    if (ServiceRef.class == ip.getType())
-      return service;
-    else
-      return service.as(ip.getType());
-  }
-
-  private ServiceRef matchDefaultService(InjectionTestPoint ip)
-  {
-    return _manager.service(ip.address());
-  }
-
-  private Object findInject(InjectionTestPoint ip)
-  {
-    Object inject = null;
-
-    if (Services.class.equals(ip.getType())) {
-      inject = _manager;
-    }
-    else if (RunnerBaratine.class.equals(ip.getType())) {
-      inject = this;
-    }
-
-    if (inject == null)
-      throw new IllegalStateException(L.l("unable to bind {0}",
-                                          ip));
-
-    return inject;
   }
 
   static class ServiceTestDescriptor
@@ -552,73 +674,26 @@ public class RunnerBaratine extends BaseRunner
     }
   }
 
+  public <T> T findService(Class<T> type, Service service)
+  {
+    return _baratine.findService(type, service);
+  }
+
   @Override
   protected void runChild(FrameworkMethod method, RunNotifier notifier)
   {
-    Thread thread = Thread.currentThread();
-
-    ClassLoader oldLoader = thread.getContextClassLoader();
-
-    EnvironmentClassLoader envLoader
-      = EnvironmentClassLoader.create(oldLoader, "test-loader");
-
-    String baratineRoot = getWorkDir();
-    System.setProperty("baratine.root", baratineRoot);
-
-    RootDirectorySystem rootDir = null;
-
-    SystemManager manager = null;
-
     try {
-      thread.setContextClassLoader(envLoader);
+      _baratine = new BaratineContainer();
 
-      long startTime = getStartTime();
-
-      if (startTime != -1) {
-        TestTime.setTime(startTime);
-
-        RandomUtil.setTestSeed(startTime);
-      }
-
-      Logger.getLogger("").setLevel(Level.INFO);
-      Logger.getLogger("javax.management").setLevel(Level.INFO);
-
-      try {
-        VfsOld.lookup(baratineRoot).removeAll();
-      } catch (Exception e) {
-      }
-
-      manager = new SystemManager("junit-test", envLoader);
-
-      rootDir = RootDirectorySystem.createAndAddSystem(Vfs.path(baratineRoot));
-
-      rootDir.start();
+      _baratine.start(false);
 
       super.runChild(method, notifier);
+    } catch (RuntimeException e) {
+      throw e;
     } catch (Throwable t) {
-      t.printStackTrace();
+      throw new RuntimeException(t);
     } finally {
-      Logger.getLogger("").setLevel(Level.INFO);
-
-      try {
-        rootDir.stop(ShutdownModeAmp.GRACEFUL);
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }
-
-      try {
-        envLoader.close();
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }
-
-      try {
-        manager.close();
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }
-
-      thread.setContextClassLoader(oldLoader);
+      _baratine.stop();
     }
   }
 }

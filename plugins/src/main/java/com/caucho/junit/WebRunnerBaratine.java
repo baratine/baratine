@@ -30,7 +30,6 @@
 package com.caucho.junit;
 
 import static io.baratine.web.Web.port;
-import static io.baratine.web.Web.start;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -201,10 +200,10 @@ public class WebRunnerBaratine extends BaseRunner
       for (ServiceTest serviceTest : getServices()) {
         Web.include(serviceTest.value());
       }
-      
+
       networkSetup();
-      
-      _web = start();
+
+      _web = Web.start();
 
       super.runChild(child, notifier);
 
