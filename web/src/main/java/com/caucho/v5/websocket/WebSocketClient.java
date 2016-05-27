@@ -30,6 +30,8 @@
 package com.caucho.v5.websocket;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,39 +44,77 @@ import io.baratine.web.ServiceWebSocket;
  */
 public interface WebSocketClient
 {
-  static <T,S> WebSocketClient open(String address, 
-                                  ServiceWebSocket<T,S> service)
+  public final static String COOKIE = "Cookie";
+
+  static <T, S> WebSocketClient open(String address,
+                                     ServiceWebSocket<T,S> service)
     throws IOException
   {
     Objects.requireNonNull(service);
-    
+
     WebSocketClientBaratine ws = new WebSocketClientBaratine(address, service);
     ws.connect();
-    
+
     return ws;
   }
 
-  static <T,S> WebSocketClient open(String address,
-                                    Map<String,List<String>> headers,
-                                    ServiceWebSocket<T,S> service)
-    throws IOException
+  static Builder newClient(String address)
   {
-    Objects.requireNonNull(service);
+    Objects.requireNonNull(address);
 
-    WebSocketClientBaratine ws = new WebSocketClientBaratine(address,
-                                                             headers,
-                                                             service);
-    ws.connect();
-
-    return ws;
+    return new Builder(address);
   }
 
+  class Builder<T, S>
+  {
+    private String _address;
+    private Map<String,List<String>> _headers = new HashMap<>();
+    private ServiceWebSocket<T,S> _service;
+
+    public Builder(String address)
+    {
+      _address = address;
+    }
+
+    public Builder cookie(String name, String value)
+    {
+      List<String> cookies = _headers.get(COOKIE);
+
+      if (cookies == null) {
+        cookies = new ArrayList<>();
+        _headers.put(COOKIE, cookies);
+      }
+
+      cookies.add(name + '=' + value);
+
+      return this;
+    }
+
+    public Builder service(ServiceWebSocket<T,S> service)
+    {
+      _service = service;
+
+      return this;
+    }
+
+    public WebSocketClient build() throws IOException
+    {
+      Objects.requireNonNull(_service);
+
+      WebSocketClientBaratine ws = new WebSocketClientBaratine(_address,
+                                                               _headers,
+                                                               _service);
+      ws.connect();
+
+      return ws;
+    }
+  }
 
   void write(String text)
     throws IOException;
-  
-  void write(byte []buffer, int offset, int length)
-      throws IOException;
-  
+
+  void write(byte[] buffer, int offset, int length)
+    throws IOException;
+
   void close();
 }
