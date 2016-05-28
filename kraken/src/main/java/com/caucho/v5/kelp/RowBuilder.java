@@ -40,13 +40,17 @@ import com.caucho.v5.util.L10N;
 public class RowBuilder {
   private static final L10N L = new L10N(RowBuilder.class);
   
+  private final String _tableName;
+  
   private final ArrayList<Column> _columns = new ArrayList<>();
   private int _keyStart;
   private int _keyLength;
   private int _offset;
-  
-  public RowBuilder()
+
+  public RowBuilder(String tableName)
   {
+    _tableName = tableName;
+    
     ColumnState stateColumn = new ColumnState(0, "_row_state", 0);
     
     _offset += stateColumn.length();
@@ -214,7 +218,7 @@ public class RowBuilder {
       }
     }
     
-    return new Row(db, columns, blobs, _keyStart, _keyLength);
+    return new Row(db, _tableName, columns, blobs, _keyStart, _keyLength);
   }
   
   private int countBlobs()

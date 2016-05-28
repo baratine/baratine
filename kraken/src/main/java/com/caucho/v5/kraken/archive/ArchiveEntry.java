@@ -27,41 +27,18 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kelp;
+package com.caucho.v5.kraken.archive;
 
-import com.caucho.v5.util.BitsUtil;
+import java.io.IOException;
+import java.io.InputStream;
+
+import com.caucho.v5.io.StreamSource;
+import com.caucho.v5.kelp.DatabaseKelp;
+import com.caucho.v5.kelp.RowCursor;
 
 /**
- * A column for the log store.
+ * The local file backing for the store
  */
-public class ColumnDouble extends Column
+public class ArchiveEntry
 {
-  public ColumnDouble(int index,
-                         String name,
-                         int offset)
-  {
-    super(index, name, ColumnType.DOUBLE, offset);
-  }
-
-  @Override
-  public final int length()
-  {
-    return 8;
-  }
-  
-  @Override
-  public double getDouble(byte []rowBuffer, int rowOffset)
-  {
-    long longValue = BitsUtil.readLong(rowBuffer, rowOffset + offset());
-    
-    return Double.longBitsToDouble(longValue);
-  }
-  
-  @Override
-  public void setDouble(byte []rowBuffer, int rowOffset, double value)
-  {
-    long longValue = Double.doubleToLongBits(value);
-    
-    BitsUtil.writeLong(rowBuffer, rowOffset + offset(), longValue);
-  }
 }

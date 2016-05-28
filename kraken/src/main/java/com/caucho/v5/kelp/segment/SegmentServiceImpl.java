@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
@@ -68,6 +67,8 @@ import io.baratine.service.Result;
  *   i32 - nonce
  *   i32 - segment-size+
  *   i32 - 0
+ *   i32 - header count
+ *     {i32,i32} - headers
  *   i32 - crc32
  *   entry*
  *   
@@ -124,9 +125,9 @@ public class SegmentServiceImpl
   private int _segmentId;
   private long _addressTail;
   
-  private final AtomicLong _segmentAlloc = new AtomicLong();
-  private final AtomicLong _freeAlloc = new AtomicLong();
-  private final AtomicLong _freeFree = new AtomicLong();
+  // private final AtomicLong _segmentAlloc = new AtomicLong();
+  // private final AtomicLong _freeAlloc = new AtomicLong();
+  // private final AtomicLong _freeFree = new AtomicLong();
   
   private ConcurrentArrayList<SegmentGap> _gapList
     = new ConcurrentArrayList<>(SegmentGap.class);
@@ -134,7 +135,7 @@ public class SegmentServiceImpl
   private long _metaAddress;
   private long _metaOffset;
   private long _metaTail;
-  private long _storeChunkSize;
+  // private long _storeChunkSize;
   private ServicesAmp _ampManager;
   private CompressorKelp _compressor;
 
@@ -269,11 +270,11 @@ public class SegmentServiceImpl
   {
     StoreBuilder storeBuilder = new StoreBuilder(_path);
     storeBuilder.mmap(true);
-    storeBuilder.ampManager(manager);
+    storeBuilder.services(manager);
     
     StoreReadWrite store = storeBuilder.build();
     
-    _storeChunkSize = store.getChunkSize();
+    //_storeChunkSize = store.chunkSize();
     
     return store;
   }
@@ -324,7 +325,7 @@ public class SegmentServiceImpl
     long addressTail = 0;
     
     for (SegmentExtent extent : extents) {
-      long address = extent.getAddress();
+      long address = extent.address();
       
       if (addressTail < address) {
         int length = (int) (address - addressTail);
@@ -342,7 +343,7 @@ public class SegmentServiceImpl
   private void createMetaSegment(SegmentMeta []segmentMetaList)
     throws IOException
   {
-    int metaSegmentSize = segmentMetaList[0].getSize(); 
+    int metaSegmentSize = segmentMetaList[0].size(); 
         
     try (OutStore sOut = _store.openWrite(0, metaSegmentSize)) {
       TempOutputStream tos = new TempOutputStream();
@@ -368,8 +369,8 @@ public class SegmentServiceImpl
       for (int i = 0; i < count; i++ ){
         SegmentMeta meta = segmentMetaList[i];
 
-        BitsUtil.writeInt(tos, meta.getSize());
-        crc = Crc32Caucho.generateInt32(crc, meta.getSize());
+        BitsUtil.writeInt(tos, meta.size());
+        crc = Crc32Caucho.generateInt32(crc, meta.size());
       }
       
       _segmentMeta = segmentMetaList;
@@ -433,7 +434,7 @@ public class SegmentServiceImpl
   public TableEntry findTable(byte[] tableKey)
   {
     for (TableEntry entry : _tableList) {
-      if (Arrays.equals(tableKey, entry.getTableKey())) {
+      if (Arrays.equals(tableKey, entry.tableKey())) {
         return entry;
       }
     }
@@ -444,10 +445,13 @@ public class SegmentServiceImpl
   public boolean addTable(byte []key,
                           int rowLength,
                           int keyOffset,
-                          int keyLength)
+                          int keyLength,
+                          byte []data)
   {
+    Objects.requireNonNull(data);
+    
     for (TableEntry entry : _tableList) {
-      if (Arrays.equals(key, entry.getTableKey())) {
+      if (Arrays.equals(key, entry.tableKey())) {
         return false;
       }
     }
@@ -455,7 +459,8 @@ public class SegmentServiceImpl
     TableEntry entry = new TableEntry(key,
                                       rowLength,
                                       keyOffset,
-                                      keyLength);
+                                      keyLength,
+                                      data);
     
     _tableList.add(entry);
     
@@ -464,6 +469,9 @@ public class SegmentServiceImpl
     return true;
   }
   
+  /**
+   * Metadata for a table entry.
+   */
   private void writeMetaTable(TableEntry entry)
   {
     TempBuffer tBuf = TempBuffer.create();
@@ -471,10 +479,16 @@ public class SegmentServiceImpl
     
     int offset = 0;
     buffer[offset++] = CODE_TABLE;
-    offset += BitsUtil.write(buffer, offset, entry.getTableKey());
-    offset += BitsUtil.writeInt16(buffer, offset, entry.getRowLength());
-    offset += BitsUtil.writeInt16(buffer, offset, entry.getKeyOffset());
-    offset += BitsUtil.writeInt16(buffer, offset, entry.getKeyLength());
+    offset += BitsUtil.write(buffer, offset, entry.tableKey());
+    offset += BitsUtil.writeInt16(buffer, offset, entry.rowLength());
+    offset += BitsUtil.writeInt16(buffer, offset, entry.keyOffset());
+    offset += BitsUtil.writeInt16(buffer, offset, entry.keyLength());
+    
+    byte []data = entry.data();
+    offset += BitsUtil.writeInt16(buffer, offset, data.length);
+    
+    System.arraycopy(data, 0, buffer, offset, data.length);
+    offset += data.length;
     
     int crc = _nonce;
     crc = Crc32Caucho.generate(crc, buffer, 0, offset);
@@ -492,6 +506,7 @@ public class SegmentServiceImpl
     if (_metaTail - _metaOffset < 16) {
       writeMetaContinuation();
     }
+    System.out.println("WMTz: " + offset);
   }
   
   private void writeMetaSegment(SegmentExtent extent)
@@ -502,7 +517,7 @@ public class SegmentServiceImpl
     int offset = 0;
     buffer[offset++] = CODE_SEGMENT;
     
-    long address = extent.getAddress();
+    long address = extent.address();
     int length = extent.getLength();
     
     long value = (address & ~0xffff) | (length >> 16);
@@ -526,13 +541,16 @@ public class SegmentServiceImpl
       writeMetaContinuation();
     }
   }
-
+  
+  /**
+   * Writes a continuation entry, which points to a new meta-data segment.
+   */
   private void writeMetaContinuation()
   {
     TempBuffer tBuf = TempBuffer.create();
     byte []buffer = tBuf.buffer();
     
-    int metaLength = _segmentMeta[0].getSize();
+    int metaLength = _segmentMeta[0].size();
     
     SegmentExtent extent = new SegmentExtent(0, _addressTail, metaLength);
     
@@ -543,7 +561,7 @@ public class SegmentServiceImpl
     int offset = 0;
     buffer[offset++] = CODE_META_SEGMENT;
     
-    long address = extent.getAddress();
+    long address = extent.address();
     int length = extent.getLength();
     
     long value = (address & ~0xffff) | (length >> 16);
@@ -566,6 +584,9 @@ public class SegmentServiceImpl
     _metaTail = address + length;
   }
 
+  /**
+   * Reads metadata header for entire database.
+   */
   private boolean readMetaData()
     throws IOException
   {
@@ -581,7 +602,7 @@ public class SegmentServiceImpl
       _segmentId = 1;
     }
     
-    int metaLength = _segmentMeta[0].getSize();
+    int metaLength = _segmentMeta[0].size();
     
     SegmentExtent metaExtent = new SegmentExtent(0, 0, metaLength);
     
@@ -596,8 +617,8 @@ public class SegmentServiceImpl
       try (InSegment reader = openRead(metaExtent)) {
         ReadStream is = reader.in();
         
-        if (metaExtent.getAddress() == 0) {
-          is.setPosition(META_OFFSET);
+        if (metaExtent.address() == 0) {
+          is.position(META_OFFSET);
         }
         
         long metaAddress = _metaAddress;
@@ -614,6 +635,22 @@ public class SegmentServiceImpl
     }
   }
   
+  /**
+   * The first metadata for the store includes the sizes of the segments,
+   * the crc nonce, and optional headers.
+   * 
+   *  <pre><code>
+   * meta-syntax:
+   *   i64 - kelp magic
+   *   i32 - nonce
+   *   i32 - header count
+   *     {i32,i32} - headers
+   *   i32 - segment-size count
+   *     {i32} - segment-size+
+   *   i32 - crc32
+   *   ...
+   *  </code></pre>
+   */
   private boolean readMetaDataHeader(ReadStream is)
     throws IOException
   {
@@ -672,11 +709,23 @@ public class SegmentServiceImpl
     
     _segmentMeta = segmentMetaList;
     
-    _metaOffset = is.getPosition();
+    _metaOffset = is.position();
     _addressTail = META_SEGMENT_SIZE;
   
     return true;
   }
+  
+  /**
+   * Reads meta-data entries.
+   * 
+   * Each segment and table is stored in the metadata.
+   * 
+   * <ul>
+   * <li>table - metadata for a table
+   * <li>segment - metadata for a segment
+   * <li>meta - continuation pointer for further meta table data.
+   * </ul>
+   */
   
   private boolean readMetaDataEntry(ReadStream is)
     throws IOException
@@ -703,10 +752,22 @@ public class SegmentServiceImpl
       return false;
     }
     
-    _metaOffset = is.getPosition();
+    _metaOffset = is.position();
+    
     return true;
   }
   
+  /**
+   * Read metadata for a table.
+   * 
+   * <pre><code>
+   *   key byte[32]
+   *   rowLength int16
+   *   keyOffset int16
+   *   keyLength int16
+   *   crc int32
+   * </code></pre>
+   */
   private boolean readMetaTable(ReadStream is, int crc)
     throws IOException
   {
@@ -723,6 +784,14 @@ public class SegmentServiceImpl
     
     int keyLength = BitsUtil.readInt16(is);
     crc = Crc32Caucho.generateInt16(crc, keyLength);
+    
+    int dataLength = BitsUtil.readInt16(is);
+    crc = Crc32Caucho.generateInt16(crc, dataLength);
+    
+    byte []data = new byte[dataLength];
+    is.readAll(data, 0, data.length);
+    
+    crc = Crc32Caucho.generate(crc, data);
 
     int crcFile = BitsUtil.readInt(is);
     
@@ -734,13 +803,23 @@ public class SegmentServiceImpl
     TableEntry entry = new TableEntry(key,
                                       rowLength,
                                       keyOffset,
-                                      keyLength);
+                                      keyLength,
+                                      data);
     
     _tableList.add(entry);
 
     return true;
   }
   
+  /**
+   * metadata for a segment
+   * 
+   * <pre><code>
+   *   address int48
+   *   length  int16
+   *   crc     int32
+   * </code></pre>
+   */
   private boolean readMetaSegment(ReadStream is, int crc)
     throws IOException
   {
@@ -767,6 +846,11 @@ public class SegmentServiceImpl
     return true;
   }
   
+  /**
+   * Continuation segment for the metadata.
+   * 
+   * Additional segments when the table/segment metadata doesn't fit.
+   */
   private boolean readMetaContinuation(ReadStream is, int crc)
     throws IOException
   {
@@ -784,7 +868,7 @@ public class SegmentServiceImpl
     long address = value & ~0xffff;
     int length = (int) ((value & 0xffff) << 16);
     
-    if (length != _segmentMeta[0].getSize()) {
+    if (length != _segmentMeta[0].size()) {
       throw new IllegalStateException();
     }
     
@@ -800,10 +884,13 @@ public class SegmentServiceImpl
     return false;
   }
   
+  /**
+   * Finds the segment group for a given size.
+   */
   private SegmentMeta findSegmentMeta(int size)
   {
     for (SegmentMeta segmentMeta : this._segmentMeta) {
-      if (segmentMeta.getSize() == size) {
+      if (segmentMeta.size() == size) {
         return segmentMeta;
       }
     }
@@ -814,7 +901,7 @@ public class SegmentServiceImpl
   private boolean loadSegment(SegmentExtent extent)
     throws IOException
   {
-    long address = extent.getAddress();
+    long address = extent.address();
     int length = extent.getLength();
 
     SegmentMeta segmentMeta = findSegmentMeta(length);
@@ -882,14 +969,14 @@ public class SegmentServiceImpl
   
   private SegmentExtent allocateSegment(SegmentMeta segmentMeta)
   {
-    int length = segmentMeta.getSize();
+    int length = segmentMeta.size();
     
     SegmentExtent extent = null; // allocateSegmentGap(segmentMeta);
     
     long address;
     
     if (extent != null) {
-      address = extent.getAddress();
+      address = extent.address();
     }
     else {
       address = _addressTail;
@@ -920,9 +1007,10 @@ public class SegmentServiceImpl
     return extent;
   }
   
+  /*
   private SegmentExtent allocateSegmentGap(SegmentMeta segmentMeta)
   {
-    int length = segmentMeta.getSize();
+    int length = segmentMeta.size();
     
     for (SegmentGap gap : _gapList) {
       long address = gap.allocate(length);
@@ -934,6 +1022,7 @@ public class SegmentServiceImpl
     
     return null;
   }
+  */
 
   // @Direct
   public Iterable<SegmentKelp> initSegments(byte []tableKey)
@@ -975,25 +1064,25 @@ public class SegmentServiceImpl
     throws IOException
   {
     // System.out.println("FREE: " + segment);
-    SegmentMeta segmentMeta = findSegmentMeta(segment.getLength());
+    SegmentMeta segmentMeta = findSegmentMeta(segment.length());
     
     segmentMeta.remove(segment);
     
     segment.close();
     
-    segmentMeta.addFree(segment.getExtent());
+    segmentMeta.addFree(segment.extent());
     
     // System.out.println("  FREE: " + segmentMeta.getFreeCount() + " " + segment.getLength());
   }
   
   InSegment openRead(SegmentKelp segment)
   {
-    return openRead(segment.getExtent());
+    return openRead(segment.extent());
   }
 
   public InSegment openRead(SegmentExtent extent)
   {
-    long address = extent.getAddress();
+    long address = extent.address();
     int length = extent.getLength();
     
     InStore sIn = _store.openRead(address, length);
@@ -1049,44 +1138,7 @@ public class SegmentServiceImpl
     closeImpl();
     
     result.ok(true);
-    
-    /*
-    try {
-      SegmentWriter nodeWriter = _nodeWriter;
-      _nodeWriter = null;
-      
-      SegmentWriter blobWriter = _blobWriter;
-      _blobWriter = null;
-      
-      CloseResult cont = new CloseResult(result);
-      
-      if (nodeWriter != null) {
-        nodeWriter.closeSegment(cont);
-      }
-      else {
-        cont.completed(true);
-      }
-      
-      if (blobWriter != null) {
-        blobWriter.closeSegment(cont);
-      }
-      else {
-        cont.completed(true);
-      }
-    } catch (Exception e) {
-      Result.fail(result, e);
-    }
-      */
   }
-
-  /*
-  public boolean close()
-  {
-    closeImpl();
-    
-    return true;
-  }
-  */
 
   private void closeImpl()
   {
@@ -1105,34 +1157,45 @@ public class SegmentServiceImpl
     private final int _rowLength;
     private final int _keyOffset;
     private final int _keyLength;
+    private final byte []_data;
     
     public TableEntry(byte []tableKey,
-             int rowLength,
-             int keyOffset,
-             int keyLength)
+                      int rowLength,
+                      int keyOffset,
+                      int keyLength,
+                      byte []data)
     {
+      Objects.requireNonNull(tableKey);
+      Objects.requireNonNull(data);
+      
       _tableKey = tableKey;
       _rowLength = rowLength;
       _keyOffset = keyOffset;
       _keyLength = keyLength;
+      _data = data;
     }
     
-    public int getKeyLength()
+    public byte []data()
+    {
+      return _data;
+    }
+
+    public int keyLength()
     {
       return _keyLength;
     }
 
-    public int getKeyOffset()
+    public int keyOffset()
     {
       return _keyOffset;
     }
 
-    public int getRowLength()
+    public int rowLength()
     {
       return _rowLength;
     }
 
-    byte []getTableKey()
+    byte []tableKey()
     {
       return _tableKey;
     }
@@ -1178,7 +1241,7 @@ public class SegmentServiceImpl
       }
     }
 
-    int getSize()
+    int size()
     {
       return _size;
     }
@@ -1288,7 +1351,7 @@ public class SegmentServiceImpl
     @Override
     public int compare(SegmentExtent a, SegmentExtent b)
     {
-      return Long.signum(a.getAddress() - b.getAddress());
+      return Long.signum(a.address() - b.address());
     }
   }
   

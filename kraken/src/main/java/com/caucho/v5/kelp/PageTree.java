@@ -90,7 +90,7 @@ public class PageTree extends Page
   }
   
   @Override
-  public int getSize()
+  public int size()
   {
     return _blocks.length * DatabaseKelp.BLOCK_SIZE;
   }

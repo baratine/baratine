@@ -66,7 +66,7 @@ public class PageBlobFree extends PageBlob
   }
   
   @Override
-  public final int getSize()
+  public final int size()
   {
     return 0;
   }

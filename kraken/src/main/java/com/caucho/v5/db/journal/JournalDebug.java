@@ -102,7 +102,7 @@ public class JournalDebug
       for (long ptr = _segmentLength; ptr < length; ptr += _segmentLength) {
         int segment = (int) (ptr / _segmentLength);
         
-        is.setPosition(ptr + _segmentTail);
+        is.position(ptr + _segmentTail);
         
         long initSeq = BitsUtil.readLong(is);
         

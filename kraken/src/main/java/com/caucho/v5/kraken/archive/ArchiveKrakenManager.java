@@ -27,41 +27,52 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kelp;
+package com.caucho.v5.kraken.archive;
 
-import com.caucho.v5.util.BitsUtil;
+import java.nio.file.Path;
+import java.util.Objects;
+
+import com.caucho.v5.kraken.table.KrakenImpl;
 
 /**
- * A column for the log store.
+ * Archiving builder.
  */
-public class ColumnDouble extends Column
+public class ArchiveKrakenManager
 {
-  public ColumnDouble(int index,
-                         String name,
-                         int offset)
+  private KrakenImpl _manager;
+  private Path _path;
+  
+  private boolean _isZip = true;
+  
+  public ArchiveKrakenManager(KrakenImpl manager,
+                              Path path)
   {
-    super(index, name, ColumnType.DOUBLE, offset);
+    Objects.requireNonNull(manager);
+    Objects.requireNonNull(path);
+
+    _manager = manager;
+    _path = path;
+  }
+  
+  public ArchiveKrakenManager zip(boolean isZip)
+  {
+    _isZip = isZip;
+    
+    return this;
   }
 
-  @Override
-  public final int length()
+  public boolean isZip()
   {
-    return 8;
+    return _isZip;
+  }
+
+  public Path getPath()
+  {
+    return _path;
   }
   
-  @Override
-  public double getDouble(byte []rowBuffer, int rowOffset)
+  public void exec()
   {
-    long longValue = BitsUtil.readLong(rowBuffer, rowOffset + offset());
-    
-    return Double.longBitsToDouble(longValue);
-  }
-  
-  @Override
-  public void setDouble(byte []rowBuffer, int rowOffset, double value)
-  {
-    long longValue = Double.doubleToLongBits(value);
-    
-    BitsUtil.writeLong(rowBuffer, rowOffset + offset(), longValue);
+    _manager.getArchiveService().archive(this);
   }
 }

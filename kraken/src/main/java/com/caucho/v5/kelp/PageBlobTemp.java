@@ -81,7 +81,7 @@ public class PageBlobTemp extends PageBlob
   }
   
   @Override
-  public int getSize()
+  public int size()
   {
     // return _tempReader.getLength();
     return _length;

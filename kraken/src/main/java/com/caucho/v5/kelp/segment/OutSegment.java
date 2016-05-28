@@ -34,6 +34,7 @@ import static com.caucho.v5.kelp.segment.SegmentServiceImpl.BLOCK_SIZE;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +75,8 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   private static final Logger log
     = Logger.getLogger(OutSegment.class.getName());
 
-  private static final int HEADER_SIZE = 48;
+  private static final int FOOTER_SIZE = 8;
+  private static final int FOOTER_OFFSET = BLOCK_SIZE - FOOTER_SIZE;
   
   private TableWriterServiceImpl _readWrite;
   private final SegmentKelp _segment;
@@ -84,17 +86,16 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   
   private int _position;
   
-  private TempBuffer _entryTempBuf;
-  private byte []_entryBuffer;
-  private int _entryHead;
-  private int _entryTail;
+  private TempBuffer _indexTempBuf;
+  private byte []_indexBuffer;
+  private int _indexTail;
   
-  private int _entryPosition;
+  private int _indexAddress;
   
-  private int _lastFlushEntryPosition = -1;
-  private int _lastFlushEntryTail;
+  private int _lastFlushIndexAddress = -1;
+  private int _lastFlushIndexTail;
   
-  private byte []_headerBuffer;
+  private byte []_footerBuffer = new byte[FOOTER_SIZE];
   
   private boolean _isDirty;
   
@@ -109,7 +110,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   private CompressorKelp _compressor;
 
   private TableKelp _table;
-  private PageServiceSync _tableService;
+  //private PageServiceSync _tableService;
 
   /**
    * Creates a new store.
@@ -130,7 +131,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     Objects.requireNonNull(segment);
     
     _table = table;
-    _tableService = tableService;
+    //_tableService = tableService;
     _readWrite = readWrite;
     _segment = segment;
     
@@ -138,17 +139,15 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       throw new IllegalStateException(String.valueOf(_segment));
     }
     
-    _entryTempBuf = TempBuffer.createLarge();
-    _entryBuffer = _entryTempBuf.buffer();
-    
-    _entryPosition = segment.getLength() - BLOCK_SIZE;
-    _entryTail = BLOCK_SIZE;
+    _indexTempBuf = TempBuffer.createLarge();
+    _indexBuffer = _indexTempBuf.buffer();
+
+    _indexAddress = _segment.length() - BLOCK_SIZE;
+    fillHeader();
     
     _compressor = readWrite.compressor();
     
-    _sOut = _readWrite.openWrite(segment.getExtent());
-
-    fillHeader(false);
+    _sOut = _readWrite.openWrite(segment.extent());
   }
 
   public SegmentKelp getSegment()
@@ -186,7 +185,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   @Override
   public void seekStart(long pos)
   {
-    if (pos < 0 || _entryPosition < pos) {
+    if (pos < 0 || _indexAddress < pos) {
       throw new IllegalStateException();
     }
     
@@ -202,7 +201,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   @Override
   public int getAvailable()
   {
-    return _entryPosition;
+    return _indexAddress;
   }
 
   public void addFsyncCallback(SegmentFsyncCallback onFlush)
@@ -244,7 +243,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     try {
       int available = getAvailable();
       
-      if (available < head + page.getSize()) {
+      if (available < head + page.size()) {
         return null;
       }
       
@@ -300,15 +299,16 @@ public class OutSegment extends StreamImpl implements AutoCloseable
                     Result<Integer> result)
      throws IOException
   {
-    int tail = _entryTail;
+    int head;
     
-    while ((tail = _segment.writeEntry(_entryBuffer, _entryTail, _entryHead,
+    while ((head = _segment.writeEntry(_indexBuffer, 
+                                       _indexTail,
                                        type.ordinal(), pid, nextPid, 
                                        offset, length)) < 0) {
-      writeHeader();
+      writeIndexBlock();
       
       // isCont is true if the new page/entry fits in the segment
-      boolean isCont = _position + 2 * BLOCK_SIZE <= _entryPosition;
+      boolean isCont = _position + 2 * BLOCK_SIZE <= _indexAddress;
       
       if (! isCont) {
         // close();
@@ -316,12 +316,12 @@ public class OutSegment extends StreamImpl implements AutoCloseable
         return false;
       }
       
-      _entryPosition -= BLOCK_SIZE;
-      _entryTail = BLOCK_SIZE;
+      _indexAddress -= BLOCK_SIZE;
+      fillHeader();
     }
     
     _isDirty = true;
-    _entryTail = tail;
+    _indexTail = head;
     
     int position = offset; 
     
@@ -333,7 +333,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     
     _pendingFlushEntries.add(new PendingEntry(page, newPage, saveSequence,
                                               position,
-                                              _entryPosition, tail,
+                                              _indexAddress, head,
                                               result));
     
     return true;
@@ -390,12 +390,12 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       throw new IllegalArgumentException();
     }
     
-    if (_entryPosition < position + length) {
+    if (_indexAddress < position + length) {
       throw new IllegalArgumentException(L.l("Segment write overflow pos=0x{0} len=0x{1} entry-head=0x{2} seg-len=0x{3}. {4}",
                                           Long.toHexString(_position),
                                           Long.toHexString(length),
-                                          Long.toHexString(_entryPosition),
-                                          Long.toHexString(_segment.getLength()),
+                                          Long.toHexString(_indexAddress),
+                                          Long.toHexString(_segment.length()),
                                           _segment));
     }
     
@@ -482,7 +482,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       if (_isDirty || ! fsyncType.isSchedule()) {
         _isDirty = false;
       
-        try (OutStore sOut = _readWrite.openWrite(_segment.getExtent())) {
+        try (OutStore sOut = _readWrite.openWrite(_segment.extent())) {
           if (fsyncType.isSchedule()) {
             sOut.fsyncSchedule(resultNext);
           }
@@ -555,22 +555,23 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   
   final void completeHeaders(int position)
   {
-    int entryAddress = _lastFlushEntryPosition;
-    int entryTail = _lastFlushEntryTail;
+    int indexAddress = _lastFlushIndexAddress;
+    int indexTail = _lastFlushIndexTail;
+    int entryHead = indexTail;
 
-    _headerBuffer = new byte[HEADER_SIZE];
-    
     // PageService pageService = _db.getPageService();
     
     for (PendingEntry entry : _pendingFsyncEntries) {
-      if (entryAddress != entry.getEntryAddress() && entryAddress > 0) {
-        int sublen = fillHeader(_headerBuffer, entryTail, true);
+      if (indexAddress != entry.address() && indexAddress > 0) {
+        // since index block is full, fill the footer and write it
+        fillFooter(_footerBuffer, 0, indexTail, true);
         
-        writeHeader(_headerBuffer, entryAddress, sublen); 
+        writeIndex(_footerBuffer, indexAddress + FOOTER_OFFSET, FOOTER_SIZE);
+        entryHead = 0;
       }
       
-      entryAddress = entry.getEntryAddress();
-      entryTail = entry.getEntryTail();
+      indexAddress = entry.address();
+      indexTail = entry.tail();
       _isDirty = true;
       
       // entry.afterFlush();
@@ -580,71 +581,96 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     
     _pendingFsyncEntries.clear();
     
-    if (entryAddress < 0) {
+    if (indexAddress < 0) {
     }
-    else if (entryAddress == _entryPosition) {
-      int sublen = fillHeader(_entryBuffer, entryTail, false);
-      
-      writeHeader(_entryBuffer, entryAddress, sublen);
+    else if (indexAddress == _indexAddress) {
+      fillFooter(_indexBuffer, FOOTER_OFFSET, indexTail, false);
+
+      writeIndex(_indexBuffer, 
+                  indexAddress + entryHead, 
+                  BLOCK_SIZE - entryHead);
     }
     else {
-      int sublen = fillHeader(_headerBuffer, entryTail, false);
+      fillFooter(_footerBuffer, 0, indexTail, false);
       
-      writeHeader(_headerBuffer, entryAddress, sublen);
+      writeIndex(_footerBuffer, indexAddress + FOOTER_OFFSET, FOOTER_SIZE);
     }
     
-    _lastFlushEntryPosition = entryAddress;
-    _lastFlushEntryTail = entryTail;
-  }
-
-  
-  private void fillHeader(boolean isCont)
-  {
-    _entryHead = fillHeader(_entryBuffer, _entryTail, isCont);
+    _lastFlushIndexAddress = indexAddress;
+    _lastFlushIndexTail = indexTail;
   }
   
   /**
    * <pre>
    * u64 sequence
-   * u16 index
-   * u8 isCont
+   * b32 key
    * </pre>
    */
-  
-  private int fillHeader(byte []buffer, int tail, boolean isCont)
+  private void fillHeader()
   {
+    byte[] buffer = _indexBuffer;
+    
+    Arrays.fill(buffer, (byte) 0x0);
+    
     int index = 0;
     
     BitsUtil.writeLong(buffer, index, _segment.getSequence());
     index += 8;
     
-    byte []tableKey = _table.getTableKey();
+    byte []tableKey = _table.tableKey();
     System.arraycopy(tableKey, 0, buffer, index, tableKey.length);
     index += tableKey.length;
 
+    /*
     BitsUtil.writeInt16(buffer, index, tail);
     index += 2;
   
     buffer[index] = (byte) (isCont ? 1 : 0);
     index++;
+    */
     
-    return HEADER_SIZE;
+    _indexTail = index;
+    
+    fillFooter(buffer, FOOTER_OFFSET, index, false);
   }
   
-  private void writeHeader()
+  /**
+   * <pre>
+   * u8 type = 0
+   * u8 isCont
+   * </pre>
+   */
+  private int fillFooter(byte []buffer, int offset, int entryTail, boolean isCont)
   {
-    writeHeader(_entryBuffer, _entryPosition, _entryBuffer.length);
+    BitsUtil.writeInt16(buffer, offset, entryTail);
+    offset += 2;
+
+    buffer[offset] = (byte) (isCont ? 1 : 0);
+    offset++;
+    
+    return offset;
   }
   
-  private void writeHeader(byte []entryBuffer, int entryAddress, int length)
+  /**
+   * Write the current header to the output.
+   */
+  private void writeIndexBlock()
+  {
+    writeIndex(_indexBuffer, _indexAddress, _indexBuffer.length);
+  }
+  
+  /**
+   * Write the current header to the output.
+   */
+  private void writeIndex(byte []entryBuffer, int entryAddress, int length)
   {
     long address = _segment.getAddress() + entryAddress;
 
-    if (_segment.getLength() < entryAddress + length) {
+    if (_segment.length() < entryAddress + length) {
       throw new IllegalStateException(L.l("offset=0x{0} length={1}", entryAddress, length));
     }
     //try (StoreWrite os = _readWrite.openWrite(address, BLOCK_SIZE)) {
-    _sOut.write(address, entryBuffer, 0, entryBuffer.length);
+    _sOut.write(address, entryBuffer, 0, length);
       
     _isDirty = true;
     // }
@@ -716,16 +742,16 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     private final Page _newPage;
     private final int _writeSequence;
     private final int _position;
-    private final int _entryAddress;
-    private final int _entryTail;
+    private final int _indexAddress;
+    private final int _indexTail;
     private final Result<Integer> _result;
     
     PendingEntry(Page page, 
                  Page newPage,
                  int saveSequence,
                  int position,
-                 int entryAddress, 
-                 int entryTail,
+                 int indexAddress, 
+                 int indexTail,
                  Result<Integer> result)
     {
       _page = page;
@@ -734,8 +760,8 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       
       _position = position;
       
-      _entryAddress = entryAddress;
-      _entryTail = entryTail;
+      _indexAddress = indexAddress;
+      _indexTail = indexTail;
       
       _result = result;
     }
@@ -750,14 +776,14 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       return _writeSequence;
     }
     
-    public int getEntryTail()
+    public int tail()
     {
-      return _entryTail;
+      return _indexTail;
     }
 
-    public int getEntryAddress()
+    public int address()
     {
-      return _entryAddress;
+      return _indexAddress;
     }
     
     void afterFlush()
@@ -778,7 +804,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     public String toString()
     {
       return (getClass().getSimpleName() + "[" + _page
-              + ",addr=" + Long.toHexString(getEntryAddress()) + "]");
+              + ",addr=" + Long.toHexString(address()) + "]");
     }
   }
   

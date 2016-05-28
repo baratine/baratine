@@ -176,6 +176,11 @@ public final class TempBuffer implements java.io.Serializable, Buffer
   {
     _bufferCount = count;
   }
+  
+  public Buffer write(byte[] buffer)
+  {
+    return write(buffer, 0, buffer.length);
+  }
 
   @Override
   public Buffer write(byte[] buffer, int offset, int length)

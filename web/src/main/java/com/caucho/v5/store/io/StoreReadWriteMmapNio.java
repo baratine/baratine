@@ -126,7 +126,7 @@ public class StoreReadWriteMmapNio implements StoreReadWrite
   }
   
   @Override
-  public long getChunkSize()
+  public long chunkSize()
   {
     return FILE_SIZE_INCREMENT;
   }

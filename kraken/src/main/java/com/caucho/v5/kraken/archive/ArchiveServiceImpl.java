@@ -27,10 +27,13 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
+package com.caucho.v5.kraken.archive;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import com.caucho.v5.kraken.table.KrakenImpl;
+import com.caucho.v5.kraken.table.TableKraken;
 
 import io.baratine.service.Result;
 
@@ -41,7 +44,7 @@ public class ArchiveServiceImpl implements ArchiveService
 {
   private KrakenImpl _manager;
   
-  ArchiveServiceImpl(KrakenImpl manager)
+  public ArchiveServiceImpl(KrakenImpl manager)
   {
     _manager = manager;
   }

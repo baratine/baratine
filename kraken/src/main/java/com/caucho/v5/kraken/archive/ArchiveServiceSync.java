@@ -27,16 +27,15 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
+package com.caucho.v5.kraken.archive;
 
-import io.baratine.service.Result;
 
 
 
 /**
  * Archiving builder.
  */
-public interface ArchiveService
+public interface ArchiveServiceSync extends ArchiveService
 {
-  void archive(ArchiveKrakenManager archive, Result<Boolean> result);
+  boolean archive(ArchiveKrakenManager archive);
 }

@@ -93,7 +93,7 @@ public class JournalStore
     
     StoreBuilder storeBuilder = new StoreBuilder(_path);
     storeBuilder.mmap(builder.isMmap());
-    storeBuilder.ampManager(builder.getRampManager());
+    storeBuilder.services(builder.services());
     
     _store = storeBuilder.build();
     
@@ -431,7 +431,7 @@ public class JournalStore
       return this;
     }
     
-    public ServicesAmp getRampManager()
+    public ServicesAmp services()
     {
       return _rampManager;
     }

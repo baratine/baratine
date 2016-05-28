@@ -29,6 +29,7 @@
 
 package com.caucho.v5.kelp;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,6 +37,7 @@ import java.io.OutputStream;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.WriteStream;
+import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.Crc64;
 
 import io.baratine.db.BlobReader;
@@ -80,7 +82,7 @@ abstract public class Column {
     return 0;
   }
   
-  public final int getOffset()
+  public final int offset()
   {
     return _offset;
   }
@@ -155,7 +157,7 @@ abstract public class Column {
   {
     crc64 = Crc64.generate(crc64, type().name());
     crc64 = Crc64.generate(crc64, name());
-    crc64 = Crc64.generate(crc64, getOffset());
+    crc64 = Crc64.generate(crc64, offset());
     crc64 = Crc64.generate(crc64, length());
     
     return crc64;
@@ -220,7 +222,7 @@ abstract public class Column {
                     BlobOutputStream blob)
     throws IOException
   {
-    os.write(buffer, offset + getOffset(), length());
+    os.write(buffer, offset + offset(), length());
   }
 
   void readJournal(PageServiceImpl pageActor, 
@@ -228,14 +230,14 @@ abstract public class Column {
                    byte[] buffer, int offset, RowCursor cursor)
     throws IOException
   {
-    is.readAll(buffer, offset + getOffset(), length());
+    is.readAll(buffer, offset + offset(), length());
   }
 
   void readStream(InputStream is, 
                   byte[] buffer, int offset, RowCursor cursor)
     throws IOException
   {
-    IoUtil.readAll(is, buffer, offset + getOffset(), length());
+    IoUtil.readAll(is, buffer, offset + offset(), length());
   }
 
   void readStreamBlob(InputStream is, 
@@ -263,7 +265,7 @@ abstract public class Column {
   void writeStream(OutputStream os, byte[] buffer, int offset)
     throws IOException
   {
-    os.write(buffer, offset + getOffset(), length());
+    os.write(buffer, offset + offset(), length());
   }
 
   void writeStreamBlob(OutputStream os, byte[] buffer, int offset,
@@ -286,7 +288,7 @@ abstract public class Column {
   void writeCheckpoint(WriteStream os, byte[] buffer, int offset)
     throws IOException
   {
-    os.write(buffer, offset + getOffset(), length());
+    os.write(buffer, offset + offset(), length());
   }
   
   int readCheckpoint(ReadStream is, 
@@ -294,7 +296,7 @@ abstract public class Column {
                      int blobTail)
     throws IOException
   {
-    is.readAll(buffer, rowFirst + getOffset(), length());
+    is.readAll(buffer, rowFirst + offset(), length());
 
     return blobTail;
   }
@@ -309,11 +311,21 @@ abstract public class Column {
   public void validate(byte[] buffer, int rowOffset, int rowHead, int blobTail)
   {
   }
+
+  public void toData(OutputStream os)
+    throws IOException
+  {
+    BitsUtil.writeInt16(os, _type.ordinal());
+    BitsUtil.writeInt16(os, length());
+    byte []name = _name.getBytes("UTF-8");
+    BitsUtil.writeInt16(os, name.length);
+    os.write(name);
+  }
   
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + name() + ",offset=" + getOffset() + "]";
+    return getClass().getSimpleName() + "[" + name() + ",offset=" + offset() + "]";
   }
   
   public enum ColumnType {

@@ -143,7 +143,7 @@ public class TableWriterServiceImpl
   
   private byte []getTableKey()
   {
-    return _table.getTableKey();
+    return _table.tableKey();
   }
 
   /**
@@ -208,7 +208,7 @@ public class TableWriterServiceImpl
   {
     try {
       Iterable<SegmentKelp> segments
-        = _segmentService.initSegments(table.getTableKey());
+        = _segmentService.initSegments(table.tableKey());
       
       initImpl(table, pageActor, segments);
     } catch (Throwable e) {
@@ -287,7 +287,7 @@ public class TableWriterServiceImpl
         if (loadSegment(table, pageActor, readCxt, segment)) {
           isValidSegment = true;
           
-          addTableSegmentLength(segment.getLength());
+          addTableSegmentLength(segment.length());
         }
         else {
           // if segment has no used pages, free it
@@ -333,9 +333,9 @@ public class TableWriterServiceImpl
     try (InSegment reader = openRead(segment)) {
       ReadStream is = reader.in();
       
-      int length = segment.getLength();
+      int length = segment.length();
     
-      is.setPosition(length - BLOCK_SIZE);
+      is.position(length - BLOCK_SIZE);
     
       long seq = segment.getSequence();
       
@@ -386,7 +386,7 @@ public class TableWriterServiceImpl
   public void freeSegment(SegmentKelp segment)
     throws IOException
   {
-    freeTableSegmentLength(segment.getLength());
+    freeTableSegmentLength(segment.length());
     
     // System.out.println("FREE: " + _tableLength + " " + segment.getLength() + " " + segment);
     
@@ -396,9 +396,9 @@ public class TableWriterServiceImpl
   InSegment openRead(SegmentKelp segment)
   {
     InStore sIn = _store.openRead(segment.getAddress(), 
-                                  segment.getLength());
+                                  segment.length());
     
-    return new InSegment(sIn, segment.getExtent(), compressor());
+    return new InSegment(sIn, segment.extent(), compressor());
   }
   
   /**
@@ -642,7 +642,7 @@ public class TableWriterServiceImpl
 
   public OutStore openWrite(SegmentExtent extent)
   {
-    return _store.openWrite(extent.getAddress(), extent.getLength());
+    return _store.openWrite(extent.address(), extent.getLength());
   }
 
   public boolean waitForComplete()
@@ -765,7 +765,7 @@ public class TableWriterServiceImpl
     public void onEntry(int typeCode, int pid, int nextPid, int offset, int length)
     {
       try {
-        _is.setPosition(offset);
+        _is.position(offset);
         
         Type type = Type.valueOf(typeCode);
 

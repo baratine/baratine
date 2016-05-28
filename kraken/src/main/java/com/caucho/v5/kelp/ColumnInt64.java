@@ -52,13 +52,13 @@ public class ColumnInt64 extends Column
   @Override
   public long getLong(byte []rowBuffer, int rowOffset)
   {
-    return BitsUtil.readLong(rowBuffer, rowOffset + getOffset());
+    return BitsUtil.readLong(rowBuffer, rowOffset + offset());
   }
   
   @Override
   public void setLong(byte []rowBuffer, int rowOffset, long value)
   {
-    BitsUtil.writeLong(rowBuffer, rowOffset + getOffset(), value);
+    BitsUtil.writeLong(rowBuffer, rowOffset + offset(), value);
   }
   
   @Override

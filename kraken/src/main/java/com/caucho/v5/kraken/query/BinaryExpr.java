@@ -163,10 +163,10 @@ public class BinaryExpr extends ExprKraken
   {
     Row row = table.getTableKelp().row();
     
-    int keyOffset = row.getKeyOffset();
-    int keyLength = row.getKeyLength();
+    int keyOffset = row.keyOffset();
+    int keyLength = row.keyLength();
     
-    int colOffset = column.getOffset();
+    int colOffset = column.offset();
 
     return keyOffset <= colOffset && colOffset < keyOffset + keyLength;
   }

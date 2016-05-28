@@ -183,7 +183,7 @@ public class SegmentStream
       sOut = openWriter(rwActor);
         
       if ((newPage = sOut.writePage(page, pageSequence, saveLength, saveTail, sequenceWrite, result)) == null) {
-        String msg = ("BAD_DWRITE: " + page + " len=" + page.getSize() 
+        String msg = ("BAD_DWRITE: " + page + " len=" + page.size() 
             + " save-len=" + saveLength + " avail:" + sOut.getAvailable());
         System.err.println("SegmentStream.writePage: " + msg);
         RuntimeException exn = new IllegalStateException(msg);

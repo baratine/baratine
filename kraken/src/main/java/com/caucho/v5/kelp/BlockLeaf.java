@@ -116,7 +116,7 @@ class BlockLeaf
   
   int getDeltaLeafCount(Row row)
   {
-    return (_rowSortHead - _rowHead) / row.getLength();
+    return (_rowSortHead - _rowHead) / row.length();
   }
   
   /**
@@ -137,7 +137,7 @@ class BlockLeaf
     int rowHead = _rowHead;
     int blobTail = _blobTail;
     
-    int rowLength = row.getLength();
+    int rowLength = row.length();
     
     rowHead -= rowLength;
     
@@ -600,7 +600,7 @@ class BlockLeaf
     switch (code) {
     case INSERT:
     case INSERT_DEAD:
-      return row.getLength();
+      return row.length();
       
     case REMOVE:
       return row.getRemoveLength();
@@ -616,7 +616,7 @@ class BlockLeaf
     
     byte []buffer = _buffer;
     
-    rowHead -= row.getLength();
+    rowHead -= row.length();
     
     int blobTail = _blobTail;
     
@@ -754,14 +754,14 @@ class BlockLeaf
       return this;
     }
     
-    int keyLength = row.getKeyLength();
-    int keyOffset = row.getKeyOffset();
-    int rowLength = row.getLength();
+    int keyLength = row.keyLength();
+    int keyOffset = row.keyOffset();
+    int rowLength = row.length();
     
     _rowSortHead = _rowHead;
     
-    _keyMinSort = new byte[row.getKeyLength()];
-    _keyMaxSort = new byte[row.getKeyLength()];
+    _keyMinSort = new byte[row.keyLength()];
+    _keyMaxSort = new byte[row.keyLength()];
     
     System.arraycopy(_buffer, _rowSortHead + keyOffset,
                      _keyMaxSort, 0, 

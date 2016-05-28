@@ -267,7 +267,7 @@ public class KelpManager
    
     RowCursor cursor = _metaTable.cursor();
     
-    cursor.setBytes(1, tableKelp.getTableKey(), 0);
+    cursor.setBytes(1, tableKelp.tableKey(), 0);
     cursor.setString(2, tableKelp.getName());
     cursor.setString(3, sql);
 
@@ -506,13 +506,13 @@ public class KelpManager
         if (cursor.isRemoved()) {
           // XXX: getVersion()
           
-          replCb.onRemove(tableKelp.getTableKey(), cursor.getKey(), cursor.getVersion(), Result.ignore());
+          replCb.onRemove(tableKelp.tableKey(), cursor.getKey(), cursor.getVersion(), Result.ignore());
         }
         else {
           // XXX: update when the backup is fixed to return for a single value
           StreamSource ss = cursor.toStream();
           
-          replCb.onPut(tableKelp.getTableKey(), cursor.getKey(), ss, Result.ignore());
+          replCb.onPut(tableKelp.tableKey(), cursor.getKey(), ss, Result.ignore());
           
           // XXX: timing issues with result returning before put completes
         }

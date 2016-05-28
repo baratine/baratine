@@ -50,7 +50,7 @@ public class CompressorNull implements CompressorKelp
   @Override
   public InputStream in(ReadStream is, long offset, int length) throws IOException
   {
-    is.setPosition(offset);
+    is.position(offset);
     
     return is;
   }

@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.kraken.KrakenSystem;
-import com.caucho.v5.kraken.table.ArchiveKrakenManager;
+import com.caucho.v5.kraken.archive.ArchiveKrakenManager;
 import com.caucho.v5.kraken.table.RestoreKrakenManager;
 import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.subsystem.RootDirectorySystem;

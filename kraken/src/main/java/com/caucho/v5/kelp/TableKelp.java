@@ -149,7 +149,7 @@ public class TableKelp
     return _name;
   }
 
-  public byte []getTableKey()
+  public byte []tableKey()
   {
     return _tableKey;
   }
@@ -181,12 +181,12 @@ public class TableKelp
   
   public int getKeyOffset()
   {
-    return row().getKeyOffset();
+    return row().keyOffset();
   }
   
   public int getKeyLength()
   {
-    return row().getKeyLength();
+    return row().keyLength();
   }
   
   public long getMemorySize()

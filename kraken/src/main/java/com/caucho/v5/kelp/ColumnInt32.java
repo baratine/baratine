@@ -52,23 +52,23 @@ public class ColumnInt32 extends Column
   @Override
   public int getInt(byte []rowBuffer, int rowOffset)
   {
-    return BitsUtil.readInt(rowBuffer, rowOffset + getOffset());
+    return BitsUtil.readInt(rowBuffer, rowOffset + offset());
   }
   
   @Override
   public void setInt(byte []rowBuffer, int rowOffset, int value)
   {
-    BitsUtil.writeInt(rowBuffer, rowOffset + getOffset(), value);
+    BitsUtil.writeInt(rowBuffer, rowOffset + offset(), value);
   }
   
   public int read(byte []rowBuffer, int rowOffset)
   {
-    return BitsUtil.readInt(rowBuffer, rowOffset + getOffset());
+    return BitsUtil.readInt(rowBuffer, rowOffset + offset());
   }
   
   public void write(byte []rowBuffer, int rowOffset, int value)
   {
-    BitsUtil.writeInt(rowBuffer, rowOffset + getOffset(), value);
+    BitsUtil.writeInt(rowBuffer, rowOffset + offset(), value);
   }
 
   @Override

@@ -256,7 +256,7 @@ public class RowInputStream extends InputStream
     
     _srcPage = _srcPageList.get(index + 1);
 
-    int length = _srcPage.getSize();
+    int length = _srcPage.size();
     
     _srcOffset = 0;
     _srcLength = length;

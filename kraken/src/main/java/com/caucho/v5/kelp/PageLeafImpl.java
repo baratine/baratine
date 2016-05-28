@@ -124,7 +124,7 @@ public final class PageLeafImpl extends PageLeaf
   }
 
   @Override
-  public final int getSize()
+  public final int size()
   {
     return _blocks.length * BLOCK_SIZE;
   }
@@ -502,7 +502,7 @@ public final class PageLeafImpl extends PageLeaf
     blocks.add(block);
     
     Row row = table.row();
-    byte []splitKey = new byte[row.getKeyLength()];
+    byte []splitKey = new byte[row.keyLength()];
     int splitCount = size / 2;
     
     boolean isSmall = true;
@@ -1066,16 +1066,16 @@ public final class PageLeafImpl extends PageLeaf
     
     // int keyLength = row.getKeyLength();
     int removeLength = row.getRemoveLength();
-    int rowLength = row.getLength();
+    int rowLength = row.length();
     
     BlockLeaf block = _blocks[0];
 
-    long endPosition = is.getPosition() + length;
+    long endPosition = is.position() + length;
     int rowHead = block.getRowHead();
     int blobTail = block.getBlobTail();
     long pos;
 
-    while ((pos = is.getPosition()) < endPosition) {
+    while ((pos = is.position()) < endPosition) {
       int code = is.read();
       is.unread();
       
@@ -1099,7 +1099,7 @@ public final class PageLeafImpl extends PageLeaf
         while ((blobTail = row.readCheckpoint(is, block.getBuffer(), 
                                               rowHead, blobTail)) < 0) {
           //is.setPosition(pos + 1);
-          is.setPosition(pos);
+          is.position(pos);
 
           block = extendBlocks();
 

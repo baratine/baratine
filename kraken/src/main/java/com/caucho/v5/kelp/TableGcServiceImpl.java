@@ -468,7 +468,7 @@ public class TableGcServiceImpl implements TableGcService
     
     private long getSegmentLength()
     {
-      return _segment.getLength();
+      return _segment.length();
     }
     
     boolean isValid()

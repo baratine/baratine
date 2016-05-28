@@ -75,7 +75,7 @@ public class ColumnBytes extends Column
     }
     
     System.arraycopy(buffer, offset, 
-                     rowBuffer, rowOffset + getOffset(),
+                     rowBuffer, rowOffset + offset(),
                      length());
   }
   
@@ -89,7 +89,7 @@ public class ColumnBytes extends Column
                                              buffer.length - offset));
     }
     
-    System.arraycopy(rowBuffer, rowOffset + getOffset(),
+    System.arraycopy(rowBuffer, rowOffset + offset(),
                      buffer, offset,
                      length());
   }

@@ -27,50 +27,12 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
+package com.caucho.v5.kraken.archive;
 
-import java.nio.file.Path;
-import java.util.Objects;
 
 /**
- * Archiving builder.
+ * The local file backing for the store
  */
-public class ArchiveKrakenManager
+public class ArchiveStore
 {
-  private KrakenImpl _manager;
-  private Path _path;
-  
-  private boolean _isZip = true;
-  
-  public ArchiveKrakenManager(KrakenImpl manager,
-                              Path path)
-  {
-    Objects.requireNonNull(manager);
-    Objects.requireNonNull(path);
-
-    _manager = manager;
-    _path = path;
-  }
-  
-  public ArchiveKrakenManager zip(boolean isZip)
-  {
-    _isZip = isZip;
-    
-    return this;
-  }
-
-  public boolean isZip()
-  {
-    return _isZip;
-  }
-
-  public Path getPath()
-  {
-    return _path;
-  }
-  
-  public void exec()
-  {
-    _manager.getArchiveService().archive(this);
-  }
 }

@@ -82,7 +82,7 @@ public class ColumnState extends Column
   
   public int getTimeout(byte []rowBuffer, int rowOffset)
   {
-    int value = BitsUtil.readInt(rowBuffer, rowOffset + getOffset());
+    int value = BitsUtil.readInt(rowBuffer, rowOffset + offset());
     
     return value & TIME_MASK;
   }
@@ -91,12 +91,12 @@ public class ColumnState extends Column
   {
     value = value & TIME_MASK;
     
-    BitsUtil.writeInt(rowBuffer, rowOffset + getOffset(), value);
+    BitsUtil.writeInt(rowBuffer, rowOffset + offset(), value);
   }
   
   public long getVersion(byte []rowBuffer, int rowOffset)
   {
-    long value = BitsUtil.readLong(rowBuffer, rowOffset + getOffset() + 4);
+    long value = BitsUtil.readLong(rowBuffer, rowOffset + offset() + 4);
     
     return value & VERSION_MASK;
   }
@@ -105,14 +105,14 @@ public class ColumnState extends Column
   {
     value = value & VERSION_MASK;
     
-    int offset = rowOffset + getOffset() + 4;
+    int offset = rowOffset + offset() + 4;
     
     BitsUtil.writeLong(rowBuffer, offset, value);
   }
   
   public long getTime(byte []rowBuffer, int rowOffset)
   {
-    long version = BitsUtil.readLong(rowBuffer, rowOffset + getOffset() + 4);
+    long version = BitsUtil.readLong(rowBuffer, rowOffset + offset() + 4);
     
     // XXX: theoretical rollover issues
     

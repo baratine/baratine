@@ -87,7 +87,7 @@ abstract class RowInSkeleton
       Column column = columns[i];
       
       if (column.type().isBlob()) {
-        head = new RowInBlob(head, column.getOffset());
+        head = new RowInBlob(head, column.offset());
       }
     }
     
@@ -105,11 +105,11 @@ abstract class RowInSkeleton
         }
       }
       else if (length > 0) {
-        offset = column.getOffset();
+        offset = column.offset();
         length += column.length();
       }
       else {
-        offset = column.getOffset();
+        offset = column.offset();
         length = column.length();
       }
     }
@@ -256,7 +256,7 @@ abstract class RowInSkeleton
       Page page = srcPage(block, rowOffset, table);
       
       if (page != null) {
-        return page.getSize();
+        return page.size();
       }
       else {
         return 0;
@@ -269,7 +269,7 @@ abstract class RowInSkeleton
       Page page = srcPage(block, rowOffset, table);
       
       if (page != null) {
-        return page.getSize();
+        return page.size();
       }
       else {
         return 0;

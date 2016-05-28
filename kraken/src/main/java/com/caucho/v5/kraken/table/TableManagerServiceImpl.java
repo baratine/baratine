@@ -261,7 +261,7 @@ public class TableManagerServiceImpl implements TableManagerService
     if (tableKelp != null) {
       tableKraken = createTableImpl(tableKelp, builder);
 
-      HashKey hKey = HashKey.create(tableKelp.getTableKey());
+      HashKey hKey = HashKey.create(tableKelp.tableKey());
       
       if (_tableSqlMap.get(hKey) == null) {
         _tableSqlMap.put(hKey, sql);
@@ -300,7 +300,7 @@ public class TableManagerServiceImpl implements TableManagerService
   private TableKraken createTableImpl(TableKelp tableKelp,
                                       TableBuilderKraken builder)
   {
-    HashKey tableKey = HashKey.create(tableKelp.getTableKey());
+    HashKey tableKey = HashKey.create(tableKelp.tableKey());
     
     TableKraken tableKraken = _tableMap.get(tableKey);
 

@@ -142,7 +142,7 @@ public class BlockTree extends Block
   {
     byte []buffer = getBuffer();
     
-    int keyLength = row.getKeyLength();
+    int keyLength = row.keyLength();
     int len = row.getTreeItemLength();
     
     int minOffset = 1;
@@ -183,7 +183,7 @@ public class BlockTree extends Block
   {
     byte []buffer = getBuffer();
     
-    int keyLength = row.getKeyLength();
+    int keyLength = row.keyLength();
     int itemLen = row.getTreeItemLength();
     
     int length = (BLOCK_SIZE - _sortHead) / itemLen;
@@ -387,7 +387,7 @@ public class BlockTree extends Block
   {
     Row row = table.row();
     
-    int keyLength = row.getKeyLength();
+    int keyLength = row.keyLength();
     int len = row.getTreeItemLength();
     
     byte []minKey = new byte[keyLength];
@@ -451,7 +451,7 @@ public class BlockTree extends Block
       return this;
     }
     
-    int keyLength = row.getKeyLength();
+    int keyLength = row.keyLength();
     
     _sortHead = getIndex();
     

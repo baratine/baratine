@@ -27,47 +27,16 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
+package com.caucho.v5.kraken.archive;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Objects;
+import io.baratine.service.Result;
 
-import com.caucho.v5.kelp.ArchiveTableKelp;
 
 
 /**
  * Archiving builder.
  */
-public class ArchiveKraken
+public interface ArchiveService
 {
-  private TableKraken _table;
-  private Path _path;
-  private ArchiveTableKelp _archiveKelp;
-  
-  public ArchiveKraken(TableKraken table,
-                       Path path)
-  {
-    Objects.requireNonNull(table);
-    Objects.requireNonNull(path);
-
-    _table = table;
-    _path = path;
-    
-    _archiveKelp = table.getTableKelp().archive(_path);
-    _archiveKelp.sql(table.getSql());
-  }
-  
-  public ArchiveKraken zip(boolean isZip)
-  {
-    _archiveKelp.zip(isZip);
-    
-    return this;
-  }
-  
-  public void exec()
-    throws IOException
-  {
-    _archiveKelp.exec();
-  }
+  void archive(ArchiveKrakenManager archive, Result<Boolean> result);
 }

@@ -71,7 +71,7 @@ public class PageBlobImpl extends PageBlob
   }
   
   @Override
-  public int getSize()
+  public int size()
   {
     return _buffers.size() * BLOCK_SIZE;
   }

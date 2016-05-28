@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
+package com.caucho.v5.kraken.archive;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +38,8 @@ import com.caucho.v5.h3.OutFactoryH3;
 import com.caucho.v5.h3.OutH3;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.RowCursor;
+import com.caucho.v5.kraken.table.KelpManager;
+import com.caucho.v5.kraken.table.KrakenImpl;
 
 /**
  * The local file backing for the store

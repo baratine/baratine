@@ -279,7 +279,7 @@ abstract public class Page
   }
   */
   
-  public int getSize()
+  public int size()
   {
     return 0;
   }

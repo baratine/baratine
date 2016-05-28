@@ -27,12 +27,12 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
-
+package com.caucho.v5.kelp.upgrade;
 
 /**
- * The local file backing for the store
+ * callback for a kelp upgrade reader
  */
-public class ArchiveStore
+public interface KelpUpgrade
 {
+  TableUpgrade table(byte []tableId, RowUpgrade row);
 }

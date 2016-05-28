@@ -92,7 +92,7 @@ class PageBlobStub extends PageBlob
   }
   
   @Override
-  public int getSize()
+  public int size()
   {
     return getLength();
   }

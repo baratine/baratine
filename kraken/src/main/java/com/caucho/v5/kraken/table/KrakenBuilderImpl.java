@@ -50,6 +50,7 @@ public class KrakenBuilderImpl implements KrakenBuilder
   private ServerBartender _serverSelf;
   private TempStore _tempStore;
   
+  @Override
   public Path root()
   {
     return _root;
@@ -120,6 +121,7 @@ public class KrakenBuilderImpl implements KrakenBuilder
       
       _root = Vfs.path(rootPath).resolve("kraken");
     }
+    
     
     if (_tempStore == null) {
       TempStoreBuilder tempBuilder = new TempStoreBuilder(_root.resolve("temp"));

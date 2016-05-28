@@ -27,41 +27,51 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kelp;
+package com.caucho.v5.kelp.upgrade;
 
-import com.caucho.v5.util.BitsUtil;
+import java.util.Objects;
+
+import com.caucho.v5.kelp.Column.ColumnType;
 
 /**
- * A column for the log store.
+ * row information
  */
-public class ColumnDouble extends Column
+public class ColumnUpgrade
 {
-  public ColumnDouble(int index,
-                         String name,
-                         int offset)
+  private final String _name;
+  private final ColumnType _type;
+  private final int _length;
+  
+  ColumnUpgrade(String name, 
+               ColumnType type, 
+               int length)
   {
-    super(index, name, ColumnType.DOUBLE, offset);
+    Objects.requireNonNull(name);
+    Objects.requireNonNull(type);
+    
+    _name = name;
+    _type = type;
+    _length = length;
+  }
+  
+  public String name()
+  {
+    return _name;
+  }
+  
+  public ColumnType type()
+  {
+    return _type;
   }
 
-  @Override
-  public final int length()
+  public int length()
   {
-    return 8;
+    return _length;
   }
   
   @Override
-  public double getDouble(byte []rowBuffer, int rowOffset)
+  public String toString()
   {
-    long longValue = BitsUtil.readLong(rowBuffer, rowOffset + offset());
-    
-    return Double.longBitsToDouble(longValue);
-  }
-  
-  @Override
-  public void setDouble(byte []rowBuffer, int rowOffset, double value)
-  {
-    long longValue = Double.doubleToLongBits(value);
-    
-    BitsUtil.writeLong(rowBuffer, rowOffset + offset(), longValue);
+    return getClass().getSimpleName() + "[" + name() + "," + type() + "]";
   }
 }

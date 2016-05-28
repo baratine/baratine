@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
+package com.caucho.v5.kraken.archive;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +39,8 @@ import com.caucho.v5.h3.InH3;
 import com.caucho.v5.h3.OutFactoryH3;
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.kelp.RowCursor;
+import com.caucho.v5.kraken.table.KelpManager;
+import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 

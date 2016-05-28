@@ -52,7 +52,11 @@ public interface SegmentService
   /**
    * Add table metadata to the service.
    */
-  void addTable(byte []tableKey, int rowLength, int keyOffset, int keyLength);
+  void addTable(byte []tableKey, 
+                int rowLength, 
+                int keyOffset, 
+                int keyLength,
+                byte []data);
   
   void freeSegment(SegmentKelp segment);
   

@@ -27,18 +27,12 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import com.caucho.v5.io.StreamSource;
-import com.caucho.v5.kelp.DatabaseKelp;
-import com.caucho.v5.kelp.RowCursor;
+package com.caucho.v5.kelp.upgrade;
 
 /**
- * The local file backing for the store
+ * callback for a kelp upgrade reader
  */
-public class ArchiveEntry
+public interface TableUpgrade
 {
+  void row(long sequence, CursorUpgrade cursor);
 }

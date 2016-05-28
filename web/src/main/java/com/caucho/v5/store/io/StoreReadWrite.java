@@ -49,7 +49,7 @@ public interface StoreReadWrite
   /**
    * Returns the alignment size for mmaps.
    */
-  long getChunkSize();
+  long chunkSize();
   
   long getMmapCloseTimeout();
   

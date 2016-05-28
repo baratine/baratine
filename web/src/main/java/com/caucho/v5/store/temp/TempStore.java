@@ -68,7 +68,7 @@ public class TempStore
     _segmentLength = 1024 * _chunkSize;
     
     StoreBuilder storeBuilder = new StoreBuilder(_path);
-    storeBuilder.ampManager(builder.ampManager());
+    storeBuilder.services(builder.ampManager());
     _store = storeBuilder.build();
     
     try {

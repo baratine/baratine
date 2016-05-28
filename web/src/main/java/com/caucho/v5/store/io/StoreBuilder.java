@@ -85,7 +85,7 @@ public class StoreBuilder
     return _isJniMmap;
   }
   
-  public StoreBuilder ampManager(ServicesAmp rampManager)
+  public StoreBuilder services(ServicesAmp rampManager)
   {
     Objects.requireNonNull(rampManager);
     

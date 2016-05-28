@@ -185,7 +185,7 @@ public class PageServiceImpl implements PageService
       Page page = _pages.get(i);
       
       if (page != null) {
-        size += page.getSize();
+        size += page.size();
       }
     }
     
@@ -446,7 +446,7 @@ public class PageServiceImpl implements PageService
       }
     }
     
-    if (_table.getMaxNodeLength() < newLeaf.getSize()) {
+    if (_table.getMaxNodeLength() < newLeaf.size()) {
       int parentPid = getTreeParent(cursor.getKey(), _rootPid, newLeaf.getId());
       
       splitPage(parentPid, newLeaf.getId());
@@ -603,7 +603,7 @@ public class PageServiceImpl implements PageService
       Page page = _pages.get(i);
       
       if (page != null && page.getSegment() == segment) {
-        size += page.getSize();
+        size += page.size();
       }
     }
     
@@ -1206,7 +1206,7 @@ public class PageServiceImpl implements PageService
       }
     }
     
-    if (_table.getMaxNodeLength() < newLeaf.getSize()) {
+    if (_table.getMaxNodeLength() < newLeaf.size()) {
       int parentPid = getTreeParent(cursor.getKey(), _rootPid, newLeaf.getId());
       
       splitPage(parentPid, newLeaf.getId());
@@ -1252,13 +1252,13 @@ public class PageServiceImpl implements PageService
   {
     Row row = _table.row();
     
-    int keyLen = row.getKeyLength();
+    int keyLen = row.keyLength();
     
     byte []key = new byte[keyLen];
-    System.arraycopy(rowBuffer, rowOffset + row.getKeyOffset(),
+    System.arraycopy(rowBuffer, rowOffset + row.keyOffset(),
                      key, 0, keyLen);
 
-    backupCallback.onPut(_table.getTableKey(), key, 
+    backupCallback.onPut(_table.tableKey(), key, 
                          toStream(rowBuffer, rowOffset, rowBuffer),
                          result);
   }
@@ -1269,13 +1269,13 @@ public class PageServiceImpl implements PageService
   {
     Row row = _table.row();
     
-    int keyLen = row.getKeyLength();
+    int keyLen = row.keyLength();
     
     byte []key = new byte[keyLen];
     System.arraycopy(buffer, rowOffset + ColumnState.LENGTH,
                      key, 0, keyLen);
     //System.out.println("BAK: " + Hex.toHex(buffer, rowOffset, row.getLength()));
-    backupCallback.onRemove(_table.getTableKey(), key, version, result);
+    backupCallback.onRemove(_table.tableKey(), key, version, result);
   }
 
   /*
@@ -1427,7 +1427,7 @@ public class PageServiceImpl implements PageService
       System.out.println("Unexpected page type: " + page + " " + _pages.get(leafPid));
     }
     
-    if (page.getSize() < _table.getMaxNodeLength()) {
+    if (page.size() < _table.getMaxNodeLength()) {
       // _pages.set(nextPid, null);
       return;
     }
@@ -1486,7 +1486,7 @@ public class PageServiceImpl implements PageService
   
   private void splitTreePage(PageTree treePage)
   {
-    if (treePage.getSize() <= _table.getMaxNodeLength()
+    if (treePage.size() <= _table.getMaxNodeLength()
         && treePage.getDeltaTreeCount(_table.row()) < _table.getDeltaTreeMax()) {
       
       // treePage.write(_db, this, 0);
@@ -1495,7 +1495,7 @@ public class PageServiceImpl implements PageService
     
     treePage = treePage.compact(_table);
     //System.out.println("COMPACT: " + treePage);
-    if (treePage.getSize() <= _table.getMaxNodeLength()) {
+    if (treePage.size() <= _table.getMaxNodeLength()) {
       _pages.set(treePage.getId(), treePage);
       // treePage.write(_db, this, 0);
       return;
@@ -1605,7 +1605,7 @@ public class PageServiceImpl implements PageService
   private void validateAndRepair()
   {
     Row row = _table.row();
-    int keyLength = row.getKeyLength();
+    int keyLength = row.keyLength();
     
     byte []minKey = new byte[keyLength];
     byte []maxKey = new byte[keyLength];

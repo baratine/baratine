@@ -177,7 +177,7 @@ public final class ReadStream extends InputStream
   /**
    * Returns the read position.
    */
-  public long getPosition()
+  public long position()
   {
     return _position - (_readLength - _readOffset);
   }
@@ -212,7 +212,7 @@ public final class ReadStream extends InputStream
   /**
    * Sets the current read position.
    */
-  public boolean setPosition(long pos)
+  public boolean position(long pos)
     throws IOException
   {
     if (pos < 0) {
@@ -221,7 +221,7 @@ public final class ReadStream extends InputStream
       return false;
     }
     
-    long delta = pos - getPosition();
+    long delta = pos - position();
     
     long newOffset = _readOffset + delta;
     
@@ -249,7 +249,7 @@ public final class ReadStream extends InputStream
     else {
       // Seek forward in the stream, skip any buffered bytes
 
-      long n = pos - getPosition();
+      long n = pos - position();
 
       return (skip(n) == n);
     }

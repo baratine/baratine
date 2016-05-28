@@ -86,7 +86,7 @@ public class ColumnBlob extends Column
                                            int rowOffset,
                                            byte []pageBuffer)
   {
-    int offset = rowOffset + getOffset();
+    int offset = rowOffset + offset();
     
     int blobOffset = BitsUtil.readInt16(rowBuffer, offset);
     int blobLength = BitsUtil.readInt16(rowBuffer, offset + 2);
@@ -125,7 +125,7 @@ public class ColumnBlob extends Column
                                            int rowOffset,
                                            byte []pageBuffer)
   {
-    int offset = rowOffset + getOffset();
+    int offset = rowOffset + offset();
     
     int blobOffset = BitsUtil.readInt16(rowBuffer, offset);
     int blobLength = BitsUtil.readInt16(rowBuffer, offset + 2);
@@ -155,7 +155,7 @@ public class ColumnBlob extends Column
   public void read(byte []rowBuffer, int rowOffset,
                    byte []buffer, int offset)
   {
-    System.arraycopy(rowBuffer, rowOffset + getOffset(),
+    System.arraycopy(rowBuffer, rowOffset + offset(),
                      buffer, offset, length());
   }
   
@@ -163,14 +163,14 @@ public class ColumnBlob extends Column
                     byte []buffer, int offset)
   {
     System.arraycopy(buffer, offset,
-                     rowBuffer, rowOffset + getOffset(),
+                     rowBuffer, rowOffset + offset(),
                      length());
   }
 
   @Override
   void setBlob(byte []rowBuffer, int rowOffset, int blobOffset, int length)
   {
-    int offset = rowOffset + getOffset();
+    int offset = rowOffset + offset();
     
     BitsUtil.writeInt16(rowBuffer, offset, blobOffset);
     BitsUtil.writeInt16(rowBuffer, offset + 2, length);
@@ -185,8 +185,8 @@ public class ColumnBlob extends Column
   int insertBlob(byte[] srcBuffer, int srcRowOffset,
                  byte[] dstBuffer, int dstRowOffset, int dstBlobTail)
   {
-    int srcColumnOffset = srcRowOffset + getOffset();
-    int dstColumnOffset = dstRowOffset + getOffset();
+    int srcColumnOffset = srcRowOffset + offset();
+    int dstColumnOffset = dstRowOffset + offset();
     
     int blobLen = BitsUtil.readInt16(srcBuffer, srcColumnOffset + 2);
 
@@ -225,7 +225,7 @@ public class ColumnBlob extends Column
   @Override
   public void remove(PageServiceImpl pageActor, byte[] buffer, int rowOffset)
   {
-    int offset = rowOffset + getOffset();
+    int offset = rowOffset + offset();
     
     int blobOffset = BitsUtil.readInt16(buffer, offset);
     int blobLen = BitsUtil.readInt16(buffer, offset + 2);
@@ -299,7 +299,7 @@ public class ColumnBlob extends Column
     int len = BitsUtil.readInt16(is);
 
     if (len == 0) {
-      BitsUtil.writeInt(buffer, offset + getOffset(), 0);
+      BitsUtil.writeInt(buffer, offset + offset(), 0);
       return;
     }
     
@@ -357,7 +357,7 @@ public class ColumnBlob extends Column
     int len = BitsUtil.readInt(is);
 
     if (len == 0) {
-      BitsUtil.writeInt(buffer, offset + getOffset(), 0);
+      BitsUtil.writeInt(buffer, offset + offset(), 0);
       return;
     }
     
@@ -411,7 +411,7 @@ public class ColumnBlob extends Column
                        PageServiceImpl tableService)
     throws IOException
   {
-    int offset = rowOffset + getOffset();
+    int offset = rowOffset + offset();
     
     int blobLen = BitsUtil.readInt16(buffer, offset + 2);
     int blobOffset = BitsUtil.readInt16(buffer, offset);
@@ -463,7 +463,7 @@ public class ColumnBlob extends Column
   public long getLength(long length, byte[] buffer, int rowOffset,
                         PageServiceImpl pageService)
   {
-    int offset = rowOffset + getOffset();
+    int offset = rowOffset + offset();
     
     int blobLen = BitsUtil.readInt16(buffer, offset + 2);
     int blobOffset = BitsUtil.readInt16(buffer, offset);
@@ -503,7 +503,7 @@ public class ColumnBlob extends Column
   void writeCheckpoint(WriteStream os, byte[] rowBuffer, int rowOffset)
     throws IOException
   {
-    int colOffset = rowOffset + getOffset();
+    int colOffset = rowOffset + offset();
     
     int blobOffset = BitsUtil.readInt16(rowBuffer, colOffset);
     int blobLength = BitsUtil.readInt16(rowBuffer, colOffset + 2);
@@ -537,7 +537,7 @@ public class ColumnBlob extends Column
     throws IOException
   {
     int blobLen = BitsUtil.readInt16(is);
-    int colOffset = rowOffset + getOffset();
+    int colOffset = rowOffset + offset();
 
     if (blobLen != 0) {
       int sublen = blobLen & ~LARGE_BLOB_MASK;
@@ -575,7 +575,7 @@ public class ColumnBlob extends Column
   @Override
   public void validate(byte[] blockBuffer, int rowOffset, int rowHead, int blobTail)
   {
-    int offset = rowOffset + getOffset();
+    int offset = rowOffset + offset();
     
     int blobLen = BitsUtil.readInt16(blockBuffer, offset + 2);
     int blobOffset = BitsUtil.readInt16(blockBuffer, offset);

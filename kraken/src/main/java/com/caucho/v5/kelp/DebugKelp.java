@@ -163,7 +163,7 @@ public class DebugKelp
     try (InSegment in = segmentService.openRead(extent)) {
       ReadStream is = new ReadStream(in);
 
-      is.setPosition(length - BLOCK_SIZE);
+      is.position(length - BLOCK_SIZE);
 
       long seq = BitsUtil.readLong(is);
 
@@ -187,7 +187,7 @@ public class DebugKelp
       out.println();
       out.println("Segment: " + extent.getId() + " (seq: " + seq
                   + ", table: " + Hex.toShortHex(tableKey)
-                  + ", addr: 0x" + Long.toHexString(extent.getAddress())
+                  + ", addr: 0x" + Long.toHexString(extent.address())
                   + ", len: 0x" + Integer.toHexString(length) + ")");
       
       debugSegmentEntries(out, is, extent, table);
@@ -212,7 +212,7 @@ public class DebugKelp
     for (long ptr = extent.getLength() - BLOCK_SIZE; 
          ptr > 0;
          ptr -= BLOCK_SIZE) {
-      is.setPosition(ptr);
+      is.position(ptr);
       
       long seq = BitsUtil.readLong(is);
       byte []tableKey = new byte[32];
@@ -227,7 +227,7 @@ public class DebugKelp
       
       int tail = BLOCK_SIZE;
       
-      while ((tail = debugSegmentEntry(out, is, extent.getAddress(),
+      while ((tail = debugSegmentEntry(out, is, extent.address(),
                                        ptr, tail,
                                        table)) > head) {
       }
@@ -250,7 +250,7 @@ public class DebugKelp
     
     tail -= sublen;
     
-    is.setPosition(ptr + tail);
+    is.position(ptr + tail);
     int typeCode = is.read();
     
     if (typeCode <= 0) {
@@ -264,7 +264,7 @@ public class DebugKelp
     int offset = BitsUtil.readInt(is);
     int length = BitsUtil.readInt(is);
     
-    long pos = is.getPosition();
+    long pos = is.position();
     
     switch (type) {
     case LEAF:
@@ -286,7 +286,7 @@ public class DebugKelp
       break;
     }
     
-    is.setPosition(pos);
+    is.position(pos);
   
     out.println(" pid:" + pid + " next:" + nextPid
                 + " offset:" + offset + " length:" + length);
@@ -302,10 +302,10 @@ public class DebugKelp
     throws IOException
   {
     //is.setPosition(segmentAddress + offset);
-    is.setPosition(offset);
+    is.position(offset);
     
-    byte []minKey = new byte[table.getKeyLength()];
-    byte []maxKey = new byte[table.getKeyLength()];
+    byte []minKey = new byte[table.keyLength()];
+    byte []maxKey = new byte[table.keyLength()];
     
     is.readAll(minKey, 0, minKey.length);
     is.readAll(maxKey, 0, maxKey.length);
@@ -324,10 +324,10 @@ public class DebugKelp
                  TableEntry table)
     throws IOException
   {
-    is.setPosition(segmentAddress + offset);
+    is.position(segmentAddress + offset);
     
-    byte []minKey = new byte[table.getKeyLength()];
-    byte []maxKey = new byte[table.getKeyLength()];
+    byte []minKey = new byte[table.keyLength()];
+    byte []maxKey = new byte[table.keyLength()];
     
     is.readAll(minKey, 0, minKey.length);
     is.readAll(maxKey, 0, maxKey.length);

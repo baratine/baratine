@@ -29,6 +29,7 @@
 
 package com.caucho.v5.kelp;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,12 +38,15 @@ import java.util.ArrayList;
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.WriteStream;
+import com.caucho.v5.util.BitsUtil;
 
 /**
  * A row for the log store.
  */
-public final class Row {
+public final class Row
+{
   private final DatabaseKelp _db;
+  private final String _name;
   private final Column []_columns;
   private final Column []_blobs;
   private final int _length;
@@ -53,12 +57,15 @@ public final class Row {
   private final RowInSkeleton _inSkeleton;
   
   Row(DatabaseKelp db,
+      String name,
       Column []columns, 
       Column []blobs,
       int keyStart, 
       int keyLength)
   {
     _db = db;
+    
+    _name = name;
     
     _columns = columns;
     _blobs = blobs;
@@ -98,7 +105,7 @@ public final class Row {
     for (int i = 0; i < _columns.length; i++) {
       Column col = _columns[i];
       
-      int offset = col.getOffset();
+      int offset = col.offset();
       
       if (_keyStart <= offset && offset < _keyStart + _keyLength) {
         keys.add(col);
@@ -108,17 +115,17 @@ public final class Row {
     return keys;
   }
   
-  public int getLength()
+  public int length()
   {
     return _length;
   }
   
-  public int getKeyOffset()
+  public int keyOffset()
   {
     return _keyStart;
   }
   
-  public int getKeyLength()
+  public int keyLength()
   {
     return _keyLength;
   }
@@ -130,7 +137,88 @@ public final class Row {
   
   public int getTreeItemLength()
   {
-    return 1 + 2 * getKeyLength() + 4;
+    return 1 + 2 * keyLength() + 4;
+  }
+  
+  /**
+   * Serialize the row's metadata to enable upgrade. 
+   */
+  public byte []data()
+  {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    
+    try {
+      toData(bos);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    
+    return bos.toByteArray();
+  }
+  
+  /**
+   * Serialize the row's metadata to enable upgrade. 
+   */
+  private void toData(ByteArrayOutputStream bos)
+    throws IOException
+  {
+    byte []name = _name.getBytes("UTF-8");
+    
+    BitsUtil.writeInt16(bos, name.length);
+    bos.write(name);
+    
+    BitsUtil.writeInt16(bos, keyColumnStart());
+    BitsUtil.writeInt16(bos, keyColumnEnd());
+    
+    BitsUtil.writeInt16(bos, _columns.length);
+    for (Column column : _columns) {
+      column.toData(bos);
+    }
+    
+    BitsUtil.writeInt16(bos, _blobs.length);
+    for (Column column : _blobs) {
+      column.toData(bos);
+    }
+  }
+  
+  /**
+   * First key column index.
+   */
+  private int keyColumnStart()
+  {
+    int offset = 0;
+    
+    for (int i = 0; i < _columns.length; i++) {
+      if (offset == _keyStart) {
+        return i;
+      }
+      
+      offset += _columns[i].length();
+    }
+    
+    throw new IllegalStateException();
+  }
+  
+  /**
+   * End key column index, the index after the final key.
+   */
+  private int keyColumnEnd()
+  {
+    int offset = 0;
+    
+    for (int i = 0; i < _columns.length; i++) {
+      if (offset == _keyStart + _keyLength) {
+        return i;
+      }
+      
+      offset += _columns[i].length();
+    }
+    
+    if (offset == _keyStart + _keyLength) {
+      return _columns.length;
+    }
+    
+    throw new IllegalStateException();
   }
   
   public ColumnState getColumnState()
@@ -331,7 +419,7 @@ public final class Row {
                      int blobTail)
     throws IOException
   {
-    int rowLength = getLength();
+    int rowLength = length();
     
     if (rowOffset < blobTail) {
       return -1;

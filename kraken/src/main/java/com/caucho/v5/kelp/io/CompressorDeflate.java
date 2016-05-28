@@ -239,7 +239,7 @@ public class CompressorDeflate implements CompressorKelp
       _tBuf = TempBuffer.create();
       _buffer = _tBuf.buffer();
       
-      _is.setPosition(offset);
+      _is.position(offset);
       _rawLength = length;
     }
     

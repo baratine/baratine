@@ -89,7 +89,7 @@ class JournalKelpImpl
   
   private int getKeyLength()
   {
-    return _table.row().getKeyLength();
+    return _table.row().keyLength();
   }
   
   boolean isCheckpointRequired()
@@ -176,7 +176,7 @@ class JournalKelpImpl
     }
 
     default:
-      throw new IllegalStateException(String.valueOf(code) + " pos=" + is.getPosition());
+      throw new IllegalStateException(String.valueOf(code) + " pos=" + is.position());
     }
   }
   

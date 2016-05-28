@@ -27,41 +27,48 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kelp;
+package com.caucho.v5.kraken.archive;
 
-import com.caucho.v5.util.BitsUtil;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Objects;
+
+import com.caucho.v5.kelp.ArchiveTableKelp;
+import com.caucho.v5.kraken.table.TableKraken;
+
 
 /**
- * A column for the log store.
+ * Archiving builder.
  */
-public class ColumnDouble extends Column
+public class ArchiveKraken
 {
-  public ColumnDouble(int index,
-                         String name,
-                         int offset)
+  private TableKraken _table;
+  private Path _path;
+  private ArchiveTableKelp _archiveKelp;
+  
+  public ArchiveKraken(TableKraken table,
+                       Path path)
   {
-    super(index, name, ColumnType.DOUBLE, offset);
-  }
+    Objects.requireNonNull(table);
+    Objects.requireNonNull(path);
 
-  @Override
-  public final int length()
-  {
-    return 8;
+    _table = table;
+    _path = path;
+    
+    _archiveKelp = table.getTableKelp().archive(_path);
+    _archiveKelp.sql(table.getSql());
   }
   
-  @Override
-  public double getDouble(byte []rowBuffer, int rowOffset)
+  public ArchiveKraken zip(boolean isZip)
   {
-    long longValue = BitsUtil.readLong(rowBuffer, rowOffset + offset());
+    _archiveKelp.zip(isZip);
     
-    return Double.longBitsToDouble(longValue);
+    return this;
   }
   
-  @Override
-  public void setDouble(byte []rowBuffer, int rowOffset, double value)
+  public void exec()
+    throws IOException
   {
-    long longValue = Double.doubleToLongBits(value);
-    
-    BitsUtil.writeLong(rowBuffer, rowOffset + offset(), longValue);
+    _archiveKelp.exec();
   }
 }

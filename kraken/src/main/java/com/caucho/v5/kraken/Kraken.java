@@ -101,7 +101,7 @@ public interface Kraken
 
   DatabaseKrakenSync databaseSync();
 
-  void start();
+  //void start();
 
   void close();
 }

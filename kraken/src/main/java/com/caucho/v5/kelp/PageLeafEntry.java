@@ -69,7 +69,7 @@ class PageLeafEntry implements Comparable<Object> {
       return ColumnState.LENGTH;
     }
     else {
-      return _row.getKeyOffset();
+      return _row.keyOffset();
     }
   }
 
@@ -79,7 +79,7 @@ class PageLeafEntry implements Comparable<Object> {
                      _rowOffset + getKeyOffset(),
                      key,
                      0, 
-                     _row.getKeyLength());
+                     _row.keyLength());
   }
 
   long getExpires()
@@ -149,7 +149,7 @@ class PageLeafEntry implements Comparable<Object> {
       
       os.write(_block.getBuffer(), 
                _rowOffset + ColumnState.LENGTH, // + _row.getKeyOffset(),
-               _row.getKeyLength());
+               _row.keyLength());
       break;
     }
   }
@@ -166,7 +166,7 @@ class PageLeafEntry implements Comparable<Object> {
                                           _rowOffset + keyA,
                                           entry._block.getBuffer(),
                                           entry._rowOffset + keyB,
-                                          _row.getKeyLength());
+                                          _row.keyLength());
   }
 
   @Override
@@ -174,8 +174,8 @@ class PageLeafEntry implements Comparable<Object> {
   {
     byte []buffer = _block.getBuffer();
 
-    int offset = _rowOffset + _row.getKeyOffset();
-    int len = _row.getKeyLength();
+    int offset = _rowOffset + _row.keyOffset();
+    int len = _row.keyLength();
 
     int hash = 37;
 
@@ -200,8 +200,8 @@ class PageLeafEntry implements Comparable<Object> {
 
     byte []buffer = _block.getBuffer();
 
-    int offset = _rowOffset + _row.getKeyOffset();
-    int len = _row.getKeyLength();
+    int offset = _rowOffset + _row.keyOffset();
+    int len = _row.keyLength();
 
     sb.append(Hex.toShortHex(buffer, offset, len));
 

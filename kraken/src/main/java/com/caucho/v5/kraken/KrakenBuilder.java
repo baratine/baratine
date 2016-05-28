@@ -41,10 +41,12 @@ import com.caucho.v5.store.temp.TempStore;
 public interface KrakenBuilder
 {
   void root(Path path);
+  Path root();
   
   void services(ServicesAmp currentManager);
   void serverSelf(ServerBartender serverSelf);
   void tempStore(TempStore tempStore);
   
   Kraken get();
+
 }

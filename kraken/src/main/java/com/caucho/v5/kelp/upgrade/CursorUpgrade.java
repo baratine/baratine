@@ -27,15 +27,18 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.table;
-
-
-
+package com.caucho.v5.kelp.upgrade;
 
 /**
- * Archiving builder.
+ * callback for a kelp upgrade reader
  */
-public interface ArchiveServiceSync extends ArchiveService
+public interface CursorUpgrade
 {
-  boolean archive(ArchiveKrakenManager archive);
+  int size();
+  
+  int getInt(int column);
+  double getDouble(int column);
+  boolean getBoolean(int column);
+  String getString(int column);
+  byte []getBytes(int column);
 }

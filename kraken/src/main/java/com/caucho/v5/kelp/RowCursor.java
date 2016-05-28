@@ -73,10 +73,10 @@ public final class RowCursor
   {
     _table = table;
     _row = logRow;
-    _data = new byte[logRow.getLength()];
+    _data = new byte[logRow.length()];
     
-    _keyOffset = logRow.getKeyOffset();
-    _keyLength = logRow.getKeyLength();
+    _keyOffset = logRow.keyOffset();
+    _keyLength = logRow.keyLength();
   }
   
   public final byte []getBuffer()
@@ -96,7 +96,7 @@ public final class RowCursor
 
   int getKeyLength()
   {
-    return _row.getKeyLength();
+    return _row.keyLength();
   }
   
   int getRemoveLength()
@@ -111,7 +111,7 @@ public final class RowCursor
 
   int getLength()
   {
-    return _row.getLength();
+    return _row.length();
   }
 
   /**
@@ -258,7 +258,7 @@ public final class RowCursor
 
   public int getOffset(int index)
   {
-    return _row.columns()[index].getOffset();
+    return _row.columns()[index].offset();
   }
 
   public final void setInt(int index, int value)
@@ -644,7 +644,7 @@ public final class RowCursor
     
     if ((code & Page.CODE_MASK) == Page.REMOVE) {
       int stateLength = getColumnState().length();
-      int keyOffset = getRow().getKeyOffset();
+      int keyOffset = getRow().keyOffset();
       int keyLength = getKeyLength();
       
       System.arraycopy(buffer, rowOffset, _data, 0, stateLength);

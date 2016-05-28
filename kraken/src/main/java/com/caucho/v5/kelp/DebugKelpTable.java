@@ -50,7 +50,7 @@ public class DebugKelpTable
   {
     Row row = _table.row();
     
-    int keyLength = row.getKeyLength();
+    int keyLength = row.keyLength();
     
     byte []minKey = new byte[keyLength];
     byte []maxKey = new byte[keyLength];

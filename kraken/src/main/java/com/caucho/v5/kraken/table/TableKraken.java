@@ -47,6 +47,7 @@ import com.caucho.v5.kelp.TableKelp;
 import com.caucho.v5.kelp.TableListener;
 import com.caucho.v5.kelp.query.ColumnExprKelp;
 import com.caucho.v5.kelp.query.ExprKelp;
+import com.caucho.v5.kraken.archive.ArchiveKraken;
 import com.caucho.v5.kraken.query.TableBuilderKraken;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.Hex;
@@ -131,7 +132,7 @@ public class TableKraken
   
   public byte []getTableKey()
   {
-    return getTableKelp().getTableKey();
+    return getTableKelp().tableKey();
   }
   
   public TableKelp getTableKelp()
@@ -194,8 +195,8 @@ public class TableKraken
     int keyLength = tableKelp.getKeyLength();
     
     for (Column column : tableKelp.getColumns()) {
-      if (keyOffset <= column.getOffset()
-          && column.getOffset() < keyOffset + keyLength) {
+      if (keyOffset <= column.offset()
+          && column.offset() < keyOffset + keyLength) {
         keys.add(column);
       }
     }
@@ -292,7 +293,7 @@ public class TableKraken
 
   public void fillHashKey(RowCursor rowCursor, Column keyColumn, String value)
   {
-    int offset = keyColumn.getOffset();
+    int offset = keyColumn.offset();
     int length = keyColumn.length();
     
     int sublen = Math.min(value.length(), 8);
@@ -398,7 +399,7 @@ public class TableKraken
 
   public byte[] getKey()
   {
-    return _tableKelp.getTableKey();
+    return _tableKelp.tableKey();
   }
 
   public RowCursor cursor()

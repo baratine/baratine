@@ -64,7 +64,7 @@ public class TableBuilderKelp
     _db = db;
     _name = name;
     
-    _rowBuilder = new RowBuilder();
+    _rowBuilder = new RowBuilder(name);
   }
   
   public TableBuilderKelp columnInt8(String name)
@@ -183,9 +183,9 @@ public class TableBuilderKelp
 
     Fnv256 keyGen = new Fnv256();
     keyGen.update(_name);
-    keyGen.updateInt32(row.getLength());
-    keyGen.updateInt32(row.getKeyOffset());
-    keyGen.updateInt32(row.getKeyLength());
+    keyGen.updateInt32(row.length());
+    keyGen.updateInt32(row.keyOffset());
+    keyGen.updateInt32(row.keyLength());
     
     for (Column col : row.columns()) {
       keyGen.update(col.name());

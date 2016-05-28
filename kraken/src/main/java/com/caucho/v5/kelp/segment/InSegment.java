@@ -61,7 +61,7 @@ public class InSegment extends StreamImpl implements AutoCloseable
   {
     _sIn = sIn;
     
-    _address = extent.getAddress();
+    _address = extent.address();
     _length = extent.getLength();
     _position = 0;
     

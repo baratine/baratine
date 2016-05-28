@@ -52,12 +52,12 @@ public class ColumnInt8 extends Column
   @Override
   public int getInt(byte []rowBuffer, int rowOffset)
   {
-    return rowBuffer[rowOffset + getOffset()] & 0xff;
+    return rowBuffer[rowOffset + offset()] & 0xff;
   }
   
   @Override
   public void setInt(byte []rowBuffer, int rowOffset, int value)
   {
-    rowBuffer[rowOffset + getOffset()] = (byte) value;
+    rowBuffer[rowOffset + offset()] = (byte) value;
   }
 }

@@ -93,7 +93,7 @@ public class DatabaseServiceKelpImpl
   private void afterTable(String name, TableKelp table)
   {
     _tableMap.put(name, table);
-    _tableKeyMap.put(HashKey.create(table.getTableKey()), table);
+    _tableKeyMap.put(HashKey.create(table.tableKey()), table);
     
     PendingTable pendingTable = _pendingMap.remove(name);
     
@@ -151,12 +151,13 @@ public class DatabaseServiceKelpImpl
     }
     
     // _tableMap.put(name, table);
-    _tableKeyMap.put(HashKey.create(table.getTableKey()), table);
+    _tableKeyMap.put(HashKey.create(table.tableKey()), table);
     
-    _db.getSegmentService().addTable(table.getTableKey(),
-                                     table.row().getLength(),
-                                     table.row().getKeyOffset(),
-                                     table.row().getKeyLength());
+    _db.getSegmentService().addTable(table.tableKey(),
+                                     table.row().length(),
+                                     table.row().keyOffset(),
+                                     table.row().keyLength(),
+                                     table.row().data());
     
     return table;
   }

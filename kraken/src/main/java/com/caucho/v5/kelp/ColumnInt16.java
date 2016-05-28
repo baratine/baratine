@@ -52,12 +52,12 @@ public class ColumnInt16 extends Column
   @Override
   public int getInt(byte []rowBuffer, int rowOffset)
   {
-    return BitsUtil.readInt16(rowBuffer, rowOffset + getOffset());
+    return BitsUtil.readInt16(rowBuffer, rowOffset + offset());
   }
   
   @Override
   public void setInt(byte []rowBuffer, int rowOffset, int value)
   {
-    BitsUtil.writeInt16(rowBuffer, rowOffset + getOffset(), value);
+    BitsUtil.writeInt16(rowBuffer, rowOffset + offset(), value);
   }
 }

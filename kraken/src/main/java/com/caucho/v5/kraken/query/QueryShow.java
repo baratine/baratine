@@ -103,7 +103,7 @@ public class QueryShow extends QueryKraken
     sb.append(".");
     sb.append(tableKraken.getName());
     sb.append(" ( #");
-    sb.append(Hex.toShortHex(table.getTableKey()));
+    sb.append(Hex.toShortHex(table.tableKey()));
     
     boolean isFirst = true;
     

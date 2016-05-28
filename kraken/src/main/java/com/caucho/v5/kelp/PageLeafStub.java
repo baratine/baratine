@@ -120,12 +120,12 @@ class PageLeafStub extends PageLeaf
   }
   
   @Override
-  public final int getSize()
+  public final int size()
   {
     PageLeafImpl leaf = null;//_leaf;
     
     if (leaf != null) {
-      return leaf.getSize();
+      return leaf.size();
     }
     else {
       return 0;
@@ -215,7 +215,7 @@ class PageLeafStub extends PageLeaf
           int offset = _delta[i + 0];
           int length = _delta[i + 1];
           
-          is.setPosition(offset);
+          is.position(offset);
           
           leaf.readCheckpointDelta(table, pageActor, is, length);
         }
@@ -248,7 +248,7 @@ class PageLeafStub extends PageLeaf
     try (InSegment sIn = table.openReader(_segment)) {
       ReadStream is = sIn.in();
   
-      is.setPosition(_offset);
+      is.position(_offset);
 
       byte []minKey = new byte[table.getKeyLength()];
       byte []maxKey = new byte[table.getKeyLength()];

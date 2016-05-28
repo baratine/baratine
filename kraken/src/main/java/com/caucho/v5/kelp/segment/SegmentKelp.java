@@ -88,24 +88,24 @@ public class SegmentKelp
     // _writerActor = tableWriterActor;
   }
 
-  public SegmentExtent getExtent()
+  public SegmentExtent extent()
   {
     return _extent;
   }
 
   public long getAddress()
   {
-    return _extent.getAddress();
+    return _extent.address();
   }
 
-  public int getLength()
+  public int length()
   {
     return _extent.getLength();
   }
 
   int getSegmentTail()
   {
-    return getLength() - BLOCK_SIZE;
+    return length() - BLOCK_SIZE;
   }
 
   public long getSequence()
@@ -175,7 +175,8 @@ public class SegmentKelp
     return _segmentActor.openRead(this);
   }
 
-  int writeEntry(byte []buffer, int tail, int head,
+  int writeEntry(byte []buffer,
+                 int head,
                  int type,
                  int pid,
                  int nextPid,
@@ -184,29 +185,26 @@ public class SegmentKelp
   {
     int sublen = 1 + 4 * 4;
     
-    if (tail - head < sublen) {
+    if (BLOCK_SIZE - 8 < head + sublen) {
       return -1;
     }
     
-    tail -= sublen;
+    buffer[head] = (byte) type;
+    head++;
     
-    int index = tail;
-    buffer[index] = (byte) type;
-    index++;
+    BitsUtil.writeInt(buffer, head, pid);
+    head += 4;
     
-    BitsUtil.writeInt(buffer, index, pid);
-    index += 4;
+    BitsUtil.writeInt(buffer, head, nextPid);
+    head += 4;
     
-    BitsUtil.writeInt(buffer, index, nextPid);
-    index += 4;
+    BitsUtil.writeInt(buffer, head, entryOffset);
+    head += 4;
     
-    BitsUtil.writeInt(buffer, index, entryOffset);
-    index += 4;
+    BitsUtil.writeInt(buffer, head, entryLength);
+    head += 4;
     
-    BitsUtil.writeInt(buffer, index, entryLength);
-    index += 4;
-    
-    return tail;
+    return head;
   }
   
   @InService(PageServiceImpl.class)
@@ -224,6 +222,13 @@ public class SegmentKelp
     readEntries(table, reader, loadCallback);
   }
 
+  /**
+   * Reads index entries from the segment.
+   * 
+   * The index is at the tail of the segment, written backwards in blocks.
+   * The final block has the first entries, and the next to last has the
+   * second set of entries. 
+   */
   public void readEntries(TableKelp table, 
                           InSegment reader,
                           SegmentEntryCallback cb)
@@ -234,7 +239,7 @@ public class SegmentKelp
     InStore sIn = reader.getStoreRead();
     byte []tableKey = new byte[TableKelp.TABLE_KEY_SIZE];
     
-    for (int ptr = getLength() - BLOCK_SIZE; ptr > 0; ptr -= BLOCK_SIZE) {
+    for (int ptr = length() - BLOCK_SIZE; ptr > 0; ptr -= BLOCK_SIZE) {
       sIn.read(getAddress() + ptr, buffer, 0, buffer.length);
       
       int index = 0;
@@ -262,19 +267,21 @@ public class SegmentKelp
         break;
       }
       
-      int head = BitsUtil.readInt16(buffer, index);
+      /*
+      int tail = BitsUtil.readInt16(buffer, index);
       index += 2;
       
-      if (head <= 0) {
+      if (tail <= 0) {
         throw new IllegalStateException();
       }
+      */
       
-      boolean isCont = buffer[index] != 0;
-      
-      int tail = BLOCK_SIZE;
-      while (head < tail) {
-        tail = readEntry(table, buffer, tail, cb, getAddress());
+      int head = index;
+      while (head < BLOCK_SIZE && buffer[head] != 0) {
+        head = readEntry(table, buffer, head, cb, getAddress());
       }
+      
+      boolean isCont = buffer[head + 1] != 0;
       
       if (! isCont) {
         break;
@@ -286,39 +293,34 @@ public class SegmentKelp
 
   private int readEntry(TableKelp table,
                         byte []buffer,
-                        int tail,
+                        int head,
                         SegmentEntryCallback cb,
                         long address)
   {
-    int sublen = 1 + 4 * 4;
-    
-    tail -= sublen;
-    
-    int index = tail;
-    int typeCode = buffer[index++];
+    int typeCode = buffer[head++];
 
-    int pid = BitsUtil.readInt(buffer, index);
-    index += 4;
+    int pid = BitsUtil.readInt(buffer, head);
+    head += 4;
   
     if (pid <= 0) {
       throw new IllegalStateException(L.l("Invalid pid={0} while reading entry at 0x{1}:{2}", 
                                           pid,
                                           Long.toHexString(address),
-                                          tail));
+                                          head));
     }
   
-    int nextPid = BitsUtil.readInt(buffer, index);
-    index += 4;
+    int nextPid = BitsUtil.readInt(buffer, head);
+    head += 4;
   
-    int offset = BitsUtil.readInt(buffer, index);
-    index += 4;
+    int offset = BitsUtil.readInt(buffer, head);
+    head += 4;
     
-    int length = BitsUtil.readInt(buffer, index);
-    index += 4;
+    int length = BitsUtil.readInt(buffer, head);
+    head += 4;
 
     cb.onEntry(typeCode, pid, nextPid, offset, length);
     
-    return tail;
+    return head;
   }
 
   int findFirstEntryBlock(InStore sIn)
@@ -327,7 +329,7 @@ public class SegmentKelp
     TempBuffer tBuf = TempBuffer.createLarge();
     byte []buffer = tBuf.buffer();
     
-    for (int ptr = getLength() - BLOCK_SIZE; ptr > 0; ptr -= BLOCK_SIZE) {
+    for (int ptr = length() - BLOCK_SIZE; ptr > 0; ptr -= BLOCK_SIZE) {
       sIn.read(getAddress() + ptr, buffer, 0, 64);
       
       int index = 0;
@@ -384,7 +386,7 @@ public class SegmentKelp
   {
     return (getClass().getSimpleName()
             + "[0x" + Long.toHexString(getAddress())
-            + ":0x" + Integer.toHexString(getLength())
+            + ":0x" + Integer.toHexString(length())
             + ",seq=" + _sequence
             + ",table=" + Hex.toShortHex(_tableKey)
             + "," + _state
