@@ -115,7 +115,7 @@ public class RabbitPipeImpl extends PipeAsset<RabbitMessage> implements RabbitPi
         _channel.queueBind(responseQueue.getQueue(), _config.exchange(), _config.routingKey());
       }
 
-      _logger.log(Level.INFO, "connect: " + _id + ", queue=" + responseQueue.getQueue() + ", " + _config + " . " + _self);
+      _logger.log(Level.INFO, "connect: " + _id + ", actual queue=" + responseQueue.getQueue() + ", " + _config + " . " + _self);
     }
     catch (Exception e) {
       closeChannel();

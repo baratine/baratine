@@ -7,12 +7,13 @@ import io.baratine.config.Config;
 
 public class RabbitConfig
 {
+  private String _id;
+
   private URI _uri;
 
   private String _exchange;
   private String _queue;
   private String _routingKey;
-
   private String _exchangeType;
 
   private boolean _isDurable;
@@ -26,16 +27,24 @@ public class RabbitConfig
 
     RabbitConfig r = new RabbitConfig();
 
+    r._id = id;
+
     r.uri(config.get(url + ".uri", "amqp://127.0.0.1"));
     r.exchange(config.get(url + ".exchange", ""));
     r.queue(config.get(url + ".queue", ""));
     r.routingKey(config.get(url + ".routingKey", ""));
-
     r.exchangeType(config.get(url + ".exchangeType", "direct"));
 
-    r.durable("true".equals(config.get(url + ".durable")));
-    r.exclusive("true".equals(config.get(url + ".exclusive")));
-    r.autoDelete("true".equals(config.get(url + ".autoDelete")));
+    r.durable(config.get(url + ".durable", Boolean.class, false));
+    r.exclusive(config.get(url + ".exclusive", Boolean.class, false));
+    r.autoDelete(config.get(url + ".autoDelete", Boolean.class, false));
+
+    if (r.exchange().length() == 0
+        && r.routingKey().length() == 0
+        && r.queue().length() > 0) {
+      // use default queue == routingKey for unnamed exchange
+      r.routingKey(r.queue());
+    }
 
     return r;
   }
@@ -140,16 +149,17 @@ public class RabbitConfig
   @Override
   public String toString()
   {
-    String uri = _uri.toString();
+    String uri = uri().toString();
 
     if (_uri.getAuthority() != null) {
       uri.replace(_uri.getAuthority(), "XXX");
     }
 
-    return getClass().getSimpleName() + "[uri=" + uri
-                                      + ",exchange=" + _exchange
-                                      + ",queue=" + _queue
-                                      + ",routingKey=" + _routingKey
+    return getClass().getSimpleName() + "[id=" + _id
+                                      + ", uri=" + uri
+                                      + ", exchange=" + exchange()
+                                      + ", queue=" + queue()
+                                      + ", routingKey=" + routingKey()
                                       + "]";
   }
 }
