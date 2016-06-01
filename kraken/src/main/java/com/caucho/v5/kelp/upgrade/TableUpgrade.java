@@ -34,5 +34,5 @@ package com.caucho.v5.kelp.upgrade;
  */
 public interface TableUpgrade
 {
-  void row(long sequence, CursorUpgrade cursor);
+  void row(CursorUpgrade cursor);
 }

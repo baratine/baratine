@@ -42,8 +42,13 @@ import com.caucho.v5.util.BitsUtil;
  */
 public class RowUpgrade10
 {
-  public RowUpgrade10()
+  private int _keyOffset;
+  private int _keyLength;
+
+  public RowUpgrade10(int keyOffset, int keyLength)
   {
+    _keyOffset = keyOffset;
+    _keyLength = keyLength;
   }
   
   public RowUpgrade read(byte []data)
@@ -57,7 +62,6 @@ public class RowUpgrade10
       RowUpgradeBuilder builder = new RowUpgradeBuilder();
       
       String name = new String(nameBytes, "UTF-8");
-      System.out.println("NAME: " + name);
       
       builder.name(name);
 
@@ -89,7 +93,7 @@ public class RowUpgrade10
   }
   
   private ColumnUpgrade readColumn(InputStream is,
-                                  RowUpgradeBuilder builder)
+                                   RowUpgradeBuilder builder)
     throws IOException
   {
     int type = BitsUtil.readInt16(is);
@@ -99,41 +103,45 @@ public class RowUpgrade10
     byte []nameBytes = new byte[nameLength];
     is.read(nameBytes);
     
-    String name = new String(nameBytes, "UTF-8");
+    int offset = builder.rowLength();
     
+    boolean isKey = _keyOffset <= offset && offset < _keyOffset + _keyLength;
+    
+    String name = new String(nameBytes, "UTF-8");
+
     switch (ColumnTypes10.values()[type]) {
     case STATE:
-      return builder.column(name, ColumnType.STATE, length);
+      return builder.column(name, ColumnType.STATE, offset, length, isKey);
       
     case INT8:
-      return builder.column(name, ColumnType.INT8, length);
+      return builder.column(name, ColumnType.INT8, offset, length, isKey);
       
     case INT16:
-      return builder.column(name, ColumnType.INT16, length);
+      return builder.column(name, ColumnType.INT16, offset, length, isKey);
       
     case INT32:
-      return builder.column(name, ColumnType.INT32, length);
+      return builder.column(name, ColumnType.INT32, offset, length, isKey);
       
     case INT64:
-      return builder.column(name, ColumnType.INT64, length);
+      return builder.column(name, ColumnType.INT64, offset, length, isKey);
       
     case FLOAT:
-      return builder.column(name, ColumnType.FLOAT, length);
+      return builder.column(name, ColumnType.FLOAT, offset, length, isKey);
       
     case DOUBLE:
-      return builder.column(name, ColumnType.DOUBLE, length);
+      return builder.column(name, ColumnType.DOUBLE, offset, length, isKey);
       
     case BYTES:
-      return builder.column(name, ColumnType.BYTES, length);
+      return builder.column(name, ColumnType.BYTES, offset, length, isKey);
       
     case BLOB:
-      return builder.column(name, ColumnType.BLOB, length);
+      return builder.column(name, ColumnType.BLOB, offset, length, isKey);
       
     case STRING:
-      return builder.column(name, ColumnType.STRING, length);
+      return builder.column(name, ColumnType.STRING, offset, length, isKey);
       
     case OBJECT:
-      return builder.column(name, ColumnType.OBJECT, length);
+      return builder.column(name, ColumnType.OBJECT, offset, length, isKey);
       
     default:
       throw new IllegalStateException(String.valueOf(ColumnTypes10.values()[type]));

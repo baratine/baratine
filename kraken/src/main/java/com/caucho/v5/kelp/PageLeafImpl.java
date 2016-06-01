@@ -811,7 +811,7 @@ public final class PageLeafImpl extends PageLeaf
   {
     BlockLeaf []blocks = _blocks;
     
-    int rowFirst = blocks[0].getRowHead();
+    int rowFirst = blocks[0].rowHead();
     
     int tail;
     
@@ -850,7 +850,7 @@ public final class PageLeafImpl extends PageLeaf
     
     int available = sOut.getAvailable();
     
-    if (available < os.getPosition() + size) {
+    if (available < os.position() + size) {
       return null;
     }
     
@@ -865,29 +865,36 @@ public final class PageLeafImpl extends PageLeaf
     PageLeafStub stub = _stub;
     // System.out.println("WRC: " + this + " " + stub);
     Type type;
-    
+
     if (saveLength > 0
         && oldSequence == newSequence
         && stub != null 
         && stub.allowDelta()) {
-      int offset = (int) os.getPosition();
+      int offset = (int) os.position();
       
       type = writeDelta(table, sOut.out(), saveLength);
       
-      int length = (int) (os.getPosition() - offset);
+      int length = (int) (os.position() - offset);
 
       stub.addDelta(table, offset, length);
     }
     else {
       // _lastSequence = newSequence;
-      int offset = (int) os.getPosition();
+      int offset = (int) os.position();
       
-      try (OutputStream zOut = sOut.outCompress()) {
-        type = writeCheckpointFull(table, zOut, saveTail);
+      if (sOut.isCompress()) {
+        try (OutputStream zOut = sOut.outCompress()) {
+          type = writeCheckpointFull(table, zOut, saveTail);
+        }
+      }
+      else {
+        type = writeCheckpointFull(table, sOut.out(), saveTail);
       }
       
-      int length = (int) (os.getPosition() - offset);
+      int length = (int) (os.position() - offset);
       
+      // create stub to the newly written data, allowing this memory to be
+      // garbage collected
       stub = new PageLeafStub(getId(), getNextId(), 
                               sOut.getSegment(),
                               offset, length);
@@ -1065,13 +1072,13 @@ public final class PageLeafImpl extends PageLeaf
     Row row = table.row();
     
     // int keyLength = row.getKeyLength();
-    int removeLength = row.getRemoveLength();
+    int removeLength = row.removeLength();
     int rowLength = row.length();
     
     BlockLeaf block = _blocks[0];
 
     long endPosition = is.position() + length;
-    int rowHead = block.getRowHead();
+    int rowHead = block.rowHead();
     int blobTail = block.getBlobTail();
     long pos;
 
@@ -1115,7 +1122,7 @@ public final class PageLeafImpl extends PageLeaf
                                             this, pos, code));
       }
       
-      block.setRowHead(rowHead);
+      block.rowHead(rowHead);
       block.setBlobTail(blobTail);
     }
 
@@ -1130,7 +1137,7 @@ public final class PageLeafImpl extends PageLeaf
     
     BlockLeaf block = _blocks[0];
     
-    length += BLOCK_SIZE - block.getRowHead();
+    length += BLOCK_SIZE - block.rowHead();
     
     return length;
   }

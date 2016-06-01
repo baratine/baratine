@@ -334,7 +334,7 @@ public class SegmentServiceImpl
       }
       
       
-      addressTail = address + extent.getLength();
+      addressTail = address + extent.length();
     }
     
     _addressTail = addressTail;
@@ -506,7 +506,6 @@ public class SegmentServiceImpl
     if (_metaTail - _metaOffset < 16) {
       writeMetaContinuation();
     }
-    System.out.println("WMTz: " + offset);
   }
   
   private void writeMetaSegment(SegmentExtent extent)
@@ -518,7 +517,7 @@ public class SegmentServiceImpl
     buffer[offset++] = CODE_SEGMENT;
     
     long address = extent.address();
-    int length = extent.getLength();
+    int length = extent.length();
     
     long value = (address & ~0xffff) | (length >> 16);
     
@@ -562,7 +561,7 @@ public class SegmentServiceImpl
     buffer[offset++] = CODE_META_SEGMENT;
     
     long address = extent.address();
-    int length = extent.getLength();
+    int length = extent.length();
     
     long value = (address & ~0xffff) | (length >> 16);
     
@@ -902,7 +901,7 @@ public class SegmentServiceImpl
     throws IOException
   {
     long address = extent.address();
-    int length = extent.getLength();
+    int length = extent.length();
 
     SegmentMeta segmentMeta = findSegmentMeta(length);
     
@@ -1083,7 +1082,7 @@ public class SegmentServiceImpl
   public InSegment openRead(SegmentExtent extent)
   {
     long address = extent.address();
-    int length = extent.getLength();
+    int length = extent.length();
     
     InStore sIn = _store.openRead(address, length);
     

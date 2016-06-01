@@ -71,7 +71,7 @@ public class SegmentExtent implements Comparable<SegmentExtent>
     return _address;
   }
 
-  public final int getLength()
+  public final int length()
   {
     return _length;
   }

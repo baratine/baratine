@@ -315,9 +315,9 @@ abstract public class Column {
   public void toData(OutputStream os)
     throws IOException
   {
-    BitsUtil.writeInt16(os, _type.ordinal());
+    BitsUtil.writeInt16(os, type().ordinal());
     BitsUtil.writeInt16(os, length());
-    byte []name = _name.getBytes("UTF-8");
+    byte []name = name().getBytes("UTF-8");
     BitsUtil.writeInt16(os, name.length);
     os.write(name);
   }

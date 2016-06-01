@@ -158,15 +158,15 @@ public class PageBlobImpl extends PageBlob
     
     WriteStream os = sOut.out();
 
-    if (sOut.getAvailable() < os.getPosition() + _length) {
+    if (sOut.getAvailable() < os.position() + _length) {
       return null;
     }
     
-    int offset = (int) os.getPosition();
+    int offset = (int) os.position();
     
     writeToStream(sOut.out());
     
-    int length = (int) (os.getPosition() - offset);
+    int length = (int) (os.position() - offset);
     
     _stub = new PageBlobStub(getId(), getNextId(), sOut.getSegment(),
                              offset, length);

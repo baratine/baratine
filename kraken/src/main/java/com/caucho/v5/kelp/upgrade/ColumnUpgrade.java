@@ -40,18 +40,24 @@ public class ColumnUpgrade
 {
   private final String _name;
   private final ColumnType _type;
+  private final int _offset;
   private final int _length;
+  private final boolean _isKey;
   
   ColumnUpgrade(String name, 
-               ColumnType type, 
-               int length)
+               ColumnType type,
+               int offset,
+               int length,
+               boolean isKey)
   {
     Objects.requireNonNull(name);
     Objects.requireNonNull(type);
     
     _name = name;
     _type = type;
+    _offset = offset;
     _length = length;
+    _isKey = isKey;
   }
   
   public String name()
@@ -62,6 +68,16 @@ public class ColumnUpgrade
   public ColumnType type()
   {
     return _type;
+  }
+  
+  public boolean isKey()
+  {
+    return _isKey;
+  }
+
+  public int offset()
+  {
+    return _offset;
   }
 
   public int length()

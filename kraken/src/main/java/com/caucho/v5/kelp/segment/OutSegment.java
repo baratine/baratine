@@ -51,6 +51,7 @@ import com.caucho.v5.kelp.TableWriterServiceImpl;
 import com.caucho.v5.kelp.io.CompressorKelp;
 import com.caucho.v5.store.io.OutStore;
 import com.caucho.v5.util.BitsUtil;
+import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
@@ -181,6 +182,11 @@ public class OutSegment extends StreamImpl implements AutoCloseable
   {
     return _compressor.out(out());
   }
+
+  public boolean isCompress()
+  {
+    return _compressor.isCompress();
+  }
   
   @Override
   public void seekStart(long pos)
@@ -238,7 +244,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     
     WriteStream out = out();
     
-    int head = (int) out.getPosition();
+    int head = (int) out.position();
     
     try {
       int available = getAvailable();
@@ -258,9 +264,9 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       
       out = out();
       
-      int tail = (int) out.getPosition();
+      int tail = (int) out.position();
 
-      if (addEntry(out, page, newPage,
+      if (addIndex(out, page, newPage,
                    saveSequence, newPage.getLastWriteType(), 
                    pid, nextPid, head, tail - head,
                    result)) {
@@ -287,24 +293,24 @@ public class OutSegment extends StreamImpl implements AutoCloseable
    * entry(0)
    * </pre>
    */
-  boolean addEntry(WriteStream out,
+  boolean addIndex(WriteStream out,
                     Page page,
                     Page newPage,
                     int saveSequence,
                     Type type,
                     int pid,
                     int nextPid,
-                    int offset, 
-                    int length,
+                    int pageOffset, 
+                    int pageLength,
                     Result<Integer> result)
      throws IOException
   {
     int head;
     
-    while ((head = _segment.writeEntry(_indexBuffer, 
+    while ((head = _segment.writePageIndex(_indexBuffer, 
                                        _indexTail,
                                        type.ordinal(), pid, nextPid, 
-                                       offset, length)) < 0) {
+                                       pageOffset, pageLength)) < 0) {
       writeIndexBlock();
       
       // isCont is true if the new page/entry fits in the segment
@@ -323,7 +329,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     _isDirty = true;
     _indexTail = head;
     
-    int position = offset; 
+    int position = pageOffset; 
     
     //System.out.print(" [" + page.getId() + ",seq=" + page.getSequence() + "]");
     
@@ -500,16 +506,23 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     }
   }
   
+  /**
+   * Callback after the page data has been fynced, so the index can be
+   * written.
+   * 
+   * The page write is split in two, so the index is always written after
+   * the data is guaranteed to be flushed to disk.
+   */
   private void afterDataFsync(Result<Boolean> result,
                               int position,
                               FsyncType fsyncType,
                               ArrayList<SegmentFsyncCallback> listeners)
   {
     try {
-      completeHeaders(position);
+      completeIndex(position);
       
       Result<Boolean> cont = result.then((v,r)->
-        afterHeaderFsync(r, fsyncType, listeners));
+        afterIndexFsync(r, fsyncType, listeners));
 
       if (fsyncType.isSchedule()) {
         _sOut.fsyncSchedule(cont);
@@ -523,9 +536,12 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     }
   }
   
-  private void afterHeaderFsync(Result<Boolean> result,
-                                FsyncType fsyncType,
-                                ArrayList<SegmentFsyncCallback> fsyncListeners)
+  /**
+   * Callback after the index has been flushed. 
+   */
+  private void afterIndexFsync(Result<Boolean> result,
+                               FsyncType fsyncType,
+                               ArrayList<SegmentFsyncCallback> fsyncListeners)
   {
     try {
       // completePendingEntries(_position);
@@ -553,7 +569,7 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     }
   }
   
-  final void completeHeaders(int position)
+  final void completeIndex(int position)
   {
     int indexAddress = _lastFlushIndexAddress;
     int indexTail = _lastFlushIndexTail;
@@ -566,7 +582,8 @@ public class OutSegment extends StreamImpl implements AutoCloseable
         // since index block is full, fill the footer and write it
         fillFooter(_footerBuffer, 0, indexTail, true);
         
-        writeIndex(_footerBuffer, indexAddress + FOOTER_OFFSET, FOOTER_SIZE);
+        writeIndex(indexAddress + FOOTER_OFFSET, 
+                   _footerBuffer, 0, FOOTER_SIZE);
         entryHead = 0;
       }
       
@@ -586,14 +603,16 @@ public class OutSegment extends StreamImpl implements AutoCloseable
     else if (indexAddress == _indexAddress) {
       fillFooter(_indexBuffer, FOOTER_OFFSET, indexTail, false);
 
-      writeIndex(_indexBuffer, 
-                  indexAddress + entryHead, 
-                  BLOCK_SIZE - entryHead);
+      writeIndex(indexAddress + entryHead,
+                 _indexBuffer, 
+                 entryHead, 
+                 BLOCK_SIZE - entryHead);
     }
     else {
       fillFooter(_footerBuffer, 0, indexTail, false);
       
-      writeIndex(_footerBuffer, indexAddress + FOOTER_OFFSET, FOOTER_SIZE);
+      writeIndex(indexAddress + FOOTER_OFFSET, 
+                 _footerBuffer, 0, FOOTER_SIZE);
     }
     
     _lastFlushIndexAddress = indexAddress;
@@ -640,7 +659,10 @@ public class OutSegment extends StreamImpl implements AutoCloseable
    * u8 isCont
    * </pre>
    */
-  private int fillFooter(byte []buffer, int offset, int entryTail, boolean isCont)
+  private int fillFooter(byte []buffer, 
+                         int offset, 
+                         int entryTail, 
+                         boolean isCont)
   {
     BitsUtil.writeInt16(buffer, offset, entryTail);
     offset += 2;
@@ -656,13 +678,14 @@ public class OutSegment extends StreamImpl implements AutoCloseable
    */
   private void writeIndexBlock()
   {
-    writeIndex(_indexBuffer, _indexAddress, _indexBuffer.length);
+    writeIndex(_indexAddress, _indexBuffer, 0, _indexBuffer.length);
   }
   
   /**
    * Write the current header to the output.
    */
-  private void writeIndex(byte []entryBuffer, int entryAddress, int length)
+  private void writeIndex(int entryAddress,
+                          byte []entryBuffer, int offset, int length)
   {
     long address = _segment.getAddress() + entryAddress;
 
@@ -670,8 +693,8 @@ public class OutSegment extends StreamImpl implements AutoCloseable
       throw new IllegalStateException(L.l("offset=0x{0} length={1}", entryAddress, length));
     }
     //try (StoreWrite os = _readWrite.openWrite(address, BLOCK_SIZE)) {
-    _sOut.write(address, entryBuffer, 0, length);
-      
+    _sOut.write(address, entryBuffer, offset, length);
+    
     _isDirty = true;
     // }
   }

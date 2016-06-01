@@ -37,10 +37,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.VfsStream;
 import com.caucho.v5.store.io.InStore;
 import com.caucho.v5.store.io.StoreBuilder;
@@ -67,6 +69,19 @@ public class UpgradeScanner
   private final static int CODE_META_SEGMENT = 0x3;
   
   private final static int TABLE_KEY_SIZE = 32;
+  
+  private static final int FOOTER_OFFSET = BLOCK_SIZE - 8;
+  private static final int INDEX_OFFSET = TABLE_KEY_SIZE + 8;
+  
+  private static final int CODE_MASK = 0xc0;
+  
+  private static final int INSERT = 0x40;
+  private static final int INSERT_DEAD = 0xc0;
+  private static final int REMOVE = 0x80;
+  
+  private static final int STATE_LENGTH = 12;
+  
+  private static final int LARGE_BLOB_MASK = 0x8000;
 
   private static long KELP_MAGIC;
   
@@ -87,6 +102,8 @@ public class UpgradeScanner
 
   private ArrayList<Segment10> _segments
     = new ArrayList<Segment10>();
+  
+  private TreeMap<Integer,Page10> _pageMap = new TreeMap<>();
 
   private SegmentExtent10 _metaSegment;
   
@@ -221,8 +238,6 @@ public class UpgradeScanner
     int code = is.read();
     crc = Crc32Caucho.generate(crc, code);
     
-    System.out.println("RME: " + code);
-    
     boolean isValid = false;
 
     switch (code) {
@@ -282,7 +297,7 @@ public class UpgradeScanner
       return false;
     }
     
-    RowUpgrade row = new RowUpgrade10().read(data);
+    RowUpgrade row = new RowUpgrade10(keyOffset, keyLength).read(data);
     
     TableEntry10 table = new TableEntry10(key,
                                           rowLength,
@@ -362,31 +377,117 @@ public class UpgradeScanner
       upgradeTable(table, upgradeTable);
     }
   }
+
+  /**
+   * Upgrade rows from a table.
+   */
+  private void upgradeTable(TableEntry10 table, 
+                            TableUpgrade upgradeTable)
+    throws IOException
+  {
+    _pageMap = new TreeMap<>();
+    
+    readTableIndex(table);
+    
+    for (Page10 page : _pageMap.values()) {
+      upgradeLeaf(table, upgradeTable, page);
+    }
+  }
   
-  private void upgradeTable(TableEntry10 table, TableUpgrade upgradeTable)
+  /**
+   * Read all page metadata for a table.
+   */
+  private void readTableIndex(TableEntry10 table)
     throws IOException
   {
     for (Segment10 segment : tableSegments(table)) {
       try (ReadStream is = openRead(segment.address(), segment.length())) {
-        readPages(is, segment);
+        readSegmentIndex(is, segment);
       }
     }
   }
   
-  private void readPages(ReadStream is, Segment10 segment)
+  /**
+   * Read page index from a segment.
+   */
+  private void readSegmentIndex(ReadStream is, Segment10 segment)
     throws IOException
   {
     int address = segment.length() - BLOCK_SIZE;
     
-    is.position(address + BLOCK_SIZE - 8);
+    TempBuffer tBuf = TempBuffer.create();
+    byte []buffer = tBuf.buffer();
     
-    int tail = BitsUtil.readInt16(is);
+    is.position(address);
+    is.read(buffer, 0, BLOCK_SIZE);
+    
+    int tail = BitsUtil.readInt16(buffer, FOOTER_OFFSET);
     
     if (tail < TABLE_KEY_SIZE + 8 || tail > BLOCK_SIZE - 8) {
       return;
     }
+    
+    int offset = INDEX_OFFSET;
+    
+    while (offset < tail) {
+      int type = buffer[offset++] & 0xff;
+      
+      int pid = BitsUtil.readInt(buffer, offset);
+      offset += 4;
+      
+      int nextPid = BitsUtil.readInt(buffer, offset);
+      offset += 4;
+      
+      int entryAddress = BitsUtil.readInt(buffer, offset);
+      offset += 4;
+      
+      int entryLength = BitsUtil.readInt(buffer, offset);
+      offset += 4;
+      
+      if (pid <= 1) {
+        System.out.println("INVALID_PID: " + pid);
+        return;
+      }
+      
+      switch (PageType10.values()[type]) {
+      case LEAF:
+        addLeaf(segment, pid, nextPid, entryAddress, entryLength);
+        break;
+        
+      default:
+        System.out.println("UNKONWN: " + PageType10.values()[type]);
+      }
+    }
   }
   
+  /**
+   * Adds a new leaf entry to the page list.
+   * 
+   * Because pages are added in order, each new page overrides the older one.
+   */
+  private void addLeaf(Segment10 segment,
+                       int pid, 
+                       int nextPid,
+                       int address,
+                       int length)
+  {
+    Page10 page = _pageMap.get(pid);
+    
+    if (page != null && page.sequence() < segment.sequence()) {
+      return;
+    }
+    
+    page = new Page10(PageType10.LEAF, segment, pid, nextPid, address, length);
+    
+    _pageMap.put(pid, page);
+  }
+
+  /**
+   * Returns segments for a table in reverse sequence order.
+   * 
+   * The reverse order minimizes extra pages reads, because older pages
+   * don't need to be read.
+   */
   private ArrayList<Segment10> tableSegments(TableEntry10 table)
   {
     ArrayList<Segment10> tableSegments = new ArrayList<>();
@@ -402,10 +503,112 @@ public class UpgradeScanner
     
     return tableSegments;
   }
+
+  /**
+   * Upgrade a table page.
+   */
+  private void upgradeLeaf(TableEntry10 table, 
+                           TableUpgrade upgradeTable,
+                           Page10 page)
+    throws IOException
+  {
+    try (ReadStream is = openRead(page.segment().address(),
+                                  page.segment().length())) {
+      is.position(page.address());
+      
+      byte []minKey = new byte[table.keyLength()];
+      byte []maxKey = new byte[table.keyLength()];
+      
+      is.read(minKey, 0, minKey.length);
+      is.read(maxKey, 0, maxKey.length);
+      
+      int blocks = BitsUtil.readInt16(is);
+      
+      for (int i = 0; i < blocks; i++) {
+        upgradeLeafBlock(is, table, upgradeTable, page);
+      }
+    }
+  }
   
+  /**
+   * Reads data for a leaf.
+   * 
+   * <code><pre>
+   * blobLen int16
+   * blobData {blobLen}
+   * rowLen int16
+   * rowData {rowLen}
+   * </pre></code>
+   */
+  private void upgradeLeafBlock(ReadStream is,
+                                TableEntry10 table,
+                                TableUpgrade upgradeTable,
+                                Page10 page)
+    throws IOException
+  {
+    TempBuffer tBuf = TempBuffer.create();
+    
+    byte []buffer = tBuf.buffer();
+    
+    int blobLen = BitsUtil.readInt16(is);
+    
+    is.readAll(buffer, 0, blobLen);
+    
+    int rowDataLen = BitsUtil.readInt16(is);
+    int rowOffset = buffer.length - rowDataLen;
+    
+    is.readAll(buffer, rowOffset, rowDataLen);
+    
+    int rowLen = table.rowLength();
+    int keyLen = table.keyLength();
+    
+    while (rowOffset < buffer.length) {
+      int code = buffer[rowOffset] & CODE_MASK;
+      
+      switch (code) {
+      case INSERT:
+        rowInsert(table.row(), upgradeTable, buffer, rowOffset);
+        
+        rowOffset += rowLen;
+        break;
+        
+      case REMOVE:
+        rowOffset += keyLen + STATE_LENGTH;
+        break;
+        
+      default:
+        System.out.println("UNKNOWN: " + Integer.toHexString(code));
+        return;
+      }
+    }
+    
+    tBuf.free();
+  }
+
+  /**
+   * Insert a row.
+   */
+  private void rowInsert(RowUpgrade row,
+                         TableUpgrade upgradeTable,
+                         byte []buffer,
+                         int offset)
+  {
+    Cursor10 cursor = new Cursor10(row, buffer, offset);
+    
+    upgradeTable.row(cursor);
+  }
+  
+  /**
+   * Open a read stream to a segment.
+   * 
+   * @param address file address for the segment
+   * @param size length of the segment
+   * 
+   * @return opened ReadStream
+   */
   private ReadStream openRead(long address, int size)
   {
-    InStore inStore = _store.openRead(0, META_SEGMENT_SIZE);
+    InStore inStore = _store.openRead(address, size);
     
     InStoreStream is = new InStoreStream(inStore, address, address + size);
     
@@ -577,6 +780,16 @@ public class UpgradeScanner
       _row = row;
     }
     
+    public int keyLength()
+    {
+      return _keyLength;
+    }
+    
+    public int rowLength()
+    {
+      return _rowLength;
+    }
+
     public byte[] key()
     {
       return _key;
@@ -590,8 +803,296 @@ public class UpgradeScanner
     @Override
     public String toString()
     {
-      return getClass().getSimpleName() + "[" + Hex.toShortHex(_key) + "]";
+      return (getClass().getSimpleName()
+              + "[" + Hex.toShortHex(_key)
+              + "," + _row.name()
+              + "]");
     }
+  }
+  
+  private class Page10 implements Comparable<Page10>
+  {
+    private PageType10 _type;
+    private Segment10 _segment;
+    private int _pid;
+    private int _pidNext;
+    private int _address;
+    private int _length;
+    
+    Page10(PageType10 type,
+           Segment10 segment,
+           int pid,
+           int pidNext,
+           int address,
+           int length)
+    {
+      _type = type;
+      _segment = segment;
+      _pid = pid;
+      _pidNext = pidNext;
+      _address = address;
+      _length = length;
+    }
+    
+    private Segment10 segment()
+    {
+      return _segment;
+    }
+    
+    public long sequence()
+    {
+      return _segment.sequence();
+    }
+    
+    public int address()
+    {
+      return _address;
+    }
+    
+    public int length()
+    {
+      return _length;
+    }
+    
+    @Override
+    public int hashCode()
+    {
+      return _pid;
+    }
+    
+    @Override
+    public boolean equals(Object value)
+    {
+      if (! (value instanceof Page10)) {
+        return false;
+      }
+      
+      Page10 page = (Page10) value;
+      
+      return _pid == page._pid;
+    }
+
+    @Override
+    public int compareTo(Page10 page)
+    {
+      return _pid - page._pid;
+    }
+    
+    @Override
+    public String toString()
+    {
+      return (getClass().getSimpleName()
+              + "[" + _type
+              + "," + _pid
+              + ",seq=" + sequence()
+              + "]");
+    }
+  }
+  
+  private class Cursor10 implements CursorUpgrade
+  {
+    private RowUpgrade _row;
+    private byte []_buffer;
+    private int _offset;
+    
+    Cursor10(RowUpgrade row,
+             byte []buffer,
+             int offset)
+    {
+      _row = row;
+      _buffer = buffer;
+      _offset = offset;
+    }
+    
+    @Override
+    public RowUpgrade row()
+    {
+      return _row;
+    }
+
+    @Override
+    public int size()
+    {
+      return _row.columns().length;
+    }
+
+    @Override
+    public int getInt(int index)
+    {
+      ColumnUpgrade column = column(index);
+      
+      int offset = column.offset();
+      
+      switch (column.type()) {
+      case INT8:
+        return _buffer[_offset + offset] & 0xff;
+        
+      case INT16:
+        return BitsUtil.readInt16(_buffer, _offset + offset);
+        
+        
+      case INT32:
+        return BitsUtil.readInt(_buffer, _offset + offset);
+        
+      default:
+        throw new UnsupportedOperationException(column.toString());
+      }
+    }
+
+    @Override
+    public long getLong(int index)
+    {
+      ColumnUpgrade column = column(index);
+      
+      int offset = column.offset();
+      
+      switch (column.type()) {
+      case INT8:
+        return _buffer[_offset + offset] & 0xff;
+        
+      case INT16:
+        return BitsUtil.readInt16(_buffer, _offset + offset);
+        
+      case INT32:
+        return BitsUtil.readInt(_buffer, _offset + offset);
+        
+      case INT64:
+        return BitsUtil.readLong(_buffer, _offset + offset);
+        
+      default:
+        throw new UnsupportedOperationException(column.toString());
+      }
+    }
+
+    @Override
+    public double getDouble(int column)
+    {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    @Override
+    public boolean getBoolean(int column)
+    {
+      // TODO Auto-generated method stub
+      return false;
+    }
+
+    @Override
+    public byte[] getBytes(int column)
+    {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public String getString(int column)
+    {
+      int offset = column(column).offset();
+      
+      int blobOffset = BitsUtil.readInt16(_buffer, _offset + offset);
+      int blobLength = BitsUtil.readInt16(_buffer, _offset + offset + 2);
+      
+      if ((blobLength & LARGE_BLOB_MASK) != 0) {
+        System.out.println("LARGE: " + blobOffset + " " + blobLength);
+        
+        return null;
+      }
+      
+      try {
+        return new String(_buffer, blobOffset, blobLength, "utf-8");
+      } catch (Exception e) {
+        throw new RuntimeException(e.toString());
+      }
+    }
+    
+    private ColumnUpgrade column(int index)
+    {
+      return _row.columns()[index];
+    }
+
+    @Override
+    public int getBlobLength(int column)
+    {
+      int offset = column(column).offset();
+      
+      int blobOffset = BitsUtil.readInt16(_buffer, _offset + offset);
+      int blobLength = BitsUtil.readInt16(_buffer, _offset + offset + 2);
+      
+      if ((blobLength & LARGE_BLOB_MASK) != 0) {
+        System.out.println("LARGE: " + blobOffset + " " + blobLength);
+        return -1;
+      }
+      
+      return blobLength;
+    }
+
+    @Override
+    public byte[] getBlobBytes(int column)
+    {
+      int offset = column(column).offset();
+      
+      int blobOffset = BitsUtil.readInt16(_buffer, _offset + offset);
+      int blobLength = BitsUtil.readInt16(_buffer, _offset + offset + 2);
+      
+      if ((blobLength & LARGE_BLOB_MASK) != 0) {
+        System.out.println("LARGE: " + blobOffset + " " + blobLength);
+        
+        return null;
+      }
+      
+      byte []data = new byte[blobLength];
+      
+      System.arraycopy(_buffer, blobOffset, data, 0, blobLength);
+      
+      return data;
+    }
+
+    @Override
+    public int getBlobPage(int column)
+    {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+    
+    @Override
+    public String toString()
+    {
+      StringBuilder sb = new StringBuilder();
+      
+      sb.append(getClass().getSimpleName());
+      sb.append("[");
+      
+      boolean isFirst = true;
+      for (ColumnUpgrade column : _row.columns()) {
+        if (column.isKey()) {
+          if (! isFirst) {
+            sb.append(",");
+          }
+          isFirst = false;
+          
+          sb.append(Hex.toShortHex(_buffer, 
+                                   _offset + column.offset(),
+                                   column.length()));
+        }
+      }
+      
+      sb.append("]");
+      
+      return sb.toString();
+    }
+  }
+  
+  private enum PageType10
+  {
+    NONE,
+    TREE,
+    LEAF,
+    LEAF_DELTA,
+    BLOB_TEMP,
+    BLOB,
+    BLOB_FREE;
+    
   }
   
   static {

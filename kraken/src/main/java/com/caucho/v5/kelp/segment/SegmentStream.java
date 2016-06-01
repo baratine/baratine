@@ -126,16 +126,16 @@ public class SegmentStream
     WriteStream out = sOut.out();
     
     try {
-      int head = (int) out.getPosition();
+      int head = (int) out.position();
       out.write(type.ordinal());
       BitsUtil.writeInt(out, blobPage.getId());
       BitsUtil.writeInt16(out, blobLength);
       
       out.write(tempBuffer.buffer(), 0, blobLength);
       
-      int tail = (int) out.getPosition();
+      int tail = (int) out.position();
       
-      sOut.addEntry(out,
+      sOut.addIndex(out,
                       blobPage,
                       blobPage,
                       saveSequence, 

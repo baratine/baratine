@@ -100,7 +100,7 @@ public class SegmentKelp
 
   public int length()
   {
-    return _extent.getLength();
+    return _extent.length();
   }
 
   int getSegmentTail()
@@ -175,13 +175,16 @@ public class SegmentKelp
     return _segmentActor.openRead(this);
   }
 
-  int writeEntry(byte []buffer,
-                 int head,
-                 int type,
-                 int pid,
-                 int nextPid,
-                 int entryOffset, 
-                 int entryLength)
+  /**
+   * Writes a page index.
+   */
+  int writePageIndex(byte []buffer,
+                     int head,
+                     int type,
+                     int pid,
+                     int nextPid,
+                     int entryOffset, 
+                     int entryLength)
   {
     int sublen = 1 + 4 * 4;
     

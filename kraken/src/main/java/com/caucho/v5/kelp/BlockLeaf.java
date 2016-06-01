@@ -36,6 +36,7 @@ import java.util.Set;
 
 import com.caucho.v5.io.IoUtil;
 import com.caucho.v5.util.BitsUtil;
+import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -164,7 +165,7 @@ class BlockLeaf
     }
     
     setBlobTail(blobTail);
-    setRowHead(rowHead);
+    rowHead(rowHead);
     
     validateBlock(row);
     
@@ -184,8 +185,8 @@ class BlockLeaf
     int rowHead = _rowHead;
     int blobTail = _blobTail;
     
-    rowHead -= cursor.getRemoveLength();
-    
+    rowHead -= cursor.removeLength();
+
     if (rowHead < blobTail) {
       return false;
     }
@@ -197,7 +198,7 @@ class BlockLeaf
     cursor.getRemove(buffer, rowHead);
     // cursor.getKey(buffer, rowHead + ColumnState.LENGTH);
     
-    setRowHead(rowHead);
+    rowHead(rowHead);
     
     validateBlock(cursor.getRow());    
     
@@ -229,7 +230,7 @@ class BlockLeaf
     int sortOffset = _rowSortHead;
     int rowLength = cursor.getLength();
     
-    int removeLength = cursor.getRemoveLength();
+    int removeLength = cursor.removeLength();
     
     byte []buffer = _buffer;
 
@@ -332,7 +333,7 @@ class BlockLeaf
   {
     int ptr = _rowHead;
     int rowLength = resultCursor.getLength();
-    int removeLength = resultCursor.getRemoveLength();
+    int removeLength = resultCursor.removeLength();
     int sortOffset = _rowSortHead;
     
     byte []buffer = _buffer;
@@ -603,7 +604,7 @@ class BlockLeaf
       return row.length();
       
     case REMOVE:
-      return row.getRemoveLength();
+      return row.removeLength();
       
     default:
       throw new IllegalStateException(String.valueOf(code));
@@ -630,7 +631,7 @@ class BlockLeaf
       return false;
     }
     
-    setRowHead(rowHead);
+    rowHead(rowHead);
     setBlobTail(blobTail);
     
     validateBlock(row);
@@ -638,12 +639,12 @@ class BlockLeaf
     return true;
   }
   
-  void setRowHead(int rowHead)
+  void rowHead(int rowHead)
   {
     _rowHead = rowHead;
   }
 
-  int getRowHead()
+  int rowHead()
   {
     return _rowHead;
   }
@@ -702,10 +703,22 @@ class BlockLeaf
     
     rowHead = Math.max(rowHead, _rowHead);
     
-    BitsUtil.writeInt16(os, rowHead);
-    os.write(_buffer, rowHead, _buffer.length - rowHead);
+    int rowLength = _buffer.length - rowHead;
+    
+    BitsUtil.writeInt16(os, rowLength);
+    os.write(_buffer, rowHead, rowLength);
   }
 
+  /**
+   * Reads a full block checkpoint.
+   * 
+   * <pre><code>
+   *   blobLen int16
+   *   blobData {blobLen}
+   *   rowLen int16
+   *   rowData {rowLen}
+   * </code></pre>
+   */
   void readCheckpointFull(InputStream is)
     throws IOException
   {
@@ -721,13 +734,15 @@ class BlockLeaf
     
     IoUtil.readAll(is, buffer, 0, _blobTail);
     
-    setRowHead(BitsUtil.readInt16(is));
+    int rowLength = BitsUtil.readInt16(is);
     
-    int rowHead = getRowHead();
+    rowHead(_buffer.length - rowLength);
+    
+    int rowHead = rowHead();
     
     if (rowHead < getBlobTail() || buffer.length < rowHead) {
       throw new IllegalStateException(L.l("Invalid row-head={0} blob-tail={1}",
-                                          getRowHead(), getBlobTail()));
+                                          rowHead(), getBlobTail()));
     }
     IoUtil.readAll(is, buffer, rowHead, buffer.length - rowHead);
     

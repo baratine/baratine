@@ -31,11 +31,14 @@ package com.caucho.v5.kelp;
 
 import static com.caucho.v5.kelp.segment.SegmentServiceImpl.BLOCK_SIZE;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.io.ReadStream;
+import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.kelp.Page.Type;
 import com.caucho.v5.kelp.segment.InSegment;
@@ -70,6 +73,18 @@ public class DebugKelp
     return this;
   }
   */
+  
+  public String debug(Path path)
+    throws IOException
+  {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    WriteStream out = new WriteStream(bos);
+    
+    debug(out, path);
+    out.close();
+    
+    return new String(bos.toByteArray());
+  }
 
   public void debug(WriteStream out, Path path)
     throws IOException
@@ -77,88 +92,39 @@ public class DebugKelp
     debug(out, path, null);
   }
 
+  /**
+   * Debug with a table key
+   * 
+   * @param out the result of the debug stream
+   * @param path the database source
+   * @param tableKey the specific table to display
+   * @throws IOException
+   */
   public void debug(WriteStream out, Path path, byte []tableKey)
     throws IOException
   {
     SegmentKelpBuilder builder = new SegmentKelpBuilder();
     builder.path(path);
     builder.create(false);
+    builder.services(ServicesAmp.newManager().get());
     
     SegmentServiceImpl segmentService = builder.build();
     
     for (SegmentExtent extent : segmentService.getSegmentExtents()) {
       debugSegment(out, segmentService, extent, tableKey);
     }
-    
-    /*
-    try (ReadStream is = path.openRead()) {
-      long length = path.getLength();
-      
-      long magic = BitsUtil.readLong(is);
-      
-      if (magic != SegmentServiceImpl.KELP_MAGIC) {
-        out.println("Mismatched database magic number for " + path);
-        return;
-      }
-      
-      _segmentLength = BitsUtil.readInt(is);
-      
-      while (is.read() == 1) {
-        byte []tableKey = new byte[SegmentServiceImpl.TABLE_KEY_SIZE];
-        is.readAll(tableKey, 0, tableKey.length);
-        int rowLength = BitsUtil.readInt(is);
-        int keyOffset = BitsUtil.readInt(is);
-        int keyLength = BitsUtil.readInt(is);
-
-        TableEntry entry
-          = new TableEntry(tableKey, rowLength, keyOffset, keyLength);
-
-        _tableMap.put(new HashKey(tableKey), entry);
-      }
-      
-      if (_segmentLength % SegmentServiceImpl.BLOCK_SIZE != 0
-          || _segmentLength <= 0) {
-        out.println("Invalid segment length " + _segmentLength + " for " + path);
-        return;
-      }
-      _segmentTail = _segmentLength - DatabaseBuilder.SEGMENT_TAIL;
-
-      for (long ptr = _segmentLength; ptr < length; ptr += _segmentLength) {
-        int segment = (int) (ptr / _segmentLength);
-        
-        is.setPosition(ptr + _segmentLength - BLOCK_SIZE);
-        
-        long seq = BitsUtil.readLong(is);
-        
-        if (seq <= 0) {
-          continue;
-        }
-        
-        byte []tableKey = new byte[32];
-        is.readAll(tableKey, 0, tableKey.length);
-      
-        out.println();
-        out.println("Segment: " + segment + " (seq: " + seq
-                    + ", table: " + Hex.toShortHex(tableKey)
-                    + ", seg_len: " + Long.toHexString(_segmentLength) + ")");
-        
-        TableEntry table = _tableMap.get(HashKey.create(tableKey));
-        
-        if (table != null) {
-          debugSegmentEntries(out, is, ptr, table);
-        }
-      }
-    }
-    */
   }
   
+  /**
+   * Trace through a segment, displaying its sequence, table, and extent.
+   */
   private void debugSegment(WriteStream out, 
                             SegmentServiceImpl segmentService,
                             SegmentExtent extent,
                             byte []debugTableKey)
     throws IOException
   {
-    int length = extent.getLength();
+    int length = extent.length();
     
     try (InSegment in = segmentService.openRead(extent)) {
       ReadStream is = new ReadStream(in);
@@ -192,44 +158,49 @@ public class DebugKelp
       
       debugSegmentEntries(out, is, extent, table);
     }
-    
-    /*
-    TableEntry table = _tableMap.get(HashKey.create(tableKey));
-    
-    if (table != null) {
-      debugSegmentEntries(out, is, ptr, table);
-    }
-    out.println("DBG-OUT : " + reader);
-    */
   }
   
+  /**
+   * Trace through the segment entries.
+   */
   private void debugSegmentEntries(WriteStream out, 
                                    ReadStream is,
                                    SegmentExtent extent,
                                    TableEntry table)
     throws IOException
   {
-    for (long ptr = extent.getLength() - BLOCK_SIZE; 
+    TempBuffer tBuf = TempBuffer.create();
+    byte []buffer = tBuf.buffer();
+    
+    for (long ptr = extent.length() - BLOCK_SIZE; 
          ptr > 0;
          ptr -= BLOCK_SIZE) {
       is.position(ptr);
       
-      long seq = BitsUtil.readLong(is);
+      is.readAll(buffer, 0, BLOCK_SIZE);
+      
+      long seq = BitsUtil.readLong(buffer, 0);
+      int head = 8;
+      
       byte []tableKey = new byte[32];
+      System.arraycopy(buffer, head, tableKey, 0, tableKey.length);
       is.readAll(tableKey, 0, tableKey.length);
-      int head = BitsUtil.readInt16(is);
+      head += tableKey.length;
+      
+      int offset = BLOCK_SIZE - 8;
+      int tail = BitsUtil.readInt16(buffer, offset);
+      offset += 2;
+      boolean isCont = buffer[offset] == 1;
 
-      if (seq <= 0 || head == 0) {
+      if (seq <= 0 || tail <= 0) {
         return;
       }
       
-      boolean isCont = is.read() == 1;
+      System.out.println("HT: " + head + " " + tail + " " + isCont);
       
-      int tail = BLOCK_SIZE;
-      
-      while ((tail = debugSegmentEntry(out, is, extent.address(),
-                                       ptr, tail,
-                                       table)) > head) {
+      while ((head = debugSegmentIndex(out, is, buffer, extent.address(),
+                                       ptr, head,
+                                       table)) < tail) {
       }
       
       if (! isCont) {
@@ -238,20 +209,25 @@ public class DebugKelp
     }
   }
   
-  private int debugSegmentEntry(WriteStream out, 
+  /**
+   * Debug a single segment index entry.
+   */
+  private int debugSegmentIndex(WriteStream out,
                                 ReadStream is,
+                                byte []buffer,
                                 long segmentAddress,
                                 long ptr,
-                                int tail,
+                                int head,
                                 TableEntry table)
     throws IOException
   {
     int sublen = 1 + 4 * 4;
     
-    tail -= sublen;
+    //tail -= sublen;
     
-    is.position(ptr + tail);
-    int typeCode = is.read();
+    // is.position(ptr + tail);
+    int typeCode = buffer[head] & 0xff;
+    head++;
     
     if (typeCode <= 0) {
       return 0;
@@ -259,12 +235,14 @@ public class DebugKelp
     
     Type type = Type.valueOf(typeCode);
 
-    int pid = BitsUtil.readInt(is);
-    int nextPid = BitsUtil.readInt(is);
-    int offset = BitsUtil.readInt(is);
-    int length = BitsUtil.readInt(is);
-    
-    long pos = is.position();
+    int pid = BitsUtil.readInt(buffer, head);
+    head += 4;
+    int nextPid = BitsUtil.readInt(buffer, head);
+    head += 4;
+    int offset = BitsUtil.readInt(buffer, head);
+    head += 4;
+    int length = BitsUtil.readInt(buffer, head);
+    head += 4;
     
     switch (type) {
     case LEAF:
@@ -286,12 +264,12 @@ public class DebugKelp
       break;
     }
     
-    is.position(pos);
+    // is.position(pos);
   
     out.println(" pid:" + pid + " next:" + nextPid
                 + " offset:" + offset + " length:" + length);
     
-    return tail;
+    return head;
   }
   
   void debugLeaf(WriteStream out, 

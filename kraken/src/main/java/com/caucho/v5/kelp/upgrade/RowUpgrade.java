@@ -53,6 +53,16 @@ public class RowUpgrade
   {
     return _name;
   }
+
+  public int keyOffset()
+  {
+    return 0;
+  }
+
+  public int keyLength()
+  {
+    return 0;
+  }
   
   public ColumnUpgrade []columns()
   {
@@ -69,6 +79,10 @@ public class RowUpgrade
   {
     private String _name;
     private ArrayList<ColumnUpgrade> _columns = new ArrayList<>();
+    
+    private int _rowLength;
+    private int _keyStart;
+    private int _keyEnd;
     
     public void name(String name)
     {
@@ -91,14 +105,23 @@ public class RowUpgrade
       return columns;
     }
 
+    public int rowLength()
+    {
+      return _rowLength;
+    }
+
     public RowUpgrade build()
     {
       return new RowUpgrade(this);
     }
 
-    public ColumnUpgrade column(String name, ColumnType state, int length)
+    public ColumnUpgrade column(String name, 
+                                ColumnType state,
+                                int offset,
+                                int length,
+                                boolean isKey)
     {
-      return new ColumnUpgrade(name, state, length);
+      return new ColumnUpgrade(name, state, offset, length, isKey);
     }
     
     public void column(ColumnUpgrade column)
@@ -106,6 +129,12 @@ public class RowUpgrade
       Objects.requireNonNull(column);
       
       _columns.add(column);
+      
+      _rowLength += column.length();
+      
+      if (! column.isKey()) {
+        
+      }
     }
   }
 }

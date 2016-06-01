@@ -424,6 +424,7 @@ public class DatabaseKelpBuilder
       Path tmpPath = _path.resolveSibling(_path.getFileName() + ".tmp");
       
       TempStoreBuilder tempBuilder = new TempStoreBuilder(tmpPath);
+      tempBuilder.services(_rampManager);
       _tempStore = tempBuilder.build();
     }
     

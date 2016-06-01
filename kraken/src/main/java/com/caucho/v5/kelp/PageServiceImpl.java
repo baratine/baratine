@@ -153,7 +153,7 @@ public class PageServiceImpl implements PageService
   
   private void afterStart(Result<TableKelp> result)
   {
-    DatabaseServiceKelp database = _table.getDatabase().getDatabaseService();
+    DatabaseServiceKelp database = _table.database().getDatabaseService();
     
     database.addTableImpl(_table.getName(), _table, 
                           result.then((t,r)->afterAddTable(t,r)));

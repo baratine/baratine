@@ -98,7 +98,7 @@ public class SegmentKelpBuilder
     return _segmentSizes;
   }
 
-  public void ampManager(ServicesAmp ampManager)
+  public void services(ServicesAmp ampManager)
   {
     _ampManager = ampManager;
   }

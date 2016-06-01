@@ -116,6 +116,10 @@ public class InsertQuery extends QueryKraken
       ExprKraken value = _values.get(i);
 
       switch (column.type()) {
+      case INT8:
+        cursor.setInt(column.getIndex(), value.evalInt(cursor, params));
+        break;
+        
       case INT16:
         cursor.setInt(column.getIndex(), value.evalInt(cursor, params));
         break;

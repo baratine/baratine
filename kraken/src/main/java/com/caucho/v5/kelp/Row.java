@@ -130,7 +130,7 @@ public final class Row
     return _keyLength;
   }
   
-  public int getRemoveLength()
+  public int removeLength()
   {
     return _keyLength + ColumnState.LENGTH;
   }

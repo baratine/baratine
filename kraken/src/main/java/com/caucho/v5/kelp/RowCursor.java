@@ -99,9 +99,9 @@ public final class RowCursor
     return _row.keyLength();
   }
   
-  int getRemoveLength()
+  int removeLength()
   {
-    return _row.getRemoveLength();
+    return _row.removeLength();
   }
 
   int getTreeItemLength()
@@ -141,7 +141,7 @@ public final class RowCursor
 
   DatabaseKelp getDatabase()
   {
-    return getTable().getDatabase();
+    return getTable().database();
   }
   
   PageServiceSync getTableService()
@@ -621,7 +621,7 @@ public final class RowCursor
       System.arraycopy(buffer, rowOffset, _data, 0, _data.length);
     }
     else if (isRemove(code)) {
-      System.arraycopy(buffer, rowOffset, _data, 0, getRemoveLength());
+      System.arraycopy(buffer, rowOffset, _data, 0, removeLength());
     }
     else {
       System.arraycopy(buffer, rowOffset, _data, 0, _data.length);

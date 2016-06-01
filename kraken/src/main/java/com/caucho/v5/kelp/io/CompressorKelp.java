@@ -44,4 +44,6 @@ public interface CompressorKelp
   OutputStream out(WriteStream os) throws IOException;
   
   InputStream in(ReadStream is, long offset, int length) throws IOException;
+
+  default boolean isCompress() { return false; }
 }

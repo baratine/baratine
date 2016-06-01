@@ -154,7 +154,7 @@ public class TableKelp
     return _tableKey;
   }
 
-  public DatabaseKelp getDatabase()
+  public DatabaseKelp database()
   {
     return _db;
   }

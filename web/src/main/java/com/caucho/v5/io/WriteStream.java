@@ -1648,7 +1648,7 @@ public class WriteStream extends OutputStreamWithBuffer
   /**
    * Returns the write position.
    */
-  public long getPosition()
+  public long position()
   {
     return _position + _writeLength;
   }

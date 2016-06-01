@@ -127,8 +127,8 @@ public class TableWriterServiceImpl
     _nodeStream = new SegmentStream();
     //_blobStream = new SegmentStream();
     
-    _segmentSizeNew = table.getDatabase().getSegmentSizeMin();
-    _segmentSizeGc = table.getDatabase().getSegmentSizeMin();
+    _segmentSizeNew = table.database().getSegmentSizeMin();
+    _segmentSizeGc = table.database().getSegmentSizeMin();
     
     _compressor = _segmentService.compressor();
     Objects.requireNonNull(_compressor);
@@ -574,7 +574,7 @@ public class TableWriterServiceImpl
    */
   private void calculateSegmentSize()
   {
-    DatabaseKelp db = _table.getDatabase();
+    DatabaseKelp db = _table.database();
     
     _segmentSizeNew = calculateSegmentSize(db.getSegmentSizeFactorNew(),
                                            _segmentSizeNew);
@@ -593,7 +593,7 @@ public class TableWriterServiceImpl
    */
   private int calculateSegmentSize(int factor, int segmentSizeOld)
   {
-    DatabaseKelp db = _table.getDatabase();
+    DatabaseKelp db = _table.database();
     
     long segmentFactor = _tableLength / db.getSegmentSizeMin();
   
@@ -642,7 +642,7 @@ public class TableWriterServiceImpl
 
   public OutStore openWrite(SegmentExtent extent)
   {
-    return _store.openWrite(extent.address(), extent.getLength());
+    return _store.openWrite(extent.address(), extent.length());
   }
 
   public boolean waitForComplete()

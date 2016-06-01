@@ -153,7 +153,7 @@ public class DatabaseKelp
     
     SegmentKelpBuilder segmentBuilder = new SegmentKelpBuilder();
     segmentBuilder.path(path);
-    segmentBuilder.ampManager(_rampManager);
+    segmentBuilder.services(_rampManager);
     
     int lastSize = _segmentSizeMin;
     

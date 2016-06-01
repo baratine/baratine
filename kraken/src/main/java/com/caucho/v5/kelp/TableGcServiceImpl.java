@@ -135,7 +135,7 @@ public class TableGcServiceImpl implements TableGcService
     try {
       ArrayList<SegmentHeaderGc> collectList = findCollectList(gcSequence);
 
-      if (collectList.size() < _table.getDatabase().getGcMinCollect()) {
+      if (collectList.size() < _table.database().getGcMinCollect()) {
         return;
       }
       
@@ -187,7 +187,7 @@ public class TableGcServiceImpl implements TableGcService
     
     ArrayList<SegmentHeaderGc> segments = getTableSegments(gcSequence);
     
-    int maxCollect = _table.getDatabase().getGcMaxCollect();
+    int maxCollect = _table.database().getGcMaxCollect();
     
     ArrayList<SegmentHeaderGc> collectList = new ArrayList<>();
     

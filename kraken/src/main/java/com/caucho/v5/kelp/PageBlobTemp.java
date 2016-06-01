@@ -165,20 +165,20 @@ public class PageBlobTemp extends PageBlob
     
     WriteStream os = sOut.out();
 
-    if (sOut.getAvailable() < os.getPosition() + _length) {
+    if (sOut.getAvailable() < os.position() + _length) {
       return null;
     }
     
-    int offset = (int) os.getPosition();
+    int offset = (int) os.position();
     
     try (OutputStream zOut = sOut.outCompress()) {
       writeToStream(zOut);
     }
     
-    int length = (int) (os.getPosition() - offset);
+    int length = (int) (os.position() - offset);
     
     if (length != _length) {
-      System.out.println("MISMATCHED_LENGTH: " + _length + " " + length + " " + offset + " " + os.getPosition());
+      System.out.println("MISMATCHED_LENGTH: " + _length + " " + length + " " + offset + " " + os.position());
     }
     
     _stubWrite = new PageBlobStub(getId(), getNextId(), sOut.getSegment(),

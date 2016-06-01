@@ -34,11 +34,18 @@ package com.caucho.v5.kelp.upgrade;
  */
 public interface CursorUpgrade
 {
+  RowUpgrade row();
+  
   int size();
   
   int getInt(int column);
+  long getLong(int column);
   double getDouble(int column);
   boolean getBoolean(int column);
   String getString(int column);
   byte []getBytes(int column);
+  
+  int getBlobLength(int column);
+  byte []getBlobBytes(int column);
+  int getBlobPage(int column);
 }
