@@ -18,26 +18,19 @@
 
 package com.caucho.v5.h3.ser;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.caucho.v5.h3.OutH3;
 import com.caucho.v5.h3.context.ContextH3;
 import com.caucho.v5.h3.io.ClassInfoH3;
 import com.caucho.v5.h3.io.ConstH3;
-import com.caucho.v5.h3.io.ConstH3.ClassTypeH3;
-import com.caucho.v5.h3.io.FieldInfoH3;
-import com.caucho.v5.h3.io.H3ExceptionIn;
 import com.caucho.v5.h3.io.InH3Amp;
 import com.caucho.v5.h3.io.InRawH3;
 import com.caucho.v5.h3.io.OutRawH3;
 import com.caucho.v5.h3.query.PathH3Amp;
 import com.caucho.v5.util.L10N;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Type;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * H3 typed object array serializer.
@@ -45,21 +38,21 @@ import com.caucho.v5.util.L10N;
 public class SerializerH3ArrayObject extends SerializerH3Base<Object[]>
 {
   private static final L10N L = new L10N(SerializerH3ArrayObject.class);
-  
+
   private AtomicReference<ClassInfoH3> _infoRef = new AtomicReference<>();
-  
+
   private MethodHandle _ctor;
-  
+
   SerializerH3ArrayObject()
   {
   }
-  
+
   @Override
   public Type type()
   {
     return Object[].class;
   }
-  
+
   @Override
   public int typeSequence()
   {
@@ -67,19 +60,20 @@ public class SerializerH3ArrayObject extends SerializerH3Base<Object[]>
   }
 
   @Override
-  public void writeObject(OutRawH3 os, int defIndex, Object []list, OutH3 out)
+  public void writeObject(OutRawH3 os, int defIndex, Object[] list, OutH3 out)
   {
     os.writeObject(defIndex);
-    
+
     int size = list.length;
-    
+
     os.writeChunk(size, true);
-    
+
     for (Object entry : list) {
-      out.writeObject(entry);;
+      out.writeObject(entry);
+      ;
     }
   }
-  
+
   /**
    * Introspect the class.
    */
@@ -89,19 +83,19 @@ public class SerializerH3ArrayObject extends SerializerH3Base<Object[]>
   }
 
   @Override
-  public Object []readObject(InRawH3 is, InH3Amp in)
+  public Object[] readObject(InRawH3 is, InH3Amp in)
   {
     while (true) {
       long chunk = is.readUnsigned();
       int size = (int) InRawH3.chunkSize(chunk);
-      
-      Object []array = new Object[size];
 
-      for (int i = 0; i < size; i++) { 
+      Object[] array = new Object[size];
+
+      for (int i = 0; i < size; i++) {
         Object item = in.readObject();
         array[i] = item;
       }
-      
+
       if (InRawH3.chunkIsFinal(chunk)) {
         return array;
       }
@@ -110,18 +104,35 @@ public class SerializerH3ArrayObject extends SerializerH3Base<Object[]>
       }
     }
   }
-  
+
   @Override
-  public void scan(InRawH3 is, PathH3Amp path, InH3Amp in, Object []values)
+  public void scan(InRawH3 is, PathH3Amp path, InH3Amp in, Object[] values)
   {
     while (true) {
       long chunk = is.readUnsigned();
       long size = InRawH3.chunkSize(chunk);
-      
+
       for (int i = 0; i < size; i++) {
         is.skip(in);
       }
-      
+
+      if (InRawH3.chunkIsFinal(chunk)) {
+        return;
+      }
+    }
+  }
+
+  @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    while (true) {
+      long chunk = is.readUnsigned();
+      long size = InRawH3.chunkSize(chunk);
+
+      for (int i = 0; i < size; i++) {
+        is.skip(in);
+      }
+
       if (InRawH3.chunkIsFinal(chunk)) {
         return;
       }
