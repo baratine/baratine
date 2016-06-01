@@ -1795,7 +1795,7 @@ public class PageServiceImpl implements PageService
     
     long version = _lastVersion;
 
-    long versionTime = (now << ColumnState.VERSION_TIME_SHIFT) & ((1L << 63) - 1);
+    long versionTime = (now / 1000) << ColumnState.VERSION_TIME_SHIFT;
     
     version = Math.max(version + 1, versionTime);
     

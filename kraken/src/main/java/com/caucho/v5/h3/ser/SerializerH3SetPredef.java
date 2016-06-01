@@ -18,17 +18,17 @@
 
 package com.caucho.v5.h3.ser;
 
-import java.util.List;
+import java.util.Set;
 
 /**
- * H3 list-typed serializer.
+ * H3 set-typed serializer.
  */
-public class SerializerH3ListPredef<T extends List<?>> extends
+public class SerializerH3SetPredef<T extends Set<?>> extends
   SerializerH3Collection<T>
 {
   private int _typeSequence;
-  
-  SerializerH3ListPredef(Class<? extends T> type, int typeSequence)
+
+  SerializerH3SetPredef(Class<? extends T> type, int typeSequence)
   {
     super(type);
     

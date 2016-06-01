@@ -181,7 +181,7 @@ public final class RowCursor
     
     long value = colState.getLong(_data, 0);
     
-    return (int) colState.getState(value);
+    return (int) colState.state(value);
   }
   
   /*
@@ -195,32 +195,32 @@ public final class RowCursor
   
   public long getStateTime()
   {
-    return getColumnState().getTime(_data, 0);
+    return getColumnState().time(_data, 0);
   }
   
   public long getTime(byte []data, int offset)
   {
-    return getColumnState().getTime(data, offset);
+    return getColumnState().time(data, offset);
   }
   
   public long getStateTimeout()
   {
-    return getColumnState().getTimeout(_data, 0);
+    return getColumnState().timeout(_data, 0);
   }
   
   public int getTimeoutBuffer(byte []data, int offset)
   {
-    return getColumnState().getTimeout(data, offset);
+    return getColumnState().timeout(data, offset);
   }
   
   public int getTimeout()
   {
-    return getColumnState().getTimeout(_data, 0);
+    return getColumnState().timeout(_data, 0);
   }
 
   public final void setTimeout(int sec)
   {
-    getColumnState().setTimeout(_data, 0, sec);
+    getColumnState().timeout(_data, 0, sec);
   }
 
   public long getVersion()
@@ -230,12 +230,12 @@ public final class RowCursor
 
   public void setVersion(long version)
   {
-    getColumnState().setVersion(_data, 0, version);
+    getColumnState().version(_data, 0, version);
   }
   
   public long getVersion(byte []data, int offset)
   {
-    return getColumnState().getVersion(data, offset);
+    return getColumnState().version(data, offset);
   }
   
   private ColumnState getColumnState()

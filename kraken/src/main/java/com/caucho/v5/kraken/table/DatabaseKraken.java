@@ -32,6 +32,9 @@ package com.caucho.v5.kraken.table;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 
+/**
+ * Interface
+ */
 @Service
 public interface DatabaseKraken
 {

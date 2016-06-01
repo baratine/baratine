@@ -29,17 +29,18 @@
 
 package com.caucho.v5.web.webapp;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.caucho.v5.io.StreamSource;
 import io.baratine.web.Part;
 
 public class PartImpl implements Part
 {
-  private byte[] _data;
+  private StreamSource _streamSource;
   private String _name;
   private String _fileName;
   private String _contentType;
@@ -50,9 +51,12 @@ public class PartImpl implements Part
   {
   }
 
-  void setData(byte[] data)
+  void setData(StreamSource ss)
   {
-    _data = data;
+    if (_streamSource != null)
+      throw new IllegalStateException();
+
+    _streamSource = ss;
   }
 
   void setName(String name)
@@ -79,11 +83,11 @@ public class PartImpl implements Part
   {
     _headers = headers;
   }
-  
+
   @Override
   public String contentType()
   {
-    return null;
+    return _contentType;
   }
 
   @Override
@@ -118,14 +122,30 @@ public class PartImpl implements Part
   }
 
   @Override
-  public long size()
+  public String getFileName()
   {
-    return 0;
+    return _fileName;
   }
 
   @Override
-  public InputStream data()
+  public long size()
   {
-    return new ByteArrayInputStream(_data);
+    return _size;
+  }
+
+  @Override
+  public InputStream data() throws IOException
+  {
+    if (_streamSource != null) {
+      return getInputStreamFromStreamSource();
+    }
+    else {
+      throw new IllegalStateException();
+    }
+  }
+
+  private InputStream getInputStreamFromStreamSource() throws IOException
+  {
+    return _streamSource.openInputStream();
   }
 }

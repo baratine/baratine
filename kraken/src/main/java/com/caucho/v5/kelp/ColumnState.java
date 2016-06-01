@@ -48,7 +48,7 @@ public class ColumnState extends Column
   
   public static final int TIME_MASK = ~STATE_MASK;
   public static final long VERSION_MASK = ~0L; // (1L << 48) - 1;
-  public static final long VERSION_TIME_SHIFT = 16;
+  public static final long VERSION_TIME_SHIFT = 24;
   
   public static final int LENGTH = 12;
   
@@ -65,102 +65,57 @@ public class ColumnState extends Column
     return LENGTH;
   }
   
-  public static long getState(long value)
+  public static long state(long value)
   {
     return (value & STATE_MASK);
   }
   
   public static boolean isRemoved(long value)
   {
-    return getState(value) == STATE_REMOVED;
+    return state(value) == STATE_REMOVED;
   }
   
   public static boolean isData(long value)
   {
-    return getState(value) == STATE_DATA;
+    return state(value) == STATE_DATA;
   }
   
-  public int getTimeout(byte []rowBuffer, int rowOffset)
+  public int timeout(byte []rowBuffer, int rowOffset)
   {
     int value = BitsUtil.readInt(rowBuffer, rowOffset + offset());
     
     return value & TIME_MASK;
   }
   
-  public void setTimeout(byte []rowBuffer, int rowOffset, int value)
+  public void timeout(byte []rowBuffer, int rowOffset, int value)
   {
     value = value & TIME_MASK;
     
     BitsUtil.writeInt(rowBuffer, rowOffset + offset(), value);
   }
   
-  public long getVersion(byte []rowBuffer, int rowOffset)
+  public long version(byte []rowBuffer, int rowOffset)
   {
     long value = BitsUtil.readLong(rowBuffer, rowOffset + offset() + 4);
     
     return value & VERSION_MASK;
   }
   
-  public void setVersion(byte []rowBuffer, int rowOffset, long value)
+  public void version(byte []rowBuffer, int rowOffset, long value)
   {
-    value = value & VERSION_MASK;
+    // value = value & VERSION_MASK;
     
     int offset = rowOffset + offset() + 4;
     
     BitsUtil.writeLong(rowBuffer, offset, value);
   }
   
-  public long getTime(byte []rowBuffer, int rowOffset)
+  public long time(byte []rowBuffer, int rowOffset)
   {
     long version = BitsUtil.readLong(rowBuffer, rowOffset + offset() + 4);
     
     // XXX: theoretical rollover issues
     
-    return (version >> 16) | (CurrentTime.currentTime() & (0xffffL << 48)); 
+    return (version >> 24) * 1024;
   }
-
-  /*
-  public void setTime(byte []rowBuffer, int rowOffset, int value)
-  {
-    BitsUtil.writeInt(rowBuffer, rowOffset + getOffset() + 4, value);
-  }
-
-  public void setDateTime(byte []rowBuffer, int rowOffset, 
-                          int timeout,
-                          long version)
-  {
-  }
-  */
-
-  /*
-  @Override
-  void writeCheckpoint(WriteStream os, byte[] buffer, int offset)
-  {
-  }
-
-  @Override
-  int readCheckpoint(ReadStream is, 
-                     byte[] buffer, int offset, int rowLength,
-                     int tail)
-  {
-    buffer[offset + getOffset()] = STATE_DATA;
-    
-    return tail;
-  }
-
-  @Override
-  void writeJournal(OutputStream os, byte[] buffer, int offset,
-                    BlobOutputStream blob)
-    throws IOException
-  {
-  }
-
-  @Override
-  void readJournal(TableServiceImpl pageActor,
-                   ReadStream is, 
-                   byte[] buffer, int offset,
-                   RowCursor cursor)
-  {
-  }
-  */
 }

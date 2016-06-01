@@ -18,8 +18,16 @@
 
 package com.caucho.v5.h3.ser;
 
+import com.caucho.v5.h3.SerializerH3;
+import com.caucho.v5.h3.context.ContextH3;
+import com.caucho.v5.h3.io.ConstH3;
+
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,11 +35,10 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-
-import com.caucho.v5.h3.SerializerH3;
-import com.caucho.v5.h3.context.ContextH3;
-import com.caucho.v5.h3.io.ConstH3;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * H3 typed serializer.
@@ -40,6 +47,7 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
 {
   private static final SerializerH3Amp<?> MAP;
   private static final SerializerH3Amp<?> LIST;
+  private static final SerializerH3Amp<?> SET;
 
   private static final HashMap<Class<?>,SerializerH3Amp<?>> _serMap
     = new HashMap<>();
@@ -106,6 +114,7 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
   static {
     MAP = new SerializerH3MapPredef(HashMap.class, ConstH3.DEF_MAP);
     LIST = new SerializerH3ListPredef(ArrayList.class, ConstH3.DEF_LIST);
+    SET = new SerializerH3SetPredef(HashSet.class, ConstH3.DEF_SET);
 
     ser(Boolean.class, new SerializerH3Boolean());
 
@@ -120,6 +129,7 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
 
     ser(HashMap.class, MAP);
     ser(ArrayList.class, LIST);
+    ser(HashSet.class, SET);
 
     ser(byte[].class, new SerializerH3ArrayByte());
     ser(char[].class, new SerializerH3ArrayChar());
@@ -132,5 +142,17 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
     ser(LocalTime.class, new SerializerH3LocalTime());
     ser(LocalDateTime.class, new SerializerH3LocalDateTime());
     ser(ZonedDateTime.class, new SerializerH3ZonedDateTime());
+
+    //regex Pattern
+    ser(Pattern.class, new SerializerH3RegexPattern());
+
+    //BigInteger, BigDecimal
+    ser(BigInteger.class, new SerializerH3BigInteger());
+    ser(BigDecimal.class, new SerializerH3BigDecimal());
+
+    ser(UUID.class, new SerializerH3UUID());
+    ser(URI.class, new SerializerH3URI());
+    ser(URL.class, new SerializerH3URL());
+
   }
 }

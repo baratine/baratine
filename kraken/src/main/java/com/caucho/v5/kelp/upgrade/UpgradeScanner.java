@@ -915,6 +915,29 @@ public class UpgradeScanner
     {
       return _row.columns().length;
     }
+    
+    @Override
+    public long getTime()
+    {
+      long version = getVersion();
+      long time = version >> 24;
+      
+      return time * 1000;
+    }
+    
+    @Override
+    public long getVersion()
+    {
+      return BitsUtil.readLong(_buffer, _offset + 4);
+    }
+    
+    @Override
+    public long getTimeout()
+    {
+      int state = BitsUtil.readInt(_buffer, _offset) & 0xffffff;
+      
+      return state * 60000L;
+    }
 
     @Override
     public int getInt(int index)

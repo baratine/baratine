@@ -48,4 +48,8 @@ public interface CursorUpgrade
   int getBlobLength(int column);
   byte []getBlobBytes(int column);
   int getBlobPage(int column);
+
+  long getTime();
+  long getVersion();
+  long getTimeout();
 }

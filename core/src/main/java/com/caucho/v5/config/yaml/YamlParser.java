@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Baratine; if not, write to the
- * 
+ *
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
@@ -47,24 +47,24 @@ import io.baratine.config.Config.ConfigBuilder;
 /**
  * YamlParser parses an environment.
  */
-public class YamlParser 
+public class YamlParser
 {
   private static final L10N L = new L10N(YamlParser.class);
-  
+
   private final List<Config> _configList = new ArrayList<>();
-  
+
   private ConfigBuilder _config;
-  
+
   private InputStream _is;
   private int _peek = -1;
-  
+
   private YamlParser(InputStream is)
   {
     Objects.requireNonNull(is);
-    
+
     _is = new BufferedInputStream(is);
   }
-  
+
   public static List<Config> parse(Path path)
     throws IOException
   {
@@ -72,42 +72,42 @@ public class YamlParser
       return new YamlParser(is).parse();
     }
   }
-  
+
   private List<Config> parse()
     throws IOException
   {
     _config = Configs.config();
-    
+
     parseTop();
-    
+
     _configList.add(_config.get());
-    
+
     return _configList;
   }
-  
+
   private void parseTop()
       throws IOException
   {
     while (parse("", -1) >= 0) {
     }
   }
-  
+
   private int parse(String prefix, int depth)
       throws IOException
   {
     int ch;
-    
+
     int subDepth = 0;
-    
+
     while ((ch = read()) > 0) {
       switch (ch) {
       case ' ':
         subDepth++;
         break;
-        
+
       case '\n':
         return 0;
-        
+
       case '-':
         if (subDepth == 0
             && (ch = read()) == '-'
@@ -121,34 +121,41 @@ public class YamlParser
         }
 
         throw error("depth: " + subDepth + " '" + ch + "'");
-        
+
       default:
-        if (isIdentifierStart(ch)) {
+        if (isIdentifierStart(ch) || ch == '"' || ch == '\'') {
           if (subDepth <= depth) {
             _peek = ch;
-            
+
             return subDepth;
           }
-          
-          String key = parseIdentifier(ch);
-          
-          ch = read();
-          
+
+          String key;
+
+          if (ch == '"' || ch == '\'') {
+            key = parseIdentifierQuoted(ch);
+          }
+          else {
+            key = parseIdentifier(ch);
+          }
+
+          ch = readSpaces();
+
           if (ch != ':') {
             throw error(L.l("expected ':' at '{0}'", (char) ch));
           }
-          
+
           String fullKey;
-          
+
           if (prefix.isEmpty()) {
             fullKey = key;
           }
           else {
             fullKey = prefix + "." + key;
           }
-          
+
           parseValues(fullKey);
-          
+
           subDepth = parse(fullKey, subDepth);
         }
         else {
@@ -156,10 +163,10 @@ public class YamlParser
         }
       }
     }
-    
+
     return -1;
   }
-  
+
   private void parseValues(String fullKey)
     throws IOException
   {
@@ -174,30 +181,30 @@ public class YamlParser
 
       case '\n':
         return;
-        
+
       case ' ': case '\t':
         break;
-        
+
       default:
         if (isIdentifierPart(ch)) {
           StringBuilder sb = new StringBuilder();
-          
+
           sb.append((char) ch);
-          
+
           for (ch = read(); ch > 0 && ch != '\r' && ch != '\n'; ch = read()) {
             sb.append((char) ch);
           }
-          
+
           if (ch == '\r') {
             ch = read();
-            
+
             if (ch != '\n') {
               _peek = ch;
             }
           }
-          
+
           _config.add(fullKey, sb.toString().trim());
-          
+
           return;
         }
         else {
@@ -206,28 +213,46 @@ public class YamlParser
       }
     }
   }
-  
+
   private String parseIdentifier(int ch)
     throws IOException
   {
     StringBuilder sb = new StringBuilder();
-    
+
     sb.append((char) ch);
-    
+
     for (ch = read(); isIdentifierPart(ch); ch = read()) {
       sb.append((char) ch);
     }
-    
+
     _peek = ch;
-    
+
     return sb.toString();
   }
-  
+
+  private String parseIdentifierQuoted(int ch)
+    throws IOException
+  {
+    StringBuilder sb = new StringBuilder();
+
+    int quoteChar = ch;
+
+    for(ch = read(); ch > 0 && ch != quoteChar; ch = read()) {
+      if (ch == '\r' || ch == '\n') {
+        throw error((char) ch);
+      }
+
+      sb.append((char) ch);
+    }
+
+    return sb.toString();
+  }
+
   private boolean isIdentifierStart(int ch)
   {
     return Character.isJavaIdentifierStart(ch);
   }
-  
+
   private boolean isIdentifierPart(int ch)
   {
     return (Character.isJavaIdentifierPart(ch)
@@ -235,27 +260,38 @@ public class YamlParser
             || ch == '['
             || ch == ']');
   }
-  
+
   private IOException error(int ch)
   {
     return new IOException(L.l("unexpected character '{0}'", String.valueOf((char) ch)));
   }
-  
+
   private IOException error(String msg)
   {
     return new IOException(msg);
   }
-  
+
   private int read()
     throws IOException
   {
     if (_peek > 0) {
       int value = _peek;
       _peek = -1;
-      
+
       return value;
     }
-    
+
     return _is.read();
+  }
+
+  private int readSpaces()
+    throws IOException
+  {
+    int ch;
+
+    while ((ch = read()) >= 0 && ch == ' ') {
+    }
+
+    return ch;
   }
 }

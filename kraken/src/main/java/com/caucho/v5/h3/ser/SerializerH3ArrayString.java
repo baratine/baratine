@@ -99,7 +99,7 @@ public class SerializerH3ArrayString extends SerializerH3Base<String[]>
 
       for (int i = 0; i < size; i++) { 
         String item = in.readString();
-        array[i++] = item;
+        array[i] = item;
       }
       
       if (InRawH3.chunkIsFinal(chunk)) {

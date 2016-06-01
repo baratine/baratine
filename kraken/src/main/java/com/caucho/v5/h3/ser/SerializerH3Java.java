@@ -225,7 +225,7 @@ public class SerializerH3Java<T> extends SerializerH3Base<T>
       FieldSerBase field = fields[i];
       
       PathH3Amp subPath = path.field(field.name());
-      
+
       if (subPath == null) {
         field.skip(is, in);
       }
@@ -754,7 +754,7 @@ public class SerializerH3Java<T> extends SerializerH3Base<T>
     @Override
     Object read(InRawH3 is, InH3Amp in)
     {
-      return is.readFloat();
+      return is.readObject(in);
     }
   }
   

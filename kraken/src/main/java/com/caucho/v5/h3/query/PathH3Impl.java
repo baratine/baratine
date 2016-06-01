@@ -45,7 +45,6 @@ public class PathH3Impl implements PathH3Amp
   @Override
   public PathH3Amp field(String name)
   {
-    System.out.println("FIELD: " + name);
     return null;
   }
 }

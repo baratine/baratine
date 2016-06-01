@@ -29,7 +29,6 @@
 
 package com.caucho.v5.web.webapp;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,10 +40,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.caucho.v5.io.MultipartStream;
 import com.caucho.v5.io.ReadStream;
-import com.caucho.v5.io.WriteStream;
+import com.caucho.v5.io.StreamSource;
+import com.caucho.v5.store.temp.TempStoreSystem;
+import com.caucho.v5.store.temp.TempWriter;
+import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Utf8Util;
 import io.baratine.web.Form;
@@ -56,8 +60,13 @@ import io.baratine.web.Part;
 public class BodyResolverBase implements BodyResolver
 {
   private static final L10N L = new L10N(BodyResolverBase.class);
+  private static final Logger log
+    = Logger.getLogger(BodyResolverBase.class.getName());
 
   public static final String FORM_TYPE = "application/x-www-form-urlencoded";
+
+  private TempStoreSystem _tempSystem
+    = SystemManager.getCurrent().getSystem(TempStoreSystem.class);
 
   @Override
   public <T> T body(RequestWebSpi request, Class<T> type)
@@ -354,10 +363,21 @@ public class BodyResolverBase implements BodyResolver
 
       ReadStream stream;
       while ((stream = parser.openRead()) != null) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        WriteStream writer = new WriteStream(out);
-        writer.writeStream(stream);
-        writer.close();
+        TempWriter tempWriter = _tempSystem.openWriter();
+
+        byte[] buff = new byte[8 * 1024];
+        int l;
+        long size = 0;
+
+        while ((l = stream.read(buff)) > 0) {
+          tempWriter.write(buff, 0, l);
+          size += l;
+        }
+
+        tempWriter.flush();
+        tempWriter.close();
+
+        StreamSource ss = tempWriter.getStreamSource();
 
         final MultipartStream.Attribute[] attributes
           = parser.parseAttribute("Content-Disposition");
@@ -366,16 +386,20 @@ public class BodyResolverBase implements BodyResolver
 
         fillAttributes(part, attributes);
 
-        // FIXME: 2016-05-16 should be temp file
-        part.setData(out.toByteArray());
+        part.setData(ss);
         part.setHeaders(parser.getHeaders());
+        part.setSize(size);
 
         parts.add(part);
       }
 
       return parts.toArray(new Part[parts.size()]);
+    } catch (RuntimeException e) {
+      log.log(Level.FINER, e.getMessage(), e);
+      throw e;
     } catch (Throwable e) {
-      // FIXME what's proper exception handling?
+      log.log(Level.FINER, e.getMessage(), e);
+
       throw new RuntimeException(e);
     }
   }

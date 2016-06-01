@@ -145,6 +145,17 @@ public class ConstH3
   public static final int DEF_LOCAL_DATE_TIME = 33;
   public static final int DEF_ZONED_DATE_TIME = 34;
 
+  public static final int DEF_PATTERN = 35;
+  public static final int DEF_BIG_INT = 36;
+  public static final int DEF_BIG_DEC = 37;
+
+  public static final int DEF_SET = 38;
+
+  public static final int DEF_UUID = 39;
+
+  public static final int DEF_URI = 40;
+  public static final int DEF_URL = 41;
+
   public static final int DEF_RESERVED = 64;
   
   public static enum ClassTypeH3

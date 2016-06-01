@@ -89,13 +89,13 @@ class PageLeafEntry implements Comparable<Object> {
     
     ColumnState columnState = _row.getColumnState();
     
-    long timeout = columnState.getTimeout(buffer, rowOffset);
+    long timeout = columnState.timeout(buffer, rowOffset);
     
     if (timeout == 0) {
       return 0;
     }
     
-    long time = columnState.getTime(buffer, rowOffset);
+    long time = columnState.time(buffer, rowOffset);
     
     return time + timeout;
   }
