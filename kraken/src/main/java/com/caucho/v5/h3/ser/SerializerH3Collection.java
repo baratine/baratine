@@ -18,14 +18,6 @@
 
 package com.caucho.v5.h3.ser;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.caucho.v5.h3.OutH3;
 import com.caucho.v5.h3.context.ContextH3;
 import com.caucho.v5.h3.io.ClassInfoH3;
@@ -38,12 +30,20 @@ import com.caucho.v5.h3.io.OutRawH3;
 import com.caucho.v5.h3.query.PathH3Amp;
 import com.caucho.v5.util.L10N;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * H3 typed list serializer.
  */
-public class SerializerH3List<T extends List<?>> extends SerializerH3Base<T>
+public class SerializerH3Collection<T extends Collection<?>> extends SerializerH3Base<T>
 {
-  private static final L10N L = new L10N(SerializerH3List.class);
+  private static final L10N L = new L10N(SerializerH3Collection.class);
   
   private Class<? extends T> _type;
   private AtomicReference<ClassInfoH3> _infoRef = new AtomicReference<>();
@@ -51,7 +51,7 @@ public class SerializerH3List<T extends List<?>> extends SerializerH3Base<T>
   private MethodHandle _ctor;
   private FieldSerBase _item;
   
-  SerializerH3List(Class<? extends T> type)
+  SerializerH3Collection(Class<? extends T> type)
   {
     _type = type;
   }
@@ -157,7 +157,7 @@ public class SerializerH3List<T extends List<?>> extends SerializerH3Base<T>
   @Override
   public T readObject(InRawH3 is, InH3Amp in)
   {
-    List<Object> list = (List) newInstance();
+    Collection<Object> list = (Collection<Object>) newInstance();
 
     while (true) {
       long chunk = is.readUnsigned();
