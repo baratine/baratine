@@ -34,6 +34,8 @@ import static com.caucho.v5.kelp.segment.SegmentServiceImpl.BLOCK_SIZE;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 
 import com.caucho.v5.amp.ServicesAmp;
@@ -46,14 +48,19 @@ import com.caucho.v5.kelp.segment.SegmentExtent;
 import com.caucho.v5.kelp.segment.SegmentKelpBuilder;
 import com.caucho.v5.kelp.segment.SegmentServiceImpl;
 import com.caucho.v5.kelp.segment.SegmentServiceImpl.TableEntry;
+import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.BitsUtil;
 import com.caucho.v5.util.Hex;
+import com.caucho.v5.util.IdentityGenerator;
 
 /**
  * Filesystem access for the BlockStore.
  */
 public class DebugKelp
 {
+  private IdentityGenerator _idGen
+    = IdentityGenerator.newGenerator().timeBits(36).get();
+  
   public DebugKelp()
   {
   }
@@ -151,10 +158,17 @@ public class DebugKelp
       }
 
       out.println();
-      out.println("Segment: " + extent.getId() + " (seq: " + seq
+      
+      StringBuilder sb = new StringBuilder();
+      Base64Util.encode(sb, seq);
+      long time = _idGen.time(seq);
+      
+      out.println("Segment: " + extent.getId() + " (seq: " + sb
                   + ", table: " + Hex.toShortHex(tableKey)
                   + ", addr: 0x" + Long.toHexString(extent.address())
-                  + ", len: 0x" + Integer.toHexString(length) + ")");
+                  + ", len: 0x" + Integer.toHexString(length)
+                  + ", time: " + LocalDateTime.ofEpochSecond(time / 1000, 0, ZoneOffset.UTC)
+                  + ")");
       
       debugSegmentEntries(out, is, extent, table);
     }

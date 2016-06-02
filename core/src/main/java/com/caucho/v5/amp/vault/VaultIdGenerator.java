@@ -77,7 +77,7 @@ public class VaultIdGenerator
     {
       int nodeIndex = 0;
       
-      _idGen = new IdentityGenerator(nodeIndex);
+      _idGen = IdentityGenerator.newGenerator().node(nodeIndex).get();
     }
 
     @Override
@@ -97,7 +97,7 @@ public class VaultIdGenerator
     {
       int nodeIndex = 0;
       
-      _idGen = new IdentityGenerator(nodeIndex);
+      _idGen = IdentityGenerator.newGenerator().node(nodeIndex).get();
     }
 
     @Override

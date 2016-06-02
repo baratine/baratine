@@ -57,6 +57,7 @@ import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.store.io.InStore;
 import com.caucho.v5.store.io.OutStore;
 import com.caucho.v5.store.io.StoreReadWrite;
+import com.caucho.v5.util.IdentityGenerator;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.AfterBatch;
@@ -85,8 +86,9 @@ public class TableWriterServiceImpl
   
   // largest blob in the system
   private int _blobSizeMax;
-  
-  private long _sequence = 0;
+
+  private IdentityGenerator _seqGen
+    = IdentityGenerator.newGenerator().timeBits(36).get();
   
   private ConcurrentHashMap<Long,Boolean> _activeSequenceSet = new ConcurrentHashMap<>();
   
@@ -100,7 +102,9 @@ public class TableWriterServiceImpl
   
   private boolean _isBlobDirty;
   
-  private long _gcSequence;
+  // private long _gcSequence;
+  private long _seqSinceGcCount;
+  
   // private StoreFsyncService _fsyncService;
   private long _tableLength;
   private CompressorKelp _compressor;
@@ -164,7 +168,7 @@ public class TableWriterServiceImpl
   @Direct
   public long getSequence()
   {
-    return _sequence;
+    return _seqGen.current();
   }
   
   @Direct
@@ -176,7 +180,7 @@ public class TableWriterServiceImpl
       return nodeStream.getSequence();
     }
     else {
-      return _sequence;
+      return _seqGen.current();
     }
   }
   
@@ -339,7 +343,7 @@ public class TableWriterServiceImpl
     
       long seq = segment.getSequence();
       
-      _sequence = Math.max(_sequence, seq);
+      _seqGen.update(seq);
       
       if (seq <= 0) {
         System.out.println("BAD_SEQ:");
@@ -499,11 +503,13 @@ public class TableWriterServiceImpl
   public OutSegment openWriter()
   {
     if (isGcRequired()) {
-      _gcSequence = ++_sequence;
-      _table.getGcService().gc(_gcSequence);
+      // _gcSequence = _seqGen.get();
+      _table.getGcService().gc(_seqGen.get());
+      _seqSinceGcCount = 0;
     }
     
-    long sequence = ++_sequence;
+    _seqSinceGcCount++;
+    long sequence = _seqGen.get();
     
     return openWriterSeq(sequence);
   }
@@ -636,7 +642,7 @@ public class TableWriterServiceImpl
     else {
       int delta = Math.max(2, _table.getGcThreshold());
       
-      return delta <= _sequence - _gcSequence;
+      return delta <= _seqSinceGcCount;
     }
   }
 

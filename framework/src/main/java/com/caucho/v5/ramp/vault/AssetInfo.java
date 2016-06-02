@@ -734,7 +734,7 @@ class AssetInfo<ID,T>
     {
       super(entity);
       
-      _idGen = new IdentityGenerator(entity.node());
+      _idGen = IdentityGenerator.newGenerator().node(entity.node()).get();
     }
     
     @Override
@@ -756,7 +756,7 @@ class AssetInfo<ID,T>
     {
       super(entity);
       
-      _idGen = new IdentityGenerator(entity.node());
+      _idGen = IdentityGenerator.newGenerator().node(entity.node()).get();
     }
     
     @Override

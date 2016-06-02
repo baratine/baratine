@@ -45,7 +45,7 @@ public class ColumnIdentity extends Column
   {
     super(index, name, ColumnType.IDENTITY, offset);
     
-    _idGen = new IdentityGenerator(0);
+    _idGen = IdentityGenerator.newGenerator().node(0).get();
   }
 
   @Override

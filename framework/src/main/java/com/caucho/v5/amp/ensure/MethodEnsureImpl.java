@@ -64,7 +64,7 @@ public class MethodEnsureImpl implements MethodEnsureAmp
     _methodId = methodId(method);
     
     int nodeId = 0;
-    _idGen = new IdentityGenerator(nodeId); 
+    _idGen = IdentityGenerator.newGenerator().node(nodeId).get(); 
   }
   
   private long methodId(MethodAmp method)

@@ -138,8 +138,10 @@ public class WebApp
     _services = builder.serviceBuilder().start();
     
     int prime = 287093;
-    _idGenerator = new IdentityGenerator(_services.node().nodeIndex(),
-                                        prime);
+    _idGenerator = IdentityGenerator.newGenerator()
+                                    .node(_services.node().nodeIndex())
+                                    .increment(prime)
+                                    .get();
                                         
     _bodyResolver = builder.bodyResolver();
     
