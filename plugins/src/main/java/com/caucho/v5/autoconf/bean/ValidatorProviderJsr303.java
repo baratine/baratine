@@ -30,11 +30,9 @@
 package com.caucho.v5.autoconf.bean;
 
 import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.metadata.BeanDescriptor;
+import javax.validation.ValidatorFactory;
 
 import com.caucho.v5.beans.BeanValidator;
-import com.caucho.v5.beans.NullBeanValidator;
 import com.caucho.v5.config.IncludeOnClass;
 import com.caucho.v5.config.Priority;
 import io.baratine.config.Include;
@@ -44,33 +42,25 @@ import io.baratine.inject.Bean;
 @IncludeOnClass(Validation.class)
 public class ValidatorProviderJsr303
 {
-  private final Validator _validator;
+  private final ValidatorFactory _validatorFactory;
 
   public ValidatorProviderJsr303()
   {
-    _validator = Validation.buildDefaultValidatorFactory().getValidator();
+    _validatorFactory = Validation.buildDefaultValidatorFactory();
   }
 
   @Bean
   @Priority(-10)
-  public BeanValidator getValidator(Class type)
+  public BeanValidator getValidator()
   {
-    final BeanDescriptor beanDesc = _validator.getConstraintsForClass(type);
-
-    BeanValidator beanValidator = NullBeanValidator.instance;
-
-    if (beanDesc.isBeanConstrained()) {
-      beanValidator = new BeanValidatorJsr303(_validator);
-    }
-
-    return beanValidator;
+    return new BeanValidatorJsr303(_validatorFactory.getValidator());
   }
 
   @Override
   public String toString()
   {
     return this.getClass().getSimpleName() + "["
-           + _validator
+           + _validatorFactory
            + ']';
   }
 }

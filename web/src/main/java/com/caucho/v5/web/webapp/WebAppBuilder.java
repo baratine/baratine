@@ -53,6 +53,7 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
+import com.caucho.v5.beans.ValidatorProviderDefault;
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.inject.BaratineProducer;
 import com.caucho.v5.http.dispatch.InvocationRouter;
@@ -275,6 +276,7 @@ public class WebAppBuilder
 
     _autoBind = new WebAppAutoBind(webApp);
     _injectBuilder.autoBind(_autoBind);
+    _injectBuilder.include(ValidatorProviderDefault.class);
     
     _injectBuilder.provider(()->webApp.config()).to(Config.class);
     _injectBuilder.provider(()->webApp.inject()).to(Injector.class);

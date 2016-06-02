@@ -36,7 +36,7 @@ public class ValidatorProviderDefault
 {
   @Bean
   @Priority(-100)
-  public BeanValidator getValidator(Class type)
+  public BeanValidator getValidator()
   {
     return NullBeanValidator.instance;
   }

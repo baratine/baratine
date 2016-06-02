@@ -29,12 +29,20 @@
 
 package com.caucho.v5.autoconf.bean;
 
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
 import com.caucho.v5.beans.BeanValidator;
 
 public class BeanValidatorJsr303 implements BeanValidator
 {
+  private Logger log
+    = Logger.getLogger(com.caucho.v5.beans.BeanValidator.class.getName());
+
   private final Validator _validator;
 
   public BeanValidatorJsr303(Validator validator)
@@ -45,6 +53,29 @@ public class BeanValidatorJsr303 implements BeanValidator
   @Override
   public void validate(Object bean)
   {
-    _validator.validate(bean);
+    final Set<ConstraintViolation<Object>> violations
+      = _validator.validate(bean);
+
+    if (violations.size() > 0) {
+
+      IllegalStateException e = new IllegalStateException("invalid bean");
+
+      log.log(Level.FINER, e, () -> loggedErrorMessage(bean, violations));
+
+      throw e;
+    }
+  }
+
+  private String loggedErrorMessage(Object bean,
+                                    Set<ConstraintViolation<Object>> violations)
+  {
+    StringBuilder builder
+      = new StringBuilder("bean validation failed for " + bean);
+
+    for (ConstraintViolation<Object> violation : violations) {
+      builder.append("\n\t" + violation);
+    }
+
+    return builder.toString();
   }
 }
