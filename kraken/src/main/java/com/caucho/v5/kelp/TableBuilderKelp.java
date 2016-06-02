@@ -67,6 +67,13 @@ public class TableBuilderKelp
     _rowBuilder = new RowBuilder(name);
   }
   
+  public TableBuilderKelp columnBool(String name)
+  {
+    _rowBuilder.bool(name);
+    
+    return this;
+  }
+  
   public TableBuilderKelp columnInt8(String name)
   {
     _rowBuilder.int8(name);
@@ -95,9 +102,39 @@ public class TableBuilderKelp
     return this;
   }
   
+  /**
+   * double column
+   */
   public TableBuilderKelp columnDouble(String name)
   {
     _rowBuilder.doubleCol(name);
+    
+    return this;
+  }
+  
+  public TableBuilderKelp columnFloat(String name)
+  {
+    _rowBuilder.floatCol(name);
+    
+    return this;
+  }
+  
+  /**
+   * timestamp column
+   */
+  public TableBuilderKelp columnTimestamp(String name)
+  {
+    _rowBuilder.timestampCol(name);
+    
+    return this;
+  }
+  
+  /**
+   * identity column
+   */
+  public TableBuilderKelp columnIdentity(String name)
+  {
+    _rowBuilder.identityCol(name);
     
     return this;
   }

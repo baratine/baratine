@@ -375,13 +375,13 @@ public final class PageLeafImpl extends PageLeaf
     int row;
     
     if ((row = top.insert(cursor.getRow(),
-                          cursor.getBuffer(), 0, 
+                          cursor.buffer(), 0, 
                           cursor.getBlobs())) < 0) {
       BlockLeaf newTop = extendBlocks();
     
       tableService.addLruSize(BLOCK_SIZE);
       if ((row = newTop.insert(cursor.getRow(),
-                               cursor.getBuffer(), 0,
+                               cursor.buffer(), 0,
                                cursor.getBlobs())) < 0) {
         throw new IllegalStateException();
       }
@@ -474,7 +474,7 @@ public final class PageLeafImpl extends PageLeaf
 
     if (backupCallback != null) {
       // pageActor.backupRemove(buffer, foundPtr, backupCallback);
-      pageActor.backupRemove(cursor.getBuffer(), 0, cursor.getVersion(),
+      pageActor.backupRemove(cursor.buffer(), 0, cursor.getVersion(),
                              backupCallback,
                              result);
     }
@@ -770,12 +770,6 @@ public final class PageLeafImpl extends PageLeaf
                           oldSequence, saveLength, saveTail,
                           sequenceWrite,
                           Result.on(x->afterDataFlush(pageServiceImpl, sequenceWrite)));
-
-      //write(db, pageActor, sOut, saveLength);
-      /*
-      readWrite.writePage(this, oldSequence, saveLength, saveTail,
-                          nextSaveSequence());
-                          */
     }
   }
   

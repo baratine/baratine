@@ -75,7 +75,7 @@ public class InsertCursorPrepare implements CursorPrepareSync
     RowCursor cursor = cursor();
     Column column = getColumn(index);
     
-    cursor.setInt(column.getIndex(), value);
+    cursor.setInt(column.index(), value);
   }
 
   @Override
@@ -84,7 +84,7 @@ public class InsertCursorPrepare implements CursorPrepareSync
     RowCursor cursor = cursor();
     Column column = getColumn(index);
     
-    cursor.setLong(column.getIndex(), value);
+    cursor.setLong(column.index(), value);
   }
 
   @Override
@@ -93,7 +93,7 @@ public class InsertCursorPrepare implements CursorPrepareSync
     RowCursor cursor = cursor();
     Column column = getColumn(index);
     
-    cursor.setDouble(column.getIndex(), value);
+    cursor.setDouble(column.index(), value);
   }
 
   @Override
@@ -102,7 +102,7 @@ public class InsertCursorPrepare implements CursorPrepareSync
     RowCursor cursor = cursor();
     Column column = getColumn(index);
     
-    cursor.setString(column.getIndex(), value);
+    cursor.setString(column.index(), value);
   }
 
   @Override
@@ -111,7 +111,7 @@ public class InsertCursorPrepare implements CursorPrepareSync
     RowCursor cursor = cursor();
     Column column = getColumn(index);
     
-    cursor.setObject(column.getIndex(), value);
+    cursor.setObject(column.index(), value);
   }
 
   @Override
@@ -120,7 +120,7 @@ public class InsertCursorPrepare implements CursorPrepareSync
     RowCursor cursor = cursor();
     Column column = getColumn(index);
     
-    cursor.setBytes(column.getIndex(), value, 0);
+    cursor.setBytes(column.index(), value, 0);
   }
 
   @Override
@@ -148,7 +148,7 @@ public class InsertCursorPrepare implements CursorPrepareSync
     RowCursor cursor = cursor();
     Column column = getColumn(index);
     
-    return cursor.openOutputStream(column.getIndex());
+    return cursor.openOutputStream(column.index());
   }
   
   private RowCursor cursor()

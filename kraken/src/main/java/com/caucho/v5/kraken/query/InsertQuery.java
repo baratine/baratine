@@ -116,42 +116,54 @@ public class InsertQuery extends QueryKraken
       ExprKraken value = _values.get(i);
 
       switch (column.type()) {
+      case BOOL:
+        cursor.setInt(column.index(), value.evalInt(cursor, params));
+        break;
+        
       case INT8:
-        cursor.setInt(column.getIndex(), value.evalInt(cursor, params));
+        cursor.setInt(column.index(), value.evalInt(cursor, params));
         break;
         
       case INT16:
-        cursor.setInt(column.getIndex(), value.evalInt(cursor, params));
+        cursor.setInt(column.index(), value.evalInt(cursor, params));
         break;
 
       case INT32:
-        cursor.setInt(column.getIndex(), value.evalInt(cursor, params));
+        cursor.setInt(column.index(), value.evalInt(cursor, params));
         break;
 
       case INT64:
-        cursor.setLong(column.getIndex(), value.evalLong(cursor, params));
+        cursor.setLong(column.index(), value.evalLong(cursor, params));
+        break;
+
+      case TIMESTAMP:
+        cursor.setLong(column.index(), value.evalLong(cursor, params));
         break;
 
       case BYTES:
-        cursor.setBytes(column.getIndex(), value.evalBytes(params), 0);
+        cursor.setBytes(column.index(), value.evalBytes(params), 0);
         break;
 
       case STRING:
-        cursor.setString(column.getIndex(), value.evalString(params));
+        cursor.setString(column.index(), value.evalString(params));
         break;
 
       case OBJECT:
-        cursor.setObject(column.getIndex(), value.evalObject(cursor, params));
+        cursor.setObject(column.index(), value.evalObject(cursor, params));
         break;
 
       case DOUBLE:
-        cursor.setDouble(column.getIndex(), value.evalDouble(params));
+        cursor.setDouble(column.index(), value.evalDouble(cursor, params));
+        break;
+
+      case FLOAT:
+        cursor.setDouble(column.index(), value.evalDouble(cursor, params));
         break;
 
       case BLOB:
         try (InputStream is = value.evalInputStream(params)) {
           if (is != null) {
-            try (OutputStream os = cursor.openOutputStream(column.getIndex())) {
+            try (OutputStream os = cursor.openOutputStream(column.index())) {
               long total = IoUtil.copy(is, os);
 
               if (log.isLoggable(Level.FINEST)) {
@@ -162,6 +174,10 @@ public class InsertQuery extends QueryKraken
         } catch (IOException e) {
           throw new KrakenException(e);
         }
+        break;
+
+      case IDENTITY:
+        cursor.setLong(column.index(), value.evalLong(cursor, params));
         break;
 
       default:
@@ -204,37 +220,37 @@ public class InsertQuery extends QueryKraken
 
       switch (column.type()) {
       case INT16:
-        cursor.setInt(column.getIndex(), value.evalInt(cursor, params));
+        cursor.setInt(column.index(), value.evalInt(cursor, params));
         break;
 
       case INT32:
-        cursor.setInt(column.getIndex(), value.evalInt(cursor, params));
+        cursor.setInt(column.index(), value.evalInt(cursor, params));
         break;
 
       case INT64:
-        cursor.setLong(column.getIndex(), value.evalLong(cursor, params));
+        cursor.setLong(column.index(), value.evalLong(cursor, params));
         break;
 
       case BYTES:
-        cursor.setBytes(column.getIndex(), value.evalBytes(params), 0);
+        cursor.setBytes(column.index(), value.evalBytes(params), 0);
         break;
 
       case STRING:
-        cursor.setString(column.getIndex(), value.evalString(params));
+        cursor.setString(column.index(), value.evalString(params));
         break;
 
       case OBJECT:
-        cursor.setObject(column.getIndex(), value.evalObject(cursor, params));
+        cursor.setObject(column.index(), value.evalObject(cursor, params));
         break;
 
       case DOUBLE:
-        cursor.setDouble(column.getIndex(), value.evalDouble(params));
+        cursor.setDouble(column.index(), value.evalDouble(cursor, params));
         break;
 
       case BLOB:
         try (InputStream is = value.evalInputStream(params)) {
           if (is != null) {
-            try (OutputStream os = cursor.openOutputStream(column.getIndex())) {
+            try (OutputStream os = cursor.openOutputStream(column.index())) {
               long total = IoUtil.copy(is, os);
 
               if (log.isLoggable(Level.FINEST)) {

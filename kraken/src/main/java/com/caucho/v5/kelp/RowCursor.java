@@ -79,7 +79,7 @@ public final class RowCursor
     _keyLength = logRow.keyLength();
   }
   
-  public final byte []getBuffer()
+  public final byte []buffer()
   {
     return _data;
   }
@@ -280,12 +280,18 @@ public final class RowCursor
   {
     return _row.columns()[index].getLong(_data, 0);
   }
-  
+
+  /**
+   * double column value
+   */
   public final void setDouble(int index, double value)
   {
     _row.columns()[index].setDouble(_data, 0, value);
   }
-  
+
+  /**
+   * double column value
+   */
   public final double getDouble(int index)
   {
     return _row.columns()[index].getDouble(_data, 0);

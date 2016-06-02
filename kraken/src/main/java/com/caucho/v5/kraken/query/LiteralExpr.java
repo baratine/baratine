@@ -68,6 +68,19 @@ public class LiteralExpr extends ExprKraken
   }
 
   @Override
+  public double evalDouble(RowCursor cursor, Object []args)
+  {
+    if (_value instanceof Number) {
+      Number number = (Number) _value;
+      
+      return number.doubleValue();
+    }
+    else {
+      throw new UnsupportedOperationException(String.valueOf(_value));
+    }
+  }
+
+  @Override
   public String evalString(Object []params)
   {
     if (_value == null) {

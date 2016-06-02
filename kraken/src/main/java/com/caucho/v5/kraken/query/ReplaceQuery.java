@@ -110,37 +110,37 @@ public class ReplaceQuery extends QueryKraken
       
       switch (column.type()) {
       case INT16:
-        cursor.setInt(column.getIndex(), value.evalInt(envKelp));
+        cursor.setInt(column.index(), value.evalInt(envKelp));
         break;
 
       case INT32:
-        cursor.setInt(column.getIndex(), value.evalInt(envKelp));
+        cursor.setInt(column.index(), value.evalInt(envKelp));
         break;
 
       case INT64:
-        cursor.setLong(column.getIndex(), value.evalLong(envKelp));
+        cursor.setLong(column.index(), value.evalLong(envKelp));
         break;
 
       case BYTES:
-        cursor.setBytes(column.getIndex(), value.evalBytes(envKelp), 0);
+        cursor.setBytes(column.index(), value.evalBytes(envKelp), 0);
         break;
 
       case STRING:
-        cursor.setString(column.getIndex(), value.evalString(envKelp));
+        cursor.setString(column.index(), value.evalString(envKelp));
         break;
 
       case OBJECT:
-        cursor.setObject(column.getIndex(), value.evalObject(envKelp));
+        cursor.setObject(column.index(), value.evalObject(envKelp));
         break;
 
       case DOUBLE:
-        cursor.setDouble(column.getIndex(), value.evalDouble(envKelp));
+        cursor.setDouble(column.index(), value.evalDouble(envKelp));
         break;
 
       case BLOB:
         try (InputStream is = value.evalInputStream(envKelp)) {
           if (is != null) {
-            try (OutputStream os = cursor.openOutputStream(column.getIndex())) {
+            try (OutputStream os = cursor.openOutputStream(column.index())) {
               long total = IoUtil.copy(is, os);
 
               if (log.isLoggable(Level.FINEST)) {
@@ -180,37 +180,37 @@ public class ReplaceQuery extends QueryKraken
 
       switch (column.type()) {
       case INT16:
-        cursor.setInt(column.getIndex(), value.evalInt(envKelp));
+        cursor.setInt(column.index(), value.evalInt(envKelp));
         break;
 
       case INT32:
-        cursor.setInt(column.getIndex(), value.evalInt(envKelp));
+        cursor.setInt(column.index(), value.evalInt(envKelp));
         break;
 
       case INT64:
-        cursor.setLong(column.getIndex(), value.evalLong(envKelp));
+        cursor.setLong(column.index(), value.evalLong(envKelp));
         break;
 
       case BYTES:
-        cursor.setBytes(column.getIndex(), value.evalBytes(envKelp), 0);
+        cursor.setBytes(column.index(), value.evalBytes(envKelp), 0);
         break;
 
       case STRING:
-        cursor.setString(column.getIndex(), value.evalString(envKelp));
+        cursor.setString(column.index(), value.evalString(envKelp));
         break;
 
       case OBJECT:
-        cursor.setObject(column.getIndex(), value.evalObject(envKelp));
+        cursor.setObject(column.index(), value.evalObject(envKelp));
         break;
 
       case DOUBLE:
-        cursor.setDouble(column.getIndex(), value.evalDouble(envKelp));
+        cursor.setDouble(column.index(), value.evalDouble(envKelp));
         break;
 
       case BLOB:
         try (InputStream is = value.evalInputStream(envKelp)) {
           if (is != null) {
-            try (OutputStream os = cursor.openOutputStream(column.getIndex())) {
+            try (OutputStream os = cursor.openOutputStream(column.index())) {
               long total = IoUtil.copy(is, os);
 
               if (log.isLoggable(Level.FINEST)) {

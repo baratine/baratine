@@ -79,7 +79,7 @@ public class PathH3Kelp extends PathKelp
   @Override
   void scan(EnvKelp query, Object []values, RowCursor cursor)
   {
-    try (InputStream is = cursor.openInputStream(getColumn().getIndex())) {
+    try (InputStream is = cursor.openInputStream(getColumn().index())) {
       if (is == null) {
         return;
       }

@@ -27,13 +27,9 @@
  * @author Alex Rojkov
  */
 
-package com.caucho.v5.amp.vault;
+package com.caucho.v5.util;
 
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.caucho.v5.util.CurrentTime;
-import com.caucho.v5.util.L10N;
-import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.vault.IdAsset;
 
@@ -42,9 +38,11 @@ import io.baratine.vault.IdAsset;
  * the ids are strictly increasing, and the sequence bits are sufficient to
  * avoid rollover.
  */
-public final class IdAssetGenerator
+public final class IdentityGenerator
 {
-  private static final L10N L = new L10N(IdAssetGenerator.class);
+  private static final L10N L = new L10N(IdentityGenerator.class);
+  
+  private static int TIME_BITS = 34;
   
   private long _node;
     
@@ -61,11 +59,11 @@ public final class IdAssetGenerator
   /**
    * Incrementing generator with a node index, used for database ids.
    */
-  public IdAssetGenerator(int nodeIndex)
+  public IdentityGenerator(int nodeIndex)
   {
-    _timeOffset = 64 - IdAsset.TIME_BITS;
+    _timeOffset = 64 - TIME_BITS;
     
-    _node = Long.reverse(nodeIndex) >>> IdAsset.TIME_BITS;
+    _node = Long.reverse(nodeIndex) >>> TIME_BITS;
     
     _sequenceBits = _timeOffset;
     _sequenceMask = (1L << _sequenceBits) - 1;
@@ -85,7 +83,7 @@ public final class IdAssetGenerator
    * sequence space, i.e. all the sequence bits will be used, just not in a
    * simple increment order.
    */
-  public IdAssetGenerator(int nodeIndex, 
+  public IdentityGenerator(int nodeIndex, 
                           int sequenceIncrement)
   {
     if (sequenceIncrement < 0 || sequenceIncrement % 2 == 0) {
@@ -93,9 +91,9 @@ public final class IdAssetGenerator
                                              sequenceIncrement));
     }
     
-    _timeOffset = 64 - IdAsset.TIME_BITS;    
+    _timeOffset = 64 - TIME_BITS;    
     
-    _node = Long.reverse(nodeIndex) >>> IdAsset.TIME_BITS;
+    _node = Long.reverse(nodeIndex) >>> TIME_BITS;
     
     int nodeBits = 10;
 
@@ -123,7 +121,7 @@ public final class IdAssetGenerator
     
       if (oldTime != now) {
         newSequence = ((now << _timeOffset)
-                      + (RandomUtil.getRandomLong() & _sequenceRandomMask));
+                      + (randomLong() & _sequenceRandomMask));
       }
       else {
         // relatively prime increment will use the whole sequence space
@@ -136,5 +134,10 @@ public final class IdAssetGenerator
                | (newSequence & _sequenceMask));
       
     return id;
+  }
+  
+  protected long randomLong()
+  {
+    return RandomUtil.getRandomLong();
   }
 }

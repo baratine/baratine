@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
-import com.caucho.v5.amp.vault.IdAssetGenerator;
 import com.caucho.v5.deploy2.DeployInstance2;
 import com.caucho.v5.http.dispatch.InvocationRouter;
 import com.caucho.v5.http.websocket.WebSocketManager;
@@ -42,6 +41,7 @@ import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.loader.DynamicClassLoader;
 import com.caucho.v5.loader.EnvironmentClassLoader;
+import com.caucho.v5.util.IdentityGenerator;
 
 import io.baratine.config.Config;
 import io.baratine.io.Buffers;
@@ -76,7 +76,7 @@ public class WebApp
 
   private WebSocketManager _wsManager;
   
-  private IdAssetGenerator _idGenerator;
+  private IdentityGenerator _idGenerator;
 
   /**
    * Creates the web-app instance
@@ -138,7 +138,7 @@ public class WebApp
     _services = builder.serviceBuilder().start();
     
     int prime = 287093;
-    _idGenerator = new IdAssetGenerator(_services.node().nodeIndex(),
+    _idGenerator = new IdentityGenerator(_services.node().nodeIndex(),
                                         prime);
                                         
     _bodyResolver = builder.bodyResolver();

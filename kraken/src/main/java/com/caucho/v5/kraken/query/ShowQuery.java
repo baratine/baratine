@@ -41,17 +41,17 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
 
-public class QueryShow extends QueryKraken
+public class ShowQuery extends QueryKraken
 {
-  private static final L10N L = new L10N(QueryShow.class);
-  private static final Logger log = Logger.getLogger(QueryShow.class.getName());
+  private static final L10N L = new L10N(ShowQuery.class);
+  private static final Logger log = Logger.getLogger(ShowQuery.class.getName());
   
   private final KrakenImpl _kraken;
   private final String _tableName;
 
   private String _method;
   
-  QueryShow(QueryBuilderShow builder)
+  ShowQuery(ShowQueryBuilder builder)
   {
     super(builder.sql());
     

@@ -279,7 +279,7 @@ class BlobOutputStream extends OutputStream
     
     flushBlock(true);
       
-    _cursor.setBlob(_column.getIndex(), this);
+    _cursor.setBlob(_column.index(), this);
   }
 
   /**

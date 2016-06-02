@@ -41,13 +41,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.vault.IdAssetGenerator;
 import com.caucho.v5.convert.bean.FieldBase;
 import com.caucho.v5.convert.bean.FieldNull;
 import com.caucho.v5.convert.bean.FieldObject;
 import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.kraken.info.TableInfo;
+import com.caucho.v5.util.IdentityGenerator;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 
@@ -728,13 +728,13 @@ class AssetInfo<ID,T>
   
   private static class IdGeneratorLong extends IdGenerator<Long>
   {
-    private IdAssetGenerator _idGen;
+    private IdentityGenerator _idGen;
     
     private IdGeneratorLong(AssetInfo<?,?> entity)
     {
       super(entity);
       
-      _idGen = new IdAssetGenerator(entity.node());
+      _idGen = new IdentityGenerator(entity.node());
     }
     
     @Override
@@ -750,13 +750,13 @@ class AssetInfo<ID,T>
   
   private static class IdGeneratorIdAsset extends IdGenerator<IdAsset>
   {
-    private IdAssetGenerator _idGen;
+    private IdentityGenerator _idGen;
     
     private IdGeneratorIdAsset(AssetInfo<?,?> entity)
     {
       super(entity);
       
-      _idGen = new IdAssetGenerator(entity.node());
+      _idGen = new IdentityGenerator(entity.node());
     }
     
     @Override

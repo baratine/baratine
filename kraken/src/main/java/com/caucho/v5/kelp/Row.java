@@ -179,6 +179,9 @@ public final class Row
     for (Column column : _blobs) {
       column.toData(bos);
     }
+    
+    // key/value attributes
+    BitsUtil.writeInt16(bos, 0);
   }
   
   /**
@@ -250,6 +253,16 @@ public final class Row
   {
     for (Column column : columns()) {
       column.init(db);
+    }
+  }
+
+  /**
+   * autofill generated values
+   */
+  public void autoFill(RowCursor cursor)
+  {
+    for (Column col : columns()) {
+      col.autoFill(cursor.buffer(), 0);
     }
   }
   

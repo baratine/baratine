@@ -307,19 +307,19 @@ public class UpdateQueryBuilder extends QueryBuilderKraken
 
         switch (column.type()) {
         case INT32:
-          cursor.setInt(column.getIndex(), expr.evalInt(env));
+          cursor.setInt(column.index(), expr.evalInt(env));
           break;
           
         case INT64:
-          cursor.setLong(column.getIndex(), expr.evalLong(env));
+          cursor.setLong(column.index(), expr.evalLong(env));
           break;
           
         case STRING:
-          cursor.setString(column.getIndex(), expr.evalString(env));
+          cursor.setString(column.index(), expr.evalString(env));
           break;
           
         case OBJECT:
-          cursor.setObject(column.getIndex(), expr.evalObject(env));
+          cursor.setObject(column.index(), expr.evalObject(env));
           break;
           
         default:

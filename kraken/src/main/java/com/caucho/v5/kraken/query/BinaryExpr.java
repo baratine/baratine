@@ -196,19 +196,19 @@ public class BinaryExpr extends ExprKraken
     switch (column.type()) {
     case INT16:
     case INT32:
-      rowCursor.setInt(column.getIndex(), _right.evalInt(rowCursor, args));
+      rowCursor.setInt(column.index(), _right.evalInt(rowCursor, args));
       break;
       
     case INT64:
-      rowCursor.setLong(column.getIndex(), _right.evalLong(rowCursor, args));
+      rowCursor.setLong(column.index(), _right.evalLong(rowCursor, args));
       break;
       
     case STRING:
-      rowCursor.setString(column.getIndex(), _right.evalString(args));
+      rowCursor.setString(column.index(), _right.evalString(args));
       break;
       
     case BYTES:
-      rowCursor.setBytes(column.getIndex(), _right.evalBytes(args), 0);
+      rowCursor.setBytes(column.index(), _right.evalBytes(args), 0);
       break;
       
     default:

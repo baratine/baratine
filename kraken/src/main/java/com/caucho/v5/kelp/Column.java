@@ -45,7 +45,8 @@ import io.baratine.db.BlobReader;
 /**
  * A column for the log store.
  */
-abstract public class Column {
+abstract public class Column
+{
   private final int _index;
   private final String _name;
   private final ColumnType _type;
@@ -61,17 +62,26 @@ abstract public class Column {
     _type = type;
     _offset = offset;
   }
-  
-  public final int getIndex()
-  {
-    return _index;
-  }
-  
+
+  /**
+   * name of the column
+   */
   public final String name()
   {
     return _name;
   }
+  
+  /**
+   * index of the column in the row.
+   */
+  public final int index()
+  {
+    return _index;
+  }
 
+  /**
+   * type of the column (INT8, INT32, STRING, etc.)
+   */
   public ColumnType type()
   {
     return _type;
@@ -82,11 +92,17 @@ abstract public class Column {
     return 0;
   }
   
+  /**
+   * offset of the column data in the fixed byte buffer
+   */
   public final int offset()
   {
     return _offset;
   }
   
+  /**
+   * fixed length of the column data in the fixed byte buffer
+   */
   abstract public int length();
   
   //
@@ -146,6 +162,13 @@ abstract public class Column {
   }
 
   public void getBytes(byte[] data, int i, byte[] buffer, int offset)
+  {
+  }
+  
+  /**
+   * fill the buffer data for columns with automatic values, like identity 
+   */
+  public void autoFill(byte[] buffer, int offset)
   {
   }
 
@@ -332,12 +355,15 @@ abstract public class Column {
     STATE,
     KEY_START, // used for serialization
     KEY_END,
+    BOOL,
     INT8,
     INT16,
     INT32,
     INT64,
     FLOAT,
     DOUBLE,
+    TIMESTAMP,
+    IDENTITY,
     BYTES,
     
     BLOB { // variable length data

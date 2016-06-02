@@ -38,8 +38,8 @@ import java.util.logging.Logger;
 import com.caucho.v5.kelp.Column;
 import com.caucho.v5.kelp.TableKelp;
 import com.caucho.v5.kelp.query.QueryBuilderKelp;
-import com.caucho.v5.kraken.table.TableKraken;
 import com.caucho.v5.kraken.table.KrakenImpl;
+import com.caucho.v5.kraken.table.TableKraken;
 import com.caucho.v5.util.CharBuffer;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.ModulePrivate;
@@ -210,6 +210,12 @@ public class QueryParserKraken {
     case DROP:
       return parseDrop();
 */
+      
+    case IDENTIFIER:
+      if (_lexeme.equalsIgnoreCase("checkpoint")) {
+        return parseCheckpoint();
+      }
+      
     default:
       throw error("unknown query at {0}", token);
     }
@@ -546,15 +552,15 @@ public class QueryParserKraken {
   /**
    * Parses the show.
    */
-  private QueryBuilderShow parseShow()
+  private ShowQueryBuilder parseShow()
   {
-    return parseShow(new QueryBuilderShow(_tableManager, _sql));
+    return parseShow(new ShowQueryBuilder(_tableManager, _sql));
   }
 
   /**
    * Parses the show.
    */
-  private QueryBuilderShow parseShow(QueryBuilderShow query)
+  private ShowQueryBuilder parseShow(ShowQueryBuilder query)
   {
     Token token = scanToken();
 
@@ -569,6 +575,47 @@ public class QueryParserKraken {
     }
     
     token = scanToken();
+
+    if (token != Token.IDENTIFIER) {
+      throw error("Expected IDENTIFIER at {0}", token);
+    }
+    
+    String pod = _lexeme;
+    String name;
+    
+    if (peekToken() == Token.DOT) {
+      scanToken();
+
+      if ((token = scanToken()) != Token.IDENTIFIER) {
+        throw error("Expected IDENTIFIER at {0}", token);
+      }
+      
+      name = _lexeme; 
+    }
+    else {
+      name = pod;
+      pod = getPodName();
+    }
+    
+    query.setTableName(pod + '.' + name);
+
+    return query;
+  }
+
+  /**
+   * Checkpoint parsing
+   */
+  private CheckpointQueryBuilder parseCheckpoint()
+  {
+    return parseCheckpoint(new CheckpointQueryBuilder(_tableManager, _sql));
+  }
+
+  /**
+   * Parses the show.
+   */
+  private CheckpointQueryBuilder parseCheckpoint(CheckpointQueryBuilder query)
+  {
+    Token token = scanToken();
 
     if (token != Token.IDENTIFIER) {
       throw error("Expected IDENTIFIER at {0}", token);
@@ -1199,9 +1246,13 @@ public class QueryParserKraken {
     else if (type.equalsIgnoreCase("longtext")) {
       factory.addVarchar(name, 512);
     }
+    else if (type.equalsIgnoreCase("bit")
+             || type.equalsIgnoreCase("bool")) {
+      factory.addBool(name);
+    }
     else if (type.equalsIgnoreCase("tinyint")
-             || type.equalsIgnoreCase("bit")
-             || type.equalsIgnoreCase("int8")) {
+        || type.equalsIgnoreCase("bit")
+        || type.equalsIgnoreCase("int8")) {
       factory.addInt8(name);
     }
     else if (type.equalsIgnoreCase("smallint")
@@ -1220,9 +1271,13 @@ public class QueryParserKraken {
       factory.addInt64(name);
     }
     else if (type.equalsIgnoreCase("double")
-             || type.equalsIgnoreCase("float")
-             || type.equalsIgnoreCase("real")) {
+            || type.equalsIgnoreCase("float64")
+            || type.equalsIgnoreCase("real")) {
       factory.addDouble(name);
+    }
+    else if (type.equalsIgnoreCase("float")
+             || type.equalsIgnoreCase("float32")) {
+      factory.addFloat(name);
     }
     else if (type.equalsIgnoreCase("datetime")
              || type.equalsIgnoreCase("timestamp")) {

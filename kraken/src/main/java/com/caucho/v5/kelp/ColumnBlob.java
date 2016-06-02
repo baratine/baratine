@@ -317,7 +317,7 @@ public class ColumnBlob extends Column
       if (pageBlob != null) {
         BlobOutputStream blob = new BlobOutputStream(cursor, this, id);
       
-        cursor.setBlob(getIndex(), blob);
+        cursor.setBlob(index(), blob);
       }
 
       return;
@@ -333,7 +333,7 @@ public class ColumnBlob extends Column
                                                  tBuf,
                                                  len);
     
-    cursor.setBlob(getIndex(), blob);
+    cursor.setBlob(index(), blob);
   }
 
   /**

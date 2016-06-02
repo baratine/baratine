@@ -53,25 +53,25 @@ public class ColumnExprKelp extends ExprKelp
   {
     switch (_column.type()) {
     case INT16:
-      return cxt.getCursor().getInt(_column.getIndex());
+      return cxt.getCursor().getInt(_column.index());
       
     case INT32:
-      return cxt.getCursor().getInt(_column.getIndex());
+      return cxt.getCursor().getInt(_column.index());
       
     case INT64:
-      return cxt.getCursor().getLong(_column.getIndex());
+      return cxt.getCursor().getLong(_column.index());
       
     case DOUBLE:
-      return cxt.getCursor().getDouble(_column.getIndex());
+      return cxt.getCursor().getDouble(_column.index());
       
     case STRING:
-      return cxt.getCursor().getString(_column.getIndex());
+      return cxt.getCursor().getString(_column.index());
       
     case BYTES:
-      return cxt.getCursor().getBytes(_column.getIndex());
+      return cxt.getCursor().getBytes(_column.index());
       
     case OBJECT:
-      return cxt.getCursor().getObject(_column.getIndex());
+      return cxt.getCursor().getObject(_column.index());
       
     default:
       throw new UnsupportedOperationException(String.valueOf(_column.type()));
@@ -82,7 +82,7 @@ public class ColumnExprKelp extends ExprKelp
   public String evalString(EnvKelp env)
   {
     if (_column.type() == ColumnType.STRING) {
-      return env.getCursor().getString(_column.getIndex());
+      return env.getCursor().getString(_column.index());
     }
     else {
       return String.valueOf(eval(env));
@@ -98,19 +98,19 @@ public class ColumnExprKelp extends ExprKelp
   @Override
   public byte[] evalBytes(EnvKelp env)
   {
-    return env.getCursor().getBytes(_column.getIndex());
+    return env.getCursor().getBytes(_column.index());
   }
 
   @Override
   public InputStream evalInputStream(EnvKelp env)
   {
-    return env.getCursor().openInputStream(_column.getIndex());
+    return env.getCursor().openInputStream(_column.index());
   }
 
   @Override
   public BlobReader evalBlobReader(EnvKelp env)
   {
-    return env.getCursor().openBlobReader(_column.getIndex());
+    return env.getCursor().openBlobReader(_column.index());
   }
 
   @Override

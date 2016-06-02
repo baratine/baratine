@@ -61,7 +61,7 @@ public class ParamExpr extends ExprKraken
   }
   
   @Override
-  public double evalDouble(Object []params)
+  public double evalDouble(RowCursor cursor, Object []params)
   {
     return ((Number) params[_index]).doubleValue();
   }

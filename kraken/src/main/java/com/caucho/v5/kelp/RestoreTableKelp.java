@@ -116,7 +116,7 @@ public class RestoreTableKelp extends RestoreTableParser
       case "INT16":
       case "INT32":
         if (col != null) {
-          marshal = new MarshalInt32(col.getIndex());
+          marshal = new MarshalInt32(col.index());
         }
         else {
           marshal = new MarshalIgnore();
@@ -125,7 +125,7 @@ public class RestoreTableKelp extends RestoreTableParser
         
       case "INT64":
         if (col != null) {
-          marshal = new MarshalInt64(col.getIndex());
+          marshal = new MarshalInt64(col.index());
         }
         else {
           marshal = new MarshalIgnore();
@@ -134,7 +134,7 @@ public class RestoreTableKelp extends RestoreTableParser
         
       case "DOUBLE":
         if (col != null) {
-          marshal = new MarshalDouble(col.getIndex());
+          marshal = new MarshalDouble(col.index());
         }
         else {
           marshal = new MarshalIgnore();
@@ -145,7 +145,7 @@ public class RestoreTableKelp extends RestoreTableParser
       case "BLOB":
       case "OBJECT":
         if (col != null) {
-          marshal = new MarshalBlob(col.getIndex());
+          marshal = new MarshalBlob(col.index());
         }
         else {
           marshal = new MarshalIgnore();

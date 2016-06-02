@@ -213,7 +213,7 @@ public class HashExprGenerator implements PodHashGenerator
     
     // int hashOffset = _columnHash.getOffset();
     
-    rowCursor.setInt(_columnHash.getIndex(), hash);
+    rowCursor.setInt(_columnHash.index(), hash);
   }
 
   public void fillPodHash(RowCursor cursor)

@@ -68,6 +68,11 @@ public class ExprKraken
                   value.getClass().getName());
     }
   }
+  
+  public double evalDouble(RowCursor cursor, Object []args)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
 
   public Object evalObject(RowCursor cursor, Object []args)
   {
@@ -77,11 +82,6 @@ public class ExprKraken
   protected RuntimeException error(String msg, Object ...args)
   {
     return new ConfigException(L.l(msg, args));
-  }
-  
-  public double evalDouble(Object []args)
-  {
-    throw new UnsupportedOperationException(getClass().getName());
   }
 
   public byte []evalBytes(Object []args)

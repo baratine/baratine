@@ -87,6 +87,19 @@ public class RowBuilder {
     return this;
   }
   
+  /**
+   * boolean/bit column.
+   */
+  public RowBuilder bool(String name)
+  {
+    ColumnBool column = new ColumnBool(_columns.size(), name, _offset);
+    
+    _offset += column.length();
+    _columns.add(column);
+    
+    return this;
+  }
+  
   public RowBuilder int8(String name)
   {
     ColumnInt8 column = new ColumnInt8(_columns.size(), name, _offset);
@@ -143,6 +156,21 @@ public class RowBuilder {
   }
   
   /**
+   * Creates a float valued column.
+   * 
+   * @param name the column name
+   */
+  public RowBuilder floatCol(String name)
+  {
+    ColumnFloat column = new ColumnFloat(_columns.size(), name, _offset);
+    
+    _offset += column.length();
+    _columns.add(column);
+    
+    return this;
+  }
+  
+  /**
    * Creates a double valued column.
    * 
    * @param name the column name
@@ -150,6 +178,36 @@ public class RowBuilder {
   public RowBuilder doubleCol(String name)
   {
     ColumnDouble column = new ColumnDouble(_columns.size(), name, _offset);
+    
+    _offset += column.length();
+    _columns.add(column);
+    
+    return this;
+  }
+  
+  /**
+   * timestamp valued column.
+   * 
+   * @param name the column name
+   */
+  public RowBuilder timestampCol(String name)
+  {
+    Column column = new ColumnTimestamp(_columns.size(), name, _offset);
+    
+    _offset += column.length();
+    _columns.add(column);
+    
+    return this;
+  }
+  
+  /**
+   * identity valued column.
+   * 
+   * @param name the column name
+   */
+  public RowBuilder identityCol(String name)
+  {
+    Column column = new ColumnIdentity(_columns.size(), name, _offset);
     
     _offset += column.length();
     _columns.add(column);

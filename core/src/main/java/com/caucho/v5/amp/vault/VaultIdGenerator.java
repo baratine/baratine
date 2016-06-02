@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 import com.caucho.v5.util.CurrentTime;
+import com.caucho.v5.util.IdentityGenerator;
 import com.caucho.v5.util.RandomUtil;
 
 import io.baratine.vault.IdAsset;
@@ -70,13 +71,13 @@ public class VaultIdGenerator
   
   private static class IdGeneratorAssetString implements Supplier<String>
   {
-    private IdAssetGenerator _idGen;
+    private IdentityGenerator _idGen;
     
     IdGeneratorAssetString()
     {
       int nodeIndex = 0;
       
-      _idGen = new IdAssetGenerator(nodeIndex);
+      _idGen = new IdentityGenerator(nodeIndex);
     }
 
     @Override
@@ -90,13 +91,13 @@ public class VaultIdGenerator
   
   private static class IdGeneratorLong implements Supplier<String>
   {
-    private IdAssetGenerator _idGen;
+    private IdentityGenerator _idGen;
     
     IdGeneratorLong()
     {
       int nodeIndex = 0;
       
-      _idGen = new IdAssetGenerator(nodeIndex);
+      _idGen = new IdentityGenerator(nodeIndex);
     }
 
     @Override

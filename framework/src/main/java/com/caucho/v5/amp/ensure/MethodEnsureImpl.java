@@ -36,8 +36,8 @@ import com.caucho.v5.amp.message.HeadersNull;
 import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmpBean;
-import com.caucho.v5.amp.vault.IdAssetGenerator;
 import com.caucho.v5.util.Crc64;
+import com.caucho.v5.util.IdentityGenerator;
 
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
@@ -50,7 +50,7 @@ public class MethodEnsureImpl implements MethodEnsureAmp
   private final EnsureDriverImpl _driver;
   private final MethodAmp _method;
   private long _methodId;
-  private IdAssetGenerator _idGen;
+  private IdentityGenerator _idGen;
   private boolean _isInit;
   
   MethodEnsureImpl(EnsureDriverImpl driver, MethodAmp method)
@@ -64,7 +64,7 @@ public class MethodEnsureImpl implements MethodEnsureAmp
     _methodId = methodId(method);
     
     int nodeId = 0;
-    _idGen = new IdAssetGenerator(nodeId); 
+    _idGen = new IdentityGenerator(nodeId); 
   }
   
   private long methodId(MethodAmp method)

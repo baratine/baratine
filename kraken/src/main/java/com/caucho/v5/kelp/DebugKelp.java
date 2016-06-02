@@ -196,8 +196,6 @@ public class DebugKelp
         return;
       }
       
-      System.out.println("HT: " + head + " " + tail + " " + isCont);
-      
       while ((head = debugSegmentIndex(out, is, buffer, extent.address(),
                                        ptr, head,
                                        table)) < tail) {

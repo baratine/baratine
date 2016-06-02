@@ -88,6 +88,11 @@ public class TableBuilderKraken
     return _sql;
   }
 
+  public void addBool(String name)
+  {
+    _columnMap.put(name, new BoolCol(name));
+  }
+
   public void addInt8(String name)
   {
     _columnMap.put(name, new Int8Col(name));
@@ -139,11 +144,12 @@ public class TableBuilderKraken
 
   public void addDateTime(String name)
   {
+    _columnMap.put(name, new TimestampCol(name));
   }
 
   public void addIdentity(String name)
   {
-    throw new UnsupportedOperationException(getClass().getName());
+    _columnMap.put(name, new IdentityCol(name));
   }
 
   public void setPrimaryKey(String name)
@@ -185,6 +191,14 @@ public class TableBuilderKraken
   public void addBlob(String name)
   {
     _columnMap.put(name, new BlobCol(name));
+  }
+
+  /**
+   * float column
+   */
+  public void addFloat(String name)
+  {
+    _columnMap.put(name, new FloatCol(name));
   }
 
   /**
@@ -383,6 +397,19 @@ public class TableBuilderKraken
     }
   }
   
+  private static class BoolCol extends Col {
+    private BoolCol(String name)
+    {
+      super(name);
+    }
+
+    @Override
+    public void build(TableBuilderKelp builder)
+    {
+      builder.columnBool(getName());
+    }
+  }
+  
   private static class Int8Col extends Col {
     private Int8Col(String name)
     {
@@ -422,6 +449,9 @@ public class TableBuilderKraken
     }
   }
   
+  /**
+   * int64 column
+   */
   private static class Int64Col extends Col {
     private Int64Col(String name)
     {
@@ -434,7 +464,26 @@ public class TableBuilderKraken
       builder.columnInt64(getName());
     }
   }
-  
+
+  /**
+   * float column
+   */
+  private static class FloatCol extends Col {
+    private FloatCol(String name)
+    {
+      super(name);
+    }
+
+    @Override
+    public void build(TableBuilderKelp builder)
+    {
+      builder.columnFloat(getName());
+    }
+  }
+
+  /**
+   * double column
+   */
   private static class DoubleCol extends Col {
     private DoubleCol(String name)
     {
@@ -445,6 +494,38 @@ public class TableBuilderKraken
     public void build(TableBuilderKelp builder)
     {
       builder.columnDouble(getName());
+    }
+  }
+  
+  /**
+   * timestamp column
+   */
+  private static class TimestampCol extends Col {
+    private TimestampCol(String name)
+    {
+      super(name);
+    }
+
+    @Override
+    public void build(TableBuilderKelp builder)
+    {
+      builder.columnTimestamp(getName());
+    }
+  }
+  
+  /**
+   * identity column
+   */
+  private static class IdentityCol extends Col {
+    private IdentityCol(String name)
+    {
+      super(name);
+    }
+
+    @Override
+    public void build(TableBuilderKelp builder)
+    {
+      builder.columnIdentity(getName());
     }
   }
   

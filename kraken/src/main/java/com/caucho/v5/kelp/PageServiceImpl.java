@@ -283,7 +283,7 @@ public class PageServiceImpl implements PageService
                   PutType putType,
                   Result<Boolean> result)
   {
-    updateVersion(cursor);
+    autoFillPut(cursor);
     
     _journal.put(cursor);
       
@@ -304,7 +304,7 @@ public class PageServiceImpl implements PageService
                             BackupKelp backupCb,
                             Result<? super Boolean> result)
   {
-    updateVersion(cursor);
+    autoFillPut(cursor);
     
     _journal.put(cursor);
       
@@ -356,7 +356,7 @@ public class PageServiceImpl implements PageService
                       @Service BackupKelp backup, 
                       Result<Integer> result)
   {
-    updateVersion(cursor);
+    autoFillPut(cursor);
     
     replaceImpl(cursor, envKelp, update, backup, result.of(x->1));
     
@@ -550,6 +550,13 @@ public class PageServiceImpl implements PageService
     if (_journal.isCheckpointRequired()) {
       checkpoint(Result.ignore());
     }
+  }
+  
+  private void autoFillPut(RowCursor cursor)
+  {
+    updateVersion(cursor);
+    
+    _table.row().autoFill(cursor);
   }
   
   private void updateVersion(RowCursor cursor)
@@ -1027,7 +1034,7 @@ public class PageServiceImpl implements PageService
   
   private int getTree(RowCursor cursor, int pid)
   {
-    return getTree(cursor.getBuffer(), _table.getKeyOffset(), pid);
+    return getTree(cursor.buffer(), _table.getKeyOffset(), pid);
   }
   
   private int getTree(byte []rowBuffer, int keyOffset, int pid)

@@ -242,7 +242,7 @@ public class TableKraken
 
   public int getPodHash(RowCursor cursor)
   {
-    return getPodHash(cursor.getBuffer(),
+    return getPodHash(cursor.buffer(),
                       _tableKelp.getKeyOffset(),
                       _tableKelp.getKeyLength());
                                
@@ -298,7 +298,7 @@ public class TableKraken
     
     int sublen = Math.min(value.length(), 8);
     
-    byte []buffer = rowCursor.getBuffer();
+    byte []buffer = rowCursor.buffer();
     
     Arrays.fill(buffer, offset, offset + length, (byte) 0);
     
@@ -456,6 +456,11 @@ public class TableKraken
   public void flush(Result<Boolean> result)
   {
     _tableKelp.flush(result);
+  }
+  
+  public void checkpoint(Result<Boolean> result)
+  {
+    _tableKelp.checkpoint(result);
   }
 
   public void put(RowCursor cursor, Result<Boolean> result)

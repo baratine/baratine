@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -54,10 +55,10 @@ import com.caucho.v5.util.Hex;
 /**
  * callback for a kelp upgrade reader
  */
-public class UpgradeScanner
+public class UpgradeScanner10
 {
   private static final Logger log
-    = Logger.getLogger(UpgradeScanner.class.getName());
+    = Logger.getLogger(UpgradeScanner10.class.getName());
   
   private static final int META_SEGMENT_SIZE = 256 * 1024;
   private static final int META_OFFSET = 1024;
@@ -107,7 +108,7 @@ public class UpgradeScanner
 
   private SegmentExtent10 _metaSegment;
   
-  public UpgradeScanner(Path root)
+  public UpgradeScanner10(Path root)
   {
     Objects.requireNonNull(root);
     
@@ -391,6 +392,14 @@ public class UpgradeScanner
     
     for (Page10 page : _pageMap.values()) {
       upgradeLeaf(table, upgradeTable, page);
+      
+      List<Delta10> deltas = page.deltas();
+      
+      if (deltas != null) {
+        for (Delta10 delta : deltas) {
+          upgradeDelta(table, upgradeTable, page, delta);
+        }
+      }
     }
   }
   
@@ -454,8 +463,12 @@ public class UpgradeScanner
         addLeaf(segment, pid, nextPid, entryAddress, entryLength);
         break;
         
+      case LEAF_DELTA:
+        addLeafDelta(segment, pid, nextPid, entryAddress, entryLength);
+        break;
+        
       default:
-        System.out.println("UNKONWN: " + PageType10.values()[type]);
+        System.out.println("UNKNOWN-SEGMENT: " + PageType10.values()[type]);
       }
     }
   }
@@ -480,6 +493,28 @@ public class UpgradeScanner
     page = new Page10(PageType10.LEAF, segment, pid, nextPid, address, length);
     
     _pageMap.put(pid, page);
+  }
+  
+  /**
+   * Adds a new leaf delta to the page list.
+   * 
+   * Because pages are added in order, each new page overrides the older one.
+   */
+  private void addLeafDelta(Segment10 segment,
+                            int pid, 
+                            int nextPid,
+                            int address,
+                            int length)
+  {
+    Page10 page = _pageMap.get(pid);
+    
+    if (page != null && page.sequence() < segment.sequence()) {
+      return;
+    }
+    
+    if (page != null) {
+      page.addDelta(address, length);
+    }
   }
 
   /**
@@ -581,6 +616,102 @@ public class UpgradeScanner
         return;
       }
     }
+    
+    tBuf.free();
+  }
+
+  /**
+   * Upgrade a table leaf delta.
+   */
+  private void upgradeDelta(TableEntry10 table, 
+                            TableUpgrade upgradeTable,
+                            Page10 page,
+                            Delta10 delta)
+    throws IOException
+  {
+    try (ReadStream is = openRead(page.segment().address(),
+                                  page.segment().length())) {
+      is.position(delta.address());
+      
+      long tail = delta.address() + delta.length();
+      
+      while (is.position() < tail) {
+        upgradeDelta(is, table, upgradeTable, page);
+      }
+    }
+  }
+  
+  private void upgradeDelta(ReadStream is,
+                            TableEntry10 table,
+                            TableUpgrade upgradeTable,
+                            Page10 page)
+    throws IOException
+  {
+    int code = is.read();
+    is.unread();
+      
+    switch (code) {
+    case INSERT:
+      upgradeDeltaInsert(is, table, upgradeTable);
+      break;
+        
+    case REMOVE:
+      is.skip(table.keyLength() + STATE_LENGTH);
+      break;
+        
+    default:
+      System.out.println("UNKNOWN: " + Integer.toHexString(code));
+      return;
+    }
+  }
+  
+  private void upgradeDeltaInsert(ReadStream is,
+                                  TableEntry10 table,
+                                  TableUpgrade upgradeTable)
+    throws IOException
+  {
+    TempBuffer tBuf = TempBuffer.create();
+    byte []buffer = tBuf.buffer();
+    
+    int offset = buffer.length - table.rowLength();
+    int blobTail = 0;
+    
+    for (ColumnUpgrade col : table.row().columns()) {
+      switch (col.type()) {
+      case BLOB:
+      case STRING:
+      case OBJECT:
+        int len = BitsUtil.readInt16(is);
+
+        if (len != 0) {
+          int sublen = len & 0x7fff;
+          
+          is.readAll(buffer, blobTail, sublen);
+          
+          BitsUtil.writeInt16(buffer, offset, blobTail);
+          BitsUtil.writeInt16(buffer, offset + 2, len);
+          
+          blobTail += sublen;
+        }
+        else {
+          BitsUtil.writeInt16(buffer, offset, 0);
+          BitsUtil.writeInt16(buffer, offset + 2, 0);
+        }
+        
+        offset += 4;
+        break;
+
+      default:
+        is.readAll(buffer, offset, col.length());
+        offset += col.length();
+        break;
+      }
+    }
+    
+    Cursor10 cursor = new Cursor10(table.row(), buffer, 
+                                   buffer.length - table.rowLength());
+    
+    upgradeTable.row(cursor);
     
     tBuf.free();
   }
@@ -818,6 +949,7 @@ public class UpgradeScanner
     private int _pidNext;
     private int _address;
     private int _length;
+    private ArrayList<Delta10> _deltas;
     
     Page10(PageType10 type,
            Segment10 segment,
@@ -834,6 +966,20 @@ public class UpgradeScanner
       _length = length;
     }
     
+    public List<Delta10> deltas()
+    {
+      return _deltas;
+    }
+
+    public void addDelta(int address, int length)
+    {
+      if (_deltas == null) {
+        _deltas = new ArrayList<>();
+      }
+      
+      _deltas.add(new Delta10(address, length));
+    }
+
     private Segment10 segment()
     {
       return _segment;
@@ -886,6 +1032,28 @@ public class UpgradeScanner
               + "," + _pid
               + ",seq=" + sequence()
               + "]");
+    }
+  }
+  
+  private class Delta10
+  {
+    private int _address;
+    private int _length;
+    
+    Delta10(int address, int length)
+    {
+      _address = address;
+      _length = length;
+    }
+
+    public long address()
+    {
+      return _address;
+    }
+
+    public long length()
+    {
+      return _length;
     }
   }
   
@@ -982,30 +1150,66 @@ public class UpgradeScanner
       case INT64:
         return BitsUtil.readLong(_buffer, _offset + offset);
         
+      case TIMESTAMP:
+        return BitsUtil.readLong(_buffer, _offset + offset);
+        
+      case IDENTITY:
+        return BitsUtil.readLong(_buffer, _offset + offset);
+        
       default:
         throw new UnsupportedOperationException(column.toString());
       }
     }
 
     @Override
-    public double getDouble(int column)
+    public double getDouble(int index)
     {
-      // TODO Auto-generated method stub
-      return 0;
+      ColumnUpgrade column = column(index);
+      
+      int offset = column.offset();
+      
+      switch (column.type()) {
+      case FLOAT:
+        return Float.intBitsToFloat(BitsUtil.readInt(_buffer, _offset + offset));
+        
+      case DOUBLE:
+        return Double.longBitsToDouble(BitsUtil.readLong(_buffer, _offset + offset));
+        
+      default:
+        throw new UnsupportedOperationException(column.toString());
+      }
     }
 
     @Override
-    public boolean getBoolean(int column)
+    public boolean getBoolean(int index)
     {
-      // TODO Auto-generated method stub
-      return false;
+      ColumnUpgrade column = column(index);
+      
+      int offset = column.offset();
+      
+      switch (column.type()) {
+      case BOOL:
+      case INT8:
+        return (_buffer[_offset + offset] & 0xff) != 0;
+        
+      default:
+        throw new UnsupportedOperationException(column.toString());
+      }
     }
 
     @Override
-    public byte[] getBytes(int column)
+    public byte[] getBytes(int index)
     {
-      // TODO Auto-generated method stub
-      return null;
+      ColumnUpgrade column = column(index);
+      
+      int offset = column.offset();
+      int length = column.length();
+      
+      byte []bytes = new byte[length];
+      
+      System.arraycopy(_buffer, _offset + offset, bytes, 0, length);
+      
+      return bytes;
     }
 
     @Override

@@ -19,6 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Baratine; if not, write to the
+ *
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
@@ -26,56 +27,37 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.kraken.query;
+package com.caucho.v5.kelp;
 
-import io.baratine.service.Result;
+import com.caucho.v5.util.BitsUtil;
 
-import com.caucho.v5.kraken.table.KrakenImpl;
-
-public class QueryBuilderShow extends QueryBuilderKraken
+/**
+ * A column for the log store with a 16-bit int.
+ */
+public class ColumnTimestamp extends Column
 {
-  private KrakenImpl _tableManager;
-  
-  private String _method = "table";
-  private String _name;
-
-  public QueryBuilderShow(KrakenImpl tableManager, String sql)
+  public ColumnTimestamp(int index,
+                        String name,
+                        int offset)
   {
-    super(sql);
-    
-    _tableManager = tableManager;
+    super(index, name, ColumnType.TIMESTAMP, offset);
   }
 
   @Override
-  public void setTableName(String name)
+  public final int length()
   {
-    _name = name;
-  }
-
-  @Override
-  public String getTableName()
-  {
-    return _name;
-  }
-
-  public KrakenImpl getTableManager()
-  {
-    return _tableManager;
-  }
-
-  @Override
-  public void build(Result<QueryKraken> result)
-  {
-    result.ok(new QueryShow(this));
-  }
-
-  public void method(String method)
-  {
-    _method = method;
+    return 8;
   }
   
-  public String method()
+  @Override
+  public long getLong(byte []rowBuffer, int rowOffset)
   {
-    return _method;
+    return BitsUtil.readLong(rowBuffer, rowOffset + offset());
+  }
+  
+  @Override
+  public void setLong(byte []rowBuffer, int rowOffset, long value)
+  {
+    BitsUtil.writeLong(rowBuffer, rowOffset + offset(), value);
   }
 }

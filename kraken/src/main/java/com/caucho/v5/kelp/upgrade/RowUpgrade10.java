@@ -113,6 +113,9 @@ public class RowUpgrade10
     case STATE:
       return builder.column(name, ColumnType.STATE, offset, length, isKey);
       
+    case BOOL:
+      return builder.column(name, ColumnType.BOOL, offset, length, isKey);
+      
     case INT8:
       return builder.column(name, ColumnType.INT8, offset, length, isKey);
       
@@ -130,6 +133,12 @@ public class RowUpgrade10
       
     case DOUBLE:
       return builder.column(name, ColumnType.DOUBLE, offset, length, isKey);
+      
+    case TIMESTAMP:
+      return builder.column(name, ColumnType.TIMESTAMP, offset, length, isKey);
+      
+    case IDENTITY:
+      return builder.column(name, ColumnType.IDENTITY, offset, length, isKey);
       
     case BYTES:
       return builder.column(name, ColumnType.BYTES, offset, length, isKey);
@@ -152,12 +161,15 @@ public class RowUpgrade10
     STATE,
     KEY_START, // used for serialization
     KEY_END,
+    BOOL,
     INT8,
     INT16,
     INT32,
     INT64,
     FLOAT,
     DOUBLE,
+    TIMESTAMP,
+    IDENTITY,
     BYTES,
       
     BLOB,

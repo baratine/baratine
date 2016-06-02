@@ -81,43 +81,43 @@ public class ColumnExpr extends ExprKraken
   @Override
   public int resultInt(EnvKelp env)
   {
-    return env.getCursor().getInt(_column.getIndex());
+    return env.getCursor().getInt(_column.index());
   }
 
   @Override
   public long resultLong(EnvKelp env)
   {
-    return env.getCursor().getLong(_column.getIndex());
+    return env.getCursor().getLong(_column.index());
   }
 
   @Override
   public double resultDouble(RowCursor rowCursor)
   {
-    return rowCursor.getDouble(_column.getIndex());
+    return rowCursor.getDouble(_column.index());
   }
 
   @Override
   public byte []resultBytes(RowCursor rowCursor)
   {
-    return rowCursor.getBytes(_column.getIndex());
+    return rowCursor.getBytes(_column.index());
   }
 
   @Override
   public String resultString(EnvKelp env)
   {
-    return env.getCursor().getString(_column.getIndex());
+    return env.getCursor().getString(_column.index());
   }
 
   @Override
   public Object resultObject(RowCursor rowCursor)
   {
-    return rowCursor.getObject(_column.getIndex());
+    return rowCursor.getObject(_column.index());
   }
 
   @Override
   public InputStream resultInputStream(RowCursor rowCursor)
   {
-    return rowCursor.openInputStream(_column.getIndex());
+    return rowCursor.openInputStream(_column.index());
   }
 
   @Override
