@@ -50,7 +50,7 @@ import io.baratine.service.Service;
 @Service
 public class JdbcConnectionImpl implements JdbcService
 {
-  private Logger _logger = Logger.getLogger(JdbcConnectionImpl.class.toString());
+  private static Logger _logger = Logger.getLogger(JdbcConnectionImpl.class.toString());
 
   private String _url;
   private Properties _props;
@@ -61,24 +61,23 @@ public class JdbcConnectionImpl implements JdbcService
   private String _testQueryBefore;
   private String _testQueryAfter;
 
-  protected JdbcConnectionImpl()
+  public static JdbcConnectionImpl create(int id, String url, Properties props,
+                                          String testQueryBefore, String testQueryAfter)
   {
-    // zero-arg constructor for Baratine to instantiate proxies of this class
-  }
+    JdbcConnectionImpl conn = new JdbcConnectionImpl();
 
-  public JdbcConnectionImpl(int id, String url, Properties props,
-                            String testQueryBefore, String testQueryAfter)
-  {
     if (_logger.isLoggable(Level.FINE)) {
-      _logger.log(Level.FINE, "constructor: id=" + id + ", url=" + toDebugSafe(url));
+      _logger.log(Level.FINE, "create: id=" + id + ", url=" + toDebugSafe(url));
     }
 
-    _id = id;
-    _url = url;
-    _props = props;
+    conn._id = id;
+    conn._url = url;
+    conn._props = props;
 
-    _testQueryBefore = testQueryBefore;
-    _testQueryBefore = testQueryAfter;
+    conn._testQueryBefore = testQueryBefore;
+    conn._testQueryBefore = testQueryAfter;
+
+    return conn;
   }
 
   @OnInit
@@ -425,7 +424,7 @@ public class JdbcConnectionImpl implements JdbcService
     }
   }
 
-  private String toDebugSafe(String str)
+  private static String toDebugSafe(String str)
   {
     int len = Math.min(32, str.length());
 
