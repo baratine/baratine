@@ -41,6 +41,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -173,6 +174,11 @@ public class ClassGeneratorVault<T>
     return proxyClass.getConstructors()[0];
   }
   
+  /**
+   * Generates the proxy for a vault, adding implementations for
+   * abstract methods.
+   * @return
+   */
   private Class<T> generate()
   {
     generateProxy(_type);
@@ -351,6 +357,9 @@ public class ClassGeneratorVault<T>
     }
   }
   
+  /**
+   * Introspect the methods to find abstract methods.
+   */
   private void introspectMethods(JavaClass jClass)
   {
     for (Method method : getMethods()) {
@@ -442,20 +451,57 @@ public class ClassGeneratorVault<T>
   
   private ArrayList<Method> getMethods()
   {
-    ArrayList<Method> methods = new ArrayList<>();
+    ArrayList<Method> methodsAbstract = new ArrayList<>();
+    ArrayList<Method> methodsAll = new ArrayList<>();
     
-    for (Method method : _type.getDeclaredMethods()) {
-      if (methods.contains(method)) {
+    getMethods(_type, methodsAbstract, methodsAll);
+    
+    return methodsAbstract;
+  }
+  
+  private void getMethods(Class<?> type,
+                          ArrayList<Method> methodsAbstract,
+                          ArrayList<Method> methodsAll)
+  {
+    if (type == null) {
+      return;
+    }
+    
+    for (Method method : type.getDeclaredMethods()) {
+      if (contains(methodsAll, method)) {
+        continue;
+      }
+      
+      methodsAll.add(method);
+      
+      if (methodsAbstract.contains(method)) {
         continue;
       }
       else if (! Modifier.isAbstract(method.getModifiers())) {
         continue;
       }
 
-      methods.add(method);
+      methodsAbstract.add(method);
     }
     
-    return methods;
+    getMethods(type.getSuperclass(), methodsAbstract, methodsAll);
+    
+    for (Class<?> api : type.getInterfaces()) {
+      getMethods(api, methodsAbstract, methodsAll);
+    }
+  }
+  
+  private boolean contains(ArrayList<Method> methodList, Method method)
+  {
+    for (Method methodTest : methodList) {
+      if (methodTest.getName().equals(method.getName())
+          && Arrays.equals(methodTest.getParameterTypes(),
+                           method.getParameterTypes())) {
+        return true;
+      }
+    }
+    
+    return false;
   }
   
   private int findAmpResult(Class<?> []paramTypes, Class<?> api)

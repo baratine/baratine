@@ -88,7 +88,7 @@ public class TableWriterServiceImpl
   private int _blobSizeMax;
 
   private IdentityGenerator _seqGen
-    = IdentityGenerator.newGenerator().timeBits(36).get();
+    = IdentityGenerator.newGenerator().timeBits(36).random(false).get();
   
   private ConcurrentHashMap<Long,Boolean> _activeSequenceSet = new ConcurrentHashMap<>();
   

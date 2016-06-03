@@ -55,7 +55,31 @@ import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.service.Session;
 import io.baratine.service.Workers;
 import io.baratine.vault.Vault;
-import io.baratine.web.*;
+import io.baratine.web.Body;
+import io.baratine.web.Cookie;
+import io.baratine.web.Delete;
+import io.baratine.web.FilterAfter;
+import io.baratine.web.FilterBefore;
+import io.baratine.web.Form;
+import io.baratine.web.Get;
+import io.baratine.web.Header;
+import io.baratine.web.HttpMethod;
+import io.baratine.web.IncludeWeb;
+import io.baratine.web.Options;
+import io.baratine.web.Part;
+import io.baratine.web.Patch;
+import io.baratine.web.Path;
+import io.baratine.web.Post;
+import io.baratine.web.Put;
+import io.baratine.web.Query;
+import io.baratine.web.RequestWeb;
+import io.baratine.web.Route;
+import io.baratine.web.RouteBuilder;
+import io.baratine.web.ServiceWeb;
+import io.baratine.web.ServiceWebSocket;
+import io.baratine.web.Trace;
+import io.baratine.web.WebBuilder;
+import io.baratine.web.WebSocketPath;
 
 class IncludeWebClass implements IncludeWebAmp
 {
@@ -116,9 +140,9 @@ class IncludeWebClass implements IncludeWebAmp
       
       return;
     }
-    else if (_type.isAnnotationPresent(Service.class)) {
-      Service service = _type.getAnnotation(Service.class);
-      String address = service.value();
+    else if (_type.isAnnotationPresent(Service.class)
+            || _type.isAnnotationPresent(Session.class)) {
+      String address = builder.services().address(_type);
 
       Session session = _type.getAnnotation(Session.class);
       
@@ -172,6 +196,7 @@ class IncludeWebClass implements IncludeWebAmp
     else {
       beanSupplier = new SingletonBean(builder, _type);
       beanFactory = req->beanSupplier.get();
+      System.out.println("BF: " + _type);
     }
     
     String path = "";

@@ -449,14 +449,7 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     String address = _addressMap.get(api);
     
     if (address == null) {
-      Service service = api.getAnnotation(Service.class);
-    
-      if (service != null) {
-        address = service.value();
-      }
-      else {
-        address = "";
-      }
+      address = serviceAddress(api);
       
       address = address(api, address);
 
@@ -475,14 +468,33 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
       api = findApi(type);
     }
     
-    Service service = type.getAnnotation(Service.class);
+    String address = serviceAddress(type);
 
-    if (service != null && ! service.value().isEmpty()) {
-      return address(api, service.value());
+    if (! address.isEmpty()) {
+      return address(api, address);
     }
     else {
       return address(api);
     }
+  }
+  
+  private String serviceAddress(Class<?> type)
+  {
+    Service service = type.getAnnotation(Service.class);
+    
+    if (service != null && ! service.value().isEmpty()) {
+      return service.value();
+    }
+    
+    for (Annotation ann : type.getAnnotations()) {
+      service = ann.annotationType().getAnnotation(Service.class);
+      
+      if (service != null && ! service.value().isEmpty()) {
+        return service.value();
+      }
+    }
+    
+    return "";
   }
   
   private Class<?> findApi(Class<?> type)

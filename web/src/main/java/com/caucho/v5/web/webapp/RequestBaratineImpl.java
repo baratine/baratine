@@ -237,6 +237,10 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   public <X> X session(Class<X> type)
   {
     String address = services().address(type);
+    
+    if (address.startsWith("/")) {
+      address = "session://" + address;
+    }
 
     return sessionImpl(address + "/").as(type);
   }

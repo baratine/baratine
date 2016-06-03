@@ -325,6 +325,12 @@ public class WebAppBuilder
   {
     return _injectBuilder;
   }
+  
+  @Override
+  public ServicesAmp services()
+  {
+    return serviceBuilder().raw();
+  }
 
   ServiceManagerBuilderAmp serviceBuilder()
   {

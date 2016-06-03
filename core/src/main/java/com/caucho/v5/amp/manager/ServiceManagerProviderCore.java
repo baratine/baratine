@@ -139,7 +139,7 @@ public class ServiceManagerProviderCore
       return outbox.flushAndExecuteLast();
     }
     else {
-      return true;
+      return false;
     }
   }
 

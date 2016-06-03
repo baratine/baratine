@@ -67,7 +67,7 @@ public class StubGeneratorVault implements StubGenerator
                                  ServiceConfig configService)
   {
     if (Vault.class.isAssignableFrom(serviceClass)) {
-      return factoryResource(serviceClass, ampManager, configService);
+      return factoryVault(serviceClass, ampManager, configService);
     }
     else if (serviceClass.isAnnotationPresent(Asset.class)) {
       return factoryStore(serviceClass, ampManager, configService);
@@ -77,7 +77,7 @@ public class StubGeneratorVault implements StubGenerator
     }
   }
 
-  private StubFactoryAmp factoryResource(Class<?> vaultClass,
+  private StubFactoryAmp factoryVault(Class<?> vaultClass,
                                           ServicesAmp services,
                                           ServiceConfig configService)
   {
@@ -115,7 +115,7 @@ public class StubGeneratorVault implements StubGenerator
       bean = ClassGeneratorVault.create(vaultClass, 
                                         classLoader,
                                         driver);
-      
+
       Consumer<Object> injector = 
         (Consumer) services.injector().injector(bean.getClass());
       

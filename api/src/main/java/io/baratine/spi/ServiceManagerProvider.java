@@ -112,7 +112,7 @@ abstract public class ServiceManagerProvider implements AutoCloseable
   {
     flushOutbox();
     
-    return true;
+    return false;
   }
 
 /*

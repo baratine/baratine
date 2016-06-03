@@ -743,7 +743,7 @@ class AssetInfo<ID,T>
       if (id != null && id.longValue() != 0) {
         return id;
       }
-      
+
       return new Long(_idGen.get());
     }
   }
@@ -752,11 +752,11 @@ class AssetInfo<ID,T>
   {
     private IdentityGenerator _idGen;
     
-    private IdGeneratorIdAsset(AssetInfo<?,?> entity)
+    private IdGeneratorIdAsset(AssetInfo<?,?> assetInfo)
     {
-      super(entity);
+      super(assetInfo);
       
-      _idGen = IdentityGenerator.newGenerator().node(entity.node()).get();
+      _idGen = IdentityGenerator.newGenerator().node(assetInfo.node()).get();
     }
     
     @Override
@@ -765,7 +765,7 @@ class AssetInfo<ID,T>
       if (id != null) {
         return id;
       }
-      
+
       return new IdAsset(_idGen.get());
     }
   }

@@ -31,10 +31,14 @@ package com.caucho.v5.web.builder;
 
 import java.lang.reflect.Method;
 
+import com.caucho.v5.amp.ServicesAmp;
+
 import io.baratine.inject.Key;
 import io.baratine.web.WebBuilder;
 
 public interface WebBuilderAmp extends WebBuilder
 {
   <U> WebBuilderAmp bean(Key<U> keyParent, Method method);
+
+  ServicesAmp services();
 }

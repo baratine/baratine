@@ -60,7 +60,7 @@ public class TableManagerVault<ID,T>
   private final static L10N L = new L10N(TableManagerVault.class);
 
   private DatabaseServiceSync _db;
-  private AssetInfo<ID,T> _entityInfo;
+  private AssetInfo<ID,T> _assetInfo;
   private Config _config;
 
   public TableManagerVault(DatabaseServiceSync db,
@@ -69,7 +69,7 @@ public class TableManagerVault<ID,T>
     Objects.requireNonNull(db);
     
     _db = db;
-    _entityInfo = entityDesc;
+    _assetInfo = entityDesc;
     
     _config = InjectorAmp.current().instance(Config.class);
     Objects.requireNonNull(_config);
@@ -78,16 +78,16 @@ public class TableManagerVault<ID,T>
   public TableInfo initializeSchema()
   {
     TableInfo tableInfo = tableInfo();
-
+    
     if (tableInfo != null) {
       return tableInfo;
     }
-    else if ((tableInfo = createTableSql(_entityInfo.type())) != null) {
+    else if ((tableInfo = createTableSql(_assetInfo.type())) != null) {
       initTableData();
       
       return tableInfo;
     }
-    else if ((tableInfo = createTableSql(_entityInfo.type().getPackage())) != null) {
+    else if ((tableInfo = createTableSql(_assetInfo.type().getPackage())) != null) {
       initTableData();
       
       return tableInfo;
@@ -99,7 +99,7 @@ public class TableManagerVault<ID,T>
     }
     else {
       throw new RuntimeException(L.l("Unable to create table {0}",
-                                     _entityInfo));
+                                     _assetInfo));
     }
   }
 
@@ -171,7 +171,7 @@ public class TableManagerVault<ID,T>
   {
     StringBuilder sb = new StringBuilder();
     sb.append("create table " + tableName() + " (");
-    sb.append("id " + _entityInfo.id().sqlType() + " primary key");
+    sb.append("id " + _assetInfo.id().sqlType() + " primary key");
     sb.append(", __doc object");
     sb.append(")");
 
@@ -184,7 +184,7 @@ public class TableManagerVault<ID,T>
   
   private void initTableData()
   {
-    Class<?> type = _entityInfo.type();
+    Class<?> type = _assetInfo.type();
     
     String location = initLocation();
     
@@ -193,7 +193,7 @@ public class TableManagerVault<ID,T>
     Json json = Json.newSerializer().build();
     
     Path path = Vfs.path(pathName);
-    
+
     if (! Files.exists(path)) {
       return;
     }
@@ -242,7 +242,7 @@ public class TableManagerVault<ID,T>
       return;
     }
     
-    String sql = ("insert into " + _entityInfo.tableName()
+    String sql = ("insert into " + _assetInfo.tableName()
                   + " (id,__doc) values (?,?)");
     
     while ((token = in.next()) == Event.START_OBJECT) {
@@ -261,11 +261,11 @@ public class TableManagerVault<ID,T>
       }
 
       if (map.size() > 0) {
-        ID id = _entityInfo.nextId();
+        ID id = _assetInfo.nextId();
         
         Objects.requireNonNull(id);
 
-        _db.exec(sql, _entityInfo.id().toParam(id), map);
+        _db.exec(sql, _assetInfo.id().toParam(id), map);
       }
     }
   }
@@ -288,6 +288,6 @@ public class TableManagerVault<ID,T>
   
   private String tableName()
   {
-    return _entityInfo.tableName();
+    return _assetInfo.tableName();
   }
 }

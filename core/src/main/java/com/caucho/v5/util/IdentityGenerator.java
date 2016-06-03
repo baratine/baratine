@@ -52,6 +52,7 @@ public final class IdentityGenerator
   private AtomicLong _sequence = new AtomicLong();
 
   private long _sequenceRandomMask;
+  private boolean _isRandom = true;
 
   
   /**
@@ -60,6 +61,8 @@ public final class IdentityGenerator
   private IdentityGenerator(IdentityBuilder builder)
   {
     _timeBits = builder.timeBits();
+    _isRandom = builder.isRandom();
+    int nodeBits = builder.nodeBits();
     
     _timeOffset = 64 - _timeBits;
     
@@ -68,7 +71,6 @@ public final class IdentityGenerator
     _sequenceBits = _timeOffset;
     _sequenceMask = (1L << _sequenceBits) - 1;
     
-    int nodeBits = builder.nodeBits();
     _sequenceRandomMask = (1L << (_sequenceBits - nodeBits - 2)) - 1;
     
     _sequenceIncrement = 1;
@@ -138,7 +140,12 @@ public final class IdentityGenerator
   
   protected long randomLong()
   {
-    return RandomUtil.getRandomLong();
+    if (_isRandom) {
+      return RandomUtil.getRandomLong();
+    }
+    else {
+      return 0;
+    }
   }
   
   public static class IdentityBuilder
@@ -146,6 +153,7 @@ public final class IdentityGenerator
     private int _timeBits = 34;
     private int _sequenceIncrement = 1;
     private int _node = 0;
+    private boolean _isRandom = true;
     
     public int timeBits()
     {
@@ -209,6 +217,18 @@ public final class IdentityGenerator
       else {
         return 10;
       }
+    }
+    
+    public boolean isRandom()
+    {
+      return _isRandom;
+    }
+    
+    public IdentityBuilder random(boolean isRandom)
+    {
+      _isRandom = isRandom;
+      
+      return this;
     }
     
     public IdentityGenerator get()

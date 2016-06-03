@@ -56,8 +56,6 @@ public class ClassValueService extends ClassValue<Supplier<Object>>
       return ()->_manager.injector().instance(type);
     }
     
-    System.out.println("DERP: " + this);
-
     return null;
   }
 }

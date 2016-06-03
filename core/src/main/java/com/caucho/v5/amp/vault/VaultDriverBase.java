@@ -137,6 +137,10 @@ public class VaultDriverBase<ID,T>
     return introspectId(assetClass.getSuperclass());
   }
   
+  /**
+   * Introspect for the StateAsset class which stores the current
+   * loaded/deleted state.
+   */
   private FieldBean<T> introspectState(Class<?> assetClass)
   {
     if (assetClass == null) {
@@ -167,6 +171,10 @@ public class VaultDriverBase<ID,T>
     return _stubClassAsset;
   }
 
+  /**
+   * Creates a stub method for an abstract method, typically a createXXX
+   * method.
+   */
   @Override
   public <S> MethodVault<S> newMethod(Method method)
   {
@@ -198,6 +206,10 @@ public class VaultDriverBase<ID,T>
     }
   }
   
+  /**
+   * Creates a stub method for an abstract method, typically a createXXX
+   * method.
+   */
   @Override
   public <V> MethodVault<V> newMethod(Class<?> type, 
                                       String methodName,

@@ -186,6 +186,8 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     //_configBuilder.add(Configs.system());
     
     initLogs();
+    
+    addConfigsDefault();
   }
   
   private void initLogs()
@@ -264,16 +266,21 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     
     _configBuilder.add(_args.config());
 
-    addConfigs();
+    addConfigsArgs();
     
     return this;
   }
   
-  private void addConfigs()
+  private void addConfigsDefault()
   {
     addConfigFile("classpath:META-INF/baratine-default.yml");
     addConfigFile("classpath:/baratine.yml");
     
+    _configBuilder.add(Configs.system());
+  }
+  
+  private void addConfigsArgs()
+  {
     String config = _args.getArg("conf");
     
     if (config != null) {
@@ -283,7 +290,14 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   
   private void addConfigFile(String pathName)
   {
-    String stage = _args.getArg("stage", "main");
+    String stage;
+    
+    if (_args != null) {
+      stage = _args.getArg("stage", "main");
+    } 
+    else {
+      stage = "main";
+    }
     
     Path path = Vfs.path(pathName);
 
