@@ -127,4 +127,21 @@ public class SerializerH3ArrayString extends SerializerH3Base<String[]>
       }
     }
   }
+
+  @Override
+  public void skip(InRawH3 is, InH3Amp in)
+  {
+    while (true) {
+      long chunk = is.readUnsigned();
+      long size = InRawH3.chunkSize(chunk);
+
+      for (int i = 0; i < size; i++) {
+        is.skip(in);
+      }
+
+      if (InRawH3.chunkIsFinal(chunk)) {
+        return;
+      }
+    }
+  }
 }

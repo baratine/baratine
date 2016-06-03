@@ -28,4 +28,6 @@ dependencies {
   compile 'org.gradle:gradle-base-services:2.5'
   compile 'org.codehaus.groovy:groovy:2.4.5'
   compile 'org.gradle:gradle-plugins:0.9-preview-3'
+  //
+  compile 'javax.validation:validation-api:1.1.0.Final'
 }

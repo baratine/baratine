@@ -43,6 +43,8 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.beans.BeanValidator;
+import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.MultipartStream;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.StreamSource;
@@ -65,8 +67,15 @@ public class BodyResolverBase implements BodyResolver
 
   public static final String FORM_TYPE = "application/x-www-form-urlencoded";
 
-  private TempStoreSystem _tempSystem
-    = SystemManager.getCurrent().getSystem(TempStoreSystem.class);
+  private final TempStoreSystem _tempSystem;
+
+  private final BeanValidator _beanValidator;
+
+  public BodyResolverBase()
+  {
+    _tempSystem = SystemManager.getCurrent().getSystem(TempStoreSystem.class);
+    _beanValidator = InjectorAmp.current().instance(BeanValidator.class);
+  }
 
   @Override
   public <T> T body(RequestWebSpi request, Class<T> type)
@@ -123,7 +132,11 @@ public class BodyResolverBase implements BodyResolver
     }
     */
 
-    return bodyDefault(request, type);
+    T t = bodyDefault(request, type);
+
+    _beanValidator.validate(t);
+
+    return t;
   }
 
   public <T> T bodyDefault(RequestWebSpi request, Class<T> type)

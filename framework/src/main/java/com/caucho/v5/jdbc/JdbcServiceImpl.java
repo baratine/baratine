@@ -39,12 +39,11 @@ import javax.inject.Inject;
 import io.baratine.config.Config;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
-import io.baratine.service.Service;
 import io.baratine.service.Services;
+import io.baratine.vault.Id;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 
-@Service
 public class JdbcServiceImpl implements JdbcService
 {
   private Logger _logger = Logger.getLogger(JdbcServiceImpl.class.toString());
@@ -55,38 +54,35 @@ public class JdbcServiceImpl implements JdbcService
   @Inject
   private Config _config;
 
+  @Id
+  private String _id;
+  private String _url;
+
   private JdbcConnectionImpl _conn;
 
   @OnInit
   public void onInit(Result<Void> result)
   {
-    String url = _config.get(JdbcService.CONFIG_URL);
-    String user = _config.get(JdbcService.CONFIG_USER);
-    String pass = _config.get(JdbcService.CONFIG_PASS);
+    _url = ServiceRef.current().address() + _id;
+    JdbcConfig c = JdbcConfig.from(_config, _url);
 
-    int poolSize = _config.get(JdbcService.CONFIG_POOL_SIZE, Integer.class, 64);
-
-    String testQueryBefore = _config.get(JdbcService.CONFIG_TEST_QUERY_BEFORE);
-    String testQueryAfter= _config.get(JdbcService.CONFIG_TEST_QUERY_AFTER);
+    _logger.log(Level.INFO, "onInit: id=" + _id + ", service url=" + _url + ", config=" + c);
 
     Properties props = new Properties();
 
-    if (user != null) {
-      props.setProperty("user", user);
+    if (c.user() != null) {
+      props.setProperty("user", c.user());
 
-      if (pass != null) {
-        props.setProperty("password", pass);
+      if (c.pass() != null) {
+        props.setProperty("password", c.pass());
       }
     }
 
-    if (_logger.isLoggable(Level.FINE)) {
-      _logger.log(Level.FINE, "onInit: size=" + poolSize + ", url=" + toDebugSafe(url));
-    }
-
-    Supplier<JdbcConnectionImpl> supplier = new ConnectionSupplier(url, props, testQueryBefore, testQueryAfter);
+    Supplier<JdbcConnectionImpl> supplier
+      = new ConnectionSupplier(c.url(), props, c.testQueryBefore(), c.testQueryAfter());
 
     ServiceBuilder builder = _manager.newService(JdbcConnectionImpl.class, supplier);
-    ServiceRef ref = builder.workers(poolSize).start();
+    ServiceRef ref = builder.workers(c.poolSize()).start();
 
     _conn = ref.as(JdbcConnectionImpl.class);
 
@@ -181,8 +177,8 @@ public class JdbcServiceImpl implements JdbcService
 
     public JdbcConnectionImpl get()
     {
-      return new JdbcConnectionImpl(_count++, _url, _props,
-                                    _testQueryBefore, _testQueryAfter);
+      return JdbcConnectionImpl.create(_count++, _url, _props,
+                                       _testQueryBefore, _testQueryAfter);
     }
   }
 }

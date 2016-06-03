@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
  * This file is part of Baratine(TM)
  *
@@ -24,22 +24,20 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Nam Nguyen
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.jdbc;
+package com.caucho.v5.beans;
 
-import io.baratine.service.Result;
-import io.baratine.service.Service;
+import com.caucho.v5.config.Priority;
+import io.baratine.inject.Bean;
 
-@Service
-public interface JdbcService
+public class ValidatorProviderDefault
 {
-  void execute(Result<Integer> result, String sql, Object ... params);
-  void executeBatch(Result<Integer[]> result, String sql, Object[] ... params);
-  void executeBatch(Result<Integer[]> result, String[] sqlList, Object[] ... params);
-
-  void query(Result<JdbcResultSet> result, String sql, Object ... params);
-  void queryBatch(Result<JdbcResultSet[]> result, String sql, Object[] ... paramsList);
-  void queryBatch(Result<JdbcResultSet[]> result, String[] sqlList, Object[] ... paramsList);
+  @Bean
+  @Priority(-100)
+  public BeanValidator getValidator()
+  {
+    return NullBeanValidator.instance;
+  }
 }
