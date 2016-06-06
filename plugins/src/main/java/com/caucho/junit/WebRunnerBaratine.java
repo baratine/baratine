@@ -203,6 +203,8 @@ public class WebRunnerBaratine extends BaseRunner
 
       networkSetup();
 
+      Web.scanAutoConf();
+
       _web = Web.start();
 
       super.runChild(child, notifier);
