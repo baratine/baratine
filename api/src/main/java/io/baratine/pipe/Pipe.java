@@ -36,7 +36,6 @@ import io.baratine.pipe.Credits.OnAvailable;
 import io.baratine.pipe.PipeStatic.PipeOutResultImpl;
 import io.baratine.pipe.PipeStatic.ResultPipeInHandlerImpl;
 import io.baratine.pipe.PipeStatic.ResultPipeInImpl;
-import io.baratine.service.Cancel;
 import io.baratine.service.Result;
 
 /**

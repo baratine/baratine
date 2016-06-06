@@ -606,7 +606,13 @@ public class RunnerBaratine extends BaseRunner
 
     private boolean isMatchName(ServiceTestDescriptor descriptor)
     {
-      return descriptor.getAddress().equals(address());
+      boolean isMatch = !address().isEmpty();
+
+      isMatch &= !descriptor.getAddress().isEmpty();
+
+      isMatch &= descriptor.getAddress().equals(address());
+
+      return isMatch;
     }
 
     private boolean isMatchType(ServiceTestDescriptor descriptor)

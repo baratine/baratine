@@ -36,6 +36,25 @@ import java.lang.annotation.Target;
 
 import io.baratine.service.OnInit;
 
+/**
+ * Annotation {@code PipeIn} subscribes method to a pipe specified in
+ * annotation's value.
+ * <p>
+ * Example:
+ * <code>
+ * <pre>
+ * @Service
+ * public class MessageListener {
+ *
+ *   @PipeIn("pipe:///test")
+ *   private void onMessage(String message)
+ *   {
+ *     System.out.println("message received");
+ *   }
+ * }
+ * </pre>
+ * </code>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @OnInit

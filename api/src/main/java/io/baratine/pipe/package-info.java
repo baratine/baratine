@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -24,48 +24,22 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
  */
-
-package com.caucho.v5.web.webapp;
-
-import com.caucho.v5.config.Priority;
-import io.baratine.web.RequestWeb;
-import io.baratine.web.ServiceWeb;
 
 /**
- * View with associated type meta-data
+ * Package {@code io.baratine.pipe} provides high seed typed messaging for
+ * Baratine.
+ *
+ * Pipes are uni-directional named channels. Baratine uses "pipe:" scheme to
+ * specify pipes.
+ *
+ * Pipes support <b>subscribe</b> and <b>consume</b> message delivery contracts.
+ *
+ * Pipes provide message flow control via a <b>credits</b> concept. Interface
+ * {@code Credits} allows message consumer (or subscriber) to control publishing
+ * rate of the publisher.
+ *
+ *
+ *
  */
-@Priority(-100)
-class FilterBeforeGzipFactory implements FilterFactory<ServiceWeb>
-{
-  @Override
-  public ServiceWeb apply(RouteBuilderAmp builder)
-  {
-    return new FilterBeforeGzip();
-  }
-  
-  private static class FilterBeforeGzip implements ServiceWeb
-  {
-
-    @Override
-    public void service(RequestWeb request) throws Exception
-    {
-      String acceptEncoding = request.header("accept-encoding");
-      
-      System.out.println("ENC: " + acceptEncoding);
-
-      if (acceptEncoding != null && acceptEncoding.indexOf("gzip") >= 0) {
-        pushGzip();
-      }
-      
-      request.ok();
-    }
-    
-    protected void pushGzip()
-    {
-      
-    }
-    
-  }
-}
+package io.baratine.pipe;

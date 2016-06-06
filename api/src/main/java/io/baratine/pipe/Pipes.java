@@ -29,27 +29,114 @@
 
 package io.baratine.pipe;
 
-import java.util.function.BiConsumer;
-
-import io.baratine.service.Cancel;
-import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
-
 
 /**
  * The Pipes service is a broker between publishers and subscribers, available
  * at the "pipe:" scheme.
+ * <p>
+ * <p>
+ * Example: publisher / producer
+ * <p>
+ * <code>
+ * <pre>
+ * @Service
+ * @Startup
+ * public class Publisher
+ * {
+ *   private Pipe<String> _pipe;
+ *
+ *   @Inject @Service("pipe:///test")
+ *   Pipes<String> _pipes;
+ *
+ *   @OnInit
+ *   public void init()
+ *   {
+ *     //request Pipes to create a Pipe instance at "pipe:///test"
+ *     //callback {@code ready} receives an initialized Pipe instance
+ *     //available to send messages
+ *     _pipes.publish((out,e)->ready(out));
+ *   }
+ *
+ *   //method for sending the messages
+ *   //note, that method should be called only after the _pipe is
+ *   //initialized via {@code ready} callback
+ *   public Void publish(String msg)
+ *   {
+ *     _pipe.next(msg);
+ *     return null;
+ *   }
+ *
+ *   //callback {@code ready} is called by the Pipes when a Pipe is established
+ *   //argument pipe can be used to publish messages
+ *   public void ready(Pipe<String> pipe)
+ *   {
+ *     _pipe = pipe;
+ *   }
+ * }
+ * </pre>
+ * </code>
+ * <p>
+ * Example: client / subscriber ( sink )
+ * <p>
+ * <code>
+ * <pre>
+ * @Service
+ * @Startup
+ * public class Consumer
+ * {
+ *   @Inject @Service("pipe:///test")
+ *   Pipes<String> _pipes;
+ *
+ *   @OnInit
+ *   public void init()
+ *   {
+ *     _pipes.consume((message, exception, fail) -> next(message));
+ *   }
+ *
+ *   public void next(String message)
+ *   {
+ *     System.out.println(message);
+ *   }
+ * }
+ * </pre>
+ * </code>
+ *
+ * @see ResultPipeOut
+ * @see ResultPipeIn
  */
 @Service("pipe:///{name}")
 public interface Pipes<T>
 {
+  /**
+   * Registers a message consumer.
+   *
+   * @param result
+   */
   void consume(ResultPipeIn<T> result);
-  
+
+  /**
+   * Registers a message subscriber. Multiple message subscribers can be
+   * registered for the same pipe
+   *
+   * @param result
+   */
   void subscribe(ResultPipeIn<T> result);
-  
+
+  /**
+   * Registers a message publisher.
+   *
+   * @param result
+   */
   void publish(ResultPipeOut<T> result);
-  
+
+  /**
+   * Convenience method for sending messages without a dedicated publisher.
+   *
+   * @param value
+   * @param result
+   */
   void send(T value, Result<Void> result);
   
   /*

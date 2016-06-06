@@ -24,48 +24,44 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.web.webapp;
+package plain;
 
-import com.caucho.v5.config.Priority;
-import io.baratine.web.RequestWeb;
-import io.baratine.web.ServiceWeb;
+import static org.junit.Assert.assertEquals;
 
-/**
- * View with associated type meta-data
- */
-@Priority(-100)
-class FilterBeforeGzipFactory implements FilterFactory<ServiceWeb>
+import com.caucho.junit.RunnerBaratine;
+import com.caucho.junit.ServiceTest;
+import com.caucho.junit.State;
+import io.baratine.pipe.Message;
+import io.baratine.pipe.PipeIn;
+import io.baratine.pipe.PipesSync;
+import io.baratine.service.Service;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(RunnerBaratine.class)
+@ServiceTest(QjunitPipeTest.Q_subString.class)
+public class QjunitPipeTest
 {
-  @Override
-  public ServiceWeb apply(RouteBuilderAmp builder)
+  @Test
+  public void test(@Service("pipe:///test") PipesSync<Message<String>> pipes)
   {
-    return new FilterBeforeGzip();
+    pipes.send(Message.newMessage("hello"));
+
+    State.sleep(50);
+
+    assertEquals("\nonMessage(hello)", State.state());
   }
-  
-  private static class FilterBeforeGzip implements ServiceWeb
+
+  @Service
+  public static class Q_subString
   {
-
-    @Override
-    public void service(RequestWeb request) throws Exception
+    @PipeIn("pipe:///test")
+    private void onMessage(String msg)
     {
-      String acceptEncoding = request.header("accept-encoding");
-      
-      System.out.println("ENC: " + acceptEncoding);
-
-      if (acceptEncoding != null && acceptEncoding.indexOf("gzip") >= 0) {
-        pushGzip();
-      }
-      
-      request.ok();
+      State.add("\nonMessage(" + msg + ")");
     }
-    
-    protected void pushGzip()
-    {
-      
-    }
-    
   }
 }

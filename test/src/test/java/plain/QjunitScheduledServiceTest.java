@@ -29,39 +29,63 @@
 
 package plain;
 
-import static org.junit.Assert.assertEquals;
+import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
 
 import com.caucho.junit.RunnerBaratine;
 import com.caucho.junit.ServiceTest;
 import com.caucho.junit.State;
-import io.baratine.pipe.Message;
-import io.baratine.pipe.PipeIn;
-import io.baratine.pipe.PipesSync;
+import com.caucho.junit.TestTime;
+import io.baratine.service.Cancel;
+import io.baratine.service.OnInit;
+import io.baratine.service.Result;
 import io.baratine.service.Service;
+import io.baratine.service.Startup;
+import io.baratine.timer.Timers;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+//Specify JUnit Runner to use with this test
 @RunWith(RunnerBaratine.class)
-@ServiceTest(QpipeTest.Q_subString.class)
-public class QpipeTest
+//Specify service to deploy
+@ServiceTest(QjunitScheduledServiceTest.ScheduledService.class)
+public class QjunitScheduledServiceTest
 {
   @Test
-  public void test(@Service("pipe:///test") PipesSync<Message<String>> pipes)
+  public void test(@Service("timer:") Timers timer) throws InterruptedException
   {
-    pipes.send(Message.newMessage("hello"));
+    //add a second and check that timer did not fire
+    TestTime.addTime(1, TimeUnit.SECONDS);
+    Thread.sleep(100);
+    Assert.assertEquals("", State.state());
 
-    State.sleep(50);
+    //add two seconds and check that timer did fire
+    TestTime.addTime(2, TimeUnit.SECONDS);
+    Thread.sleep(100);
 
-    assertEquals("\nonMessage(hello)", State.state());
+    Assert.assertEquals("\n  fire!", State.state());
   }
 
   @Service
-  public static class Q_subString
+  @Startup //specifies that Service should be started after deployment
+  public static class ScheduledService
   {
-    @PipeIn("pipe:///test")
-    private void onMessage(String msg)
+    @Inject
+    @Service("timer:")
+    Timers timers;
+
+    //OnInit method will run on startup of the service
+    @OnInit
+    public void init()
     {
-      State.add("\nonMessage(" + msg + ")");
+      timers.runAfter(this::fire, 2, TimeUnit.SECONDS, Result.ignore());
+    }
+
+    private void fire(Cancel cancel)
+    {
+      State.add("\n  fire!");
     }
   }
 }
