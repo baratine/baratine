@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import com.caucho.v5.config.IncludeOnClass;
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.json.JsonEngine;
+import com.caucho.v5.json.JsonEngineDefault;
 
 import io.baratine.config.Config;
 import io.baratine.config.Include;
@@ -31,6 +32,10 @@ public class JsonEngineProviderJackson
   @Priority(-10)
   public JsonEngine getJsonEngine()
   {
+    if (! _config.get("JsonEngineJackson", Boolean.class, false)) {
+      return new JsonEngineDefault();
+    }
+
     _logger.log(Level.CONFIG, "found Jackson on the classpath, using Jackson for JSON serialization");
 
     JsonEngineJackson engine;
