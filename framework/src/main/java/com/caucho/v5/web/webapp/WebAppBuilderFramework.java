@@ -32,6 +32,8 @@ package com.caucho.v5.web.webapp;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
+import javax.inject.Provider;
+
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverImpl;
 import com.caucho.v5.amp.journal.JournalDriverImpl;
@@ -40,10 +42,14 @@ import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
 import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.http.websocket.WebSocketManager;
+import com.caucho.v5.json.JsonEngine;
+import com.caucho.v5.json.JsonEngineDefault;
+import com.caucho.v5.json.JsonEngineProviderDefault;
 import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
 import com.caucho.v5.web.view.ViewJsonDefault;
 
 import io.baratine.vault.Asset;
+import io.baratine.web.ViewResolver;
 
 /**
  * Baratine's web-app instance builder
@@ -52,21 +58,37 @@ public class WebAppBuilderFramework extends WebAppBuilder
 {
   private static final Logger log
     = Logger.getLogger(WebAppBuilderFramework.class.getName());
-  
+
   /**
    * Creates the host with its environment loader.
    */
   public WebAppBuilderFramework(WebAppFactory factory)
   {
     super(factory);
-    
-    view(new ViewJsonDefault(), Object.class, -1000);
+  }
+
+  @Override
+  protected void init()
+  {
+    super.init();
+  }
+
+  @Override
+  protected void initSelf()
+  {
+    super.initSelf();
+
+    injectBuilder().bean(JsonEngineDefault.class).to(JsonEngine.class).priority(-1000);
+    injectBuilder().bean(ViewJsonDefault.class).to(ViewResolver.class).priority(-1000);
+
+    //injectBuilder().include(JsonEngineProviderDefault.class);
+    //injectBuilder().include(ViewJsonDefault.class, Object.class, -1000);
   }
 
   @Override
   BodyResolver bodyResolver()
   {
-    return new BodyResolverFramework();
+    return injector().instance(BodyResolverFramework.class);
   }
 
   @Override
@@ -90,15 +112,15 @@ public class WebAppBuilderFramework extends WebAppBuilder
   {
     try {
       StubGeneratorVault gen = new StubGeneratorVaultDriver();
-      
+
       gen.driver(new ResourceDriverWebApp());
-      
+
       builder.stubGenerator(gen);
     } catch (Exception e) {
       log.finer(e.toString());
     }
   }
-  
+
   private class ResourceDriverWebApp
     implements VaultDriver<Object,Serializable>
   {
@@ -106,7 +128,7 @@ public class WebAppBuilderFramework extends WebAppBuilder
     public <T,ID extends Serializable> VaultDriver<T,ID>
     driver(ServicesAmp ampManager,
            Class<?> serviceType,
-           Class<T> entityType, 
+           Class<T> entityType,
            Class<ID> idType,
            String address)
     {

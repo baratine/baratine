@@ -64,6 +64,8 @@ public class JsonEngineDefault implements JsonEngine
       _jOut.init(writer);
 
       _jOut.write(value);
+
+      _jOut.flush();
     }
   }
 

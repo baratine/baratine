@@ -46,7 +46,7 @@ import io.baratine.service.ServiceRef.ServiceBuilder;
 
 public class JdbcServiceImpl implements JdbcService
 {
-  private Logger _logger = Logger.getLogger(JdbcServiceImpl.class.toString());
+  private static Logger _logger = Logger.getLogger(JdbcServiceImpl.class.toString());
 
   @Inject
   private Services _manager;

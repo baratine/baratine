@@ -118,7 +118,7 @@ public class WebAppBuilder
 
   private ArrayList<RouteWebApp> _routes = new ArrayList<>();
   private ArrayList<ViewRef<?>> _views = new ArrayList<>();
-  
+
   private ArrayList<FilterFactory<ServiceWeb>> _filtersBeforeWebApp
     = new ArrayList<>();
   private ArrayList<FilterFactory<ServiceWeb>> _filtersAfterWebApp
@@ -152,23 +152,23 @@ public class WebAppBuilder
 
     _classLoader = EnvironmentClassLoader.create(_http.classLoader(),
                                                  factory.id());
-    
+
     view(new ViewPrimitive(), String.class, -1000);
     view(new ViewPrimitive(), Number.class, -1000);
     view(new ViewPrimitive(), Void.class, -1000);
     view(new ViewPrimitive(), Boolean.class, -1000);
     view(new ViewPrimitive(), Character.class, -1000);
-    
+
     before(new FilterBeforeGzipFactory());
   }
-  
+
   public void before(FilterFactory<ServiceWeb> filter)
   {
     Objects.requireNonNull(filter);
-    
+
     _filtersBeforeWebApp.add(filter);
   }
-  
+
   protected void init()
   {
     Thread thread = Thread.currentThread();
@@ -184,35 +184,7 @@ public class WebAppBuilder
     try {
       thread.setContextClassLoader(classLoader());
 
-      _configBuilder = Configs.config();
-      _configBuilder.add(_factory.config());
-
-      _injectBuilder = InjectorAmp.manager(classLoader());
-
-      _injectBuilder.include(BaratineProducer.class);
-
-      _serviceBuilder = ServicesAmp.newManager();
-      _serviceBuilder.name("webapp");
-      _serviceBuilder.autoServices(true);
-      _serviceBuilder.injector(_injectBuilder);
-      //_serviceBuilder.setJournalFactory(new JournalFactoryImpl());
-      addFactories(_serviceBuilder);
-      addStubVault(_serviceBuilder);
-      _serviceBuilder.contextManager(true);
-
-      ServicesAmp services = _serviceBuilder.get();
-      Amp.contextManager(services);
-
-      _injectBuilder.autoBind(new InjectAutoBindService(services));
-
-      if (outbox != null) {
-        InboxAmp inbox = services.inboxSystem();
-        // XXX: should set the inbox
-        outbox.getAndSetContext(inbox);
-        //System.out.println("OUTBOX-a: " + inbox + " " + serviceManager);
-      }
-
-      _wsManager = webSocketManager();
+      initSelf();
 
       new WebApp(this);
     } catch (Throwable e) {
@@ -229,6 +201,41 @@ public class WebAppBuilder
         outbox.getAndSetContext(oldContext);
       }
     }
+  }
+
+  protected void initSelf()
+  {
+    OutboxAmp outbox = OutboxAmp.current();
+
+    _configBuilder = Configs.config();
+    _configBuilder.add(_factory.config());
+
+    _injectBuilder = InjectorAmp.manager(classLoader());
+
+    _injectBuilder.include(BaratineProducer.class);
+
+    _serviceBuilder = ServicesAmp.newManager();
+    _serviceBuilder.name("webapp");
+    _serviceBuilder.autoServices(true);
+    _serviceBuilder.injector(_injectBuilder);
+    //_serviceBuilder.setJournalFactory(new JournalFactoryImpl());
+    addFactories(_serviceBuilder);
+    addStubVault(_serviceBuilder);
+    _serviceBuilder.contextManager(true);
+
+    ServicesAmp services = _serviceBuilder.get();
+    Amp.contextManager(services);
+
+    _injectBuilder.autoBind(new InjectAutoBindService(services));
+
+    if (outbox != null) {
+      InboxAmp inbox = services.inboxSystem();
+      // XXX: should set the inbox
+      outbox.getAndSetContext(inbox);
+      //System.out.println("OUTBOX-a: " + inbox + " " + serviceManager);
+    }
+
+    _wsManager = webSocketManager();
   }
 
   protected void addFactories(ServiceManagerBuilderAmp builder)
@@ -251,7 +258,6 @@ public class WebAppBuilder
     return _wsManager;
   }
 
-  /*
   // @Override
   private void build()
   {
@@ -262,6 +268,7 @@ public class WebAppBuilder
 
     try {
       thread.setContextClassLoader(classLoader());
+
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
 
@@ -273,7 +280,6 @@ public class WebAppBuilder
       outbox.getAndSetContext(context);
     }
   }
-  */
 
   void build(WebApp webApp)
   {
@@ -284,7 +290,7 @@ public class WebAppBuilder
     _autoBind = new WebAppAutoBind(webApp);
     _injectBuilder.autoBind(_autoBind);
     _injectBuilder.include(ValidatorProviderDefault.class);
-    
+
     _injectBuilder.provider(()->webApp.config()).to(Config.class);
     _injectBuilder.provider(()->webApp.inject()).to(Injector.class);
     _injectBuilder.provider(()->webApp.services()).to(Services.class);
@@ -292,9 +298,9 @@ public class WebAppBuilder
     generateFromFactory();
 
     // defaults
-    
+
     get("/**").to(WebStaticFile.class);
-    
+
     _injectBuilder.get();
     _serviceBuilder.start();
   }
@@ -314,7 +320,7 @@ public class WebAppBuilder
   {
     return _classLoader;
   }
-  
+
   /*
   public WebAppBaratineHttp getWebAppHttp()
   {
@@ -335,7 +341,7 @@ public class WebAppBuilder
   {
     return _injectBuilder;
   }
-  
+
   @Override
   public ServicesAmp services()
   {
@@ -395,7 +401,7 @@ public class WebAppBuilder
     ServicesAmp manager = webApp.services();
 
     ServiceRefAmp serviceRef = manager.newService(new RouteService()).ref();
-    
+
     while (_routes.size() > 0) {
       ArrayList<RouteWebApp> routes = new ArrayList<>(_routes);
       _routes.clear();
@@ -407,8 +413,8 @@ public class WebAppBuilder
 
     /*
     for (RouteConfig config : _routeList) {
-      RouteBaratine route = config.buildRoute(); 
-      
+      RouteBaratine route = config.buildRoute();
+
       mapList.add(new RouteMap("", route));
     }
     */
@@ -419,18 +425,18 @@ public class WebAppBuilder
 
     return new InvocationRouterWebApp(webApp, routeArray);
   }
-  
+
   private void buildViews(InjectorAmp inject)
   {
     for (Binding<ViewRender> binding : inject.bindings(ViewRender.class)) {
       try {
         ViewRender<?> view = (ViewRender<?>) binding.provider().get();
-        
+
         Key<ViewRender<?>> key = (Key) binding.key();
-        
+
         TypeRef typeRef = TypeRef.of(key.type());
         TypeRef renderRef = typeRef.to(ViewRender.class).param(0);
-        
+
         Class<?> type = renderRef != null ? renderRef.rawClass() : Object.class;
 
         _views.add(new ViewRefRender(view, type, binding.priority()));
@@ -438,16 +444,16 @@ public class WebAppBuilder
         log.log(Level.FINE, e.toString(), e);
       }
     }
-    
+
     for (Binding<ViewResolver> binding : inject.bindings(ViewResolver.class)) {
       try {
         ViewResolver<?> view = (ViewResolver<?>) binding.provider().get();
-        
+
         Key<ViewResolver<?>> key = (Key) binding.key();
-        
+
         TypeRef typeRef = TypeRef.of(key.type());
         TypeRef resolverRef = typeRef.to(ViewResolver.class).param(0);
-        
+
         Class<?> type = resolverRef != null ? resolverRef.rawClass() : Object.class;
 
         _views.add(new ViewRefResolver(view, type, binding.priority()));
@@ -495,7 +501,7 @@ public class WebAppBuilder
   public <U> WebBuilderAmp bean(Key<U> keyParent, Method method)
   {
     // XXX: should be key instead of supplier?
-    
+
     _injectBuilder.include(keyParent, method);
 
     return this;
@@ -545,7 +551,7 @@ public class WebAppBuilder
     }
 
     ServiceRef.ServiceBuilder builder;
-    
+
     /*
     if (_webApp != null && _webApp.serviceManager() != null) {
       builder = _webApp.serviceManager().newService(type).addressAuto();
@@ -761,35 +767,35 @@ public class WebAppBuilder
     private HttpMethod _method;
     private String _path;
     private ServiceWeb _service;
-    
+
     private ArrayList<FilterFactory<ServiceWeb>> _filtersBefore
       = new ArrayList<>();
     private ArrayList<FilterFactory<ServiceWeb>> _filtersAfter
     = new ArrayList<>();
     private Class<? extends ServiceWeb> _serviceClass;
-    
+
     private ViewRef<?> _viewRef;
 
     RoutePath(HttpMethod method, String path)
     {
       _method = method;
       _path = path;
-      
+
       _filtersBefore.addAll(_filtersBeforeWebApp);
     }
-    
+
     @Override
     public WebBuilderAmp webBuilder()
     {
       return WebAppBuilder.this;
     }
-    
+
     @Override
     public String path()
     {
       return _path;
     }
-    
+
     @Override
     public HttpMethod method()
     {
@@ -812,7 +818,7 @@ public class WebAppBuilder
     {
       Objects.requireNonNull(ann);
       Objects.requireNonNull(ip);
-      
+
       _filtersAfter.add(new BeanFactoryAnn<>(ServiceWeb.class, ann, ip));
 
       return this;
@@ -834,7 +840,7 @@ public class WebAppBuilder
     {
       Objects.requireNonNull(ann);
       Objects.requireNonNull(ip);
-      
+
       _filtersBefore.add(new BeanFactoryAnn<>(ServiceWeb.class, ann, ip));
 
       return this;
@@ -881,9 +887,9 @@ public class WebAppBuilder
       }
 
       views.addAll(views());
-      
+
       ArrayList<ServiceWeb> filtersBefore = new ArrayList<>();
-      
+
       for (FilterFactory<ServiceWeb> filterFactory : _filtersBefore) {
         ServiceWeb filter = filterFactory.apply(this);
 
@@ -894,9 +900,9 @@ public class WebAppBuilder
           log.warning(L.l("{0} is an unknown filter", filterFactory));
         }
       }
-      
+
       ArrayList<ServiceWeb> filtersAfter = new ArrayList<>();
-      
+
       for (FilterFactory<ServiceWeb> filterFactory : _filtersAfter) {
         ServiceWeb filter = filterFactory.apply(this);
 
@@ -913,9 +919,9 @@ public class WebAppBuilder
       }
 
       views.addAll(views());
-      
+
       ViewMap viewMap = new ViewMap();
-      
+
       for (ViewRef<?> viewRef : views) {
         viewMap.add(viewRef);
       }
@@ -942,7 +948,7 @@ public class WebAppBuilder
 
       Predicate<RequestWeb> test = _methodMap.get(method);
 
-      routeApply = new RouteApply(service, filtersBefore, filtersAfter, 
+      routeApply = new RouteApply(service, filtersBefore, filtersAfter,
                                   serviceRef, test, viewMap);
 
       List<RouteMap> list = new ArrayList<>();
@@ -1014,9 +1020,9 @@ public class WebAppBuilder
     {
       Function<RequestWeb,ServiceWebSocket<?,?>> fun = null;
       Supplier<? extends ServiceWebSocket<?,?>> supplier = _serviceFactory;
-      
+
       ServiceWebSocket<?,?> service = null;
-      
+
       Class<?> type = null;
 
       if (supplier != null) {
@@ -1029,9 +1035,9 @@ public class WebAppBuilder
       else {
         Service serviceAnn = _serviceType.getAnnotation(Service.class);
         Session sessionAnn = _serviceType.getAnnotation(Session.class);
-        
+
         type = itemType(_serviceType);
-        
+
         if (serviceAnn == null) {
           service = inject.instance(_serviceType);
         }
@@ -1046,12 +1052,12 @@ public class WebAppBuilder
           }
         }
       }
-      
+
       if (fun == null) {
         Objects.requireNonNull(service);
-      
+
         type = itemType(service.getClass());
-        
+
         ServiceWebSocket<?,?> serviceWs;
 
         /*
@@ -1059,7 +1065,7 @@ public class WebAppBuilder
                              .as(ServiceWebSocket.class);
                              */
         serviceWs = serviceRef.pin(service).as(ServiceWebSocket.class);
-      
+
         fun = req->serviceWs;
       }
 
@@ -1070,7 +1076,7 @@ public class WebAppBuilder
 
       return list;
     }
-    
+
     private Class<?> itemType(Class<?> serviceClass)
     {
       TypeRef typeRef = TypeRef.of(serviceClass);
@@ -1084,7 +1090,7 @@ public class WebAppBuilder
       else {
         type = String.class;
       }
-      
+
       return type;
     }
   }
@@ -1144,12 +1150,12 @@ public class WebAppBuilder
       return _manager;
     }
   }
-  
+
   static final class WebSocketWrapper<T,S>
     implements ServiceWebSocket<T,S>
   {
     private ServiceWebSocket<T,S> _service;
-    
+
     /*
     WebSocketWrapper(ServiceWebSocket<T,S> service)
     {
@@ -1162,37 +1168,37 @@ public class WebAppBuilder
     {
       try {
         // XXX: convert to async
-        _service.open(webSocket); 
+        _service.open(webSocket);
       } catch (Throwable e) {
         e.printStackTrace();
         System.out.println("FAIL: " + e + " " + webSocket);
         webSocket.fail(e);
       }
     }
-    
+
     @Override
     public void next(T value, WebSocket<S> webSocket)
       throws IOException
     {
       _service.next(value, webSocket);
     }
-    
+
     @Override
     public void ping(String value, WebSocket<S> webSocket)
       throws IOException
     {
       _service.ping(value, webSocket);
     }
-    
+
     @Override
     public void pong(String value, WebSocket<S> webSocket)
       throws IOException
     {
       _service.pong(value, webSocket);
     }
-    
+
     @Override
-    public void close(WebSocketClose code, String msg, 
+    public void close(WebSocketClose code, String msg,
                       WebSocket<S> webSocket)
       throws IOException
     {

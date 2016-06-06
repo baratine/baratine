@@ -1,12 +1,13 @@
 package com.caucho.v5.autoconf.json;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.inject.Inject;
 
 import com.caucho.v5.config.IncludeOnClass;
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.json.JsonEngine;
-import com.caucho.v5.json.JsonEngineDefault;
-import com.caucho.v5.json.JsonEngineProviderDefault;
 
 import io.baratine.config.Config;
 import io.baratine.config.Include;
@@ -18,15 +19,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @IncludeOnClass(ObjectMapper.class)
 public class JsonEngineProviderJackson
 {
-  private @Inject Config _config;
+  private static Logger _logger = Logger.getLogger(JsonEngineProviderJackson.class.toString());
+
+  @Inject
+  private Config _config;
+
+  @Inject
+  private ObjectMapper _mapper;
 
   @Bean
   @Priority(-10)
   public JsonEngine getJsonEngine()
   {
-    System.err.println("JsonEngineProviderJackson.getJsonEngine0");
-    Thread.dumpStack();
+    _logger.log(Level.CONFIG, "found Jackson on the classpath, using Jackson for JSON serialization");
 
-    return new JsonEngineDefault();
+    JsonEngineJackson engine;
+
+    if (_mapper != null) {
+      _logger.log(Level.CONFIG, "using injected ObjectMapper");
+
+      engine = new JsonEngineJackson(_mapper);
+    }
+    else {
+      engine = new JsonEngineJackson();
+    }
+
+    return engine;
   }
 }

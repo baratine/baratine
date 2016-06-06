@@ -34,6 +34,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import javax.inject.Inject;
+
+import com.caucho.v5.json.JsonEngine;
 import com.caucho.v5.json.io.JsonReader;
 import com.caucho.v5.util.L10N;
 
@@ -43,36 +46,39 @@ import com.caucho.v5.util.L10N;
 public class BodyResolverFramework extends BodyResolverBase
 {
   private static final L10N L = new L10N(BodyResolverFramework.class);
-  
+
+  @Inject
+  private JsonEngine _jsonEngine;
+
   @Override
   public <T> T bodyDefault(RequestWebSpi request, Class<T> type)
   {
     String contentType = request.header("content-type");
-    
+
     if (contentType == null) {
       return super.bodyDefault(request, type);
     }
-    
+
     int p = contentType.indexOf(';');
-    
+
     if (p >= 0) {
       contentType = contentType.substring(0, p).trim();
     }
-    
+
     if (contentType.equals("application/json")) {
       InputStream is = request.inputStream();
-      
-      try { 
+
+      try {
         Reader reader = new InputStreamReader(is, "utf-8");
-        
+
         JsonReader isJson = new JsonReader(reader);
-        
+
         return (T) isJson.readObject(type);
       } catch (IOException e) {
         throw new BodyException(e);
       }
     }
-    
+
     return super.bodyDefault(request, type);
   }
 }

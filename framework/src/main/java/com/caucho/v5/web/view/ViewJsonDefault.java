@@ -30,7 +30,11 @@ package com.caucho.v5.web.view;
 
 import java.io.Writer;
 
+import javax.inject.Inject;
+
 import com.caucho.v5.config.Priority;
+import com.caucho.v5.json.JsonEngine;
+import com.caucho.v5.json.JsonSerializer;
 import com.caucho.v5.json.io.JsonWriter;
 import com.caucho.v5.json.ser.JsonFactory;
 
@@ -46,6 +50,13 @@ public class ViewJsonDefault implements ViewResolver<Object>
 {
   private JsonFactory _serializer = new JsonFactory();
   private JsonWriter _jOut = _serializer.out();
+
+  @Inject
+  private JsonEngine _jsonEngine;
+
+  public ViewJsonDefault()
+  {
+  }
 
   @Override
   public boolean render(RequestWeb req, Object value)
@@ -78,10 +89,16 @@ public class ViewJsonDefault implements ViewResolver<Object>
 
       // req.header("Access-Control-Allow-Origin", "*");
 
+      JsonSerializer serializer = _jsonEngine.getSerializer();
+      serializer.serialize(writer, value);
+
+      /*
       JsonWriter jOut = _jOut;
       jOut.init(writer);
       jOut.write(value);
       jOut.close();
+      */
+
       /*
       try (JsonWriter jOut = _serializer.out(writer)) {
         jOut.write(value);
@@ -103,7 +120,7 @@ public class ViewJsonDefault implements ViewResolver<Object>
       return true;
     }
   }
-  
+
   @Override
   public String toString()
   {

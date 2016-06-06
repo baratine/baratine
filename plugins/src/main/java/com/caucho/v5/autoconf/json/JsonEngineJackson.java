@@ -40,10 +40,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonEngineJackson implements JsonEngine
 {
-  private JsonSerializer _serializer = new JsonSerializerJackson();
-  private JsonDeserializer _deserialzier = new JsonDeserializerJackson();
+  private final JsonSerializer _serializer = new JsonSerializerJackson();
+  private final JsonDeserializer _deserialzier = new JsonDeserializerJackson();
 
-  private ObjectMapper _mapper = new ObjectMapper();
+  private final ObjectMapper _mapper;
+
+  public JsonEngineJackson()
+  {
+    _mapper = new ObjectMapper();
+  }
+
+  public JsonEngineJackson(ObjectMapper mapper)
+  {
+    _mapper = mapper;
+  }
 
   public JsonSerializer getSerializer()
   {
