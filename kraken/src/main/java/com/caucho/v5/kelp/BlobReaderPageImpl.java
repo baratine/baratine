@@ -65,7 +65,7 @@ public class BlobReaderPageImpl implements BlobReader
     _cursor = cursor;
     _column = column;
     
-    _pageService = _cursor.getTable().getTableService(); 
+    _pageService = _cursor.table().getTableService(); 
 
     // XXX: this is only segment length
     _firstPageLength = blobPage.getLength();

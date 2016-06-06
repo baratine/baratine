@@ -69,7 +69,7 @@ public class TableKelp
   private final Row _row;
   private final byte[] _tableKey;
 
-  private ServicesAmp _ampManager;
+  private ServicesAmp _services;
 
   private JournalStore _jbs;
 
@@ -112,31 +112,35 @@ public class TableKelp
     }
     */
     
-    _ampManager = db.getRampManager();
+    _services = db.services();
     
-    _tableServiceImpl = new PageServiceImpl(this, db.getJournalStore());
+    _tableServiceImpl = new PageServiceImpl(this, db.journalStore());
     
     _readWriteImpl = new TableWriterServiceImpl(this,
-                                                db.getSegmentStore(),
-                                                db.getSegmentService());
+                                                db.segmentStore(),
+                                                db.segmentService());
     
-    _readWrite = _ampManager.newService(_readWriteImpl).as(TableWriterService.class);
+    _readWrite = _services.newService(_readWriteImpl).as(TableWriterService.class);
     
-    _tableService = _ampManager.newService(_tableServiceImpl).as(PageServiceSync.class);
+    _tableService = _services.newService(_tableServiceImpl).as(PageServiceSync.class);
     
     TableGcServiceImpl gcActor = new TableGcServiceImpl(this);
     
-    _gcService = _ampManager.newService(gcActor).as(TableGcService.class);
+    _gcService = _services.newService(gcActor).as(TableGcService.class);
     
     MemoryGcActor pageGcActor = new MemoryGcActor(this);
     
-    _pageGcService = _ampManager.newService(pageGcActor).as(MemoryGcActor.class);
+    _pageGcService = _services.newService(pageGcActor).as(MemoryGcActor.class);
     
     // _db.addTable(name, this);
     
     // _tableService.start(result);
     
     _serializer = H3.newOutFactory().get();
+    
+    for (Class<?> schemaType : _row.objectSchema()) {
+      _serializer.schema(schemaType);
+    }
   }
   
   void start(Result<TableKelp> result)

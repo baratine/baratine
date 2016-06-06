@@ -46,6 +46,8 @@ public class RowBuilder {
   private int _keyStart;
   private int _keyLength;
   private int _offset;
+  
+  private final ArrayList<Class<?>> _schema = new ArrayList<>();
 
   public RowBuilder(String tableName)
   {
@@ -256,6 +258,15 @@ public class RowBuilder {
     return this;
   }
   
+  public RowBuilder schema(Class<?> type)
+  {
+    Objects.requireNonNull(type);
+    
+    _schema.add(type);
+    
+    return this;
+  }
+  
   public Row build(DatabaseKelp db)
   {
     Objects.requireNonNull(db);
@@ -276,7 +287,12 @@ public class RowBuilder {
       }
     }
     
-    return new Row(db, _tableName, columns, blobs, _keyStart, _keyLength);
+    Class<?> []schema = new Class[_schema.size()];
+    
+    _schema.toArray(schema);
+    
+    return new Row(db, _tableName, columns, blobs, _keyStart, _keyLength,
+                   schema);
   }
   
   private int countBlobs()

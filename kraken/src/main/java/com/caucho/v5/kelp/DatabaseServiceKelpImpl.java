@@ -153,7 +153,7 @@ public class DatabaseServiceKelpImpl
     // _tableMap.put(name, table);
     _tableKeyMap.put(HashKey.create(table.tableKey()), table);
     
-    _db.getSegmentService().addTable(table.tableKey(),
+    _db.segmentService().addTable(table.tableKey(),
                                      table.row().length(),
                                      table.row().keyOffset(),
                                      table.row().keyLength(),

@@ -75,21 +75,68 @@ public class RowUpgrade10
         
         builder.column(column);
       }
-      /*
-      for (Column column : _columns) {
-        column.toData(bos);
+      
+      int blobs = BitsUtil.readInt16(is);
+
+      for (int i = 0; i < blobs; i++) {
+        ColumnUpgrade column = readColumn(is, builder);
+        
+        //builder.column(column);
       }
       
-      BitsUtil.writeInt16(bos, _blobs.length);
-      for (Column column : _blobs) {
-        column.toData(bos);
-      }
-      */
+      readProps(is, builder);
       
       return builder.build();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+  
+  private void readProps(InputStream is, RowUpgradeBuilder builder)
+    throws IOException
+  {
+    int props = BitsUtil.readInt16(is);
+    
+    for (int i = 0; i < props; i++) {
+      String propName = readString(is);
+      
+      switch (propName) {
+      case "class":
+        readScheme(is, builder);
+        break;
+        
+      default:
+        System.out.println("Unknown: " + propName);
+        
+        return;
+      }
+    }
+  }
+  
+  private void readScheme(InputStream is, RowUpgradeBuilder builder)
+    throws IOException
+  {
+    String className = readString(is);
+    
+    int fieldLen = BitsUtil.readInt16(is);
+    String []fields = new String[fieldLen];
+    
+    for (int i = 0; i < fieldLen; i++) {
+      fields[i] = readString(is);
+    }
+    
+    builder.scheme(className, fields);
+  }
+  
+  private String readString(InputStream is)
+    throws IOException
+  {
+    int len = BitsUtil.readInt16(is);
+    
+    byte []data = new byte[len];
+    is.read(data, 0, len);
+    
+    return new String(data, "UTF-8");
   }
   
   private ColumnUpgrade readColumn(InputStream is,

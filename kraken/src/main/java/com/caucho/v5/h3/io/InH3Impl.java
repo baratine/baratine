@@ -34,6 +34,9 @@ class InH3Impl implements InH3Amp
   private InRawH3 _in;
   
   private ArrayList<SerializerH3Amp<?>> _serArray = new ArrayList<>();
+
+  private boolean _isGraph;
+  private ArrayList<Object> _graphList;
   
   InH3Impl(ContextH3 context, InRawH3 in)
   {
@@ -86,6 +89,46 @@ class InH3Impl implements InH3Amp
   public <T> T readObject(Class<T> type)
   {
     return (T) readObject();
+  }
+  
+  @Override
+  public void graph(boolean isGraph)
+  {
+    if (isGraph) {
+      _graphList = new ArrayList<>();
+      _graphList.add(null);
+    }
+    else {
+      _graphList = null;
+    }
+  }
+  
+  @Override
+  public void ref(Object obj)
+  {
+    ArrayList<Object> graphList = _graphList;
+    
+    if (graphList != null) {
+      graphList.add(obj);
+    }
+  }
+  
+  @Override
+  public Object ref(long ref)
+  {
+    ArrayList<Object> graphList = _graphList;
+    
+    if (graphList == null) {
+      return null;
+    }
+    
+    if (ref > 0 && ref < graphList.size()) {
+      return graphList.get((int) ref);
+    }
+    
+    System.out.println("Ref outside of graph: " + ref);
+
+    return null;
   }
 
   @Override

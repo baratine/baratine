@@ -195,12 +195,12 @@ public class DatabaseKelp
     return _path;
   }
 
-  ServicesAmp getRampManager()
+  ServicesAmp services()
   {
     return _rampManager;
   }
   
-  StoreReadWrite getSegmentStore()
+  StoreReadWrite segmentStore()
   {
     return _store;
   }
@@ -210,7 +210,7 @@ public class DatabaseKelp
     return _dbService;
   }
   
-  SegmentService getSegmentService()
+  SegmentService segmentService()
   {
     return _segmentService;
   }
@@ -241,7 +241,7 @@ public class DatabaseKelp
     return null;
   }
   
-  JournalStore getJournalStore()
+  JournalStore journalStore()
   {
     return _journalStore;
   }
@@ -396,7 +396,7 @@ public class DatabaseKelp
 
   public void closeImpl()
   {
-    getSegmentService().close(Result.ignore());
+    segmentService().close(Result.ignore());
     
     _journalStore.close();
   }

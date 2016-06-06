@@ -200,7 +200,7 @@ class BlockLeaf
     
     rowHead(rowHead);
     
-    validateBlock(cursor.getRow());    
+    validateBlock(cursor.row());    
     
     return true;
   }
@@ -228,7 +228,7 @@ class BlockLeaf
   {
     int rowOffset = _rowHead;
     int sortOffset = _rowSortHead;
-    int rowLength = cursor.getLength();
+    int rowLength = cursor.length();
     
     int removeLength = cursor.removeLength();
     
@@ -277,7 +277,7 @@ class BlockLeaf
   private int findSorted(RowCursor cursor)
   {
     int rowOffset = _rowSortHead;
-    int rowLength = cursor.getLength();
+    int rowLength = cursor.length();
     
     int cmp = cursor.compareKey(_keyMinSort, 0);
 
@@ -332,7 +332,7 @@ class BlockLeaf
                 boolean isMatch)
   {
     int ptr = _rowHead;
-    int rowLength = resultCursor.getLength();
+    int rowLength = resultCursor.length();
     int removeLength = resultCursor.removeLength();
     int sortOffset = _rowSortHead;
     
@@ -411,7 +411,7 @@ class BlockLeaf
                                   boolean isMatch)
   {
     int rowOffset = _rowSortHead;
-    int rowLength = resultCursor.getLength();
+    int rowLength = resultCursor.length();
 
     int cmp = resultCursor.compareKey(_keyMinSort, 0);
 

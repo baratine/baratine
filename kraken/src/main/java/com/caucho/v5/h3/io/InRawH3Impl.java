@@ -20,6 +20,7 @@ package com.caucho.v5.h3.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import com.caucho.v5.h3.query.PathH3Amp;
@@ -304,7 +305,6 @@ public class InRawH3Impl implements InRawH3
     case 0xdc: case 0xdd: case 0xde: case 0xdf:
     {
       int id = ch - 0xd0;
-      
       return inAmp.serializer(id).readObject(this, inAmp);
     }
       
@@ -332,6 +332,19 @@ public class InRawH3Impl implements InRawH3
       
     case 0xf4:
       return readFloatData();
+      
+    case 0xf7:
+    {
+      long id = readUnsigned();
+    
+      return inAmp.ref(id);
+    }
+      
+      
+    case 0xf9:
+      inAmp.graph(true);
+
+      return readObject(inAmp);
       
     default:
       throw error(L.l("Unexpected opcode 0x{0} while reading object",

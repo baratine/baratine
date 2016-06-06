@@ -60,6 +60,11 @@ class OutH3Impl implements OutH3
     _typeSequence = _context.typeSequence();
   }
   
+  protected OutRawH3 out()
+  {
+    return _out;
+  }
+  
   @Override
   public void writeNull()
   {

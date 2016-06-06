@@ -196,7 +196,6 @@ class IncludeWebClass implements IncludeWebAmp
     else {
       beanSupplier = new SingletonBean(builder, _type);
       beanFactory = req->beanSupplier.get();
-      System.out.println("BF: " + _type);
     }
     
     String path = "";

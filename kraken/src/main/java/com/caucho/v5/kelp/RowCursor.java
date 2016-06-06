@@ -84,17 +84,17 @@ public final class RowCursor
     return _data;
   }
 
-  BlobOutputStream []getBlobs()
+  BlobOutputStream []blobs()
   {
     return _blobs;
   }
 
-  Row getRow()
+  Row row()
   {
     return _row;
   }
 
-  int getKeyLength()
+  int keyLength()
   {
     return _row.keyLength();
   }
@@ -109,7 +109,7 @@ public final class RowCursor
     return _row.getTreeItemLength();
   }
 
-  int getLength()
+  int length()
   {
     return _row.length();
   }
@@ -119,7 +119,7 @@ public final class RowCursor
    */
   public int getSize()
   {
-    int size = getLength();
+    int size = length();
     
     if (_blobs == null) {
       return size;
@@ -134,14 +134,14 @@ public final class RowCursor
     return size;
   }
 
-  TableKelp getTable()
+  TableKelp table()
   {
     return _table;
   }
 
   DatabaseKelp getDatabase()
   {
-    return getTable().database();
+    return table().database();
   }
   
   PageServiceSync getTableService()
@@ -650,8 +650,8 @@ public final class RowCursor
     
     if ((code & Page.CODE_MASK) == Page.REMOVE) {
       int stateLength = getColumnState().length();
-      int keyOffset = getRow().keyOffset();
-      int keyLength = getKeyLength();
+      int keyOffset = row().keyOffset();
+      int keyLength = keyLength();
       
       System.arraycopy(buffer, rowOffset, _data, 0, stateLength);
       System.arraycopy(buffer, rowOffset + stateLength, _data, keyOffset, keyLength);

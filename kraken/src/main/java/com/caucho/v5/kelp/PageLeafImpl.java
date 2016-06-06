@@ -374,15 +374,15 @@ public final class PageLeafImpl extends PageLeaf
     
     int row;
     
-    if ((row = top.insert(cursor.getRow(),
+    if ((row = top.insert(cursor.row(),
                           cursor.buffer(), 0, 
-                          cursor.getBlobs())) < 0) {
+                          cursor.blobs())) < 0) {
       BlockLeaf newTop = extendBlocks();
     
       tableService.addLruSize(BLOCK_SIZE);
-      if ((row = newTop.insert(cursor.getRow(),
+      if ((row = newTop.insert(cursor.row(),
                                cursor.buffer(), 0,
-                               cursor.getBlobs())) < 0) {
+                               cursor.blobs())) < 0) {
         throw new IllegalStateException();
       }
       

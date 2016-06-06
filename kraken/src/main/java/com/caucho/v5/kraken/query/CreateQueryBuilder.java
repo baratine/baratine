@@ -32,6 +32,7 @@ import io.baratine.service.Result;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.caucho.v5.kraken.table.KrakenImpl;
 import com.caucho.v5.util.L10N;
@@ -68,6 +69,10 @@ public class CreateQueryBuilder extends QueryBuilderKraken
       switch (key) {
       case "hash":
         buildHash(value);
+        break;
+
+      case "class":
+        buildScheme(value);
         break;
       }
     }
@@ -141,6 +146,24 @@ public class CreateQueryBuilder extends QueryBuilderKraken
           gen.column(value.substring(q + 1, r));
           p = r;
         }
+      }
+    }
+  }
+  
+  private void buildScheme(String value)
+  {
+    Objects.requireNonNull(value);
+    
+    String []classNames = value.split("[,\\s]+");
+    
+    for (String schemeName : classNames) { 
+      try {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Class<?> type = Class.forName(schemeName, false, loader);
+    
+        _factory.schema(type);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
       }
     }
   }

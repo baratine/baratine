@@ -27,8 +27,24 @@ import com.caucho.v5.h3.H3.OutFactoryBuilderH3;
  */
 public class OutFactoryBuilderH3Impl implements OutFactoryBuilderH3
 {
+  private boolean _isGraph;
+  
+  @Override
+  public OutFactoryBuilderH3 graph(boolean isGraph)
+  {
+    _isGraph = isGraph;
+    
+    return this;
+  }
+  
+  public boolean isGraph()
+  {
+    return _isGraph;
+  }
+  
+  @Override
   public OutFactoryH3 get()
   {
-    return new OutFactoryH3Impl();
+    return new OutFactoryH3Impl(this);
   }
 }

@@ -154,10 +154,16 @@ public class SerializerH3Collection<T extends Collection<?>> extends SerializerH
     _item = new FieldSerObject("item", keyType);
   }
 
+  /**
+   * read the list from the input stream
+   */
   @Override
   public T readObject(InRawH3 is, InH3Amp in)
   {
     Collection<Object> list = (Collection<Object>) newInstance();
+    
+    // add a reference if in graph mode
+    in.ref(list);
 
     while (true) {
       long chunk = is.readUnsigned();

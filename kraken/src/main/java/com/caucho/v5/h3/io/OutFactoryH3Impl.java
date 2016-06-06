@@ -51,6 +51,12 @@ public class OutFactoryH3Impl implements OutFactoryH3
   private static final L10N L = new L10N(OutFactoryH3Impl.class);
   
   private ContextH3Impl _context = new ContextH3Impl();
+  private boolean _isGraph;
+  
+  OutFactoryH3Impl(OutFactoryBuilderH3Impl builder)
+  {
+    _isGraph = builder.isGraph();
+  }
   
   /**
    * Adds a predefined schema
@@ -70,7 +76,12 @@ public class OutFactoryH3Impl implements OutFactoryH3
     
     OutRawH3 outRaw = new OutRawH3Impl(os);
     
-    return new OutH3Impl(_context, outRaw);
+    if (_isGraph) {
+      return new OutH3ImplGraph(_context, outRaw);
+    }
+    else {
+      return new OutH3Impl(_context, outRaw);
+    }
   }
   
   @Override

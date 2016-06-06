@@ -118,6 +118,11 @@ public class WebAppBuilder
 
   private ArrayList<RouteWebApp> _routes = new ArrayList<>();
   private ArrayList<ViewRef<?>> _views = new ArrayList<>();
+  
+  private ArrayList<FilterFactory<ServiceWeb>> _filtersBeforeWebApp
+    = new ArrayList<>();
+  private ArrayList<FilterFactory<ServiceWeb>> _filtersAfterWebApp
+    = new ArrayList<>();
 
   private Throwable _configException;
 
@@ -153,6 +158,15 @@ public class WebAppBuilder
     view(new ViewPrimitive(), Void.class, -1000);
     view(new ViewPrimitive(), Boolean.class, -1000);
     view(new ViewPrimitive(), Character.class, -1000);
+    
+    before(new FilterBeforeGzipFactory());
+  }
+  
+  public void before(FilterFactory<ServiceWeb> filter)
+  {
+    Objects.requireNonNull(filter);
+    
+    _filtersBeforeWebApp.add(filter);
   }
   
   protected void init()
@@ -237,6 +251,7 @@ public class WebAppBuilder
     return _wsManager;
   }
 
+  /*
   // @Override
   private void build()
   {
@@ -247,15 +262,6 @@ public class WebAppBuilder
 
     try {
       thread.setContextClassLoader(classLoader());
-      
-      /*
-      if (configException() == null) {
-        return new WebAppBaratine(this).start();
-      }
-      else {
-        return new WebAppBaratineError(this).start();
-      }
-      */
     } catch (Throwable e) {
       log.log(Level.WARNING, e.toString(), e);
 
@@ -267,6 +273,7 @@ public class WebAppBuilder
       outbox.getAndSetContext(context);
     }
   }
+  */
 
   void build(WebApp webApp)
   {
@@ -285,6 +292,7 @@ public class WebAppBuilder
     generateFromFactory();
 
     // defaults
+    
     get("/**").to(WebStaticFile.class);
     
     _injectBuilder.get();
@@ -766,6 +774,8 @@ public class WebAppBuilder
     {
       _method = method;
       _path = path;
+      
+      _filtersBefore.addAll(_filtersBeforeWebApp);
     }
     
     @Override

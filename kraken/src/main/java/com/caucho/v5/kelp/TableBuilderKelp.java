@@ -166,6 +166,13 @@ public class TableBuilderKelp
     
     return this;
   }
+
+  public TableBuilderKelp schema(Class<?> type)
+  {
+    _rowBuilder.schema(type);
+    
+    return this;
+  }
   
   public TableBuilderKelp startKey()
   {

@@ -41,12 +41,14 @@ public class RowUpgrade
 {
   private final String _name;
   private final ColumnUpgrade[] _columns;
+  private final SchemeUpgrade[] _scheme;
   
   RowUpgrade(RowUpgradeBuilder builder)
   {
     _name = builder.name();
     
     _columns = builder.columns();
+    _scheme = builder.scheme();
   }
   
   public String name()
@@ -69,6 +71,11 @@ public class RowUpgrade
     return _columns;
   }
   
+  public SchemeUpgrade []scheme()
+  {
+    return _scheme;
+  }
+  
   @Override
   public String toString()
   {
@@ -79,6 +86,7 @@ public class RowUpgrade
   {
     private String _name;
     private ArrayList<ColumnUpgrade> _columns = new ArrayList<>();
+    private ArrayList<SchemeUpgrade> _scheme = new ArrayList<>();
     
     private int _rowLength;
     private int _keyStart;
@@ -103,6 +111,15 @@ public class RowUpgrade
       _columns.toArray(columns);
       
       return columns;
+    }
+    
+    public SchemeUpgrade []scheme()
+    {
+      SchemeUpgrade []scheme = new SchemeUpgrade[_scheme.size()];
+      
+      _scheme.toArray(scheme);
+      
+      return scheme;
     }
 
     public int rowLength()
@@ -135,6 +152,14 @@ public class RowUpgrade
       if (! column.isKey()) {
         
       }
+    }
+
+    public RowUpgradeBuilder scheme(String name, 
+                             String []fields)
+    {
+      _scheme.add(new SchemeUpgrade(name, fields));
+      
+      return this;
     }
   }
 }

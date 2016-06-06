@@ -40,4 +40,10 @@ public interface InH3Amp extends InH3
   SerializerH3Amp<?> serializer(int id);
 
   void define(int id, ClassInfoH3 info);
+
+  void graph(boolean isGraph);
+  
+  void ref(Object obj);
+
+  Object ref(long ref);
 }

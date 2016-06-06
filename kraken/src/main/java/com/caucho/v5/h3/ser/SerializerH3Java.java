@@ -200,10 +200,15 @@ public class SerializerH3Java<T> extends SerializerH3Base<T>
     }
   }
 
+  /**
+   * Reads the bean from the stream.
+   */
   @Override
   public T readObject(InRawH3 is, InH3Amp in)
   {
     T bean = newInstance();
+    
+    in.ref(bean);
     
     FieldSerBase[] fields = _fields;
     int size = fields.length;

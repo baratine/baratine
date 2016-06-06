@@ -27,21 +27,46 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.h3;
+package com.caucho.v5.web.webapp;
 
-import com.caucho.v5.h3.io.OutFactoryBuilderH3Impl;
+import com.caucho.v5.config.Priority;
 
-public interface H3
+import io.baratine.web.RequestWeb;
+import io.baratine.web.ServiceWeb;
+
+/**
+ * View with associated type meta-data
+ */
+@Priority(-100)
+class FilterBeforeGzipFactory implements FilterFactory<ServiceWeb>
 {
-  static OutFactoryBuilderH3 newOutFactory()
+  @Override
+  public ServiceWeb apply(RouteBuilderAmp builder)
   {
-    return new OutFactoryBuilderH3Impl();
+    return new FilterBeforeGzip();
   }
   
-  public interface OutFactoryBuilderH3
+  private static class FilterBeforeGzip implements ServiceWeb
   {
-    OutFactoryH3 get();
 
-    OutFactoryBuilderH3 graph(boolean isGraph);
+    @Override
+    public void service(RequestWeb request) throws Exception
+    {
+      String acceptEncoding = request.header("accept-encoding");
+      
+      System.out.println("ENC: " + acceptEncoding);
+      
+      if (acceptEncoding.indexOf("gzip") >= 0) {
+        pushGzip();
+      }
+      
+      request.ok();
+    }
+    
+    protected void pushGzip()
+    {
+      
+    }
+    
   }
 }

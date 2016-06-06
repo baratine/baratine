@@ -27,21 +27,46 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.h3;
+package com.caucho.v5.h3.io;
 
-import com.caucho.v5.h3.io.OutFactoryBuilderH3Impl;
+import java.util.IdentityHashMap;
 
-public interface H3
+import com.caucho.v5.h3.context.ContextH3;
+
+/**
+ * H3 output interface
+ */
+class OutH3ImplGraph extends OutH3Impl
 {
-  static OutFactoryBuilderH3 newOutFactory()
-  {
-    return new OutFactoryBuilderH3Impl();
-  }
+  private final IdentityHashMap<Object,Integer> _idMap
+    = new IdentityHashMap<>();
   
-  public interface OutFactoryBuilderH3
+  private int _id = 1;
+  
+  OutH3ImplGraph(ContextH3 context, OutRawH3 out)
   {
-    OutFactoryH3 get();
+    super(context, out);
+    
+    out.writeGraph();
+  }
 
-    OutFactoryBuilderH3 graph(boolean isGraph);
+  @Override
+  public <T> void writeObject(T object)
+  {
+    if (object == null) {
+      super.writeObject(object);
+      return;
+    }
+    
+    Integer ref = _idMap.get(object);
+
+    if (ref != null) {
+      out().writeRef(ref);
+    }
+    else {
+      _idMap.put(object, _id++);
+      
+      super.writeObject(object);
+    }
   }
 }

@@ -55,6 +55,8 @@ public class TableBuilderKraken
   private final Map<String,Col> _columnMap = new LinkedHashMap<>();
   
   private ArrayList<String> _key;
+  
+  private ArrayList<Class<?>> _schema = new ArrayList<>();
 
   private PodHashGenerator _hashGen;
   private HashExprGenerator _hashBuilder;
@@ -208,6 +210,13 @@ public class TableBuilderKraken
   {
     _columnMap.put(name, new DoubleCol(name));
   }
+  
+  public void schema(Class<?> type)
+  {
+    Objects.requireNonNull(type);
+
+    _schema.add(type);
+  }
 
   public void setHashClass(Class<?> cl)
   {
@@ -321,6 +330,10 @@ public class TableBuilderKraken
       }
       
       col.build(builder);
+    }
+    
+    for (Class<?> schema : _schema) {
+      builder.schema(schema);
     }
     
     /*

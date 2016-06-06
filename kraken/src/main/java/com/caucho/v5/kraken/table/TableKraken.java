@@ -112,7 +112,7 @@ public class TableKraken
     
     _hashGen = hashGen;
     
-    _serializerFactory = H3.newOutFactory().get();
+    _serializerFactory = _tableKelp.serializer();
   }
   
   public String getName()

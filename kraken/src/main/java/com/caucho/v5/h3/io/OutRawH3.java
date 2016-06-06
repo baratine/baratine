@@ -69,6 +69,11 @@ public interface OutRawH3 extends Closeable
 
   void writeObject(int defIndex);
 
+  void writeGraph();
+  
+  void writeRef(int ref);
+
   @Override
   void close();
+
 }

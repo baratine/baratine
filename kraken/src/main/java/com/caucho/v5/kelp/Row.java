@@ -33,7 +33,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import com.caucho.v5.baratine.InService;
 import com.caucho.v5.io.ReadStream;
@@ -55,13 +58,15 @@ public final class Row
   private final int _keyLength;
   
   private final RowInSkeleton _inSkeleton;
+  private final Class<?> []_objectSchema;
   
   Row(DatabaseKelp db,
       String name,
       Column []columns, 
       Column []blobs,
       int keyStart, 
-      int keyLength)
+      int keyLength,
+      Class<?> []objectSchema)
   {
     _db = db;
     
@@ -79,6 +84,8 @@ public final class Row
     
     _keyStart = keyStart;
     _keyLength = keyLength;
+    
+    _objectSchema = objectSchema;
     
     _inSkeleton = RowInSkeleton.build(columns);
   }
@@ -156,16 +163,18 @@ public final class Row
     return bos.toByteArray();
   }
   
+  public Class<?> []objectSchema()
+  {
+    return _objectSchema;
+  }
+  
   /**
    * Serialize the row's metadata to enable upgrade. 
    */
   private void toData(ByteArrayOutputStream bos)
     throws IOException
   {
-    byte []name = _name.getBytes("UTF-8");
-    
-    BitsUtil.writeInt16(bos, name.length);
-    bos.write(name);
+    writeString(bos, _name);
     
     BitsUtil.writeInt16(bos, keyColumnStart());
     BitsUtil.writeInt16(bos, keyColumnEnd());
@@ -180,8 +189,64 @@ public final class Row
       column.toData(bos);
     }
     
+    int headerLength = _objectSchema.length;
+    
     // key/value attributes
-    BitsUtil.writeInt16(bos, 0);
+    BitsUtil.writeInt16(bos, headerLength);
+    
+    for (Class<?> type : _objectSchema) {
+      toDataSchema(bos, type);
+    }
+  }
+  
+  private void toDataSchema(OutputStream bos, Class<?> type)
+      throws IOException
+  {
+    writeString(bos, "class");
+    writeString(bos, type.getName());
+    
+    ArrayList<String> fieldNames = new ArrayList<>();
+    
+    fieldNames(fieldNames, type);
+    Collections.sort(fieldNames);
+    
+    BitsUtil.writeInt16(bos, fieldNames.size());
+    
+    for (String fieldName : fieldNames) {
+      writeString(bos, fieldName);
+    }
+  }
+  
+  private void fieldNames(ArrayList<String> list, Class<?> type)
+  {
+    if (type == null) {
+      return;
+    }
+    
+    fieldNames(list, type.getSuperclass());
+    
+    for (Field field : type.getDeclaredFields()) {
+      if (Modifier.isStatic(field.getModifiers())) {
+        continue;
+      }
+      
+      if (Modifier.isTransient(field.getModifiers())) {
+        continue;
+      }
+      
+      if (! list.contains(field.getName())) {
+        list.add(field.getName());
+      }
+    }
+  }
+  
+  private void writeString(OutputStream os, String value)
+    throws IOException
+  {
+    byte []bytes = value.getBytes("UTF-8");
+    
+    BitsUtil.writeInt16(os, bytes.length);
+    os.write(bytes);
   }
   
   /**

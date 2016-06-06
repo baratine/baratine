@@ -374,6 +374,30 @@ public class OutRawH3Impl implements OutRawH3
     writeLong(ConstH3.OBJECT, ConstH3.OBJECT_BITS, defIndex);
   }
   
+  /**
+   * start graph mode
+   */
+  @Override
+  public void writeGraph()
+  {
+    require(1);
+    
+    _buffer[_offset++] = (byte) ConstH3.GRAPH_ALL;
+    
+  }
+  
+  /**
+   * write graph reference
+   */
+  @Override
+  public void writeRef(int ref)
+  {
+    require(1);
+    
+    _buffer[_offset++] = (byte) ConstH3.REF;
+    writeUnsigned(ref);
+  }
+  
   private void writeLong(int op, int bits, long value)
   {
     bits -= 1;

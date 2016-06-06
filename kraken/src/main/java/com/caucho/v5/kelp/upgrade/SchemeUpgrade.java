@@ -27,21 +27,43 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.h3;
+package com.caucho.v5.kelp.upgrade;
 
-import com.caucho.v5.h3.io.OutFactoryBuilderH3Impl;
+import java.util.Objects;
 
-public interface H3
+import com.caucho.v5.kelp.Column.ColumnType;
+
+/**
+ * row information
+ */
+public class SchemeUpgrade
 {
-  static OutFactoryBuilderH3 newOutFactory()
+  private final String _name;
+  private final String []_fields;
+  
+  SchemeUpgrade(String name, 
+                String []fields)
   {
-    return new OutFactoryBuilderH3Impl();
+    Objects.requireNonNull(name);
+    Objects.requireNonNull(fields);
+    
+    _name = name;
+    _fields = fields;
   }
   
-  public interface OutFactoryBuilderH3
+  public String name()
   {
-    OutFactoryH3 get();
-
-    OutFactoryBuilderH3 graph(boolean isGraph);
+    return _name;
+  }
+  
+  public String []fields()
+  {
+    return _fields;
+  }
+  
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + name() + "]";
   }
 }

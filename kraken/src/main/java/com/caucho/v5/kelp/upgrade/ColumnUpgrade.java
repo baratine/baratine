@@ -58,6 +58,7 @@ public class ColumnUpgrade
     _offset = offset;
     _length = length;
     _isKey = isKey;
+
   }
   
   public String name()

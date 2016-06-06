@@ -76,7 +76,7 @@ class BlobOutputStream extends OutputStream
   public BlobOutputStream(RowCursor cursor, 
                           ColumnBlob column)
   {
-    _table = cursor.getTable();
+    _table = cursor.table();
     
     _cursor = cursor;
     _column = column;
@@ -89,7 +89,7 @@ class BlobOutputStream extends OutputStream
                    TempBuffer tempBuffer,
                    int length)
   {
-    _table = cursor.getTable();
+    _table = cursor.table();
     
     _cursor = cursor;
     _column = column;
@@ -107,7 +107,7 @@ class BlobOutputStream extends OutputStream
                    ColumnBlob column,
                    int blobId)
   {
-    _table = cursor.getTable();
+    _table = cursor.table();
     
     _cursor = cursor;
     _column = column;
