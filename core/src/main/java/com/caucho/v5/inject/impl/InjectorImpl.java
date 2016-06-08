@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -68,7 +69,6 @@ import com.caucho.v5.loader.EnvironmentLocal;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.config.Config;
-import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertManager;
 import io.baratine.inject.Binding;
 import io.baratine.inject.InjectionPoint;
@@ -291,7 +291,7 @@ public class InjectorImpl implements InjectorAmp
     if (type.equals(Provider.class)) {
       TypeRef typeRef = TypeRef.of(key.type());
       TypeRef param = typeRef.param(0);
-      
+
       return (T) provider(Key.of(param.type()));
     }
     
@@ -341,7 +341,13 @@ public class InjectorImpl implements InjectorAmp
       return provider;
     }
     
-    return autoProvider(ip);
+    provider = autoProvider(ip);
+
+    if (provider != null) {
+      return provider;
+    }
+    
+    return new ProviderNull(ip.key(), -10000, new InjectScopeSingleton());
   }
 
   /**
@@ -482,8 +488,22 @@ public class InjectorImpl implements InjectorAmp
   {
     Class<T> type = (Class<T>) key.rawClass();
 
-    if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) {
-      return ()->null;
+    if (Provider.class.equals(type)) {
+      TypeRef subType = TypeRef.of(key.type()).to(Provider.class).param(0);
+      
+      Key<Object> subkey = Key.of(subType.type(), key.annotationTypes());
+      
+      return (Provider) new ProviderProvider(key, -10, provider(subkey));
+    }
+    else if (Optional.class.equals(type)) {
+      TypeRef subType = TypeRef.of(key.type()).to(Optional.class).param(0);
+      
+      Key<Object> subkey = Key.of(subType.type(), key.annotationTypes());
+      
+      return (Provider) new ProviderOptional(key, -10, provider(subkey));
+    }
+    else if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) {
+      return new ProviderNull(key, -10000, new InjectScopeSingleton());
     }
     
     int priority = -10;

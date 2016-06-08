@@ -140,6 +140,11 @@ public class Key<T>
   {
     return new Key<>(type);
   }
+
+  public static <T> Key<T> of(Type type, Class<? extends Annotation> []annTypes)
+  {
+    return new Key<>(type, annTypes);
+  }
   
   public static <T> Key<T> of(Class<T> type, 
                               Class<? extends Annotation> annType)

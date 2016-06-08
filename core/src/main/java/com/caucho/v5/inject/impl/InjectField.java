@@ -36,8 +36,9 @@ import java.lang.reflect.Type;
 import javax.inject.Provider;
 
 import com.caucho.v5.config.ConfigExceptionLocation;
-import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.InjectProgram;
+import com.caucho.v5.inject.InjectorAmp;
+import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
@@ -48,13 +49,15 @@ import io.baratine.inject.Key;
 class InjectField<T> extends InjectProgram
   implements InjectionPoint<T>
 {
+  private static final L10N L = new L10N(InjectField.class);
+  
   private InjectorAmp _inject;
   private Field _field;
   private Key<T> _key;
   private Provider<T> _program;
   
   InjectField(InjectorAmp inject,
-                     Field field)
+              Field field)
   {
     _inject = inject;
     
@@ -102,7 +105,14 @@ class InjectField<T> extends InjectProgram
     //Object value = _inject.instance(this);
 
     try {
-      _field.set(bean, _program.get());
+      T value = _program.get();
+
+      if (value == null) {
+        throw new InjectExceptionNotFound(L.l("'{0}' does not have a bound bean",
+                                              _key));
+      }
+      
+      _field.set(bean, value); 
     } catch (RuntimeException e) {
       throw e;
     } catch (Exception e) {
