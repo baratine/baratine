@@ -55,6 +55,7 @@ class InjectField<T> extends InjectProgram
   private Field _field;
   private Key<T> _key;
   private Provider<T> _program;
+  private boolean _isOptional;
   
   InjectField(InjectorAmp inject,
               Field field)
@@ -63,6 +64,8 @@ class InjectField<T> extends InjectProgram
     
     _field = field;
     _field.setAccessible(true);
+    
+    _isOptional = field.isAnnotationPresent(Opt.class);
     
     _key = Key.of(field);
     
@@ -107,7 +110,7 @@ class InjectField<T> extends InjectProgram
     try {
       T value = _program.get();
 
-      if (value == null) {
+      if (value == null && ! _isOptional) {
         throw new InjectExceptionNotFound(L.l("'{0}' does not have a bound bean",
                                               _key));
       }

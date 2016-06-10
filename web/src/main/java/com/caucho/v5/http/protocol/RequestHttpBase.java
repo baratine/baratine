@@ -55,6 +55,7 @@ import com.caucho.v5.http.dispatch.InvocationDecoder;
 import com.caucho.v5.http.dispatch.InvocationManager;
 import com.caucho.v5.http.log.LogBuffer;
 import com.caucho.v5.io.IoUtil;
+import com.caucho.v5.io.OutputStreamWithBuffer;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.io.i18n.Encoding;
 import com.caucho.v5.network.port.ConnectionProtocol;
@@ -74,7 +75,7 @@ import com.caucho.v5.web.webapp.WriterUtf8;
  * Abstract request implementing methods common to the different
  * request implementations.
  */
-public abstract class RequestHttpBase implements OutHttpTcp
+public abstract class RequestHttpBase implements OutHttpTcp, RequestOut
 {
   private static final Logger log
     = Logger.getLogger(RequestHttpBase.class.getName());
@@ -1662,7 +1663,13 @@ public abstract class RequestHttpBase implements OutHttpTcp
     return stream;
   }
   
-  public final Writer writer()
+  @Override
+  public void writeOut(byte []buffer, int offset, int length)
+  {
+    out().write(buffer, offset, length);
+  }
+  
+  public final Writer writer(OutputStreamWithBuffer out)
   {
     Writer writer = _writer;
     
@@ -1670,11 +1677,11 @@ public abstract class RequestHttpBase implements OutHttpTcp
       String encoding = _contentEncodingOut;
       
       if (encoding == null || encoding.equals("utf-8")) {
-        writer = new WriterUtf8(out(), _cBuffer);
+        writer = new WriterUtf8(out, _cBuffer);
       }
       else {
         try {
-          writer = new OutputStreamWriter(out(), encoding);
+          writer = new OutputStreamWriter(out, encoding);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

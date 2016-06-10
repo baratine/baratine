@@ -29,7 +29,18 @@
 
 package com.caucho.v5.web.webapp;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.zip.CRC32;
+import java.util.zip.Deflater;
+
 import com.caucho.v5.config.Priority;
+import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.util.BitsUtil;
+
+import io.baratine.io.Buffer;
+import io.baratine.web.OutWeb;
+import io.baratine.web.OutWeb.OutFilterWeb;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWeb;
 
@@ -53,19 +64,151 @@ class FilterBeforeGzipFactory implements FilterFactory<ServiceWeb>
     {
       String acceptEncoding = request.header("accept-encoding");
       
-      System.out.println("ENC: " + acceptEncoding);
-
       if (acceptEncoding != null && acceptEncoding.indexOf("gzip") >= 0) {
-        pushGzip();
+        pushGzip(request);
       }
       
       request.ok();
     }
     
-    protected void pushGzip()
+    protected void pushGzip(RequestWeb request)
     {
-      
+      request.push(new GzipFilter());
     }
     
+  }
+  
+  private static class GzipFilter implements OutFilterWeb
+  {
+    private boolean _isDisable;
+    private GzipOutput _outGzip;
+    
+    @Override
+    public void length(RequestWeb request, long length)
+    {
+      if (_isDisable) {
+        request.length(length);
+      }
+      else if (length < 100) {
+        _isDisable = true;
+        request.length(length);
+      }
+    }
+    
+    @Override
+    public void type(RequestWeb request, String type)
+    {
+      if (type.startsWith("text/")) {
+      }
+      else if (type.indexOf("json") >= 0) {
+      }
+      else {
+        _isDisable = true;
+      }
+      
+      request.type(type);
+    }
+
+    @Override
+    public void write(RequestWeb out, Buffer buffer)
+    {
+      if (_outGzip == null) {
+        if (_isDisable) {
+          out.write(buffer);
+          return;
+        }
+        
+        out.header("content-encoding", "gzip");
+        _outGzip = new GzipOutput(out);
+      }
+
+      try {
+        buffer.read(_outGzip);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    
+    @Override
+    public void ok(OutWeb out)
+    {
+      if (_outGzip != null) {
+        _outGzip.close();
+      }
+    }
+  }
+  
+  private static class GzipOutput extends OutputStream
+  {
+    private static final byte []HEADER = new byte[]
+        {
+         31, (byte) 139, 8, 0, 0, 0, 0, 0, 0, 0
+        };
+    
+    private Deflater _deflater =
+      new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+    private final CRC32 _crc = new CRC32();
+    private TempBuffer _tBuf = TempBuffer.create();
+    private OutWeb _out;
+    
+    GzipOutput(OutWeb out)
+    {
+      _out = out;
+      
+      writeHeader(out);
+    }
+    
+    @Override
+    public void write(int value)
+    {
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public void write(byte []buffer, int offset, int length)
+      throws IOException
+    {
+      _deflater.setInput(buffer, offset, length);
+      _crc.update(buffer, offset, length);
+      
+      byte []tBuffer = _tBuf.buffer();
+      int sublen;
+      
+      while ((sublen = _deflater.deflate(tBuffer, 0, tBuffer.length)) > 0) {
+        _out.write(tBuffer, 0, sublen);
+      }
+    }
+    
+    @Override
+    public void close()
+    {
+      _deflater.finish();
+      
+      int sublen;
+      byte []tBuffer = _tBuf.buffer();
+      
+      while ((sublen = _deflater.deflate(tBuffer, 0, tBuffer.length)) > 0) {
+        _out.write(tBuffer, 0, sublen);
+      }
+      
+      writeFooter(_out);
+      
+      _deflater.end();
+    }
+    
+    private void writeHeader(OutWeb out)
+    {
+      out.write(HEADER, 0, HEADER.length);
+    }
+    
+    private void writeFooter(OutWeb out)
+    {
+      try {
+        BitsUtil.writeInt(out.output(), (int) _crc.getValue());
+        BitsUtil.writeInt(out.output(), _deflater.getTotalIn());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }

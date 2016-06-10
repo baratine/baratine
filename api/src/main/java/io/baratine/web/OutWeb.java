@@ -59,7 +59,23 @@ public interface OutWeb
   
   public interface OutFilterWeb
   {
-    void write(OutWeb out, Buffer buffer);
+    default void header(RequestWeb request, String key, String value)
+    {
+      request.header(key, value);
+    }
+    
+    default void type(RequestWeb request, String type)
+    {
+      request.type(type);
+    }
+    
+    default void length(RequestWeb request, long length)
+    {
+      request.length(length);
+    }
+    
+    void write(RequestWeb out, Buffer buffer);
+    void ok(OutWeb out);
     
     default Credits credits(OutWeb out)
     {

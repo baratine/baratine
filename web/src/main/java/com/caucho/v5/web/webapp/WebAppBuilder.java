@@ -159,7 +159,9 @@ public class WebAppBuilder
     view(new ViewPrimitive(), Boolean.class, -1000);
     view(new ViewPrimitive(), Character.class, -1000);
 
-    before(new FilterBeforeGzipFactory());
+    if (factory.config().get("server.gzip", Boolean.class, false)) {
+      before(new FilterBeforeGzipFactory());
+    }
   }
 
   public void before(FilterFactory<ServiceWeb> filter)

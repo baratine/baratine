@@ -243,8 +243,6 @@ public abstract class OutHttpApp
 
   public void write(Buffer data)
   {
-    System.out.println("WR2: " + data);
-    
     Objects.requireNonNull(data);
     
     int length = data.length();

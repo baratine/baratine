@@ -37,7 +37,6 @@ import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -46,12 +45,12 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.http.protocol.ConnectionHttp;
-import com.caucho.v5.http.protocol.OutHttpApp;
 import com.caucho.v5.http.protocol.RequestHttpBase;
 import com.caucho.v5.http.protocol.RequestHttpWeb;
 import com.caucho.v5.http.websocket.WebSocketBaratineImpl;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.type.TypeRef;
+import com.caucho.v5.io.OutputStreamWithBuffer;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.TempInputStream;
 import com.caucho.v5.io.WriteStream;
@@ -77,7 +76,6 @@ import io.baratine.web.MultiMap;
 import io.baratine.web.OutWeb;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.ViewRender;
 import io.baratine.web.ViewResolver;
 
 
@@ -110,6 +108,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   private Result<Object> _bodyResult;
   private Object _bodyValue;
   private HashMap<String, Object> _attributeMap;
+  private RequestOutputStream _out;
 
   public RequestBaratineImpl(ConnectionHttp connHttp,
                              RequestHttpBase request)
@@ -529,9 +528,26 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   }
 
   @Override
+  public RequestBaratine status(HttpStatus status)
+  {
+    Objects.requireNonNull(status);
+
+    requestHttp().status(status.code(), status.message());
+
+    return this;
+  }
+
+  @Override
   public RequestWeb length(long length)
   {
-    requestHttp().contentLengthOut(length);
+    RequestOutputStream out = _out;
+    
+    if (out != null) {
+      out.length(length);
+    }
+    else {
+      requestHttp().contentLengthOut(length);
+    }
 
     return this;
   }
@@ -539,7 +555,32 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   @Override
   public RequestWeb type(String contentType)
   {
-    requestHttp().headerOutContentType(contentType);
+    RequestOutputStream out = _out;
+    
+    if (out != null) {
+      out.type(contentType);
+    }
+    else {
+      requestHttp().headerOutContentType(contentType);
+    }
+
+    return this;
+  }
+
+  @Override
+  public RequestWeb header(String key, String value)
+  {
+    Objects.requireNonNull(key);
+    Objects.requireNonNull(value);
+
+    RequestOutputStream out = _out;
+    
+    if (out != null) {
+      out.header(key, value);
+    }
+    else {
+      requestHttp().headerOut(key, value);
+    }
 
     return this;
   }
@@ -599,34 +640,15 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   @Override
   public OutWeb push(OutFilterWeb filter)
   {
-    throw new UnsupportedOperationException();
+    _out = new RequestOutFilter(new RequestBaratineNext(this), filter);
+    
+    return this;
   }
 
   @Override
   public Credits credits()
   {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public RequestBaratine status(HttpStatus status)
-  {
-    Objects.requireNonNull(status);
-
-    requestHttp().status(status.code(), status.message());
-
-    return this;
-  }
-
-  @Override
-  public RequestBaratine header(String key, String value)
-  {
-    Objects.requireNonNull(key);
-    Objects.requireNonNull(value);
-
-    requestHttp().headerOut(key, value);
-
-    return this;
   }
 
   //@Override
@@ -670,32 +692,48 @@ public final class RequestBaratineImpl extends RequestHttpWeb
 
     return this;
   }
+  
+  private OutputStreamWithBuffer out()
+  {
+    OutputStreamWithBuffer out = _out;
+    
+    if (out != null) {
+      return out;
+    }
+    else {
+      return requestHttp().out();
+    }
+  }
 
   @Override
   public OutWeb write(byte[] buffer, int offset, int length)
   {
-    requestHttp().out().write(buffer, offset, length);
+    try {
+      out().write(buffer, offset, length);
 
-    return this;
+      return this;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public Writer writer()
   {
-    return requestHttp().writer();
+    return requestHttp().writer(out());
   }
 
   @Override
   public OutputStream output()
   {
-    return requestHttp().out();
+    return out();
   }
 
-  //@Override
+  @Override
   public RequestBaratineImpl flush()
   {
     try {
-      OutHttpApp out = requestHttp().out();
+      OutputStream out = out();
 
       out.flush();
     } catch (Exception e) {
@@ -738,6 +776,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
     return route().viewResolver();
   }
 
+  /*
   private boolean viewPrimitives(Object value)
   {
     if (value instanceof String
@@ -762,13 +801,15 @@ public final class RequestBaratineImpl extends RequestHttpWeb
       return false;
     }
   }
+  */
 
   @Override
   public final void ok()
   {
     try {
       requestHttp().writerClose();
-      requestHttp().out().close();
+
+      out().close();
     } catch (IOException e) {
       log.log(Level.WARNING, e.toString(), e);
     }
@@ -789,6 +830,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
       status(HttpStatus.INTERNAL_SERVER_ERROR);
       type("text/plain; charset=utf-8");
 
+      exn.printStackTrace();
       write("Internal Server Error: " + exn + "\n");
 
       writeTrace(exn);
