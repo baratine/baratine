@@ -32,7 +32,7 @@ public class SerializerH3RegexPattern extends SerializerH3Base<Pattern>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_PATTERN;
+    return ConstH3.DEF_REGEXP;
   }
 
   @Override

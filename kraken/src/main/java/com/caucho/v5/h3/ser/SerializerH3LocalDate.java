@@ -32,7 +32,7 @@ public class SerializerH3LocalDate extends SerializerH3Base<LocalDate>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_LOCAL_DATE;
+    return ConstH3.DEF_LOCALDATE;
   }
 
   @Override

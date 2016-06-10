@@ -33,7 +33,7 @@ public class SerializerH3ZonedDateTime extends SerializerH3Base<ZonedDateTime>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_ZONED_DATE_TIME;
+    return ConstH3.DEF_ZONEDDATETIME;
   }
 
   @Override
