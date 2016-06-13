@@ -155,6 +155,8 @@ public class ConstH3
 
   public static final int DEF_URI = 40;
   public static final int DEF_URL = 41;
+  
+  public static final int DEF_CLASS = 42;
 
   public static final int DEF_RESERVED = 64;
   

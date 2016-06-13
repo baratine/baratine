@@ -18,10 +18,6 @@
 
 package com.caucho.v5.h3.ser;
 
-import com.caucho.v5.h3.SerializerH3;
-import com.caucho.v5.h3.context.ContextH3;
-import com.caucho.v5.h3.io.ConstH3;
-
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -39,6 +35,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
+import com.caucho.v5.h3.SerializerH3;
+import com.caucho.v5.h3.context.ContextH3;
+import com.caucho.v5.h3.io.ConstH3;
+import com.caucho.v5.h3.io.StreamSourceH3;
 
 /**
  * H3 typed serializer.
@@ -66,7 +67,7 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
   public <T> SerializerH3Amp<T> serializer(Class<T> type, ContextH3 context)
   {
     SerializerH3Amp<?> ser = _serMap.get(type);
-
+    System.out.println("SER: " + type);
     if (ser != null) {
       return (SerializerH3Amp) ser;
     }
@@ -82,6 +83,9 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
       else {
         return new SerializerH3Enum(type);
       }
+    }
+    else if (StreamSourceH3.class.isAssignableFrom(type)) {
+      return new SerializerH3StreamSource();
     }
     else if (type.isArray()) {
       throw new UnsupportedOperationException(String.valueOf(type));
@@ -149,6 +153,8 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
     //BigInteger, BigDecimal
     ser(BigInteger.class, new SerializerH3BigInteger());
     ser(BigDecimal.class, new SerializerH3BigDecimal());
+    
+    ser(Class.class, new SerializerH3Class());
 
     ser(UUID.class, new SerializerH3UUID());
     ser(URI.class, new SerializerH3URI());

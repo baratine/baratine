@@ -18,9 +18,8 @@
 
 package com.caucho.v5.h3.io;
 
-import com.caucho.v5.h3.H3;
-import com.caucho.v5.h3.OutFactoryH3;
 import com.caucho.v5.h3.H3.OutFactoryBuilderH3;
+import com.caucho.v5.h3.OutFactoryH3;
 
 /**
  * Factory for H3 output.

@@ -29,6 +29,8 @@
 
 package com.caucho.v5.h3.io;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Objects;
@@ -37,6 +39,7 @@ import com.caucho.v5.h3.OutH3;
 import com.caucho.v5.h3.SerializerH3;
 import com.caucho.v5.h3.context.ContextH3;
 import com.caucho.v5.h3.ser.SerializerH3Amp;
+import com.caucho.v5.io.TempBuffer;
 
 /**
  * H3 output interface
@@ -111,6 +114,31 @@ class OutH3Impl implements OutH3
   public void writeBinaryPart(byte []buffer, int offset, int length)
   {
     //_out.writeBinaryPart(buffer, offset, length);
+  }
+  
+  @Override
+  public void writeBinary(InputStream is)
+  {
+    try {
+      TempBuffer tBuf = TempBuffer.create();
+      byte []buffer = tBuf.buffer();
+    
+      int sublen;
+      while ((sublen = is.read(buffer, 0, buffer.length)) >= 0) {
+        if (is.available() <= 0) {
+          writeBinary(buffer, 0, sublen);
+          return;
+        }
+        
+        writeBinaryPart(buffer, 0, sublen);
+      }
+      
+      writeBinary(buffer, 0, 0);
+      
+      tBuf.free();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
