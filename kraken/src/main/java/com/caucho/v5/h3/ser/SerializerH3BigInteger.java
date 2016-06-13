@@ -32,7 +32,7 @@ public class SerializerH3BigInteger extends SerializerH3Base<BigInteger>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_BIG_INT;
+    return ConstH3.DEF_BIGINTEGER;
   }
 
   @Override

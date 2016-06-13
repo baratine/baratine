@@ -25,33 +25,26 @@ import com.caucho.v5.h3.io.InRawH3;
 import com.caucho.v5.h3.io.OutRawH3;
 
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.time.Duration;
 
-public class SerializerH3BigDecimal extends SerializerH3Base<BigDecimal>
+public class SerializerH3Duration extends SerializerH3Base<Duration>
 {
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_BIGDECIMAL;
+    return ConstH3.DEF_DURATION;
   }
 
   @Override
   public Type type()
   {
-    return BigDecimal.class;
+    return Duration.class;
   }
 
   @Override
-  public BigDecimal readObject(InRawH3 is, InH3Amp in)
+  public Duration readObject(InRawH3 is, InH3Amp in)
   {
-    byte[] bytes = is.readBinary();
-
-    BigInteger bigInteger = new BigInteger(bytes);
-
-    int scale = (int) is.readLong();
-
-    BigDecimal result = new BigDecimal(bigInteger, scale);
+    Duration result = Duration.ofSeconds(is.readLong(), is.readLong());
 
     return result;
   }
@@ -66,18 +59,11 @@ public class SerializerH3BigDecimal extends SerializerH3Base<BigDecimal>
   @Override
   public void writeObject(OutRawH3 os,
                           int defId,
-                          BigDecimal subject,
+                          Duration value,
                           OutH3 out)
   {
     os.writeObject(typeSequence());
-
-    BigInteger bigInt = subject.unscaledValue();
-
-    byte[] bytes = bigInt.toByteArray();
-
-    int scale = subject.scale();
-
-    os.writeBinary(bytes, 0, bytes.length);
-    os.writeLong(scale);
+    os.writeLong(value.getSeconds());
+    os.writeLong(value.getNano());
   }
 }

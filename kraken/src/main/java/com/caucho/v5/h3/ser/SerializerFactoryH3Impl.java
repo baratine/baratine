@@ -22,17 +22,28 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -67,7 +78,7 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
   public <T> SerializerH3Amp<T> serializer(Class<T> type, ContextH3 context)
   {
     SerializerH3Amp<?> ser = _serMap.get(type);
-    System.out.println("SER: " + type);
+
     if (ser != null) {
       return (SerializerH3Amp) ser;
     }
@@ -76,7 +87,7 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
     }
     else if (Enum.class.isAssignableFrom(type)) {
       Class<?> parent = type.getEnclosingClass();
-      
+
       if (parent != null && Enum.class.isAssignableFrom(parent)) {
         return new SerializerH3Enum(parent);
       }
@@ -160,5 +171,37 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
     ser(URI.class, new SerializerH3URI());
     ser(URL.class, new SerializerH3URL());
 
+    //
+    ser(ArrayDeque.class,
+        new SerializerH3Deque<>(ArrayDeque.class, ConstH3.DEF_DEQUE));
+
+    ser(Duration.class, new SerializerH3Duration());
+
+    ser(HashSet.class, SET);
+
+    ser(LinkedHashSet.class,
+        new SerializerH3SetPredef(LinkedHashSet.class, ConstH3.DEF_LINKEDSET));
+
+    ser(TreeSet.class,
+        new SerializerH3SetPredef(TreeSet.class, ConstH3.DEF_TREESET));
+
+    ser(LinkedHashMap.class,
+        new SerializerH3MapPredef<>(LinkedHashMap.class,
+                                    ConstH3.DEF_LINKEDMAP));
+    ser(TreeMap.class,
+        new SerializerH3MapPredef<>(TreeMap.class,
+                                    ConstH3.DEF_TREEMAP));
+
+    ser(Stack.class,
+        new SerializerH3ListPredef(Stack.class, ConstH3.DEF_STACK));
+
+    ser(LinkedList.class,
+        new SerializerH3ListPredef(LinkedList.class, ConstH3.DEF_LINKEDLIST));
+
+    ser(Inet4Address.class, new SerializerH3InetAddress());
+    ser(Inet6Address.class, new SerializerH3InetAddress());
+    ser(InetSocketAddress.class, new SerializerH3InetSocketAddress());
+    //
+    ser(StreamSourceH3.class, new SerializerH3StreamSource<>());
   }
 }

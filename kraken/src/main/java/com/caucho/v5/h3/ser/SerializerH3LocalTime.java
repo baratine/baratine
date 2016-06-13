@@ -32,7 +32,7 @@ public class SerializerH3LocalTime extends SerializerH3Base<LocalTime>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_LOCAL_TIME;
+    return ConstH3.DEF_LOCALTIME;
   }
 
   @Override

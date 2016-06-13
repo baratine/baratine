@@ -50,6 +50,7 @@ public class SerializerH3Enum<T extends Enum<T>> extends SerializerH3Base<T>
   SerializerH3Enum(Class<T> type)
   {
     _type = type;
+    
     if (! Enum.class.isAssignableFrom(type)) {
       throw new IllegalStateException(type.toString());
     }
