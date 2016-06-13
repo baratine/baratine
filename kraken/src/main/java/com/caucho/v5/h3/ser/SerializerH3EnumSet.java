@@ -82,7 +82,7 @@ public class SerializerH3EnumSet<T extends EnumSet<?>> extends SerializerH3Base<
     
     int i = 0;
     
-    for (Enum<?> item : value) {
+    for (Object item : value) {
       values[i++] = item;
     }
     
