@@ -71,7 +71,6 @@ import io.baratine.vault.Asset;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.TestClass;
 
 /**
  * RunnerBaratine is a junit Runner used to test services deployed in Baratine.
@@ -123,7 +122,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
 
     try {
       _baratine.initialize(_test);
-      _baratine.start(true);
+      _baratine.start(false);
     } catch (RuntimeException e) {
       throw e;
     } catch (Throwable e) {
@@ -145,7 +144,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       try {
         initialize(_test);
 
-        start(true);
+        start(false);
       } catch (RuntimeException e) {
         throw e;
       } catch (Throwable e) {
@@ -153,7 +152,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       }
     }
 
-    private void start(boolean isRestart) throws Exception
+    private void start(boolean isClean) throws Exception
     {
       Thread thread = Thread.currentThread();
 
@@ -179,7 +178,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       Logger.getLogger("javax.management").setLevel(Level.FINER);
 
       try {
-        if (!isRestart)
+        if (isClean)
           VfsOld.lookup(baratineRoot).removeAll();
       } catch (Exception e) {
       }
@@ -568,7 +567,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
     try {
       _baratine = new BaratineContainer();
 
-      _baratine.start(false);
+      _baratine.start(true);
 
       super.runChild(method, notifier);
     } catch (RuntimeException e) {
