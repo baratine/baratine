@@ -29,8 +29,10 @@
 
 package com.caucho.junit;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -47,12 +49,14 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
-abstract class BaseRunner extends BlockJUnit4ClassRunner
+abstract class BaseRunner<T extends InjectionTestPoint>
+  extends BlockJUnit4ClassRunner
 {
   private final static Logger log
     = Logger.getLogger(BaseRunner.class.getName());
 
-  private final L10N L = new L10N(BaseRunner.class);
+  private final static L10N L = new L10N(BaseRunner.class);
+  protected Object _test;
 
   private Map<Class<?>,Class<?>> _replacements = new HashMap<>();
 
@@ -96,12 +100,64 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
   }
 
   @Override
+  protected final Object createTest() throws Exception
+  {
+    Object test = super.createTest();
+
+    _test = test;
+
+    try {
+      initTestInstance();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw e;
+    } catch (Throwable t) {
+      throw new RuntimeException(t);
+    }
+
+    return test;
+  }
+
+  protected abstract void initTestInstance() throws Throwable;
+
+  public List<T> getInjectionTestPoints()
+    throws IllegalAccessException
+  {
+    List<T> result = new ArrayList<>();
+
+    List<FrameworkField> fields = getTestClass().getAnnotatedFields();
+
+    final MethodHandles.Lookup lookup = MethodHandles.lookup();
+
+    for (FrameworkField field : fields) {
+      Field javaField = field.getField();
+      javaField.setAccessible(true);
+
+      MethodHandle setter = lookup.unreflectSetter(javaField);
+
+      T ip = createInjectionPoint(javaField.getType(),
+                                  javaField.getAnnotations(),
+                                  setter);
+
+      result.add(ip);
+    }
+
+    return result;
+  }
+
+  public abstract T
+  createInjectionPoint(Class<?> type,
+                       Annotation[] annotations,
+                       MethodHandle setter);
+
+  @Override
   protected TestClass createTestClass(Class<?> testClass)
   {
     return new BaratineTestClass(testClass);
   }
 
-  abstract protected <T> T resolve(Class<T> type, Annotation[] annotations);
+  abstract protected Object resolve(T t);
 
   protected long getStartTime()
   {
@@ -220,7 +276,7 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
     }
 
     public Object[] fillParams(Object... v)
-      throws IllegalAccessException, InstantiationException, IOException
+      throws Throwable
     {
       Method method = getMethod();
       Class<?>[] types = method.getParameterTypes();
@@ -240,9 +296,10 @@ abstract class BaseRunner extends BlockJUnit4ClassRunner
         Class type = types[i];
         Annotation[] annotations = parameterAnnotations[i];
 
-        Object obj = resolve(type, annotations);
-
-        args[i] = obj;
+        MethodHandle handle = MethodHandles.arrayElementSetter(Object[].class);
+        T ip = createInjectionPoint(type, annotations, handle);
+        Object obj = resolve(ip);
+        ip.inject(args, i, obj);
       }
 
       return args;

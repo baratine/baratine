@@ -33,8 +33,8 @@ import static io.baratine.web.Web.port;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +52,7 @@ import io.baratine.web.WebServer;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.TestClass;
 
 /**
  * Class {@code WebRunnerBaratine} is a JUnit Runner that will deployed services
@@ -59,7 +60,7 @@ import org.junit.runners.model.InitializationError;
  *
  * @see RunnerBaratine
  */
-public class WebRunnerBaratine extends BaseRunner
+public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
 {
   private final static Logger log
     = Logger.getLogger(BaseRunner.class.getName());
@@ -71,14 +72,6 @@ public class WebRunnerBaratine extends BaseRunner
   public WebRunnerBaratine(Class<?> klass) throws InitializationError
   {
     super(klass);
-  }
-
-  @Override
-  protected void validatePublicVoidNoArgMethods(Class<? extends Annotation> annotation,
-                                                boolean isStatic,
-                                                List<Throwable> errors)
-  {
-    super.validatePublicVoidNoArgMethods(annotation, isStatic, errors);
   }
 
   private Http getHttpConfiguration()
@@ -112,8 +105,36 @@ public class WebRunnerBaratine extends BaseRunner
   }
 
   @Override
-  protected Object resolve(Class type, Annotation[] annotations)
+  public InjectionTestPoint createInjectionPoint(Class type,
+                                                 Annotation[] annotations,
+                                                 MethodHandle setter)
   {
+    return new InjectionTestPoint(type, annotations, setter);
+  }
+
+  @Override
+  protected void initTestInstance() throws Throwable
+  {
+    bindFields(_test);
+  }
+
+  protected void bindFields(Object test)
+    throws Throwable
+  {
+    for (int i = 0; i < getInjectionTestPoints().size(); i++) {
+      InjectionTestPoint ip
+        = getInjectionTestPoints().get(i);
+
+      Object obj = resolve(ip);
+      ip.inject(test, obj);
+    }
+  }
+
+  @Override
+  protected Object resolve(InjectionTestPoint ip)
+  {
+    Class type = ip.getType();
+    Annotation[] annotations = ip.getAnnotations();
     Object result;
 
     try {
@@ -143,6 +164,9 @@ public class WebRunnerBaratine extends BaseRunner
         final String wsUrl = wsUrl() + urlPath;
 
         WebSocketClient.open(wsUrl, (ServiceWebSocket<Object,Object>) result);
+      }
+      else if (WebRunnerBaratine.class.equals(type)) {
+        result = this;
       }
       else {
         throw new IllegalArgumentException(L.l("type {0} is not supported",
