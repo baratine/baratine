@@ -204,13 +204,9 @@ abstract class BaseRunner<T extends InjectionTestPoint>
     return result;
   }
 
-  public void stop()
-  {
-  }
+  public abstract void stop();
 
-  public void start()
-  {
-  }
+  public abstract void start();
 
   class BaratineTestClass extends TestClass
   {

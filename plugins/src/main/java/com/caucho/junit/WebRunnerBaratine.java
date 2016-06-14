@@ -52,7 +52,6 @@ import io.baratine.web.WebServer;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.TestClass;
 
 /**
  * Class {@code WebRunnerBaratine} is a JUnit Runner that will deployed services
@@ -68,6 +67,8 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
   private final static L10N L = new L10N(WebRunnerBaratine.class);
 
   private WebServer _web;
+  private ClassLoader _oldLoader;
+  private EnvironmentClassLoader _envLoader;
 
   public WebRunnerBaratine(Class<?> klass) throws InitializationError
   {
@@ -188,16 +189,28 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
   }
 
   @Override
-  public void runChild(FrameworkMethod child, RunNotifier notifier)
+  public void stop()
+  {
+    _web.close();
+  }
+
+  @Override
+  public void start()
+  {
+    start(false);
+  }
+
+  public void start(boolean isClean)
   {
     Thread thread = Thread.currentThread();
-    ClassLoader oldLoader = thread.getContextClassLoader();
-    EnvironmentClassLoader envLoader
-      = EnvironmentClassLoader.create(oldLoader,
-                                      "test-loader");
 
-    try {
-      thread.setContextClassLoader(envLoader);
+    if (isClean) {
+      _oldLoader = thread.getContextClassLoader();
+
+      _envLoader = EnvironmentClassLoader.create(_oldLoader,
+                                                 "test-loader");
+
+      thread.setContextClassLoader(_envLoader);
 
       ConfigurationBaratine config = getConfiguration();
 
@@ -206,8 +219,6 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
         RandomUtil.setTestSeed(config.testTime());
       }
 
-      State.clear();
-
       Logger.getLogger("").setLevel(Level.FINER);
       Logger.getLogger("javax.management").setLevel(Level.INFO);
 
@@ -215,34 +226,45 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
       System.setProperty("baratine.root", baratineRoot);
 
       try {
-        VfsOld.lookup(baratineRoot).removeAll();
+        if (isClean)
+          VfsOld.lookup(baratineRoot).removeAll();
       } catch (Exception e) {
+        e.printStackTrace();
       }
+    }
 
-      port(httpPort());
+    State.clear();
 
-      for (ServiceTest serviceTest : getServices()) {
-        Web.include(serviceTest.value());
-      }
+    port(httpPort());
 
-      networkSetup();
+    for (ServiceTest serviceTest : getServices()) {
+      Web.include(super.resove(serviceTest.value()));
+    }
 
-      Web.scanAutoConf();
+    networkSetup();
 
-      _web = Web.start();
+    Web.scanAutoConf();
+
+    _web = Web.start();
+  }
+
+  @Override
+  public void runChild(FrameworkMethod child, RunNotifier notifier)
+  {
+    try {
+      start(true);
 
       super.runChild(child, notifier);
-
     } finally {
       Logger.getLogger("").setLevel(Level.INFO);
 
       try {
-        envLoader.close();
+        _envLoader.close();
       } catch (Throwable e) {
         e.printStackTrace();
       }
 
-      thread.setContextClassLoader(oldLoader);
+      Thread.currentThread().setContextClassLoader(_oldLoader);
     }
   }
 
