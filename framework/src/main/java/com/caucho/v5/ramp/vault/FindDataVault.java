@@ -32,24 +32,12 @@ package com.caucho.v5.ramp.vault;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.caucho.v5.convert.bean.FieldBoolean;
-import com.caucho.v5.convert.bean.FieldByte;
-import com.caucho.v5.convert.bean.FieldChar;
-import com.caucho.v5.convert.bean.FieldDouble;
-import com.caucho.v5.convert.bean.FieldFloat;
-import com.caucho.v5.convert.bean.FieldInt;
-import com.caucho.v5.convert.bean.FieldLong;
-import com.caucho.v5.convert.bean.FieldObject;
-import com.caucho.v5.convert.bean.FieldShort;
-import com.caucho.v5.convert.bean.FieldString;
-
 import io.baratine.db.Cursor;
 
-class FindDataVault<ID,T,V>
+class FindDataVault<ID,T,V> implements Function<Cursor,V>
 {
   private VaultDriverDataImpl<ID,T> _driver;
   private Class<V> _dataClass;
@@ -114,7 +102,7 @@ class FindDataVault<ID,T,V>
     return sb.toString();
   }
   
-  V get(Cursor cursor)
+  public V apply(Cursor cursor)
   {
     if (cursor == null) {
       return null;

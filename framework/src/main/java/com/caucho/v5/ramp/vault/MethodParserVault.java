@@ -106,52 +106,55 @@ public class MethodParserVault<ID,T>
     TypeRef resultType = resultType();
     Class<V> resultClass = (Class<V>) resultType.rawClass();
 
-    FindQueryVault query;
+    FindQueryVault<ID,T,V> query;
 
     if (resultClass.isAssignableFrom(ArrayList.class)) {
       query = listResultQuery(where);
     }
     else if (resultClass.equals(_entityInfo.idType())) {
-      query = new FindQueryVault.KeyResult(_driver, where);
+      query = new FindQueryVault.FindOneId(_driver, where);
     }
     else if (Modifier.isAbstract(resultClass.getModifiers())
              || resultClass.isAnnotationPresent(Api.class)) {
-      query = new FindQueryVault.ProxyResult(_driver, where, resultClass);
+      query = new FindQueryVault.FindOneProxy<>(_driver, where, resultClass);
     }
     else {
-      query = new FindQueryVault.DataResult(_driver, where, resultClass);
+      query = new FindQueryVault.FindOneBean<>(_driver, where, resultClass);
     }
 
     return query;
   }
 
-  private FindQueryVault listResultQuery(String where)
+  private <V> FindQueryVault<ID,T,V> listResultQuery(String where)
   {
-    FindQueryVault query;
+    FindQueryVault<ID,T,V> query;
 
     TypeRef resultType = resultType().param(0);
     Class<?> resultClass = resultType.rawClass();
 
     if (resultClass.equals(_entityInfo.idType())) {
-      query = new FindQueryVault.ListKeyResult(_driver, where);
+      query = new FindQueryVault.FindListIds(_driver, where);
     }
     else if (Modifier.isAbstract(resultClass.getModifiers())) {
-      query = new FindQueryVault.ListProxyResult(_driver, where, resultClass);
+      query = new FindQueryVault.FindListProxy(_driver, where, resultClass);
     }
     else {
-      query = new FindQueryVault.ListDataResult(_driver, where, resultClass);
+      query = new FindQueryVault.FindListBean(_driver, where, resultClass);
     }
 
     return query;
   }
 
-  private FindQueryVault createListResultFieldQuery(FieldInfo field, String where)
+  /*
+  private <V> FindQueryVault<ID,T,V> 
+  createListResultFieldQuery(FieldInfo field, String where)
   {
-    return new FindQueryVault.ListResultField(_driver,
-                                             _entityInfo,
-                                             field,
-                                             where);
+    return new FindQueryVault.ListResultField<>(_driver,
+                                               _entityInfo,
+                                               field,
+                                               where);
   }
+  */
 
   /*
   private FindQueryVault createSingleResultQuery(String where)
@@ -199,7 +202,7 @@ public class MethodParserVault<ID,T>
     return null;
   }
 
-  private FindQueryVault parseFind()
+  private <V> FindQueryVault<ID,T,V> parseFind()
   {
     Token token = scanToken();
 
@@ -229,6 +232,9 @@ public class MethodParserVault<ID,T>
     return build(where);
   }
 
+  /**
+   * Parse the "by" expression in the method name.
+   */
   private ByExpressionBuilder parseBy()
   {
     ByExpressionBuilder by = new ByExpressionBuilder();
@@ -362,10 +368,12 @@ public class MethodParserVault<ID,T>
     }
   }
 
-  public static abstract class StoreQueryBuilder
+  /*
+  public static abstract class StoreQueryBuilder<ID,T>
   {
-    public abstract FindQueryVault build();
+    public abstract <V> FindQueryVault<ID,T,V> build();
   }
+  */
 
   static class ByExpressionBuilder
   {

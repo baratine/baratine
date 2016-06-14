@@ -68,6 +68,21 @@ public interface VaultDriver<ID,T>
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }
 
+  default void findOne(String sql, 
+                             Object[] values, 
+                             Result<Cursor> result)
+  {
+    result.fail(new UnsupportedOperationException(getClass().getName()));
+  }
+
+  default void findAll(String sql,
+                          Object[] args,
+                          Result<Iterable<Cursor>> result)
+  {
+    result.fail(new UnsupportedOperationException(getClass().getName()));
+  }
+
+  /*
   default void findOne(String[] fields, Object[] values, Result<ID> result)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
@@ -78,26 +93,14 @@ public interface VaultDriver<ID,T>
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }
 
-  default void findAllIds(String where, Object[] values, Result<List<ID>> result)
-  {
-    result.fail(new UnsupportedOperationException(getClass().getName()));
-  }
-
-  default void findOneCursor(String where, 
-                             Object[] values, 
-                             Result<Cursor> result)
-  {
-    result.fail(new UnsupportedOperationException(getClass().getName()));
-  }
-
-  default void findCursor(String sql,
-                          Object[] args,
-                          Result<Iterable<Cursor>> result)
-  {
-    result.fail(new UnsupportedOperationException(getClass().getName()));
-  }
-
   default <X> void findValue(String sql, Object[] values, Result<X> result)
+  {
+    result.fail(new UnsupportedOperationException(getClass().getName()));
+  }
+  */
+
+  /*
+  default void findAllIds(String where, Object[] values, Result<List<ID>> result)
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }
@@ -108,6 +111,7 @@ public interface VaultDriver<ID,T>
   {
     result.fail(new UnsupportedOperationException(getClass().getName()));
   }
+  */
 
   default <V> MethodVault<V> newMethod(Class<?> type, 
                                        String methodName,

@@ -32,7 +32,6 @@ package com.caucho.v5.amp.vault;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
@@ -174,6 +173,7 @@ public class StubVault extends StubClass
    *
    * @return
    */
+  /*
   protected MethodAmp createFindOneMethod(Method method)
   {
     String field = method.getName().substring("findOneBy".length());
@@ -188,6 +188,7 @@ public class StubVault extends StubClass
 
     return ampMethod;
   }
+  */
 
   private Field findIdField(Class<?> entityClass)
   {
@@ -224,6 +225,7 @@ public class StubVault extends StubClass
     }
   }
 
+  /*
   private static class MethodFindOne extends MethodAmpBase
   {
     private ServicesAmp _ampManager;
@@ -252,12 +254,12 @@ public class StubVault extends StubClass
                       StubAmp actor,
                       Object[] args)
     {
-      _driver.findOne(_fields,
-                      args,
-                      ResultChain.then(result, this::getEntity));
+      _driver.findOneCursor(_fields,
+                            args,
+                            ((ResultChain<Object>) result).of(this::getEntity));
     }
 
-    public void getEntity(Object id, ResultChain<?> result)
+    public Object getEntity(Cursor cursor)
     {
       if (id == null) {
         result.ok(null);
@@ -272,6 +274,7 @@ public class StubVault extends StubClass
       }
     }
   }
+  */
 
   private static class MethodOnLookup extends MethodAmpBase
   {

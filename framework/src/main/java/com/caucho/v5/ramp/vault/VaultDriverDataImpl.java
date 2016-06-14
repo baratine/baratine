@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,6 +49,7 @@ import com.caucho.v5.amp.vault.VaultDriverBase;
 import com.caucho.v5.amp.vault.VaultStore;
 import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.util.L10N;
+
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseServiceSync;
 import io.baratine.service.Result;
@@ -73,6 +75,8 @@ public class VaultDriverDataImpl<ID, T>
   private AssetInfo<ID,T> _entityInfo;
 
   private DatabaseServiceSync _db;
+  
+  private ClassValue<FindDataVault<ID,T,?>> _valueBeans;
 
   @Inject
   private TableManagerVault _schemaManager;
@@ -104,6 +108,14 @@ public class VaultDriverDataImpl<ID, T>
                      .as(DatabaseServiceSync.class);
 
     Objects.requireNonNull(_db);
+    
+    _valueBeans = new ClassValue<FindDataVault<ID,T,?>>() {
+      @Override
+      public FindDataVault<ID,T,?> computeValue(Class<?> api)
+      {
+        return new FindDataVault<>(VaultDriverDataImpl.this, api);
+      }
+    };
 
     introspect();
   }
@@ -221,6 +233,30 @@ public class VaultDriverDataImpl<ID, T>
     result.ok(null);
   }
 
+  /**
+   * Finds a single value, returning a cursor.
+   */
+  @Override
+  public void findOne(String sql,
+                      Object[] params, 
+                      Result<Cursor> result)
+  {
+    
+    _db.findOne(sql, result, params);
+  }
+
+  /**
+   * Finds a list of values, returning a list of cursors
+   */
+  @Override
+  public void findAll(String sql,
+                      Object[] params, 
+                      Result<Iterable<Cursor>> result)
+  {
+    _db.findAll(sql, result, params);
+  }
+
+  /*
   @Override
   public void findOne(String[] fields, 
                       Object[] values, 
@@ -232,30 +268,15 @@ public class VaultDriverDataImpl<ID, T>
   }
 
   @Override
-  public void findOneCursor(String sql,
-                            Object[] values, 
-                            Result<Cursor> result)
-  {
-    
-    _db.findOne(sql, result, values);
-  }
-
-  @Override
-  public void findCursor(String sql,
-                         Object[] values, 
-                         Result<Iterable<Cursor>> result)
-  {
-    _db.findAll(sql, result, values);
-  }
-
-  @Override
   public void findOne(String where, Object[] values, Result<ID> result)
   {
     String sql = getSelectPkSql(where);
 
     _db.findOne(sql, result.of(c -> readIdFromCursor(c)), values);
   }
+  */
 
+  /*
   @Override
   public <X> void findValue(String sql, Object[] values, Result<X> result)
   {
@@ -263,15 +284,16 @@ public class VaultDriverDataImpl<ID, T>
                 result.of(c -> c == null ? null : (X) c.getObject(1)),
                 values);
   }
+  */
 
-
+  /*
   @Override
-  public void findAllIds(String where, Object[] values, 
+  public void findAllIds(String where, Object[] params, 
                          Result<List<ID>> result)
   {
     String sql = getSelectPkSql(where);
 
-    _db.findAll(sql, result.of(iter -> readIdListFromCursor(iter)), values);
+    _db.findAll(sql, result.of(iter -> readIdListFromCursor(iter)), params);
   }
 
   @Override
@@ -289,6 +311,7 @@ public class VaultDriverDataImpl<ID, T>
 
     result.ok(list);
   }
+  */
 
   @Override
   public T toProxy(Object id)
@@ -374,6 +397,45 @@ public class VaultDriverDataImpl<ID, T>
       //t.printStackTrace();
     }
   }
+
+  /**
+   * Select expression for an id.
+   */
+  public String selectId()
+  {
+    return _entityInfo.id().columnName();
+  }
+
+  /**
+   * Extract the id from a cursor.
+   */
+  public Function<Cursor, ID> cursorToId()
+  {
+    return getIdReader()::read;
+  }
+
+  /**
+   * Calculate the select expression for a bean api.
+   */
+  public String selectBean(Class<?> api)
+  {
+    return _valueBeans.get(api).select();
+  }
+
+  /**
+   * Extract a bean from a cursor.
+   */
+  public <V> Function<Cursor, V> cursorToBean(Class<V> api)
+  {
+    return (FindDataVault<ID,T,V>) _valueBeans.get(api);
+  }
+  
+  /*
+  private <V> FindDataVault<ID,T,V> newDataVault(Class<V> api)
+  {
+    return new FindDataVault<>(this, api);
+  }
+  */
 
   private ID readIdFromCursor(Cursor c)
   {
@@ -540,7 +602,7 @@ public class VaultDriverDataImpl<ID, T>
   public String getSelectPkSql(String where)
   {
     StringBuilder sql = new StringBuilder("select ")
-      .append(_entityInfo.id().columnName())
+        .append(_entityInfo.id().columnName())
       .append(" FROM ").append(_entityInfo.tableName());
 
     if (where != null)
