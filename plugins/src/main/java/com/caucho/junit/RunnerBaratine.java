@@ -43,6 +43,12 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.model.FrameworkField;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.TestClass;
+
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverImpl;
@@ -64,6 +70,7 @@ import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import com.caucho.v5.vfs.VfsOld;
+
 import io.baratine.config.Config;
 import io.baratine.pipe.PipeIn;
 import io.baratine.service.Api;
@@ -72,11 +79,6 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 import io.baratine.vault.Asset;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.FrameworkField;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.TestClass;
 
 /**
  * RunnerBaratine is a junit Runner used to test services deployed in Baratine.
@@ -138,8 +140,8 @@ public class RunnerBaratine extends BaseRunner
   class BaratineContainer
   {
     private Map<ServiceTestDescriptor,ServiceRef> _descriptors;
-    private Services _services;
-    private SystemManager _manager;
+    private ServicesAmp _services;
+    private SystemManager _system;
     private RootDirectorySystem _rootDir;
     private EnvironmentClassLoader _envLoader;
     private ClassLoader _oldLoader;
@@ -178,41 +180,52 @@ public class RunnerBaratine extends BaseRunner
         RandomUtil.setTestSeed(startTime);
       }
 
+      /*
       Logger.getLogger("").setLevel(Level.FINER);
       Logger.getLogger("com.caucho").setLevel(Level.FINER);
       Logger.getLogger("javax.management").setLevel(Level.FINER);
+      */
 
       try {
-        if (!isRestart)
+        if (! isRestart) {
           VfsOld.lookup(baratineRoot).removeAll();
+        }
       } catch (Exception e) {
       }
 
-      _manager = new SystemManager("junit-test", _envLoader);
+      _system = new SystemManager("junit-test", _envLoader);
 
       _rootDir = RootDirectorySystem.createAndAddSystem(Vfs.path(baratineRoot));
 
-      _rootDir.start();
+      //_rootDir.start();
+      //_services.start();
+      _system.start();
     }
 
     public void stop()
     {
       Logger.getLogger("").setLevel(Level.INFO);
 
+      /*
       try {
         _rootDir.stop(ShutdownModeAmp.GRACEFUL);
       } catch (Throwable t) {
         t.printStackTrace();
       }
+      */
 
       try {
-        _envLoader.close();
+        if (_envLoader != null) {
+          _envLoader.close();
+        }
       } catch (Throwable t) {
         t.printStackTrace();
       }
 
       try {
-        _manager.close();
+        if (_system != null) {
+          _system.close();
+        }
       } catch (Throwable t) {
         t.printStackTrace();
       }
@@ -254,24 +267,24 @@ public class RunnerBaratine extends BaseRunner
 
       serviceBuilder.contextManager(true);
 
-      ServicesAmp serviceManager = serviceBuilder.get();
+      ServicesAmp services = serviceBuilder.get();
 
-      Amp.contextManager(serviceManager);
+      Amp.contextManager(services);
 
-      injectBuilder.bean(serviceManager).to(Services.class);
+      injectBuilder.bean(services).to(Services.class);
 
-      injectBuilder.autoBind(new InjectAutoBindService(serviceManager));
+      injectBuilder.autoBind(new InjectAutoBindService(services));
 
       injectBuilder.get();
 
       serviceBuilder.start();
 
       Map<ServiceTestDescriptor,ServiceRef> descriptors
-        = deployServices(serviceManager);
+        = deployServices(services);
 
       _descriptors = descriptors;
-      _services = serviceManager;
-
+      _services = services;
+      
       bindFields(test, testClass);
     }
 

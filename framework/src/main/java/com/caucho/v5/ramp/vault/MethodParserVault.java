@@ -35,7 +35,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import com.caucho.v5.inject.type.TypeRef;
@@ -48,6 +47,8 @@ public class MethodParserVault<ID,T>
 {
   private final static L10N L = new L10N(MethodParserVault.class);
 
+  private static HashMap<String, Token> RESERVED;
+
   private final AssetInfo<ID,T> _entityInfo;
   private final Method _method;
   private final char[] _name;
@@ -56,6 +57,8 @@ public class MethodParserVault<ID,T>
   private String _lexeme;
 
   private VaultDriverDataImpl<ID,T> _driver;
+
+  private Token _token;
 
   public MethodParserVault(VaultDriverDataImpl<ID,T> driver,
                               AssetInfo<ID,T> entityInfo,
@@ -76,17 +79,12 @@ public class MethodParserVault<ID,T>
     if (_method.getAnnotation(Sql.class) != null) {
       return parseQuery();
     }
-
-    Token token = scanToken();
-
-    switch (token) {
-    case FIND: {
+    
+    if (_method.getName().startsWith("find")) {
       return parseFind();
     }
-    default: {
-      //throw new IllegalArgumentException(_method.getName());
+    else {
       return null;
-    }
     }
   }
 
@@ -217,11 +215,10 @@ public class MethodParserVault<ID,T>
       ByExpressionBuilder by = parseBy();
 
       where = by.getWhere();
-
+      
       break;
     }
     case EOF: {
-
       break;
     }
     default: {
@@ -248,46 +245,89 @@ public class MethodParserVault<ID,T>
                                           x,
                                           _method.getName()));
 
-    StringBuilder sb = null;
-
     do {
       switch (token) {
       case IDENTIFIER: {
-        if (sb == null)
-          sb = new StringBuilder();
-
+        StringBuilder sb = new StringBuilder();
         sb.append(_lexeme);
+        
+        while (peekToken() == Token.IDENTIFIER) {
+          token = scanToken();
+          
+          sb.append(_lexeme);
+        }
+        
+        String term = fieldTerm(sb.toString());
+        by.addField(term);
 
         break;
       }
+      
       case AND: {
-        by.setAnd();
-
-        by.addField(fieldTerm(sb.toString()));
-
-        sb = null;
-
+        by.addAnd();
         break;
       }
+      
+      case EQ:
+      case NE:
+      case LT:
+      case LE:
+      case GT:
+      case GE:
+        by.term(token);
+        break;
+        
+      case GREATER: {
+        if (peekToken() == Token.THAN) {
+          scanToken();
+          by.term(Token.GT);
+        }
+        else if (peekToken() == Token.EQ) {
+          scanToken();
+          by.term(Token.GE);
+        }
+        else {
+          by.term(Token.GT);
+        }
+        break;
+      }
+        
+      case LESS: {
+        if (peekToken() == Token.THAN) {
+          scanToken();
+          by.term(Token.LT);
+        }
+        else if (peekToken() == Token.EQ) {
+          scanToken();
+          by.term(Token.LE);
+        }
+        else {
+          by.term(Token.LT);
+        }
+        break;
+      }
+      
+    case NOT: {
+      if (peekToken() == Token.EQ) {
+        scanToken();
+        by.term(Token.NE);
+      }
+      else {
+        by.term(Token.NE);
+      }
+      break;
+    }
+      
       case OR: {
-        by.setOr();
-
-        by.addField(fieldTerm(sb.toString()));
-
-        sb = null;
-
+        by.addOr();
         break;
       }
       default: {
-        throw new IllegalStateException();
+        throw new IllegalStateException(_method.getName());
       }
       }
     }
     while ((token = scanToken()) != Token.EOF);
-
-    if (token == Token.EOF) {
-      by.addField(fieldTerm(sb.toString()));
-    }
 
     return by;
   }
@@ -310,32 +350,50 @@ public class MethodParserVault<ID,T>
   {
     return new IllegalArgumentException(L.l(msg, args));
   }
+  
+  private Token peekToken()
+  {
+    Token token = scanToken();
+    
+    _token = token;
+    
+    return token;
+  }
 
   private Token scanToken()
   {
+    Token token = _token;
+    _token = null;
+    
+    if (token != null) {
+      return token;
+    }
+    
     int ch = read();
 
-    if (ch == -1)
+    if (ch == -1) {
       return Token.EOF;
+    }
 
     StringBuilder builder = new StringBuilder();
 
     builder.append((char) ch);
 
-    for (ch = read(); ch > 0 && Character.isLowerCase(ch); ch = read())
+    for (ch = read(); ch > 0 && Character.isLowerCase(ch); ch = read()) {
       builder.append((char) ch);
-
-    Token token = reserved.get(builder.toString());
-
-    if (token != null) {
+    }
+    
+    if (ch > 0) {
       unread();
     }
-    else {
+    
+    _lexeme = builder.toString();
+
+    token = RESERVED.get(_lexeme.toLowerCase());
+    
+    if (token == null) {
       token = Token.IDENTIFIER;
       _lexeme = builder.toString();
-
-      if (ch != -1)
-        unread();
     }
 
     return token;
@@ -374,27 +432,75 @@ public class MethodParserVault<ID,T>
     public abstract <V> FindQueryVault<ID,T,V> build();
   }
   */
+  
+  static class ByTerm {
+    private Token _token;
+    private String _lexeme;
+    
+    ByTerm(Token token, String lexeme)
+    {
+      _token = token;
+      _lexeme = lexeme;
+    }
+    
+    void where(StringBuilder sb)
+    {
+      _token.where(sb, _lexeme);
+    }
+
+    public void term(Token token)
+    {
+      _token = _token.term(token);
+    }
+    
+    public String toString()
+    {
+      return getClass().getSimpleName() + "[" + _token + "," + _lexeme + "]";
+    }
+  }
 
   static class ByExpressionBuilder
   {
-    private Mode _mode = Mode.AND;
-    private List<String> _fields = new ArrayList<>();
+    private List<ByTerm> _fields = new ArrayList<>();
     private String _where = null;
+    private boolean _isConjunction = true;
 
-    public void setAnd()
+    public void addAnd()
     {
-      _mode = Mode.AND;
+      _fields.add(new ByTerm(Token.AND, ""));
+      _isConjunction = true;
     }
 
-    public void setOr()
+    public void term(Token token)
     {
-      _mode = Mode.OR;
+      ByTerm lastTerm = _fields.get(_fields.size() - 1);
+      
+      lastTerm.term(token);
+    }
+
+    public void addOr()
+    {
+      _fields.add(new ByTerm(Token.OR, ""));
+      _isConjunction = true;
     }
 
     public void addField(String field)
     {
       Objects.requireNonNull(field);
-      _fields.add(field);
+      
+      if (! _isConjunction) {
+        _fields.add(new ByTerm(Token.AND, ""));
+      }
+      
+      _isConjunction = false;
+      
+      field = normalize(field);
+      
+      _fields.add(new ByTerm(Token.IDENTIFIER, field));
+    }
+    
+    public void eq()
+    {
     }
 
     public String getWhere()
@@ -402,14 +508,8 @@ public class MethodParserVault<ID,T>
       if (_where == null) {
         StringBuilder where = new StringBuilder(" where ");
 
-        for (int i = 0; i < _fields.size(); i++) {
-          String field = normalize(_fields.get(i));
-
-          if (i > 0) {
-            where.append(" ").append(_mode).append(" ");
-          }
-
-          where.append(field).append("=?");
+        for (ByTerm term : _fields) {
+          term.where(where);
         }
 
         return where.toString();
@@ -422,11 +522,7 @@ public class MethodParserVault<ID,T>
     public String toString()
     {
       return ByExpressionBuilder.class.getSimpleName()
-             + '['
-             + _mode
-             + ", "
-             + _fields
-             + ']';
+             + _fields;
     }
 
     enum Mode
@@ -438,33 +534,111 @@ public class MethodParserVault<ID,T>
 
   enum Token
   {
-    AND("And"),
-    BY("By"),
-    EOF("eof"),
-    FIND("find"),
-    IDENTIFIER("identifier"),
-    OR("Or"),
-    ORDER("OrderBy");
+    AND {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(" and ");
+      }
+    },
+    BY,
+    EOF,
+    EQ {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(lexeme).append("=?");
+      }
+    },
+    FIND,
+    GREATER,
+    GT {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(lexeme).append(">?");
+      }
+    },
+    GE {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(lexeme).append(">=?");
+      }
+    },
+    IDENTIFIER {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(lexeme).append("=?");
+      }
 
-    private String _literal;
+      @Override
+      public Token term(Token token)
+      {
+        return token;
+      }
+    },
+    LESS,
+    LE {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(lexeme).append("<=?");
+      }
+    },
+    LT {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(lexeme).append("<?");
+      }
+    },
+    NE {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(lexeme).append("<>?");
+      }
+    },
+    NOT,
+    OR {
+      @Override
+      public void where(StringBuilder sb, String lexeme)
+      {
+        sb.append(" OR ");
+      }
+    },
+    ORDER,
+    THAN;
 
-    Token(String literal)
+    public void where(StringBuilder sb, String lexeme)
     {
-      _literal = literal;
+      throw new UnsupportedOperationException(toString());
     }
 
-    String getLiteral()
+    public Token term(Token token)
     {
-      return _literal;
+      throw new UnsupportedOperationException(toString() + " term " + token);
     }
   }
 
-  private final static Map<String,Token> reserved = new HashMap<String,Token>()
-  {
-    {
-      for (Token token : Token.values()) {
-        put(token.getLiteral(), token);
-      }
-    }
-  };
+  static {
+    RESERVED = new HashMap<String,Token>();
+    
+    RESERVED.put("and", Token.AND);
+    RESERVED.put("by", Token.BY);
+    RESERVED.put("equals", Token.EQ);
+    RESERVED.put("eq", Token.EQ);
+    RESERVED.put("ge", Token.GE);
+    RESERVED.put("greater", Token.GREATER);
+    RESERVED.put("gt", Token.GT);
+    RESERVED.put("less", Token.LESS);
+    RESERVED.put("le", Token.LE);
+    RESERVED.put("lt", Token.LT);
+    RESERVED.put("ne", Token.NE);
+    RESERVED.put("neq", Token.NE);
+    RESERVED.put("not", Token.NOT);
+    RESERVED.put("than", Token.THAN);
+  }
 }

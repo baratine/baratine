@@ -170,41 +170,6 @@ public class VaultDriverBase<ID,T>
   {
     return _stubClassAsset;
   }
-
-  /**
-   * Creates a stub method for an abstract method, typically a createXXX
-   * method.
-   */
-  @Override
-  public <S> MethodVault<S> newMethod(Method method)
-  {
-    if (! Modifier.isAbstract(method.getModifiers())) {
-      throw new IllegalStateException(String.valueOf(method));
-    }
-    else if (method.getName().startsWith("create")) {
-      Method target = assetMethod(method);
-
-      if (target != null) {
-        return newCreateMethod(target);
-      }
-      else {
-        return newCreateMethodDTO(method);
-      }
-    }
-    else if (method.getName().startsWith("delete")) {
-      Method target = assetMethod(method);
-
-      if (target != null) {
-        return newDeleteMethod(target);
-      }
-      else {
-        return newDeleteMethodDTO(method);
-      }
-    }
-    else {
-      return new MethodVaultNull<>(method.getName() + " " + getClass().getName());
-    }
-  }
   
   /**
    * Creates a stub method for an abstract method, typically a createXXX
@@ -261,6 +226,40 @@ public class VaultDriverBase<ID,T>
     }       
 
     return null;
+  }
+
+  /**
+   * Creates a stub method for an abstract method, typically a createXXX
+   * method.
+   */
+  protected <S> MethodVault<S> newMethod(Method method)
+  {
+    if (! Modifier.isAbstract(method.getModifiers())) {
+      throw new IllegalStateException(String.valueOf(method));
+    }
+    else if (method.getName().startsWith("create")) {
+      Method target = assetMethod(method);
+
+      if (target != null) {
+        return newCreateMethod(target);
+      }
+      else {
+        return newCreateMethodDTO(method);
+      }
+    }
+    else if (method.getName().startsWith("delete")) {
+      Method target = assetMethod(method);
+
+      if (target != null) {
+        return newDeleteMethod(target);
+      }
+      else {
+        return newDeleteMethodDTO(method);
+      }
+    }
+    else {
+      return new MethodVaultNull<>(method.getName() + " " + getClass().getName());
+    }
   }
 
   private <S> MethodVault<S> newCreateMethod(Method targetMethod)

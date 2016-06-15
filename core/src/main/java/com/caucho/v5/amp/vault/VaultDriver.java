@@ -120,25 +120,33 @@ public interface VaultDriver<ID,T>
     throw new IllegalStateException(getClass().getSimpleName());
   }
 
+  /*
   default <V> MethodVault<V> newMethod(Method method)
   {
     throw new IllegalStateException(method.toString());
   }
+  */
 
+  /*
   default ResultStreamBuilder<ID> findAllIds()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
 
+  /*
   default void findAllIds(ResultStream<ID> stream)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
 
+  /*
   default List<ID> findIdsList()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
+  */
 
   default T toProxy(ID id)
   {

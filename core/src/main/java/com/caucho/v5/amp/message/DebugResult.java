@@ -86,6 +86,7 @@ public final class DebugResult<V> implements Result<V>
     _queryMap.removeQuery(this);
     
     System.out.println("FAIL: " + _result + " " + exn);
+    Thread.dumpStack();
     _result.fail(exn);
   }
   

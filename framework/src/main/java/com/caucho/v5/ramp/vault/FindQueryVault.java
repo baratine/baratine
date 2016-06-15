@@ -119,6 +119,10 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
     {
       super(driver, where);
       
+      Objects.requireNonNull(api);
+      
+      _api = api;
+      
       _cursorToId = driver.cursorToId();
       
       StringBuilder sb = new StringBuilder();

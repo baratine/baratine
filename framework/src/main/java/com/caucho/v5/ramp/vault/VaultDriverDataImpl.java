@@ -349,6 +349,7 @@ public class VaultDriverDataImpl<ID, T>
       return getAddress() + '/' + id;
     }
   }
+  /*
   @Override
   public void findAllIds(ResultStream<ID> ids)
   {
@@ -356,7 +357,9 @@ public class VaultDriverDataImpl<ID, T>
 
     _db.findAll(sql, ids.of((i, r) -> relayIds(i, r)));
   }
+  */
 
+  /*
   public List<ID> findIdsList()
   {
     String sql = getSelectIds();
@@ -370,7 +373,9 @@ public class VaultDriverDataImpl<ID, T>
 
     return list;
   }
+  */
 
+  /*
   public List<ID> readIdListFromCursor(Iterable<Cursor> cursor)
   {
     List<ID> list = new ArrayList<>();
@@ -381,7 +386,9 @@ public class VaultDriverDataImpl<ID, T>
 
     return list;
   }
+  */
 
+  /*
   private void relayIds(Iterable<Cursor> from, ResultStream<ID> to)
   {
     try {
@@ -397,6 +404,7 @@ public class VaultDriverDataImpl<ID, T>
       //t.printStackTrace();
     }
   }
+  */
 
   /**
    * Select expression for an id.
@@ -437,17 +445,19 @@ public class VaultDriverDataImpl<ID, T>
   }
   */
 
+  /*
   private ID readIdFromCursor(Cursor c)
   {
     return getIdReader().read(c);
   }
+  */
 
   private IdReader<ID> getIdReader()
   {
     if (_idReader != null)
       return _idReader;
 
-    Class idType = _entityInfo.id().getJavaType();
+    Class<?> idType = _entityInfo.id().getJavaType();
 
     if (isInteger(idType)) {
       _idReader = (IdReader<ID>) new IntIdReader();
@@ -503,7 +513,7 @@ public class VaultDriverDataImpl<ID, T>
    * @param values
    * @param stream
    */
-  public void findMatch(String[] columns,
+  private void findMatch(String[] columns,
                         Object[] values,
                         ResultStream<T> stream)
   {
@@ -543,12 +553,15 @@ public class VaultDriverDataImpl<ID, T>
     }
   }
 
+  /*
   public void find(Iterable<ID> ids, ResultStream<T> stream)
   {
     //TODO
   }
+  */
 
-  public void findAll(ResultStream<T> stream)
+  /*
+  private void findAll(ResultStream<T> stream)
   {
     StringBuilder sql = getWildSelect();
 
@@ -581,8 +594,9 @@ public class VaultDriverDataImpl<ID, T>
 
     return (TableInfo) _db.exec(tableInfoSql);
   }
+  */
 
-  public String getSelectPkSql(String[] where)
+  private String getSelectPkSql(String[] where)
   {
     StringBuilder sql = new StringBuilder("select ")
       .append(_entityInfo.id().columnName())
@@ -599,7 +613,7 @@ public class VaultDriverDataImpl<ID, T>
     return sql.toString();
   }
 
-  public String getSelectPkSql(String where)
+  private String getSelectPkSql(String where)
   {
     StringBuilder sql = new StringBuilder("select ")
         .append(_entityInfo.id().columnName())
@@ -611,7 +625,7 @@ public class VaultDriverDataImpl<ID, T>
     return sql.toString();
   }
 
-  public StringBuilder getWildSelect()
+  private StringBuilder getWildSelect()
   {
     StringBuilder sql = new StringBuilder("select ");
 
@@ -630,7 +644,7 @@ public class VaultDriverDataImpl<ID, T>
     return sql;
   }
 
-  public String getSelectIds()
+  private String getSelectIds()
   {
     StringBuilder sql = new StringBuilder("select ")
       .append(_entityInfo.id().columnName())
@@ -639,7 +653,7 @@ public class VaultDriverDataImpl<ID, T>
     return sql.toString();
   }
 
-  public String getDeleteSql()
+  private String getDeleteSql()
   {
     StringBuilder sql = new StringBuilder("delete from ")
       .append(_entityInfo.tableName())
@@ -658,7 +672,7 @@ public class VaultDriverDataImpl<ID, T>
     return sql.toString();
   }
 
-  public String createDdl()
+  private String createDdl()
   {
     StringBuilder createDdl = new StringBuilder("create table ")
       .append(_entityInfo.tableName()).append('(');
@@ -687,7 +701,7 @@ public class VaultDriverDataImpl<ID, T>
   }
 
   @Override
-  public <V> MethodVault<V> newMethod(Method method)
+  protected <V> MethodVault<V> newMethod(Method method)
   {
     MethodParserVault parser
       = new MethodParserVault(this, _entityInfo, method);
@@ -731,7 +745,8 @@ public class VaultDriverDataImpl<ID, T>
   }
   */
 
-  class NullResourceMethod implements MethodVault
+  /*
+  private class NullResourceMethod implements MethodVault
   {
     @Override
     public void invoke(Result result, Object[] args)
@@ -739,6 +754,7 @@ public class VaultDriverDataImpl<ID, T>
       throw new IllegalStateException();
     }
   }
+  */
 
   public String toString()
   {
@@ -750,7 +766,7 @@ public class VaultDriverDataImpl<ID, T>
            + "]";
   }
 
-  public static String getColumnType(Class type)
+  public static String getColumnType(Class<?> type)
   {
     String sqlType = _typeMap.get(type);
 
