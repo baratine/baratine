@@ -19,6 +19,7 @@
 package com.caucho.v5.h3.io;
 
 import java.io.Closeable;
+import java.io.OutputStream;
 
 import com.caucho.v5.h3.query.PathH3Amp;
 
@@ -37,6 +38,8 @@ public interface InRawH3 extends Closeable
 
   byte[] readBinary();
 
+  void readBinary(OutputStream os);
+  
   Object readObject(InH3Amp inAmp);
 
   float readFloat();

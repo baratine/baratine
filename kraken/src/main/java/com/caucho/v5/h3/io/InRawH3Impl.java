@@ -20,7 +20,7 @@ package com.caucho.v5.h3.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.io.OutputStream;
 import java.util.Objects;
 
 import com.caucho.v5.h3.query.PathH3Amp;
@@ -201,6 +201,34 @@ public class InRawH3Impl implements InRawH3
       byte []data = new byte[(int) readLong(ch - 0xc8, 3)];
       readBinaryData(data, 0, data.length);
       return data;
+    }
+      
+    default:
+      throw error(L.l("Unexpected opcode 0x{0} while reading binary",
+                      Integer.toHexString(ch)));
+    }
+  }
+
+  @Override
+  public void readBinary(OutputStream os)
+  {
+    int ch = read();
+    
+    switch (ch) {
+    case 0xc0: case 0xc1: case 0xc2: case 0xc3: 
+    case 0xc4: case 0xc5: case 0xc6: case 0xc7:
+    {
+      readBinaryData(os, ch - 0xc0);
+      
+      return;
+    }
+    
+    case 0xc8: case 0xc9: case 0xca: case 0xcb:
+    case 0xcc: case 0xcd: case 0xce: case 0xcf:
+    {
+      readBinaryData(os, (int) readLong(ch - 0xc8, 3));
+      
+      return;
     }
       
     default:
@@ -727,6 +755,11 @@ public class InRawH3Impl implements InRawH3
   {
     return new H3ExceptionIn(msg);
   }
+  
+  private RuntimeException error(Throwable exn)
+  {
+    return new H3ExceptionIn(exn);
+  }
 
   @Override
   public void close()
@@ -764,6 +797,35 @@ public class InRawH3Impl implements InRawH3
       int sublen = Math.min(tLength, length - offset);
     
       System.arraycopy(_buffer, offset, tBuffer, tOffset, sublen);
+      
+      _offset = offset + sublen;
+      tLength -= sublen;
+      
+      if (tLength <= 0) {
+        return;
+      }
+      else if (! fill()) {
+        throw error(L.l("Unexpected end of file while reading binary"));
+      }
+    }
+  }
+  
+  private void readBinaryData(OutputStream os, int tLength)
+  {
+    TempBuffer tBuf = TempBuffer.create();
+    byte []tBuffer = tBuf.buffer();
+    
+    while (true) {
+      int offset = _offset;
+      int length = _length;
+    
+      int sublen = Math.min(tLength, length - offset);
+    
+      try {
+        os.write(_buffer, offset, sublen);
+      } catch (IOException e) {
+        throw error(e);
+      }
       
       _offset = offset + sublen;
       tLength -= sublen;

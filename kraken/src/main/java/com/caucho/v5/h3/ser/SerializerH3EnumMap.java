@@ -18,20 +18,19 @@
 
 package com.caucho.v5.h3.ser;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.Objects;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.caucho.v5.convert.bean.FieldBase;
+import com.caucho.v5.convert.bean.FieldBeanFactory;
 import com.caucho.v5.h3.OutH3;
 import com.caucho.v5.h3.context.ContextH3;
 import com.caucho.v5.h3.io.ClassInfoH3;
-import com.caucho.v5.h3.io.ConstH3.ClassTypeH3;
-import com.caucho.v5.h3.io.FieldInfoH3;
-import com.caucho.v5.h3.io.H3ExceptionIn;
+import com.caucho.v5.h3.io.ConstH3;
 import com.caucho.v5.h3.io.InH3Amp;
 import com.caucho.v5.h3.io.InRawH3;
 import com.caucho.v5.h3.io.OutRawH3;
@@ -40,65 +39,58 @@ import com.caucho.v5.h3.query.PathH3Amp;
 /**
  * H3 enum serializer.
  */
-public class SerializerH3Enum<T extends Enum<T>> extends SerializerH3Base<T>
+public class SerializerH3EnumMap<T extends EnumMap<?,?>> extends SerializerH3Base<T>
 {
-  private Class<T> _type;
-  private MethodHandle _ctor;
+  private static final FieldBase<EnumMap<?,?>> _keyType;
   
   private AtomicReference<ClassInfoH3> _infoRef = new AtomicReference<>();
   
-  SerializerH3Enum(Class<T> type)
+  SerializerH3EnumMap()
   {
-    _type = type;
-    
-    if (! Enum.class.isAssignableFrom(type)) {
-      throw new IllegalStateException(type.toString());
-    }
   }
   
   @Override
   public Type type()
   {
-    return _type;
+    return EnumMap.class;
   }
   
   @Override
   public int typeSequence()
   {
-    return _infoRef.get().sequence();
+    return ConstH3.DEF_ENUMMAP;
   }
 
   @Override
   public SerializerH3Amp<T> schema(ContextH3 context)
   {
-    int seq = context.nextTypeSequence();
-    
-    SerializerH3EnumSchema<T> serSchema = new SerializerH3EnumSchema(_type, seq);
-    
-    //context.register(_type, serSchema);
-    
-    serSchema.introspect(context);
-    
-    return serSchema;
+    return null;
   }
   
   @Override
   public void writeDefinition(OutRawH3 os, int defIndex)
   {
-    os.writeObjectDefinition(defIndex, _infoRef.get());
+  //  os.writeObjectDefinition(defIndex, _infoRef.get());
   }
 
   @Override
   public void writeObject(OutRawH3 os, int defIndex, T value, OutH3 out)
   {
     os.writeObject(defIndex);
-    os.writeString(value.name());
+    
+    Class<?> type = (Class<?>) _keyType.getObject(value);
+    
+    Map map = new HashMap(value);
+    
+    out.writeObject(type);
+    out.writeObject(map);
   }
 
   @Override
   public void skip(InRawH3 is, InH3Amp in)
   {
-    is.skip(in);
+    is.skip(in); // type
+    is.skip(in); // map
   }
 
   /**
@@ -107,51 +99,40 @@ public class SerializerH3Enum<T extends Enum<T>> extends SerializerH3Base<T>
   @Override
   public void introspect(ContextH3 context)
   {
-    if (_infoRef.get() != null) {
-      return;
-    }
-    
-    _ctor = introspectConstructor();
-
-    FieldInfoH3[] fieldInfo = new FieldInfoH3[1];
-    
-    fieldInfo[0] = new FieldInfoH3("name");
-
-    ClassInfoH3 classInfo = new ClassInfoH3(_type.getName(), ClassTypeH3.CLASS, fieldInfo);
-    
-    _infoRef.compareAndSet(null, classInfo); 
-  }
-  
-  private MethodHandle introspectConstructor()
-  {
-    try {
-      Method m = _type.getMethod("valueOf", String.class);
-      
-      Objects.requireNonNull(m);
-      
-      m.setAccessible(true);
-        
-      MethodHandle mh = MethodHandles.lookup().unreflect(m);
-          
-      mh = mh.asType(MethodType.methodType(Object.class, String.class));
-        
-      return mh;
-    } catch (Exception e) {
-      throw new H3ExceptionIn(_type.getName() + ": " + e.getMessage(), e);
-    }
   }
 
   @Override
   public T readObject(InRawH3 is, InH3Amp in)
   {
-    String name = is.readString();
-
-    return Enum.valueOf(_type, name);
+    Class type = in.readObject(Class.class);
+    
+    Map map = (Map) in.readObject();
+    
+    EnumMap enumMap = new EnumMap(type);
+    
+    enumMap.putAll(map);
+    
+    return (T) enumMap;
   }
   
   @Override
   public void scan(InRawH3 is, PathH3Amp path, InH3Amp in, Object []values)
   {
     is.skip(in);
+    is.skip(in);
+  }
+  
+  static {
+    Field elementType = null;
+    
+    for (Field field : EnumMap.class.getDeclaredFields()) {
+      if (field.getName().equals("keyType")) {
+        elementType = field;
+      }
+    }
+    
+    elementType.setAccessible(true);
+    
+    _keyType = (FieldBase) FieldBeanFactory.get(elementType);
   }
 }

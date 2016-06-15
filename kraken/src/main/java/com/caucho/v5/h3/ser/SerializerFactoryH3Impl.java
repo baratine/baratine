@@ -18,10 +18,6 @@
 
 package com.caucho.v5.h3.ser;
 
-import com.caucho.v5.h3.SerializerH3;
-import com.caucho.v5.h3.context.ContextH3;
-import com.caucho.v5.h3.io.ConstH3;
-
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -39,6 +35,8 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -50,6 +48,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
+import com.caucho.v5.h3.SerializerH3;
+import com.caucho.v5.h3.context.ContextH3;
+import com.caucho.v5.h3.io.ConstH3;
+import com.caucho.v5.h3.io.StreamSourceH3;
 
 /**
  * H3 typed serializer.
@@ -93,6 +96,12 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
       else {
         return new SerializerH3Enum(type);
       }
+    }
+    else if (StreamSourceH3.class.isAssignableFrom(type)) {
+      return new SerializerH3StreamSource();
+    }
+    else if (EnumSet.class.isAssignableFrom(type)) {
+      return new SerializerH3EnumSet();
     }
     else if (type.isArray()) {
       throw new UnsupportedOperationException(String.valueOf(type));
@@ -160,6 +169,8 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
     //BigInteger, BigDecimal
     ser(BigInteger.class, new SerializerH3BigInteger());
     ser(BigDecimal.class, new SerializerH3BigDecimal());
+    
+    ser(Class.class, new SerializerH3Class());
 
     ser(UUID.class, new SerializerH3UUID());
     ser(URI.class, new SerializerH3URI());
@@ -192,8 +203,14 @@ public class SerializerFactoryH3Impl implements SerializerFactoryH3
     ser(LinkedList.class,
         new SerializerH3ListPredef(LinkedList.class, ConstH3.DEF_LINKEDLIST));
 
+    ser(EnumSet.class, new SerializerH3EnumSet());
+
+    ser(EnumMap.class, new SerializerH3EnumMap());
+
     ser(Inet4Address.class, new SerializerH3InetAddress());
     ser(Inet6Address.class, new SerializerH3InetAddress());
     ser(InetSocketAddress.class, new SerializerH3InetSocketAddress());
+    //
+    ser(StreamSourceH3.class, new SerializerH3StreamSource<>());
   }
 }
