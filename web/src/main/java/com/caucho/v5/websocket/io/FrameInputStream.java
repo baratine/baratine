@@ -683,7 +683,7 @@ public class FrameInputStream
       int sublen = (int) Math.min(bufferLength - bufferOffset, frameLength);
       
       if (sublen > 0) {
-        Utf8Util.fill(sb, frameBuffer, bufferOffset, sublen);
+        Utf8Util.read(sb, frameBuffer, bufferOffset, sublen);
         
         bufferOffset += sublen;
         frameLength -= sublen;

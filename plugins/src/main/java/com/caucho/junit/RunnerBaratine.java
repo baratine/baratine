@@ -31,23 +31,20 @@ package com.caucho.junit;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.FrameworkField;
+import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.TestClass;
+import org.junit.runners.model.InitializationError;
 
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.ServicesAmp;
@@ -55,7 +52,6 @@ import com.caucho.v5.amp.ensure.EnsureDriverImpl;
 import com.caucho.v5.amp.journal.JournalDriverImpl;
 import com.caucho.v5.amp.manager.InjectAutoBindService;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
-import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
 import com.caucho.v5.amp.vault.VaultDriver;
@@ -83,7 +79,7 @@ import io.baratine.vault.Asset;
 /**
  * RunnerBaratine is a junit Runner used to test services deployed in Baratine.
  */
-public class RunnerBaratine extends BaseRunner
+public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
 {
   private static final Logger log
     = Logger.getLogger(RunnerBaratine.class.getName());
@@ -91,7 +87,6 @@ public class RunnerBaratine extends BaseRunner
   private static final L10N L = new L10N(RunnerBaratine.class);
 
   private BaratineContainer _baratine;
-  private Object _test;
 
   public RunnerBaratine(Class<?> cl) throws InitializationError
   {
@@ -99,21 +94,23 @@ public class RunnerBaratine extends BaseRunner
   }
 
   @Override
-  protected Object createTest() throws Exception
+  protected void initTestInstance() throws Throwable
   {
-    Object test = super.createTest();
-
-    _test = test;
-
-    _baratine.initialize(test);
-
-    return test;
+    _baratine.initialize(_test);
   }
 
   @Override
-  protected <T> T resolve(Class<T> type, Annotation[] annotations)
+  public RunnerInjectionTestPoint createInjectionPoint(Class<?> type,
+                                                       Annotation[] annotations,
+                                                       MethodHandle setter)
   {
-    return (T) _baratine.findService(new InjectionTestPoint(type, annotations));
+    return new RunnerInjectionTestPoint(type, annotations, setter);
+  }
+
+  @Override
+  protected Object resolve(RunnerInjectionTestPoint ip)
+  {
+    return _baratine.findService(ip);
   }
 
   @Override
@@ -129,10 +126,10 @@ public class RunnerBaratine extends BaseRunner
 
     try {
       _baratine.initialize(_test);
-      _baratine.start(true);
+      _baratine.start(false);
     } catch (RuntimeException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (Throwable e) {
       throw new RuntimeException(e);
     }
   }
@@ -151,15 +148,15 @@ public class RunnerBaratine extends BaseRunner
       try {
         initialize(_test);
 
-        start(true);
+        start(false);
       } catch (RuntimeException e) {
         throw e;
-      } catch (Exception e) {
+      } catch (Throwable e) {
         throw new RuntimeException(e);
       }
     }
 
-    private void start(boolean isRestart) throws Exception
+    private void start(boolean isClean) throws Exception
     {
       Thread thread = Thread.currentThread();
 
@@ -187,7 +184,7 @@ public class RunnerBaratine extends BaseRunner
       */
 
       try {
-        if (! isRestart) {
+        if (isClean) {
           VfsOld.lookup(baratineRoot).removeAll();
         }
       } catch (Exception e) {
@@ -233,10 +230,8 @@ public class RunnerBaratine extends BaseRunner
       Thread.currentThread().setContextClassLoader(_oldLoader);
     }
 
-    void initialize(Object test) throws IllegalAccessException
+    void initialize(Object test) throws Throwable
     {
-      TestClass testClass = getTestClass();
-
       InjectorAmp.create();
 
       ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -285,34 +280,27 @@ public class RunnerBaratine extends BaseRunner
       _descriptors = descriptors;
       _services = services;
       
-      bindFields(test, testClass);
+      bindFields(test);
     }
 
-    private void bindFields(Object test,
-                            TestClass testClass)
-      throws IllegalAccessException
+    protected void bindFields(Object test)
+      throws Throwable
     {
-      List<FrameworkField> fields = testClass.getAnnotatedFields();
+      getInjectionTestPoints();
 
-      for (FrameworkField field : fields) {
-        Object inject = null;
+      for (int i = 0; i < getInjectionTestPoints().size(); i++) {
+        RunnerInjectionTestPoint ip = getInjectionTestPoints().get(i);
 
-        Field javaField = field.getField();
-
-        InjectionTestPoint ip
-          = new InjectionTestPoint(javaField.getType(),
-                                   javaField.getAnnotations());
+        Object value = null;
 
         if (ip.getService() != null)
-          inject = findService(ip);
+          value = findService(ip);
         else if (ip.getInject() != null)
-          inject = findInject(ip);
+          value = findInject(ip);
         else
           continue;
 
-        javaField.setAccessible(true);
-
-        javaField.set(test, inject);
+        ip.inject(test, value);
       }
     }
 
@@ -343,13 +331,7 @@ public class RunnerBaratine extends BaseRunner
       return descriptors;
     }
 
-    public <T> T findService(Class<T> type, Service service)
-    {
-      return (T) findService(new InjectionTestPoint(type,
-                                                    new Annotation[]{service}));
-    }
-
-    private Object findService(InjectionTestPoint ip)
+    private Object findService(RunnerInjectionTestPoint ip)
     {
       if (Services.class.equals(ip.getType()))
         return _services;
@@ -383,12 +365,15 @@ public class RunnerBaratine extends BaseRunner
         return service.as(ip.getType());
     }
 
-    private ServiceRef matchDefaultService(InjectionTestPoint ip)
+    private ServiceRef matchDefaultService(RunnerInjectionTestPoint ip)
     {
+      if (ip.address() != null && ip.address().isEmpty())
+        return null;
+
       return _services.service(ip.address());
     }
 
-    private Object findInject(InjectionTestPoint ip)
+    private Object findInject(RunnerInjectionTestPoint ip)
     {
       Object inject = null;
 
@@ -591,120 +576,13 @@ public class RunnerBaratine extends BaseRunner
     }
   }
 
-  class InjectionTestPoint
-  {
-    private final Class _type;
-    private final Annotation[] _annotations;
-
-    public InjectionTestPoint(Class type, Annotation[] annotations)
-    {
-      _type = type;
-
-      _annotations = annotations;
-    }
-
-    public Class<?> getType()
-    {
-      return _type;
-    }
-
-    public boolean isMatch(ServiceTestDescriptor descriptor)
-    {
-      boolean isMatch = isMatchType(descriptor) ||
-                        isMatchName(descriptor) ||
-                        isMatchInterface(descriptor);
-
-      return isMatch;
-    }
-
-    private boolean isMatchName(ServiceTestDescriptor descriptor)
-    {
-      boolean isMatch = !address().isEmpty();
-
-      isMatch &= !descriptor.getAddress().isEmpty();
-
-      isMatch &= descriptor.getAddress().equals(address());
-
-      return isMatch;
-    }
-
-    private boolean isMatchType(ServiceTestDescriptor descriptor)
-    {
-      return descriptor.getApi().equals(getType());
-    }
-
-    private boolean isMatchInterface(ServiceTestDescriptor descriptor)
-    {
-      return getType().isAssignableFrom(descriptor.getApi());
-    }
-
-    public Service getService()
-    {
-      return getAnnotation(Service.class);
-    }
-
-    public String address()
-    {
-      Service service = getService();
-
-      if (service == null)
-        return null;
-
-      String address = service.value();
-
-      if (address == null) {
-        String name = getType().getSimpleName();
-        if (name.endsWith("Impl"))
-          name = name.substring(0, name.length() - 4);
-
-        address = "/" + name;
-      }
-
-      return address;
-    }
-
-    public Inject getInject()
-    {
-      return getAnnotation(Inject.class);
-    }
-
-    private <A extends Annotation> A getAnnotation(Class<A> target)
-    {
-      A result = null;
-      for (Annotation annotation : _annotations) {
-        if (target.isAssignableFrom(annotation.annotationType())) {
-          result = (A) annotation;
-
-          break;
-        }
-      }
-
-      return result;
-    }
-
-    @Override
-    public String toString()
-    {
-      return this.getClass().getSimpleName() + "["
-             + _type
-             + ", "
-             + Arrays.toString(_annotations)
-             + ']';
-    }
-  }
-
-  public <T> T findService(Class<T> type, Service service)
-  {
-    return _baratine.findService(type, service);
-  }
-
   @Override
   protected void runChild(FrameworkMethod method, RunNotifier notifier)
   {
     try {
       _baratine = new BaratineContainer();
 
-      _baratine.start(false);
+      _baratine.start(true);
 
       super.runChild(method, notifier);
     } catch (RuntimeException e) {

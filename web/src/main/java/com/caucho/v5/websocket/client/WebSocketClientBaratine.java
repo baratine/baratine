@@ -50,6 +50,7 @@ import com.caucho.v5.tcp.TcpConnection;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.websocket.WebSocketClient;
+import com.caucho.v5.websocket.io.Frame;
 import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 import com.caucho.v5.websocket.io.WebSocketProtocolException;
@@ -60,7 +61,7 @@ import io.baratine.web.ServiceWebSocket;
 /**
  * WebSocketClient
  */
-public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S> 
+public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   implements WebSocketConstants, WebSocketClient
 {
   private static final Logger log
@@ -90,9 +91,9 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   private FrameInputStream _frameIs;
 
   private HashMap<String,String> _headers = new HashMap<String,String>();
-  
+
   private List<String> _preferredSubprotocols = new ArrayList<>();
-  
+
   private String _origin;
 
   private Pipe<Buffer> _onRead;
@@ -119,16 +120,16 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
                                  ServiceWebSocket<T,S> service)
   {
     super(new WebSocketManager());
-    
+
     //Objects.requireNonNull(container);
     Objects.requireNonNull(address);
     Objects.requireNonNull(service);
     //_container = container;
     //_endpoint = endpoint;
     //_config = config;
-    
+
     _headersOut = headers;
-    
+
     try {
       _uri = new URI(address);
     } catch (Exception e) {
@@ -142,9 +143,9 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
       }
     }
     */
-    
+
     //_configurator = config.getConfigurator();
-        
+
     /*
     if (config != null) {
       _origin = config.getOrigin();
@@ -159,23 +160,23 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     if (_path == null) {
       _path = "/";
     }
-    
+
     _service = service;
-    
+
     open();
     TypeRef typeRef = TypeRef.of(service.getClass());
     TypeRef typeRefService = typeRef.to(ServiceWebSocket.class);
     TypeRef type = typeRefService.param(0);
-    
+
     Class<?> valueType;
-    
+
     if (type != null) {
-      valueType = type.rawClass(); 
+      valueType = type.rawClass();
     }
     else {
       valueType = String.class;
     }
-    
+
     if (Frame.class.equals(valueType)) {
       readFrame((ServiceWebSocket) _service);
     }
@@ -220,14 +221,14 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   {
     _isMasked = isMasked;
   }
-  
+
   /*
   public WebSocketClientBaratine onOpen(ServiceWebSocket service)
   {
     Objects.requireNonNull(service);
-    
+
     _onOpen = service;
-    
+
     return this;
   }
   */
@@ -236,9 +237,9 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   public WebSocketClientBaratine onRead(OutPipe<Buffer> onRead)
   {
     Objects.requireNonNull(onRead);
-    
+
     _onRead = onRead;
-    
+
     return this;
   }
   */
@@ -291,7 +292,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
 
     QSocket s = network.connect(addr.getAddress(), addr.getPort(), connectTimeout);
     */
-    
+
     _conn = TcpConnection.open(_host, _port);
 
     /*
@@ -375,7 +376,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
       os.print("Sec-WebSocket-Extensions: " + ext + "\r\n");
     }
     */
-    
+
     if (_preferredSubprotocols != null && _preferredSubprotocols.size() > 0) {
       StringBuilder sb = new StringBuilder();
 
@@ -393,21 +394,21 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     Map<String,List<String>> headers = _headersOut;//new HashMap<>();
 
     //_configurator.beforeRequest(headers);
-    
+
     for (Map.Entry<String,List<String>> entry : headers.entrySet()) {
       List<String> values = entry.getValue();
 
       os.print(entry.getKey());
       os.print(": ");
-      
+
       for (int i = 0; i < values.size(); i++) {
         if (i != 0) {
           os.print(", ");
         }
-        
+
         os.print(values.get(i));
       }
-      
+
       os.print("\r\n");
     }
 
@@ -424,24 +425,24 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     parseHeaders(is);
 
     //_frameIs = new FrameInputStream();
-    
+
     os.flush();
 
     String []names = new String[0];
-    
+
     String subprotocol = _headers.get("Sec-WebSocket-Protocol");
-    
+
     //_webSocket = new WebSocketImplClient(_uri.getPath(), os);
-    
+
 
     FrameInputStream fIs = new FrameInputStream();
     fIs.init(null, is);
-    
+
     //Objects.requireNonNull(_frameIs);
     frameInput(fIs);
-    
+
     _threadTask = new ThreadClientTask(this, is);
-    
+
     // static callbacks must be before the open
     /*
     if (_onRead != null) {
@@ -455,9 +456,9 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
       _onOpen.open(this); // _webSocket);
     }
     */
-    
+
     _service.open(this);
-    
+
     // now can start the reader
     if (_threadTask != null) {
       ThreadPool.current().execute(_threadTask);
@@ -502,19 +503,19 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
 
     }
   }
-  
+
   private String readln(ReadStream in)
     throws IOException
   {
     StringBuilder sb = new StringBuilder();
     int ch;
-    
+
     while ((ch = in.read()) >= 0 && ch != '\n') {
       if (ch != '\r') {
         sb.append((char) ch);
       }
     }
-    
+
     return sb.toString();
   }
 
@@ -551,7 +552,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   }
 
   @Override
-  protected void send(TempBuffer tBuf)
+  public void send(TempBuffer tBuf)
   {
     try {
       tBuf.read(_os);

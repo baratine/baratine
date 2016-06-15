@@ -57,6 +57,7 @@ import com.caucho.v5.util.ModulePrivate;
 import com.caucho.v5.util.Utf8Util;
 import com.caucho.v5.web.webapp.RequestBaratine;
 import com.caucho.v5.web.webapp.RequestBaratineImpl;
+import com.caucho.v5.websocket.io.Frame;
 import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
@@ -79,21 +80,21 @@ public class WebSocketBartender<T,S>
   private static final L10N L = new L10N(WebSocketBartender.class);
   private static final Logger log
     = Logger.getLogger(WebSocketBartender.class.getName());
-  
+
   private String _uri;
 
   //private FrameInputStream _fIs;
-  
+
   private InWebSocket _inBinary = new InWebSocketSkip();
   private InWebSocket _inText = new InWebSocketSkip();
-  
+
   private char []_charBuf = new char[256];
 
   private OutHttpApp _os;
 
   private RequestBaratine _request;
   private ServiceWebSocket _service;
-  
+
   private MessageState _state = MessageState.IDLE;
   private TempBuffer _tBuf;
   private int _headOffset;
@@ -106,7 +107,7 @@ public class WebSocketBartender<T,S>
   public WebSocketBartender(ServiceWebSocket service)
   {
     super(new WebSocketManager());
-    
+
     Objects.requireNonNull(service);
     _service = service;
   }
@@ -115,12 +116,12 @@ public class WebSocketBartender<T,S>
     throws Exception
   {
     Objects.requireNonNull(request);
-    
+
     _request = request;
-    
+
     RequestBaratineImpl req = (RequestBaratineImpl) request;
     //ResponseBaratineImpl res = (ResponseBaratineImpl) response;
-    
+
     if (log.isLoggable(Level.FINE)) {
       log.fine(this + " upgrade HTTP to WebSocket");
     }
@@ -217,22 +218,22 @@ public class WebSocketBartender<T,S>
     }
 
     req.length(0);
-    
+
     connect(req);
-    
+
     return true;
   }
-  
+
   public void connect(RequestBaratineImpl req)
   {
     FrameInputStream fIs;
 
     fIs = new FrameInputStream();
-    
+
     // _fIs = fIs;
-    
+
     fIs.init(null, req.requestHttp().connTcp().readStream());
-    
+
     frameInput(fIs);
 
     // Endpoint endpoint = _endpointSkeleton.newEndpoint(_factory, paths);
@@ -245,27 +246,27 @@ public class WebSocketBartender<T,S>
 
     // order for duplex
     req.upgrade(connWs);
-    
+
     req.flush();
-    
+
     _outProxy = req.connHttp().outProxy();
-    
+
     _outWriter = new OutWebSocketWriter();
 
     _service.open(this);
-    
+
     ServiceRef.flushOutbox();
   }
-  
+
   /*
   //@Override
   public void init(ReadStream is, OutResponseBase os)
   {
     Objects.requireNonNull(is);
     Objects.requireNonNull(os);
-    
+
     _fIs.init(this, is);
-    
+
     _os = os;
   }
   */
@@ -276,7 +277,7 @@ public class WebSocketBartender<T,S>
     if (_inBinary == null) {
       _inBinary = new InWebSocketSkip();
     }
-    
+
     if (_inText == null) {
       _inText = new InWebSocketSkip();
     }
@@ -304,14 +305,14 @@ public class WebSocketBartender<T,S>
   public void write(Buffer data)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void writePart(Buffer data)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -324,7 +325,7 @@ public class WebSocketBartender<T,S>
   public void writePart(byte []buffer, int offset, int length)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -333,20 +334,20 @@ public class WebSocketBartender<T,S>
     char cBuf[] = _charBuf;
     int length = data.length();
     int offset = 0;
-    
+
     _state = _state.toText(this, length);
-    
+
     TempBuffer tBuf = _tBuf;
-    
+
     while (true) {
       int sublen = Math.min(length - offset, cBuf.length);
-      
+
       data.getChars(offset, offset + sublen, cBuf, 0);
-      
-      int cOffset = Utf8Util.fill(tBuf, cBuf, 0, sublen);
-      
+
+      int cOffset = Utf8Util.write(tBuf, cBuf, 0, sublen);
+
       offset += cOffset;
-      
+
       if (offset == length) {
         fillHeader(true);
         _state = _state.toIdle();
@@ -363,7 +364,7 @@ public class WebSocketBartender<T,S>
   public void writePart(String data)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   /*
@@ -371,7 +372,7 @@ public class WebSocketBartender<T,S>
   public void read(OutStream<Buffer> handler)
   {
     _inBinary = new InReadBinary(handler);
-    
+
     System.out.println("INB: " + _inBinary);
   }
   */
@@ -381,35 +382,35 @@ public class WebSocketBartender<T,S>
   public void readChunk(OutStream<Chunk<Buffer>> handler)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void readStringChunk(OutStream<Chunk<String>> handler)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void readString(OutStream<String> handler)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void readInputStream(OutStream<InputStream> handler)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void readReader(OutStream<Reader> handler)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -431,27 +432,27 @@ public class WebSocketBartender<T,S>
   {
   }
   */
-  
+
   private void toTextFromIdle(int length)
   {
     TempBuffer tBuf = TempBuffer.create();
     _tBuf = tBuf;
-    
+
     if (length >> 2 < 0x7d) {
       _frameLength = 2;
     }
     else {
       _frameLength = 4;
     }
-    
+
     _headOffset = 0;
     tBuf.length(_headOffset + _frameLength);
   }
-  
+
   private int fillHeader(boolean isFinal)
   {
     TempBuffer tBuf = _tBuf;
-    
+
     byte []buffer = tBuf.buffer();
     int tailOffset = tBuf.length();
 
@@ -461,27 +462,27 @@ public class WebSocketBartender<T,S>
     }
 
     int length = tailOffset - _headOffset - _frameLength;
-      
+
     int code1 = _state.code();
-      
+
     _state = MessageState.CONT;
-      
+
     if (isFinal) {
       code1 |= FLAG_FIN;
     }
-      
+
     int mask = 0;
-    
+
     /*
     if (_isMasked) {
       mask = 0x80;
-        
+
       for (int i = 0; i < length; i++) {
-        buffer[i + 8] ^= (byte) buffer[4 + (i & 0x3)]; 
+        buffer[i + 8] ^= (byte) buffer[4 + (i & 0x3)];
       }
     }
     */
-    
+
     int headOffset = _headOffset;
     int frameLength = _frameLength;
 
@@ -498,46 +499,46 @@ public class WebSocketBartender<T,S>
     else {
       throw new IllegalStateException(String.valueOf(frameLength));
     }
-        
+
     return 0;
   }
 
   public void flush()
   {
     //complete(false);
-    
+
     TempBuffer tBuf = _tBuf;
-    
+
     if (tBuf == null) {
       return;
     }
-    
+
     _tBuf = null;
-    
+
     send(tBuf);
   }
-  
+
   @Override
-  protected void send(TempBuffer tBuf)
+  public void send(TempBuffer tBuf)
   {
     _outProxy.write(_outWriter, tBuf, false);
   }
-  
+
   /*
   private OutWebSocket2 getOut()
   {
     OutWebSocket2 outWs = _outWs;
-    
+
     if (outWs == null) {
       _outWs = outWs = new OutWebSocket2(new OutFlushImpl());
       outWs.setMasked(false);
     }
     outWs.init();
-    
+
     return outWs;
   }
   */
-  
+
   //
   // impl
   //
@@ -547,11 +548,11 @@ public class WebSocketBartender<T,S>
   public StateConnection serviceOld()
   {
     try {
-      System.out.println("SVC-3: " + this + " " + _fIs); 
+      System.out.println("SVC-3: " + this + " " + _fIs);
       while (_fIs.readFrameHeader()) {
         int op = _fIs.getFrameOpcode();
         boolean isFinal = _fIs.isFinal();
-        
+
         System.out.println("  OP: " + op);
 
         switch (op) {
@@ -560,33 +561,33 @@ public class WebSocketBartender<T,S>
 
           _inBinary.read(_fIs);
           break;
-      
+
         case WebSocketConstants.OP_CONT:
           switch (_opMessage) {
           case OP_BINARY:
             _inBinary.read(_fIs);
             break;
-            
+
           default:
             System.out.println("UNKNOWN: " + _opMessage);
             return StateConnection.CLOSE;
           }
-      
+
         default:
           return StateConnection.CLOSE;
         }
       }
-    
+
       return StateConnection.READ;
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
       e.printStackTrace();
-      
+
       return StateConnection.CLOSE;
     }
   }
   */
-  
+
   public StateConnection service()
   {
     if (readFrame()) {
@@ -631,18 +632,18 @@ public class WebSocketBartender<T,S>
       return getClass().getSimpleName() + "[]";
     }
   }
-  
+
   //
   // readers
   //
-  
+
   private static interface InWebSocket
   {
     void read(FrameInputStream fIs)
       throws IOException;
-    
+
   }
-  
+
   private static class InWebSocketSkip implements InWebSocket
   {
     @Override
@@ -652,41 +653,41 @@ public class WebSocketBartender<T,S>
       fIs.skipToFrameEnd();
     }
   }
-  
+
   private static class InReadBinary implements InWebSocket
   {
     private Pipe<Buffer> _out;
-    
+
     private InReadBinary(Pipe<Buffer> out)
     {
       Objects.requireNonNull(out);
-      
+
       _out = out;
     }
-    
+
     @Override
     public void read(FrameInputStream fIs)
       throws IOException
     {
       Buffer buffer = Buffers.factory().create();
-      
+
       fIs.readBuffer(buffer);
-      
+
       _out.next(buffer);
     }
   }
-  
+
   private static class InFrameBinary implements InWebSocket
   {
     private Pipe<Frame> _out;
-    
+
     private InFrameBinary(Pipe<Frame> out)
     {
       Objects.requireNonNull(out);
-      
+
       _out = out;
     }
-    
+
     @Override
     public void read(FrameInputStream fIs)
       throws IOException
@@ -694,24 +695,24 @@ public class WebSocketBartender<T,S>
       int op = fIs.getOpcode();
       int len = (int) fIs.length();
       boolean isPart = ! fIs.isFinal();
-      
+
       byte []buffer = new byte[(int) len];
-      
+
       int sublen = fIs.readBinary(buffer, 0, len);
-      
+
       FrameBinary frame = new FrameBinary(len, isPart, buffer);
-      
+
       _out.next(frame);
     }
   }
-  
+
   private static class FrameBinary implements Frame
   {
     private long _length;
     private boolean _isPart;
     private byte []_data;
-    
-    FrameBinary(int length, 
+
+    FrameBinary(int length,
                 boolean isPart,
                 byte []buffer)
     {
@@ -719,7 +720,7 @@ public class WebSocketBartender<T,S>
       _isPart = isPart;
       _data = buffer;
     }
-    
+
     @Override
     public boolean part()
     {
@@ -743,7 +744,7 @@ public class WebSocketBartender<T,S>
     {
       return Buffers.factory().create(_data);
     }
-    
+
     public String toString()
     {
       return (getClass().getSimpleName()
@@ -753,7 +754,7 @@ public class WebSocketBartender<T,S>
               + "]");
     }
   }
-  
+
   enum MessageState {
     IDLE {
       @Override
@@ -763,78 +764,78 @@ public class WebSocketBartender<T,S>
       public MessageState toText(WebSocketBartender ws, int length)
       {
         ws.toTextFromIdle(length);
-        
+
         return TEXT;
       }
     },
-    
+
     BINARY
     {
       @Override
       public boolean isActive() { return true; }
-      
+
       @Override
       public int code() { return OP_BINARY; }
-      
+
       @Override
       public MessageState toBinary() { return BINARY; }
-      
+
       @Override
       public MessageState toCont() { return CONT; }
     },
-    
+
     TEXT
     {
       @Override
       public boolean isActive() { return true; }
-      
+
       @Override
       public int code() { return OP_TEXT; }
     },
-    
+
     CONT {
       @Override
       public boolean isActive() { return true; }
-      
+
       @Override
       public MessageState toCont() { return CONT; }
     },
-    
+
     DESTROYED {
-      
+
     };
-    
+
     public boolean isActive()
     {
       return false;
     }
-    
+
     public MessageState toBinary()
     {
       throw new IllegalStateException(toString());
     }
-    
+
     public MessageState toText(WebSocketBartender out, int length)
     {
       throw new IllegalStateException(toString());
     }
-    
+
     public MessageState toCont()
     {
       throw new IllegalStateException(toString());
     }
-    
+
     public MessageState toIdle()
     {
       return IDLE;
     }
-    
-    public int code()    
+
+    public int code()
     {
       throw new IllegalStateException(toString());
     }
   }
-  
+
   /*
   private class OutFlushImpl implements OutWebSocketFlush
   {
@@ -842,15 +843,15 @@ public class WebSocketBartender<T,S>
     public void flush(TempBuffer tBuf, int length)
     {
       byte []buffer = tBuf.buffer();
-      
+
       System.out.println("FLU: " + new String(buffer, 0, length) + " " + Hex.toHex(buffer, 0, length));
       // TODO Auto-generated method stub
-      
+
     }
-    
+
   }
   */
-  
+
   private class OutWebSocketWriter implements OutHttpTcp
   {
     @Override
@@ -866,7 +867,7 @@ public class WebSocketBartender<T,S>
           log.log(Level.WARNING, e.toString(), e);
         }
       }
-      
+
       return false;
     }
 

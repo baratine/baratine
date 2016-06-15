@@ -38,6 +38,7 @@ import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
+import com.caucho.v5.websocket.io.Frame;
 
 import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
@@ -60,31 +61,31 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
                              ServiceWebSocket<T,S> service)
   {
     super(new WebSocketManager());
-    
+
     Objects.requireNonNull(os);
     Objects.requireNonNull(service);
-    
+
     _uri = uri;
     _os = os;
-    
+
     _service = service;
-    
+
     TypeRef typeRef = TypeRef.of(service.getClass());
     TypeRef typeRefService = typeRef.to(ServiceWebSocket.class);
     TypeRef type = typeRefService.param(0);
-    
+
     Class<?> valueType;
-    
+
     if (type != null) {
-      valueType = type.rawClass(); 
+      valueType = type.rawClass();
     }
     else {
       valueType = String.class;
     }
-    
+
     _type = valueType;
   }
-  
+
   @Override
   public void open()
   {
@@ -129,14 +130,14 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   public void write(Buffer data)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void writePart(Buffer data)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   /*
@@ -151,21 +152,21 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   public void writePart(byte[] buffer, int offset, int length)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void write(String data)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void writePart(String data)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   /*
@@ -219,7 +220,7 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
     return true;
   }
   */
-  
+
   /*
   @Override
   public void close(WebSocketClose reason, String text)
@@ -227,20 +228,20 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
     // TODO Auto-generated method stub
   }
   */
-  
+
   private void assertBeforeOpen()
   {
   }
-  
+
   @Override
   protected <X> Pipe<X> wrap(Pipe<X> handler)
   {
     /*
     ServiceRefAmp selfRef = ServiceRefAmp.current();
-    
+
     // XXX: calling pinned lambdas is an issue
     handler = new OutPipeWrapper<>(handler);
-    
+
     OutPipe<String> wrappedHandler = selfRef.pin(handler).as(OutPipe.class);
     */
 
@@ -254,11 +255,11 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   }
 
   @Override
-  protected void send(TempBuffer tBuf)
+  public void send(TempBuffer tBuf)
   {
     System.out.println("SEND: " + tBuf);
   }
-  
+
   @Override
   public String toString()
   {

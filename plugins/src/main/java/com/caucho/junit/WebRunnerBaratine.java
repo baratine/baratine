@@ -33,8 +33,8 @@ import static io.baratine.web.Web.port;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +59,7 @@ import org.junit.runners.model.InitializationError;
  *
  * @see RunnerBaratine
  */
-public class WebRunnerBaratine extends BaseRunner
+public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
 {
   private final static Logger log
     = Logger.getLogger(BaseRunner.class.getName());
@@ -67,18 +67,12 @@ public class WebRunnerBaratine extends BaseRunner
   private final static L10N L = new L10N(WebRunnerBaratine.class);
 
   private WebServer _web;
+  private ClassLoader _oldLoader;
+  private EnvironmentClassLoader _envLoader;
 
   public WebRunnerBaratine(Class<?> klass) throws InitializationError
   {
     super(klass);
-  }
-
-  @Override
-  protected void validatePublicVoidNoArgMethods(Class<? extends Annotation> annotation,
-                                                boolean isStatic,
-                                                List<Throwable> errors)
-  {
-    super.validatePublicVoidNoArgMethods(annotation, isStatic, errors);
   }
 
   private Http getHttpConfiguration()
@@ -112,8 +106,36 @@ public class WebRunnerBaratine extends BaseRunner
   }
 
   @Override
-  protected Object resolve(Class type, Annotation[] annotations)
+  public InjectionTestPoint createInjectionPoint(Class type,
+                                                 Annotation[] annotations,
+                                                 MethodHandle setter)
   {
+    return new InjectionTestPoint(type, annotations, setter);
+  }
+
+  @Override
+  protected void initTestInstance() throws Throwable
+  {
+    bindFields(_test);
+  }
+
+  protected void bindFields(Object test)
+    throws Throwable
+  {
+    for (int i = 0; i < getInjectionTestPoints().size(); i++) {
+      InjectionTestPoint ip
+        = getInjectionTestPoints().get(i);
+
+      Object obj = resolve(ip);
+      ip.inject(test, obj);
+    }
+  }
+
+  @Override
+  protected Object resolve(InjectionTestPoint ip)
+  {
+    Class type = ip.getType();
+    Annotation[] annotations = ip.getAnnotations();
     Object result;
 
     try {
@@ -144,6 +166,9 @@ public class WebRunnerBaratine extends BaseRunner
 
         WebSocketClient.open(wsUrl, (ServiceWebSocket<Object,Object>) result);
       }
+      else if (WebRunnerBaratine.class.equals(type)) {
+        result = this;
+      }
       else {
         throw new IllegalArgumentException(L.l("type {0} is not supported",
                                                type));
@@ -164,16 +189,28 @@ public class WebRunnerBaratine extends BaseRunner
   }
 
   @Override
-  public void runChild(FrameworkMethod child, RunNotifier notifier)
+  public void stop()
+  {
+    _web.close();
+  }
+
+  @Override
+  public void start()
+  {
+    start(false);
+  }
+
+  public void start(boolean isClean)
   {
     Thread thread = Thread.currentThread();
-    ClassLoader oldLoader = thread.getContextClassLoader();
-    EnvironmentClassLoader envLoader
-      = EnvironmentClassLoader.create(oldLoader,
-                                      "test-loader");
 
-    try {
-      thread.setContextClassLoader(envLoader);
+    if (isClean) {
+      _oldLoader = thread.getContextClassLoader();
+
+      _envLoader = EnvironmentClassLoader.create(_oldLoader,
+                                                 "test-loader");
+
+      thread.setContextClassLoader(_envLoader);
 
       ConfigurationBaratine config = getConfiguration();
 
@@ -182,8 +219,6 @@ public class WebRunnerBaratine extends BaseRunner
         RandomUtil.setTestSeed(config.testTime());
       }
 
-      State.clear();
-
       Logger.getLogger("").setLevel(Level.FINER);
       Logger.getLogger("javax.management").setLevel(Level.INFO);
 
@@ -191,34 +226,45 @@ public class WebRunnerBaratine extends BaseRunner
       System.setProperty("baratine.root", baratineRoot);
 
       try {
-        VfsOld.lookup(baratineRoot).removeAll();
+        if (isClean)
+          VfsOld.lookup(baratineRoot).removeAll();
       } catch (Exception e) {
+        e.printStackTrace();
       }
+    }
 
-      port(httpPort());
+    State.clear();
 
-      for (ServiceTest serviceTest : getServices()) {
-        Web.include(serviceTest.value());
-      }
+    port(httpPort());
 
-      networkSetup();
+    for (ServiceTest serviceTest : getServices()) {
+      Web.include(super.resove(serviceTest.value()));
+    }
 
-      Web.scanAutoConf();
+    networkSetup();
 
-      _web = Web.start();
+    Web.scanAutoConf();
+
+    _web = Web.start();
+  }
+
+  @Override
+  public void runChild(FrameworkMethod child, RunNotifier notifier)
+  {
+    try {
+      start(true);
 
       super.runChild(child, notifier);
-
     } finally {
       Logger.getLogger("").setLevel(Level.INFO);
 
       try {
-        envLoader.close();
+        _envLoader.close();
       } catch (Throwable e) {
         e.printStackTrace();
       }
 
-      thread.setContextClassLoader(oldLoader);
+      Thread.currentThread().setContextClassLoader(_oldLoader);
     }
   }
 

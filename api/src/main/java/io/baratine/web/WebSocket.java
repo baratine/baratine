@@ -42,21 +42,21 @@ public interface WebSocket<T> extends Pipe<T>
   String uri();
   String path();
   String pathInfo();
-  
+
   @Override
   void next(T data);
   @Override
   Credits credits();
-  
+
   void write(Buffer data);
   void writePart(Buffer data);
-  
+
   void write(byte []buffer, int offset, int length);
   void writePart(byte []buffer, int offset, int length);
-  
+
   void write(String data);
   void writePart(String data);
-  
+
   void ping(String data);
   void pong(String data);
 
@@ -69,37 +69,20 @@ public interface WebSocket<T> extends Pipe<T>
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
-  
+
   void flush();
-  
+
   @Override
   boolean isClosed();
-  
+
   @Override
   void fail(Throwable exn);
-  
+
   void close(WebSocketClose code, String text);
-  
+
   @Override
   default void close()
   {
     close(WebSocketCloses.NORMAL_CLOSURE, "ok");
-  }
-  
-  public interface Frame
-  {
-    boolean part();
-    FrameType type();
-    
-    String text();
-    Buffer binary();
-  }
-  
-  enum FrameType
-  {
-    TEXT,
-    BINARY,
-    PING,
-    PONG;
   }
 }
