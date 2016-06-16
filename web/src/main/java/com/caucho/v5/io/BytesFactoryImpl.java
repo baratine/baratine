@@ -41,15 +41,15 @@ public final class BytesFactoryImpl implements Buffers
 {
   private static final EnvironmentLocal<BytesFactoryImpl> _current
     = new EnvironmentLocal<>();
-  
+
   public static BytesFactoryImpl current()
   {
     synchronized (_current) {
       BytesFactoryImpl factory = _current.get();
-      
+
       if (factory == null) {
         factory = new BytesFactoryImpl();
-        
+
         _current.set(factory);
       }
 
@@ -66,7 +66,7 @@ public final class BytesFactoryImpl implements Buffers
   @Override
   public Buffer create(int capacity)
   {
-    return new BytesImpl();
+    return new BytesImpl(capacity);
   }
 
   @Override
