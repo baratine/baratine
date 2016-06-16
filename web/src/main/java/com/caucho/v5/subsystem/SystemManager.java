@@ -55,6 +55,8 @@ public class SystemManager implements AutoCloseable
   private static final Logger log
     = Logger.getLogger(SystemManager.class.getName());
 
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
+
   private static final EnvironmentLocal<SystemManager> _systemLocal
     = new EnvironmentLocal<SystemManager>();
 
@@ -105,10 +107,15 @@ public class SystemManager implements AutoCloseable
     }
 
     _id = id;
-    
+
     if (parentLoader == null) {
       parentLoader = Thread.currentThread().getContextClassLoader();
     }
+
+    final ClassLoader finalParentLoader = parentLoader;
+
+    initLog.log(Level.FINE,
+                () -> L.l("new SystemManager(${0}/${1})", finalParentLoader, _id));
 
     EnvLoader.addCloseListener(this, parentLoader);
 

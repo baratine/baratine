@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.util.L10N;
@@ -57,6 +58,8 @@ abstract class BaseRunner<T extends InjectionTestPoint>
 
   private final static L10N L = new L10N(BaseRunner.class);
   protected Object _test;
+
+  private static final Level defaultBaratineLoggingLevel = Level.INFO;
 
   private Map<Class<?>,Class<?>> _replacements = new HashMap<>();
 
@@ -202,6 +205,31 @@ abstract class BaseRunner<T extends InjectionTestPoint>
       result = target;
 
     return result;
+  }
+
+  protected void setLoggingLevels()
+  {
+    LogConfigs logConfigs = getTestClass().getAnnotation(LogConfigs.class);
+    LogConfig[] logs = null;
+
+    if (logConfigs != null)
+      logs = logConfigs.value();
+
+    if (logs == null) {
+      List<LogConfig> temp = new ArrayList<>();
+      Annotation[] annotations = getTestClass().getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof LogConfig) {
+          temp.add((LogConfig) annotation);
+        }
+      }
+      logs = temp.toArray(new LogConfig[temp.size()]);
+    }
+
+    for (LogConfig config : logs) {
+      Level level = Level.parse(config.level());
+      Logger.getLogger(config.value()).setLevel(level);
+    }
   }
 
   public abstract void stop();

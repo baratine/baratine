@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.Amp;
+import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverImpl;
 import com.caucho.v5.amp.journal.JournalDriverImpl;
@@ -53,8 +54,10 @@ import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.inject.BaratineProducer;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.Vfs;
+import com.caucho.v5.kraken.KrakenSystem;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
+import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
@@ -92,7 +95,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
   @Override
   protected void initTestInstance() throws Throwable
   {
-    _baratine.initialize(_test);
+    _baratine.initializeTest(_test);
   }
 
   @Override
@@ -121,8 +124,9 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
     _baratine = new BaratineContainer();
 
     try {
-      _baratine.initialize(_test);
-      _baratine.start(false);
+      _baratine.boot(false);
+
+      _baratine.initializeTest(_test);
     } catch (RuntimeException e) {
       throw e;
     } catch (Throwable e) {
@@ -142,9 +146,9 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
     public void start()
     {
       try {
-        initialize(_test);
+        boot(false);
 
-        start(false);
+        initializeTest(_test);
       } catch (RuntimeException e) {
         throw e;
       } catch (Throwable e) {
@@ -152,18 +156,20 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       }
     }
 
-    private void start(boolean isClean) throws Exception
+    void boot(boolean isClean) throws Exception
     {
+      setLoggingLevels();
+
       Thread thread = Thread.currentThread();
 
       _oldLoader = thread.getContextClassLoader();
 
       _envLoader = EnvironmentClassLoader.create(_oldLoader, "test-loader");
 
+      thread.setContextClassLoader(_envLoader);
+
       String baratineRoot = getWorkDir();
       System.setProperty("baratine.root", baratineRoot);
-
-      thread.setContextClassLoader(_envLoader);
 
       long startTime = getStartTime();
 
@@ -173,10 +179,6 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
         RandomUtil.setTestSeed(startTime);
       }
 
-      Logger.getLogger("").setLevel(Level.FINER);
-      Logger.getLogger("com.caucho").setLevel(Level.FINER);
-      Logger.getLogger("javax.management").setLevel(Level.FINER);
-
       try {
         if (isClean)
           VfsOld.lookup(baratineRoot).removeAll();
@@ -185,15 +187,20 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
 
       _manager = new SystemManager("junit-test", _envLoader);
 
+      AmpSystem.createAndAddSystem("localhost:8086").start();
+
       _rootDir = RootDirectorySystem.createAndAddSystem(Vfs.path(baratineRoot));
 
       _rootDir.start();
+
+      TempStoreSystem.createAndAddSystem().start();
+
+      KrakenSystem.createAndAddSystem(
+        new ServerBartenderJunit("localhost", 8086)).start();
     }
 
     public void stop()
     {
-      Logger.getLogger("").setLevel(Level.INFO);
-
       try {
         _rootDir.stop(ShutdownModeAmp.GRACEFUL);
       } catch (Throwable t) {
@@ -215,7 +222,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       Thread.currentThread().setContextClassLoader(_oldLoader);
     }
 
-    void initialize(Object test) throws Throwable
+    void initializeTest(Object test) throws Throwable
     {
       InjectorAmp.create();
 
@@ -271,6 +278,8 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
     protected void bindFields(Object test)
       throws Throwable
     {
+      Objects.requireNonNull(test, ()->L.l("test must not be null"));
+
       getInjectionTestPoints();
 
       for (int i = 0; i < getInjectionTestPoints().size(); i++) {
@@ -284,6 +293,9 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
           value = findInject(ip);
         else
           continue;
+
+        if (value == null)
+          log.log(Level.WARNING, () -> L.l("unable to bind ${0}", ip));
 
         ip.inject(test, value);
       }
@@ -538,11 +550,6 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       return _serviceClass.hashCode();
     }
 
-    public Class<?> getServiceClass()
-    {
-      return _serviceClass;
-    }
-
     public Class<?> getApi()
     {
       return _api;
@@ -567,7 +574,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
     try {
       _baratine = new BaratineContainer();
 
-      _baratine.start(true);
+      _baratine.boot(true);
 
       super.runChild(method, notifier);
     } catch (RuntimeException e) {

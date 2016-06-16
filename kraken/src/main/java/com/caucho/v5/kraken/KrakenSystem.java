@@ -30,6 +30,8 @@
 package com.caucho.v5.kraken;
 
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -39,6 +41,7 @@ import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
+import com.caucho.v5.util.L10N;
 
 /**
  * The local cache repository.
@@ -46,7 +49,11 @@ import com.caucho.v5.subsystem.SystemManager;
 public class KrakenSystem extends SubSystemBase 
 {
   public static final int START_PRIORITY = START_PRIORITY_KRAKEN;
-    
+
+  private static final L10N L = new L10N(KrakenSystem.class);
+
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
+
   private KrakenImpl _tableManager;
 
   private KrakenBuilder _builder;
@@ -56,6 +63,8 @@ public class KrakenSystem extends SubSystemBase
   
   private KrakenSystem(ServerBartender serverSelf)
   {
+    initLog.log(Level.FINE, () -> L.l("new KrakenSystem(${0})", serverSelf));
+
     _builder = Kraken.newDatabase();
     
     _builder.services(AmpSystem.currentManager());

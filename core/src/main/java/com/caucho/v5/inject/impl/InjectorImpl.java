@@ -81,7 +81,8 @@ public class InjectorImpl implements InjectorAmp
 {
   private static final L10N L = new L10N(InjectorImpl.class);
   private static final Logger log = Logger.getLogger(InjectorImpl.class.getName());
-  
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
+
   private static final EnvironmentLocal<InjectorImpl> _localManager
     = new EnvironmentLocal<>();
   
@@ -113,6 +114,8 @@ public class InjectorImpl implements InjectorAmp
   
   InjectorImpl(InjectorBuilderImpl builder)
   {
+    initLog.log(Level.FINE, () -> L.l("new InjectorImpl(${0})", builder));
+
     _loader = builder.getClassLoader();
     
     Thread thread = Thread.currentThread();

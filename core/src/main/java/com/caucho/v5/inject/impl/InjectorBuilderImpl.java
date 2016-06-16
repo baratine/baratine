@@ -42,6 +42,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Provider;
@@ -75,7 +76,8 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
 {
   private static final L10N L = new L10N(InjectorBuilderImpl.class);
   private static final Logger log = Logger.getLogger(InjectorBuilderImpl.class.getName());
-  
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
+
   private final ClassLoader _loader;
   
   private HashMap<Class<?>,Supplier<InjectScope<?>>> _scopeMap = new HashMap<>();
@@ -101,6 +103,8 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
   
   InjectorBuilderImpl(ClassLoader loader)
   {
+    initLog.log(Level.FINE, () -> L.l("new InjectorBuilderImpl(${0})", loader));
+
     _loader = loader;
       
     _scopeMap.put(Singleton.class, InjectScopeSingleton::new);
@@ -406,7 +410,15 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
   
     manager.addProvider(producer);
   }
-  
+
+  @Override
+  public String toString()
+  {
+    return this.getClass().getSimpleName() + "["
+           + _loader
+           + ']';
+  }
+
   /*
   private static class InjectBuilderChild implements InjectBuilder
   {

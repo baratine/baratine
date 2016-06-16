@@ -137,4 +137,12 @@ public class KrakenBuilderImpl implements KrakenBuilder
     
     return kraken;
   }
+
+  @Override
+  public String toString()
+  {
+    return this.getClass().getSimpleName() + "["
+           + _root
+           + ']';
+  }
 }
