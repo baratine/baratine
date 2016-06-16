@@ -168,7 +168,7 @@ public class FrameOut<T,S>
     int end = offset + len;
 
     do {
-      writeString(data, offset, len, isFinal);
+      offset = writeString(data, offset, len, isFinal);
     } while (offset < end);
   }
 
