@@ -82,4 +82,12 @@ public class TempFileManager
   {
     return _tempStore.openWriter();
   }
+
+  @Override
+  public String toString()
+  {
+    return this.getClass().getSimpleName() + "["
+           + _tempStore
+           + ']';
+  }
 }

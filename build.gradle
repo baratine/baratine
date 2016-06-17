@@ -15,7 +15,7 @@ allprojects {
 
   repositories {
     mavenCentral();
-    
+
     maven {
       url "http://repo.gradle.org/gradle/libs-releases-local"
     }
@@ -68,14 +68,16 @@ project(':framework') {
 
 project(':test') {
   dependencies {
-    compile project(':api')
-    compile project(':core')
-    compile project(':web')
-    compile project(':kraken')
-    compile project(':framework')
-    compile project(':plugins')
+    testCompile project(':api')
+    testCompile project(':core')
+    testCompile project(':web')
+    testCompile project(':kraken')
+    testCompile project(':framework')
+    testCompile project(':plugins')
 
     testCompile 'junit:junit:4.12'
+    testCompile 'org.hibernate:hibernate-validator:5.2.4.Final'
+    testCompile 'javax.el:javax.el-api:2.2.4'
   }
 }
 

@@ -31,6 +31,8 @@ package com.caucho.v5.store.temp;
 
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServicesAmp;
@@ -49,11 +51,15 @@ public class TempStoreSystem extends SubSystemBase
   private static final int START_PRIORITY = SubSystem.START_PRIORITY_ENV_SYSTEM;
   
   private static final L10N L = new L10N(TempStoreSystem.class);
+
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
   
   private final TempFileManager _manager;
   
   public TempStoreSystem(TempFileManager manager)
   {
+    initLog.log(Level.FINE, () -> L.l("new TempStoreSystem(${0})", manager));
+
     _manager = manager;
   }
 

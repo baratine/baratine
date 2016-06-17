@@ -43,28 +43,35 @@ class BytesImpl implements Buffer
 {
   private static final Logger log
     = Logger.getLogger(BytesImpl.class.getName());
-  
+
   private byte []_data;
-  
+
   private int _head;
   private int _tail;
-  
+
   BytesImpl(byte []buffer)
   {
     _data = new byte[buffer.length];
-    
+
     System.arraycopy(buffer, 0, _data, 0, buffer.length);
 
     _head = buffer.length;
   }
-  
+
+  BytesImpl(int capacity)
+  {
+    _data = new byte[capacity];
+
+    _tail = 0;
+  }
+
   BytesImpl()
   {
     _data = new byte[256];
 
     _tail = 0;
   }
-  
+
   /**
    * Returns the current size of the buffer.
    */
@@ -74,7 +81,7 @@ class BytesImpl implements Buffer
     return _head - _tail;
   }
 
-  
+
   /**
    * adds bytes from the buffer
    */
@@ -82,10 +89,10 @@ class BytesImpl implements Buffer
   public BytesImpl set(int pos, byte []buffer, int offset, int length)
   {
     System.arraycopy(buffer, offset, _data, pos, length);
-    
+
     return this;
   }
-    
+
   /**
    * adds bytes from the buffer
    */
@@ -94,47 +101,47 @@ class BytesImpl implements Buffer
   {
     while (length > 0) {
       int sublen = Math.min(_data.length - _tail, length);
-      
+
       System.arraycopy(buffer, offset, _data, _tail, sublen);
-      
+
       if (sublen <= 0) {
         throw new UnsupportedOperationException();
       }
-      
+
       length -= sublen;
       offset += sublen;
       _head += sublen;
     }
-    
+
     return this;
   }
-  
+
   @Override
   public BytesImpl write(InputStream is)
   {
     try {
       while (true) {
         int sublen = _data.length - _tail;
-        
+
         if (sublen == 0) {
           throw new UnsupportedOperationException();
         }
 
         sublen = is.read(_data, _tail, sublen);
-        
+
         if (sublen < 0) {
           return this;
         }
-        
+
         _head += sublen;
       }
     } catch (IOException e) {
       log.log(Level.WARNING, e.toString(), e);
     }
-    
+
     return this;
   }
-  
+
   /**
    * gets bytes from the buffer
    */
@@ -142,7 +149,7 @@ class BytesImpl implements Buffer
   public BytesImpl get(int pos, byte []buffer, int offset, int length)
   {
     System.arraycopy(_data, pos, buffer, offset, length);
-    
+
     return this;
   }
 
@@ -160,7 +167,7 @@ class BytesImpl implements Buffer
       return new String(_data, _tail, _head - _tail, "utf-8");
     } catch (Exception e) {
       log.log(Level.FINER, e.toString(), e);
-      
+
       throw new RuntimeException(e);
     }
   }

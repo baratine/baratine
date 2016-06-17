@@ -601,7 +601,16 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     }
   }
 
-  
+  @Override
+  public String toString()
+  {
+    return this.getClass().getSimpleName() + "["
+           + _name
+           + ", "
+           + _debugId
+           + ']';
+  }
+
   //
   // internal classes
   //

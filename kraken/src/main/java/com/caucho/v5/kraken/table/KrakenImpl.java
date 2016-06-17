@@ -32,6 +32,8 @@ package com.caucho.v5.kraken.table;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
@@ -48,7 +50,6 @@ import com.caucho.v5.kraken.query.QueryParserKraken;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.store.temp.TempStore;
 import com.caucho.v5.util.L10N;
-
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseWatch;
 import io.baratine.service.Cancel;
@@ -64,6 +65,8 @@ import io.baratine.stream.ResultStream;
 public final class KrakenImpl implements Kraken
 {
   private static final L10N L = new L10N(KrakenImpl.class);
+
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
 
   private final Path _root;
   private final ServicesAmp _services;
@@ -102,6 +105,9 @@ public final class KrakenImpl implements Kraken
   public KrakenImpl(KrakenBuilderImpl builder)
   {
     _root = builder.root();
+
+    initLog.log(Level.FINE, () -> L.l("new KrakenImpl(${0})", builder));
+
     Objects.requireNonNull(_root);
     
     _serverSelf = builder.serverSelf();

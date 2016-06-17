@@ -48,9 +48,10 @@ import io.baratine.timer.Timers;
  */
 public class AmpSystem extends SubSystemBase
 {
-  private static final Logger log = Logger.getLogger(AmpSystem.class.getName());
   private static final L10N L = new L10N(AmpSystem.class);
-  
+  private static final Logger log = Logger.getLogger(AmpSystem.class.getName());
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
+
   // priority must be before network so it's available to handle incoming
   // messages
   public static final int START_PRIORITY = START_PRIORITY_ENV_SYSTEM;
@@ -70,6 +71,8 @@ public class AmpSystem extends SubSystemBase
 
   public AmpSystem(String address)
   {
+    initLog.log(Level.FINE, () -> L.l("new AmpSystem(${0})", address));
+
     _systemManager = SystemManager.getCurrent();
     
     if (_systemManager == null) {

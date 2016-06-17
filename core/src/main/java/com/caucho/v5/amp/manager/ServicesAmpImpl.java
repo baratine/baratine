@@ -80,7 +80,6 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.loader.EnvLoader;
 import com.caucho.v5.util.L10N;
-
 import io.baratine.convert.Convert;
 import io.baratine.inject.Key;
 import io.baratine.service.Api;
@@ -91,7 +90,6 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceExceptionQueueFull;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
-import io.baratine.service.Session;
 import io.baratine.spi.MessageApi;
 import io.baratine.vault.Vault;
 
@@ -103,6 +101,8 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   private static final L10N L = new L10N(ServicesAmpImpl.class);
   private static final Logger log
     = Logger.getLogger(ServicesAmpImpl.class.getName());
+
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
   
   private final String _name;
   private final ClassLoader _classLoader;
@@ -162,6 +162,8 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
   
   public ServicesAmpImpl(ServiceManagerBuilderAmp builder)
   {
+    initLog.log(Level.FINE, () -> L.l("new ServicesAmpImpl(${0})", builder));
+
     _name = builder.name();
     _debugId = builder.debugId();
     

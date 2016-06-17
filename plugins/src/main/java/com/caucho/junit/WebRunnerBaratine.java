@@ -202,6 +202,8 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
 
   public void start(boolean isClean)
   {
+    setLoggingLevels();
+
     Thread thread = Thread.currentThread();
 
     if (isClean) {
@@ -218,9 +220,6 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
         TestTime.setTime(config.testTime());
         RandomUtil.setTestSeed(config.testTime());
       }
-
-      Logger.getLogger("").setLevel(Level.FINER);
-      Logger.getLogger("javax.management").setLevel(Level.INFO);
 
       String baratineRoot = getWorkDir();
       System.setProperty("baratine.root", baratineRoot);

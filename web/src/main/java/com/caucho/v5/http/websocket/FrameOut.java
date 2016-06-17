@@ -63,18 +63,27 @@ public class FrameOut<T,S>
 
   public void write(byte[] buffer, int offset, int length, boolean isFinal)
   {
+    int end = offset + length;
+
+    do {
+      offset = writeBytes(buffer, offset, length, isFinal);
+    } while (offset < end);
+  }
+
+  private int writeBytes(byte[] buffer, int offset, int length, boolean isFinal)
+  {
     _state = _state.toBinary();
 
     int end = offset + length;
+
+    // preallocate space for header
+    preHeader(Math.min(length - offset, _tBuf.capacity() - MAX_HEADER_LENGTH_NO_MASK));
 
     while (true) {
       TempBuffer tBuf = _tBuf;
       int tCapacity = tBuf.capacity();
 
       int sublen = Math.min(end - offset, tCapacity - MAX_HEADER_LENGTH_NO_MASK);
-
-      // preallocate space for header
-      preHeader(sublen);
 
       int tOffset = tBuf.length();
       System.arraycopy(buffer, offset, tBuf.buffer(), tOffset, sublen);
@@ -87,35 +96,46 @@ public class FrameOut<T,S>
         completeFrame(isFinal);
         flush();
 
-        return;
+        break;
       }
       else if (tOffset == tCapacity) {
         tBuf.length(tOffset);
         completeFrame(false);
         flush();
+
+        break;
       }
     }
+
+    return offset;
   }
 
   public void write(Buffer buffer, boolean isFinal)
   {
+    int offset = 0;
+    int len = buffer.length();
+    int end = offset + len;
+
+    do {
+      offset = write(buffer, offset, len, isFinal);
+    } while (offset < end);
+  }
+
+  private int write(Buffer buffer, int offset, int length, boolean isFinal)
+  {
     _state = _state.toBinary();
 
-    int offset = 0;
-    int length = buffer.length();
-
     int end = offset + length;
+
+    // preallocate space for header
+    preHeader(Math.min(length - offset, _tBuf.capacity() - MAX_HEADER_LENGTH_NO_MASK));
 
     while (true) {
       TempBuffer tBuf = _tBuf;
       int tCapacity = tBuf.capacity();
-
-      int sublen = Math.min(end - offset, tCapacity - MAX_HEADER_LENGTH_NO_MASK);
-
-      // preallocate space for header
-      preHeader(sublen);
-
       int tOffset = tBuf.length();
+
+      int sublen = Math.min(end - offset, tCapacity - tOffset);
 
       buffer.get(offset, tBuf.buffer(), tOffset, sublen);
 
@@ -125,35 +145,44 @@ public class FrameOut<T,S>
       if (offset == end) {
         tBuf.length(tOffset);
         completeFrame(isFinal);
-
         flush();
 
-        return;
+        break;
       }
       else if (tOffset == tCapacity) {
         tBuf.length(tOffset);
         completeFrame(false);
-
         flush();
+
+        break;
       }
     }
+
+    return offset;
   }
 
   public void writeString(String data, boolean isFinal)
   {
+    int offset = 0;
+    int len = data.length();
+    int end = offset + len;
+
+    do {
+      offset = writeString(data, offset, len, isFinal);
+    } while (offset < end);
+  }
+
+  private int writeString(String data, int offset, int length, boolean isFinal)
+  {
     _state = _state.toText();
 
-    char cBuf[] = _charBuf;
-    int length = data.length();
-    int offset = 0;
+    preHeader(Math.min(length - offset, _tBuf.capacity() - MAX_HEADER_LENGTH_NO_MASK));
 
     while (true) {
       TempBuffer tBuf = _tBuf;
+      char cBuf[] = _charBuf;
 
       int sublen = Math.min(length - offset, cBuf.length);
-
-      // preallocate space for header
-      preHeader(sublen);
 
       data.getChars(offset, offset + sublen, cBuf, 0);
       int cOffset = Utf8Util.write(tBuf, cBuf, 0, sublen);
@@ -164,13 +193,17 @@ public class FrameOut<T,S>
         completeFrame(isFinal);
         flush();
 
-        return;
+        break;
       }
       else if (tBuf.buffer().length - tBuf.length() < 4) {
         completeFrame(false);
         flush();
+
+        break;
       }
     }
+
+    return offset;
   }
 
   public void pong(String data)
@@ -213,8 +246,6 @@ public class FrameOut<T,S>
 
     int length = tBuf.length();
 
-    System.err.println("FrameOut.ping0: " + data.length() + " . " + sublen + " . " + length);
-
     data.getChars(0, sublen, cBuf, 0);
     int cOffset = Utf8Util.write(tBuf, cBuf, 0, sublen);
 
@@ -223,12 +254,8 @@ public class FrameOut<T,S>
 
     completeFrame(true);
 
-    System.err.println("FrameOut.ping1: " + tBuf.length());
-
     for (int i = 0; i < tBuf.length(); i++) {
       byte[] buffer = tBuf.buffer();
-
-      System.err.println("\t" + i + " . " + (buffer[i] & 0xff) + " . " + Integer.toHexString(buffer[i] & 0xff));
     }
 
     _state = state;
@@ -287,7 +314,7 @@ public class FrameOut<T,S>
     if (actualPayloadLen == _expectedPayloadLength) {
     }
     else {
-      // payload is larger than expected
+      // payload is not as expected
 
       int expectedLenBytes = calculatePayloadLengthHeaderBytes(_expectedPayloadLength);
       int actualLenBytes = calculatePayloadLengthHeaderBytes(actualPayloadLen);

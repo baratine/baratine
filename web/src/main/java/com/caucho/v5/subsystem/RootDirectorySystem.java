@@ -57,6 +57,7 @@ public class RootDirectorySystem extends SubSystemBase
   public static final int START_PRIORITY_ROOT_DIRECTORY = 20;
 
   private static final L10N L = new L10N(RootDirectorySystem.class);
+  private static final Logger initLog = Logger.getLogger("com.baratine.init-log");
   
   private static final ConcurrentHashMap<Path,LockItem> _lockMap
     = new ConcurrentHashMap<>();
@@ -69,6 +70,8 @@ public class RootDirectorySystem extends SubSystemBase
   {
     Objects.requireNonNull(rootDirectory);
     Objects.requireNonNull(dataDirectory);
+
+    initLog.log(Level.FINE, () -> L.l("new RootDirectorySystem(${0})", rootDirectory));
     
     /*
     if (dataDirectory instanceof MemoryPath) { // QA

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -24,54 +24,19 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package com.caucho.v5.io;
+package com.caucho.junit;
 
-import com.caucho.v5.loader.EnvironmentLocal;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import io.baratine.io.Buffer;
-import io.baratine.io.Buffers;
-
-/**
- * Flexible byte buffering.
- */
-public final class BytesFactoryImpl implements Buffers
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface LogConfigs
 {
-  private static final EnvironmentLocal<BytesFactoryImpl> _current
-    = new EnvironmentLocal<>();
-
-  public static BytesFactoryImpl current()
-  {
-    synchronized (_current) {
-      BytesFactoryImpl factory = _current.get();
-
-      if (factory == null) {
-        factory = new BytesFactoryImpl();
-
-        _current.set(factory);
-      }
-
-      return factory;
-    }
-  }
-
-  @Override
-  public Buffer create(byte[] data)
-  {
-    return new BytesImpl(data);
-  }
-
-  @Override
-  public Buffer create(int capacity)
-  {
-    return new BytesImpl(capacity);
-  }
-
-  @Override
-  public Buffer create()
-  {
-    return new BytesImpl();
-  }
+  LogConfig[] value();
 }
