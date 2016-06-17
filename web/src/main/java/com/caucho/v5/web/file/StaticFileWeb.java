@@ -27,7 +27,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.web.webapp;
+package com.caucho.v5.web.file;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -48,9 +48,10 @@ import io.baratine.web.ServiceWeb;
 /**
  * Static files.
  */
-public class WebStaticFile implements ServiceWeb
+public class StaticFileWeb implements ServiceWeb
 {
   private @Inject Config _config;
+  private @Inject MimeTypeWeb _mimeType;
   
   private boolean _isInit;
   private Path _root;
@@ -109,8 +110,15 @@ public class WebStaticFile implements ServiceWeb
         req.fail(new FileNotFoundException(pathInfo));
         return;
       }
+
+      String mimeType = mimeType(pathInfo);
       
-      req.header("content-type", mimeType(pathInfo));
+      if (mimeType != null) {
+        req.header("content-type", mimeType);
+      }
+      else {
+        req.header("content-type", "text/plain; charset=utf-8");
+      }
       
       // XXX:
       if (len > 0) {
@@ -138,39 +146,13 @@ public class WebStaticFile implements ServiceWeb
   {
     int p = pathInfo.lastIndexOf('.');
     
-    String enc = "utf-8";
-    
     if (p < 0) {
-      return "text/plain; charset=" + enc;
+      return null;
     }
     
-    String ext = pathInfo.substring(p);
+    String ext = pathInfo.substring(p + 1);
     
-    switch (ext) {
-    case ".html":
-      return "text/html; charset=" + enc;
-      
-    case ".css":
-      return "text/css; charset=" + enc;
-      
-    case ".js":
-      return "application/javascript; charset=" + enc;
-      
-    case ".png":
-      return "image/png";
-      
-    case ".pdf":
-      return "application/pdf";
-      
-    case ".gif":
-      return "image/gif";
-      
-    case ".jpg":
-      return "image/jpeg";
-      
-    default:
-      return "text/plain; charset=" + enc;
-    }
+    return _mimeType.apply(ext);
   }
   
   @Override

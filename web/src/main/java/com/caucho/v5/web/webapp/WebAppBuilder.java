@@ -65,6 +65,7 @@ import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.web.builder.IncludeWebAmp;
 import com.caucho.v5.web.builder.WebBuilderAmp;
+import com.caucho.v5.web.file.StaticFileWeb;
 import com.caucho.v5.web.webapp.FilterFactory.BeanFactoryAnn;
 import com.caucho.v5.web.webapp.FilterFactory.BeanFactoryClass;
 
@@ -301,7 +302,7 @@ public class WebAppBuilder
 
     // defaults
 
-    get("/**").to(WebStaticFile.class);
+    get("/**").to(StaticFileWeb.class);
 
     _injectBuilder.get();
     _serviceBuilder.start();
