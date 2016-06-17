@@ -30,13 +30,14 @@
 package com.caucho.v5.web.builder;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 import io.baratine.inject.InjectionPoint;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.OutBuilder;
-import io.baratine.web.ServiceWeb;
 import io.baratine.web.RouteBuilder;
+import io.baratine.web.ServiceWeb;
 
 public class RouteBuilderImpl implements RouteBuilder
 {
@@ -58,6 +59,12 @@ public class RouteBuilderImpl implements RouteBuilder
     _serverBuilder = serverBuilder;
     _method = method;
     _path = path;
+  }
+
+  @Override
+  public RouteBuilderImpl ifAnnotation(Method method)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override

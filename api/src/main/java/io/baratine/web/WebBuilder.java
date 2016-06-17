@@ -29,6 +29,7 @@
 
 package io.baratine.web;
 
+import java.lang.reflect.Method;
 import java.util.function.Function;
 import java.util.function.Supplier;
 

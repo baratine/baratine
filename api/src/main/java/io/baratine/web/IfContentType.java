@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -29,22 +29,20 @@
 
 package io.baratine.web;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.lang.annotation.ElementType.METHOD;
 
-import io.baratine.inject.InjectionPoint;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-public interface RouteBuilder
+@Documented
+@Retention(RUNTIME)
+@Target({METHOD})
+public @interface IfContentType
 {
-  RouteBuilder ifAnnotation(Method method);
-  
-  RouteBuilder before(Class<? extends ServiceWeb> typeBefore);
-  <X extends Annotation> RouteBuilder before(X ann, InjectionPoint<?> ip);
-  
-  OutBuilder to(ServiceWeb service);
-  OutBuilder to(Class<? extends ServiceWeb> service);
-  
-  RouteBuilder after(Class<? extends ServiceWeb> typeAfter);
-  <X extends Annotation> RouteBuilder after(X ann, InjectionPoint<?> ip);
-  
+  /**
+   * Content types matched by the method.
+   */
+  String []value();
 }

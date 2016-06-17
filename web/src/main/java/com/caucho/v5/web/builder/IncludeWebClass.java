@@ -64,6 +64,7 @@ import io.baratine.web.Form;
 import io.baratine.web.Get;
 import io.baratine.web.Header;
 import io.baratine.web.HttpMethod;
+import io.baratine.web.IfContentType;
 import io.baratine.web.IncludeWeb;
 import io.baratine.web.Options;
 import io.baratine.web.Part;
@@ -380,6 +381,9 @@ class IncludeWebClass implements IncludeWebAmp
     return new WebServiceMethod(beanFactory, method, webParam);
   }
   
+  /**
+   * Build a parameter program from the method's reflected parameter. 
+   */
   private static WebParam buildParam(WebBuilder builder, Parameter param)
   {
     if (RequestWeb.class.equals(param.getType())) {
@@ -707,6 +711,8 @@ class IncludeWebClass implements IncludeWebAmp
       String path = buildPath(prefix, pathTail, method);
       
       RouteBuilder routeBuilder = builder.route(httpMethod, path);
+      
+      routeBuilder.ifAnnotation(method);
       
       filterBefore(routeBuilder, method);
       

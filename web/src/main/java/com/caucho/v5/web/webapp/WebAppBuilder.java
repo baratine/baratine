@@ -86,6 +86,7 @@ import io.baratine.service.Services;
 import io.baratine.service.Session;
 import io.baratine.vault.Vault;
 import io.baratine.web.HttpMethod;
+import io.baratine.web.IfContentType;
 import io.baratine.web.IncludeWeb;
 import io.baratine.web.InstanceBuilder;
 import io.baratine.web.OutBuilder;
@@ -119,7 +120,7 @@ public class WebAppBuilder
 
   private ArrayList<RouteWebApp> _routes = new ArrayList<>();
   private ArrayList<ViewRef<?>> _views = new ArrayList<>();
-
+  
   private ArrayList<FilterFactory<ServiceWeb>> _filtersBeforeWebApp
     = new ArrayList<>();
   private ArrayList<FilterFactory<ServiceWeb>> _filtersAfterWebApp
@@ -770,11 +771,13 @@ public class WebAppBuilder
     private HttpMethod _method;
     private String _path;
     private ServiceWeb _service;
-
+    
+    private ArrayList<Predicate<RequestWeb>> _predicateList = new ArrayList<>();
+    
     private ArrayList<FilterFactory<ServiceWeb>> _filtersBefore
       = new ArrayList<>();
     private ArrayList<FilterFactory<ServiceWeb>> _filtersAfter
-    = new ArrayList<>();
+      = new ArrayList<>();
     private Class<? extends ServiceWeb> _serviceClass;
 
     private ViewRef<?> _viewRef;
@@ -803,6 +806,20 @@ public class WebAppBuilder
     public HttpMethod method()
     {
       return _method;
+    }
+
+    @Override
+    public RoutePath ifAnnotation(Method method)
+    {
+      IfContentType contentTypeAnn = method.getAnnotation(IfContentType.class);
+      
+      if (contentTypeAnn != null) {
+        for (String contentType : contentTypeAnn.value()) {
+          _predicateList.add(req->contentType.equals(req.header("content-type")));
+        }
+      }
+      
+      return this;
     }
 
     @Override
@@ -881,7 +898,7 @@ public class WebAppBuilder
 
     @Override
     public List<RouteMap> toMap(InjectorAmp injector,
-                          ServiceRefAmp serviceRef)
+                                ServiceRefAmp serviceRef)
     {
       ArrayList<ViewRef<?>> views = new ArrayList<>();
 
@@ -949,7 +966,7 @@ public class WebAppBuilder
         method = HttpMethod.UNKNOWN;
       }
 
-      Predicate<RequestWeb> test = _methodMap.get(method);
+      Predicate<RequestWeb> test = buildPredicate(method);
 
       routeApply = new RouteApply(service, filtersBefore, filtersAfter,
                                   serviceRef, test, viewMap);
@@ -967,6 +984,18 @@ public class WebAppBuilder
 
       return list;
     }
+    
+    private Predicate<RequestWeb> buildPredicate(HttpMethod method)
+    {
+      Predicate<RequestWeb> predicate = _methodMap.get(method);
+      
+      if (_predicateList.size() > 0) {
+        return new PredicateList(predicate, _predicateList);
+      }
+      else {
+        return predicate;
+      }
+    }
 
     /*
     private RouteMap crossOriginRouteMap(CrossOrigin crossOrigin)
@@ -979,6 +1008,35 @@ public class WebAppBuilder
       return new RouteMap(_path, corsRoute);
     }
   */
+  }
+  
+  static class PredicateList implements Predicate<RequestWeb>
+  {
+    private final Predicate<RequestWeb> []_predicateList;
+    
+    PredicateList(Predicate<RequestWeb> predicate,
+                  ArrayList<Predicate<RequestWeb>> predicateList)
+    {
+      _predicateList = new Predicate[predicateList.size() + 1];
+      
+      _predicateList[0] = predicate;
+      
+      for (int i = 0; i < predicateList.size(); i++) {
+        _predicateList[i + 1] = predicateList.get(i);
+      }
+    }
+
+    @Override
+    public boolean test(RequestWeb req)
+    {
+      for (Predicate<RequestWeb> predicate : _predicateList) {
+        if (! predicate.test(req)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
   }
 
   /**
