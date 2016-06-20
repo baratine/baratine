@@ -195,6 +195,12 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
   }
 
   @Override
+  public void stopImmediate()
+  {
+    _web.close();
+  }
+
+  @Override
   public void start()
   {
     start(false);

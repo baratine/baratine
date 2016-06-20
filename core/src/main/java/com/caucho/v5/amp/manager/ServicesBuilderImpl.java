@@ -116,7 +116,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   private ConcurrentArrayList<StubGenerator> _stubGenerators
     = new ConcurrentArrayList<>(StubGenerator.class);
   
-  //private long _journalDelay;
+  private long _journalDelay;
   
   public ServicesBuilderImpl()
   {
@@ -272,7 +272,6 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   }
   */
 
-  /*
   @Override
   public ServiceManagerBuilderAmp journalDelay(long timeout)
   {
@@ -286,7 +285,6 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   {
     return _journalDelay;
   }
-  */
   
   @Override
   public ServiceManagerBuilderAmp queueFullHandler(QueueFullHandler handler)

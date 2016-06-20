@@ -29,6 +29,14 @@
 
 package com.caucho.junit;
 
+import com.caucho.v5.util.L10N;
+import org.junit.Test;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkField;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.TestClass;
+
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -41,14 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.caucho.v5.util.L10N;
-import org.junit.Test;
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.FrameworkField;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.TestClass;
 
 abstract class BaseRunner<T extends InjectionTestPoint>
   extends BlockJUnit4ClassRunner
@@ -182,6 +182,15 @@ abstract class BaseRunner<T extends InjectionTestPoint>
     return workDir;
   }
 
+  public long getJournalDelay()
+  {
+    final ConfigurationBaratine config = getConfiguration();
+
+    long delay = config.journalDelay();
+
+    return delay;
+  }
+
   private String eval(String expr)
   {
     if (expr.charAt(0) != '{' || expr.charAt(expr.length() - 1) != '}')
@@ -233,6 +242,8 @@ abstract class BaseRunner<T extends InjectionTestPoint>
   }
 
   public abstract void stop();
+
+  public abstract void stopImmediate();
 
   public abstract void start();
 

@@ -29,23 +29,6 @@
 
 package com.caucho.junit;
 
-import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.InitializationError;
-
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServicesAmp;
@@ -53,9 +36,11 @@ import com.caucho.v5.amp.ensure.EnsureDriverImpl;
 import com.caucho.v5.amp.journal.JournalDriverImpl;
 import com.caucho.v5.amp.manager.InjectAutoBindService;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
+import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.vault.StubGeneratorVault;
 import com.caucho.v5.amp.vault.StubGeneratorVaultDriver;
 import com.caucho.v5.amp.vault.VaultDriver;
+import com.caucho.v5.bartender.journal.JournalSystem;
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.inject.BaratineProducer;
 import com.caucho.v5.inject.InjectorAmp;
@@ -69,7 +54,6 @@ import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import com.caucho.v5.vfs.VfsOld;
-
 import io.baratine.config.Config;
 import io.baratine.pipe.PipeIn;
 import io.baratine.service.Api;
@@ -78,6 +62,19 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 import io.baratine.vault.Asset;
+import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * RunnerBaratine is a junit Runner used to test services deployed in Baratine.
@@ -120,6 +117,12 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
   public void stop()
   {
     _baratine.stop();
+  }
+
+  @Override
+  public void stopImmediate()
+  {
+    _baratine.stopImmediate();
   }
 
   @Override
@@ -201,10 +204,12 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       KrakenSystem.createAndAddSystem(
         new ServerBartenderJunit("localhost", 8086));
 
+      JournalSystem.createAndAddSystem();
+
       _system.start();
     }
 
-    public void stop()
+    void stop()
     {
       try {
         if (_envLoader != null) {
@@ -223,7 +228,16 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       }
 
       Logger.getLogger("").setLevel(Level.INFO);
-      
+
+      Thread.currentThread().setContextClassLoader(_oldLoader);
+    }
+
+    public void stopImmediate()
+    {
+      _system.shutdown(ShutdownModeAmp.IMMEDIATE);
+
+      Logger.getLogger("").setLevel(Level.INFO);
+
       Thread.currentThread().setContextClassLoader(_oldLoader);
     }
 
@@ -247,6 +261,8 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       serviceBuilder.name("junit-test");
       serviceBuilder.autoServices(true);
       serviceBuilder.injector(injectBuilder);
+
+      serviceBuilder.journalDelay(getJournalDelay());
 
       StubGeneratorVault gen = new StubGeneratorVaultDriver();
 
@@ -276,14 +292,14 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
 
       _descriptors = descriptors;
       _services = services;
-      
+
       bindFields(test);
     }
 
     protected void bindFields(Object test)
       throws Throwable
     {
-      Objects.requireNonNull(test, ()->L.l("test must not be null"));
+      Objects.requireNonNull(test, () -> L.l("test must not be null"));
 
       getInjectionTestPoints();
 

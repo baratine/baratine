@@ -53,4 +53,10 @@ class ConfigurationBaratineDefault
   {
     return TEST_TIME;
   }
+
+  @Override
+  public long journalDelay()
+  {
+    return -1;
+  }
 }

@@ -45,6 +45,7 @@ public @interface ConfigurationBaratine
    * Convenience value that helps generate testable sequences
    */
   public static final long TEST_TIME = 894621091000L;
+
   /**
    * Specifies working directory for Baratine
    *
@@ -59,4 +60,6 @@ public @interface ConfigurationBaratine
    * @return
    */
   long testTime() default -1;
+
+  long journalDelay() default -1;
 }

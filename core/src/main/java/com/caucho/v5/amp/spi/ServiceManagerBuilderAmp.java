@@ -138,4 +138,8 @@ public interface ServiceManagerBuilderAmp extends Services.ServicesBuilder
   ServicesAmp get();
 
   ServicesAmp raw();
+
+  ServiceManagerBuilderAmp journalDelay(long journalDelay);
+
+  long journalDelay();
 }
