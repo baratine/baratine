@@ -29,12 +29,6 @@
 
 package com.caucho.v5.amp.service;
 
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.deliver.Deliver;
@@ -58,7 +52,6 @@ import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.L10N;
-
 import io.baratine.inject.Key;
 import io.baratine.service.Api;
 import io.baratine.service.Journal;
@@ -67,6 +60,12 @@ import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Service;
 import io.baratine.service.Startup;
 import io.baratine.service.Workers;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service builder for services needing configuration.
@@ -1050,9 +1049,11 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
     if (journalDelay < 0) {
       journalDelay = _journalDelay;
     }
-    
+
     JournalAmp journal = _services.journal(journalName);
-    
+
+    journal.delay(journalDelay);
+
     final StubJournal stubJournal = stubJournal(stubMain, journal);
 
     stubMain.journal(journal);

@@ -172,7 +172,7 @@ public class StubAmpBase implements StubAmp
   @Override
   public String journalKey()
   {
-    return null;
+    return "";
   }
   
   /*

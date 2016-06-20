@@ -61,12 +61,14 @@ public interface JournalAmp
                    InboxAmp inbox,
                    QueueDeliver<MessageAmp> queue); 
 
-  //void inbox(InboxAmp inbox);
+  void inbox(InboxAmp inbox);
 
-  //boolean isSaveRequest();
+  boolean isSaveRequest();
   
   boolean saveStart();
   void saveEnd(boolean isComplete);
   
   void flush();
+
+  void delay(long journalDelay);
 }

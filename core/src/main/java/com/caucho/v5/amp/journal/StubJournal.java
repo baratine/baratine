@@ -111,7 +111,7 @@ public final class StubJournal extends StubAmpBase
   {
     _inbox = inbox;
     
-    //journal().inbox(inbox);
+    journal().inbox(inbox);
   }
 
   public InboxAmp inbox()
@@ -216,11 +216,11 @@ public final class StubJournal extends StubAmpBase
       _toPeerJournal.flush();
     }
     
-    /*
+
     if (_journal.isSaveRequest()) {
-      _inbox.offerAndWake(new OnSaveRequestMessage(_inbox, Result.ignore()), 0);
+      //_inbox.offerAndWake(new OnSaveRequestMessage(_inbox, Result.ignore()), 0);
     }
-    */
+
   }
 
   /*

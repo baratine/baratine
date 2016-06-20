@@ -57,25 +57,21 @@ public class JournalNull implements JournalAmp
   {
   }
 
-  /*
   @Override
   public void inbox(InboxAmp inbox)
   {
   }
-  */
 
   @Override
   public void flush()
   {
   }
   
-  /*
   @Override
   public boolean isSaveRequest()
   {
     return false;
   }
-  */
 
   @Override
   public boolean saveStart()
@@ -103,6 +99,11 @@ public class JournalNull implements JournalAmp
     return 0;
   }
   */
+
+  @Override
+  public void delay(long journalDelay)
+  {
+  }
 
   @Override
   public long sequenceReplay()

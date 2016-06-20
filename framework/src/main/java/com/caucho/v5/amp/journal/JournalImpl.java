@@ -29,16 +29,7 @@
 
 package com.caucho.v5.amp.journal;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.caucho.v5.amp.deliver.QueueDeliver;
-import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.message.OnSaveMessage;
 import com.caucho.v5.amp.message.ReplayQueryMessage;
 import com.caucho.v5.amp.message.ReplaySendMessage;
@@ -54,8 +45,16 @@ import com.caucho.v5.h3.OutH3;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.util.Alarm;
 import com.caucho.v5.util.AlarmListener;
-
+import com.caucho.v5.util.WeakAlarm;
 import io.baratine.service.Result;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Interface to the journal itself. Journal writers open a stream and write to
@@ -81,8 +80,8 @@ public class JournalImpl implements JournalAmp
   private final JournalStream _jOut;
   private final OutputStreamJournal _jOs;
 
-  /*
-  private final int _maxCount;
+
+//  private final int _maxCount;
   
   private long _count;
   private long _nextMaxCount;
@@ -93,7 +92,6 @@ public class JournalImpl implements JournalAmp
   
   private Alarm _timeoutAlarm;
   private TimeoutListener _timeoutListener;
-  */
 
   private OutFactoryH3 _serializer;
   
@@ -156,7 +154,12 @@ public class JournalImpl implements JournalAmp
   }
   */
 
-  /*
+  @Override
+  public void delay(long journalDelay)
+  {
+    _delay = journalDelay;
+  }
+
   @Override
   public void inbox(InboxAmp inbox)
   {
@@ -165,10 +168,9 @@ public class JournalImpl implements JournalAmp
       _timeoutAlarm = new WeakAlarm(_timeoutListener);
     }
   }
-    */
   
   //@Override
-  private boolean isSaveRequest()
+  public boolean isSaveRequest()
   {
     /*
     boolean result = false;
@@ -251,7 +253,7 @@ public class JournalImpl implements JournalAmp
         //hOut.initPacket(os);
       
         String key = actor.journalKey();
-      
+
         out.writeLong(CODE_QUERY);
         out.writeString(key);
         out.writeString(methodName);
@@ -300,9 +302,9 @@ public class JournalImpl implements JournalAmp
   //
   // replay
   //
-  
-  private void readItem(InputStream is,
-                        QueueDeliver<MessageAmp> queue)
+
+  void readItem(InputStream is,
+                QueueDeliver<MessageAmp> queue)
     throws IOException
   {
     //_hIn.initPacket(is);
@@ -351,7 +353,7 @@ public class JournalImpl implements JournalAmp
     
     String methodName = hIn.readString();
     
-    int count = hIn.readInt();
+    int count = (int) hIn.readLong();
     
     Object []args = new Object[count];
 
@@ -377,7 +379,7 @@ public class JournalImpl implements JournalAmp
     Objects.requireNonNull(inbox);
     
     ReplayCallbackImpl replayTask = new ReplayCallbackImpl(inbox, queue, result);
-    
+
     _jOs.replay(replayTask);
   }
   
