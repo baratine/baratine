@@ -29,22 +29,8 @@
 
 package com.caucho.v5.web.builder;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.logging.Logger;
-
-import javax.inject.Qualifier;
-
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
-
 import io.baratine.convert.Convert;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
@@ -55,32 +41,19 @@ import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.service.Session;
 import io.baratine.service.Workers;
 import io.baratine.vault.Vault;
-import io.baratine.web.Body;
-import io.baratine.web.Cookie;
-import io.baratine.web.Delete;
-import io.baratine.web.FilterAfter;
-import io.baratine.web.FilterBefore;
-import io.baratine.web.Form;
-import io.baratine.web.Get;
-import io.baratine.web.Header;
-import io.baratine.web.HttpMethod;
-import io.baratine.web.IfContentType;
-import io.baratine.web.IncludeWeb;
-import io.baratine.web.Options;
-import io.baratine.web.Part;
-import io.baratine.web.Patch;
-import io.baratine.web.Path;
-import io.baratine.web.Post;
-import io.baratine.web.Put;
-import io.baratine.web.Query;
-import io.baratine.web.RequestWeb;
-import io.baratine.web.Route;
-import io.baratine.web.RouteBuilder;
-import io.baratine.web.ServiceWeb;
-import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.Trace;
-import io.baratine.web.WebBuilder;
-import io.baratine.web.WebSocketPath;
+import io.baratine.web.*;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 class IncludeWebClass implements IncludeWebAmp
 {
@@ -162,9 +135,25 @@ class IncludeWebClass implements IncludeWebAmp
         
         Class<?> entityType = entityRef.rawClass();
         String name = "";
-        
-        Path pathAnn = entityType.getAnnotation(Path.class);
-        
+
+        Path pathAnn;
+
+        Class<?> t = entityType;
+
+        do {
+          pathAnn = t.getAnnotation(Path.class);
+
+          Class<?>[] interfaces = t.getInterfaces();
+          for (int i = 0; pathAnn == null && i < interfaces.length; i++) {
+            Class<?> face = interfaces[i];
+
+            pathAnn = face.getAnnotation(Path.class);
+          }
+
+          t = t.getSuperclass();
+
+        } while (t != Object.class && pathAnn == null);
+
         if (pathAnn != null) {
           name = pathAnn.value();
         }

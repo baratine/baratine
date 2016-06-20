@@ -29,11 +29,6 @@
 
 package com.caucho.v5.web.webapp;
 
-import java.io.Serializable;
-import java.util.logging.Logger;
-
-import javax.inject.Provider;
-
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverImpl;
 import com.caucho.v5.amp.journal.JournalDriverImpl;
@@ -44,12 +39,13 @@ import com.caucho.v5.amp.vault.VaultDriver;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.json.JsonEngine;
 import com.caucho.v5.json.JsonEngineDefault;
-import com.caucho.v5.json.JsonEngineProviderDefault;
 import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
 import com.caucho.v5.web.view.ViewJsonDefault;
-
 import io.baratine.vault.Asset;
 import io.baratine.web.ViewResolver;
+
+import java.io.Serializable;
+import java.util.logging.Logger;
 
 /**
  * Baratine's web-app instance builder
@@ -132,7 +128,24 @@ public class WebAppBuilderFramework extends WebAppBuilder
            Class<ID> idType,
            String address)
     {
-      if (entityType.isAnnotationPresent(Asset.class)) {
+      Asset asset;
+
+      Class<?> t = entityType;
+
+      do {
+        asset = t.getAnnotation(Asset.class);
+
+        Class<?>[] interfaces = entityType.getInterfaces();
+
+        for (int i = 0; asset == null && i < interfaces.length; i++) {
+          Class<?> face = interfaces[i];
+          asset = face.getAnnotation(Asset.class);
+        }
+
+        t = t.getSuperclass();
+      } while (t != Object.class && asset == null);
+
+      if (asset != null) {
         return new VaultDriverDataImpl(ampManager, entityType, idType, address);
       }
       else {
