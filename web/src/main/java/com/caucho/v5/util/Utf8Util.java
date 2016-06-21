@@ -196,16 +196,20 @@ public final class Utf8Util
     }
   }
 
+  public static int write(TempBuffer out,
+                          final char []cBuf, int cOffset, int cLength)
+  {
+    return write(out, out.length(), out.capacity(), cBuf, cOffset, cLength);
+  }
+
   /**
    * @return number of characters able to be written to the buffer, which may
    *         be less than the number passed in
    */
-  public static int write(TempBuffer out,
-                         final char []cBuf, int cOffset, int cLength)
+  public static int write(TempBuffer out, int bOffset, int bLength,
+                          char []cBuf, int cOffset, int cLength)
   {
     byte []buffer = out.buffer();
-    int bOffset = out.length();
-    int bLength = buffer.length;
 
     int charsWritten = 0;
 

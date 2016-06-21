@@ -564,7 +564,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
       int len = (int) fIs.length();
       boolean isPart = ! fIs.isFinal();
 
-      // XXX: hard limit
+      // XXX: frame size limits
       len = Math.min(len, 1024 * 1024 * 4);
 
       Buffer buffer = Buffers.factory().create(len);

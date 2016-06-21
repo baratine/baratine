@@ -100,9 +100,9 @@ class BytesImpl implements Buffer
   public BytesImpl write(byte []buffer, int offset, int length)
   {
     while (length > 0) {
-      int sublen = Math.min(_data.length - _tail, length);
+      int sublen = Math.min(_data.length - _head, length);
 
-      System.arraycopy(buffer, offset, _data, _tail, sublen);
+      System.arraycopy(buffer, offset, _data, _head, sublen);
 
       if (sublen <= 0) {
         throw new UnsupportedOperationException();
