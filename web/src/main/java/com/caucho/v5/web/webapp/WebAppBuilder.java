@@ -341,7 +341,8 @@ public class WebAppBuilder
     return _configBuilder.get();
   }
 
-  InjectBuilderAmp injectBuilder()
+  @Override
+  public InjectBuilderAmp injectBuilder()
   {
     return _injectBuilder;
   }

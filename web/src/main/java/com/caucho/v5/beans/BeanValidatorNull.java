@@ -29,11 +29,11 @@
 
 package com.caucho.v5.beans;
 
-public class NullBeanValidator implements BeanValidator
+public class BeanValidatorNull implements BeanValidator
 {
-  public final static NullBeanValidator instance = new NullBeanValidator();
+  public final static BeanValidatorNull instance = new BeanValidatorNull();
 
-  private NullBeanValidator()
+  private BeanValidatorNull()
   {
   }
 }

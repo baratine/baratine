@@ -8,6 +8,11 @@ dependencies {
   compile 'javax.mail:mail:1.4.1'
   compile 'junit:junit:4.+'
 
+  // inject
+  compile 'org.springframework:spring-core:4.3.0.RELEASE'
+  compile 'org.springframework:spring-beans:4.3.0.RELEASE'
+  compile 'org.springframework:spring-context:4.3.0.RELEASE'
+
   // views
   compile 'org.freemarker:freemarker:2.3.23'
   compile 'com.github.spullara.mustache.java:compiler:0.9.1'
