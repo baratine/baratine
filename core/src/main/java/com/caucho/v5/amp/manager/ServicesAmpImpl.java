@@ -29,18 +29,6 @@
 
 package com.caucho.v5.amp.manager;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverAmp;
@@ -92,6 +80,18 @@ import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
 import io.baratine.spi.MessageApi;
 import io.baratine.vault.Vault;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Baratine core service manager.
@@ -582,13 +582,20 @@ public class ServicesAmpImpl implements ServicesAmp, AutoCloseable
     if (api.isAnnotationPresent(Service.class)) {
       return api;
     }
-    
+
+    Annotation[] annotations = api.getAnnotations();
+    for (Annotation annotation : annotations) {
+      if (annotation.annotationType().isAnnotationPresent(Service.class)) {
+        return api;
+      }
+    }
+
     Class<?> serviceApi = serviceApi(api.getSuperclass());
     
     if (serviceApi != null) {
       return serviceApi;
     }
-    
+
     for (Class<?> iface : api.getInterfaces()) {
       serviceApi = serviceApi(iface);
       
