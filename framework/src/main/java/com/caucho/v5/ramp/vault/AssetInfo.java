@@ -29,6 +29,21 @@
 
 package com.caucho.v5.ramp.vault;
 
+import com.caucho.v5.convert.bean.FieldBase;
+import com.caucho.v5.convert.bean.FieldNull;
+import com.caucho.v5.convert.bean.FieldObject;
+import com.caucho.v5.inject.AnnotationLiteral;
+import com.caucho.v5.inject.type.TypeRef;
+import com.caucho.v5.kraken.info.TableInfo;
+import com.caucho.v5.util.IdentityGenerator;
+import com.caucho.v5.util.L10N;
+import com.caucho.v5.util.RandomUtil;
+import io.baratine.db.Cursor;
+import io.baratine.service.ServiceException;
+import io.baratine.vault.Asset;
+import io.baratine.vault.IdAsset;
+import io.baratine.vault.StateAsset;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -40,22 +55,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.logging.Logger;
-
-import com.caucho.v5.convert.bean.FieldBase;
-import com.caucho.v5.convert.bean.FieldNull;
-import com.caucho.v5.convert.bean.FieldObject;
-import com.caucho.v5.inject.AnnotationLiteral;
-import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.kraken.info.TableInfo;
-import com.caucho.v5.util.IdentityGenerator;
-import com.caucho.v5.util.L10N;
-import com.caucho.v5.util.RandomUtil;
-
-import io.baratine.db.Cursor;
-import io.baratine.service.ServiceException;
-import io.baratine.vault.Asset;
-import io.baratine.vault.IdAsset;
-import io.baratine.vault.StateAsset;
 
 class AssetInfo<ID,T>
 {
@@ -125,32 +124,35 @@ class AssetInfo<ID,T>
       fields.add(fieldId);
     }
 
-    for (Field field : _type.getDeclaredFields()) {
-      if (! isPersistent(field)) {
-        continue;
-      }
+    Class<?> type = _type;
+    do {
+      for (Field field : type.getDeclaredFields()) {
+        if (! isPersistent(field)) {
+          continue;
+        }
 
-      ColumnVault column = field.getAnnotation(ColumnVault.class);
+        ColumnVault column = field.getAnnotation(ColumnVault.class);
 
-      if (column == null) {
-        column = makeDefaultColumn(field);
-      }
+        if (column == null) {
+          column = makeDefaultColumn(field);
+        }
 
-      FieldInfo<T,?> fieldInfo;
-      
-      if (IdAsset.class.equals(field.getType())) {
-        fieldInfo = new FieldInfoIdAsset<>(field, column);
-      }
-      else {
-        fieldInfo = new FieldAsset<>(field, column);
-      }
-      
-      if (! fieldInfo.isColumn()) {
-        _isDocument = true;
-      }
+        FieldInfo<T,?> fieldInfo;
 
-      fields.add(fieldInfo);
-    }
+        if (IdAsset.class.equals(field.getType())) {
+          fieldInfo = new FieldInfoIdAsset<>(field, column);
+        }
+        else {
+          fieldInfo = new FieldAsset<>(field, column);
+        }
+
+        if (! fieldInfo.isColumn()) {
+          _isDocument = true;
+        }
+
+        fields.add(fieldInfo);
+      }
+    } while (! Object.class.equals(type = type.getSuperclass()));
 
     List<FieldInfo<T,?>> ids = new ArrayList<>();
 
