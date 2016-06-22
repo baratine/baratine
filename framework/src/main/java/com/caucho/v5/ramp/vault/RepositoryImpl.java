@@ -89,7 +89,23 @@ public class RepositoryImpl<ID, T>
   @OnInit
   public void init()
   {
-    Asset table = _entityClass.getAnnotation(Asset.class);
+    Asset table;
+
+    Class<?> t = _entityClass;
+
+    do {
+      table = t.getAnnotation(Asset.class);
+
+      Class<?>[] interfaces = t.getInterfaces();
+
+      for (int i = 0; table == null && i < interfaces.length; i++) {
+        Class<?> face = interfaces[i];
+        table = face.getAnnotation(Asset.class);
+      }
+
+      t = t.getSuperclass();
+    } while (t != Object.class && table == null);
+
 
     _entityDesc = new AssetInfo<>(_entityClass, _idClass, table);
 

@@ -421,7 +421,24 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
            Class<ID> idType,
            String address)
     {
-      if (entityType.isAnnotationPresent(Asset.class)) {
+      Asset asset;
+
+      Class<?> t = entityType;
+
+      do {
+        asset = t.getAnnotation(Asset.class);
+
+        Class<?>[] interfaces = entityType.getInterfaces();
+
+        for (int i = 0; asset == null && i < interfaces.length; i++) {
+          Class<?> face = interfaces[i];
+          asset = face.getAnnotation(Asset.class);
+        }
+
+        t = t.getSuperclass();
+      } while (t != Object.class && asset == null);
+
+      if (asset != null) {
         return new VaultDriverDataImpl(ampManager, entityType, idType, address);
       }
       else {

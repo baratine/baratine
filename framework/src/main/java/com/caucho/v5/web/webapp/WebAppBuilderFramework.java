@@ -135,7 +135,7 @@ public class WebAppBuilderFramework extends WebAppBuilder
       do {
         asset = t.getAnnotation(Asset.class);
 
-        Class<?>[] interfaces = entityType.getInterfaces();
+        Class<?>[] interfaces = t.getInterfaces();
 
         for (int i = 0; asset == null && i < interfaces.length; i++) {
           Class<?> face = interfaces[i];
