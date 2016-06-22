@@ -29,20 +29,8 @@
 
 package com.caucho.v5.web.builder;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.inject.Qualifier;
-
 import com.caucho.v5.amp.service.ValidatorService;
 import com.caucho.v5.util.L10N;
-
 import io.baratine.inject.Injector.IncludeInject;
 import io.baratine.service.Service;
 import io.baratine.vault.Vault;
@@ -55,6 +43,16 @@ import io.baratine.web.Put;
 import io.baratine.web.Route;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.Trace;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Validation of the configuration
@@ -187,7 +185,45 @@ class WebServerValidator
     
     return false;
   }
-  
+
+  private boolean isActiveAnnotation(Class annotated,
+                                     Set<Class<?>> activeAnnTypes)
+  {
+    Class<?> t = annotated;
+    Set<AnnotatedElement> checked = new HashSet<>();
+
+    boolean isActive;
+    do {
+      isActive = isActiveAnnotationRec(t, activeAnnTypes, checked);
+
+      isActive |= isActiveAnnotation(t.getInterfaces(),
+                                     activeAnnTypes,
+                                     checked);
+
+    } while (!isActive && ((t = t.getSuperclass()) != null
+                           || !Object.class.equals(t)));
+
+    return isActive;
+  }
+
+  private boolean isActiveAnnotation(Class<?>[] interfaces,
+                                     Set<Class<?>> activeAnnTypes,
+                                     Set<AnnotatedElement> checked)
+  {
+    boolean isActive = false;
+
+    for (int i = 0; !isActive && i < interfaces.length; i++) {
+      Class<?> face = interfaces[i];
+
+      if (checked.contains(face))
+        continue;
+
+      isActive = isActiveAnnotationRec(face, activeAnnTypes, checked);
+    }
+
+    return isActive;
+  }
+
   private boolean isActiveAnnotation(AnnotatedElement annotated,
                                      Set<Class<?>> activeAnnTypes)
   {
@@ -204,7 +240,7 @@ class WebServerValidator
 
     checkedTypes.add(annotated);
 
-    for (Annotation ann : annotated.getAnnotations()) {
+    for (Annotation ann : annotated.getDeclaredAnnotations()) {
       if (activeAnnTypes.contains(ann.annotationType())) {
         return true;
       }
