@@ -43,9 +43,9 @@ public final class TempBuffer implements java.io.Serializable, Buffer
 {
   public static final int SIZE = TempBuffers.STANDARD_SIZE;
   public static final int SMALL_SIZE = TempBuffers.SMALL_SIZE;
-  
+
   private TempBufferData _data;
-  
+
   private TempBuffer _next;
   private final byte []_buf;
   private int _tail;
@@ -65,10 +65,10 @@ public final class TempBuffer implements java.io.Serializable, Buffer
   {
     _data = data;
     _buf = data.buffer();
-    
+
     data.allocate();
   }
-  
+
   public static boolean isSmallmem()
   {
     return TempBuffers.isSmallmem();
@@ -108,7 +108,7 @@ public final class TempBuffer implements java.io.Serializable, Buffer
     _tail = 0;
     _head = 0;
     _bufferCount = 0;
-    
+
   }
 
   /**
@@ -166,17 +166,17 @@ public final class TempBuffer implements java.io.Serializable, Buffer
   {
     _next = next;
   }
-  
+
   public final int getBufferCount()
   {
     return _bufferCount;
   }
-  
+
   public final void setBufferCount(int count)
   {
     _bufferCount = count;
   }
-  
+
   public Buffer write(byte[] buffer)
   {
     return write(buffer, 0, buffer.length);
@@ -205,7 +205,15 @@ public final class TempBuffer implements java.io.Serializable, Buffer
   public Buffer set(int pos, byte[] buffer, int offset, int length)
   {
     System.arraycopy(buffer, offset, _buf, pos, length);
-    
+
+    return this;
+  }
+
+  @Override
+  public Buffer set(int pos, Buffer buffer, int offset, int length)
+  {
+    buffer.get(offset, _buf, pos, length);
+
     return this;
   }
 
@@ -216,17 +224,17 @@ public final class TempBuffer implements java.io.Serializable, Buffer
     while (true) {
       int length = _head;
       int sublen = _buf.length - length;
-    
+
       if (sublen <= 0) {
         throw new IllegalStateException();
       }
-    
+
       sublen = is.read(_buf, length, sublen);
-    
+
       if (sublen < 0) {
         return this;
       }
-    
+
       _head = length + sublen;
     }
   }
@@ -237,9 +245,9 @@ public final class TempBuffer implements java.io.Serializable, Buffer
     if (length < _head - pos) {
       throw new IllegalArgumentException();
     }
-    
+
     System.arraycopy(_buf, pos, buffer, offset, length);
-    
+
     return this;
   }
 
@@ -247,13 +255,13 @@ public final class TempBuffer implements java.io.Serializable, Buffer
   public int read(byte[] buffer, int offset, int length)
   {
     int tail = _tail;
-    
+
     int sublen = Math.min(_head - tail, length);
-    
+
     System.arraycopy(_buf, tail, buffer, offset, sublen);
-    
+
     _tail += sublen;
-    
+
     return sublen > 0 ? sublen : -1;
 
   }
@@ -262,11 +270,11 @@ public final class TempBuffer implements java.io.Serializable, Buffer
   public void read(ByteBuffer buffer)
   {
     int tail = _tail;
-    
+
     int sublen = Math.min(_head - tail, buffer.remaining());
 
     buffer.put(_buf, _tail, sublen);
-    
+
     _tail = tail + sublen;
   }
 
@@ -275,18 +283,18 @@ public final class TempBuffer implements java.io.Serializable, Buffer
     throws IOException
   {
     int tail = _tail;
-    
+
     os.write(_buf, tail, _head - tail);
-    
+
     _tail = _head;
   }
-  
+
   @Override
   public void free()
   {
     TempBufferData data = _data;
     _data = null;
-    
+
     if (data != null) {
       data.free();
     }

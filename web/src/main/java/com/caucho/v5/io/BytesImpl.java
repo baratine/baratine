@@ -97,6 +97,17 @@ class BytesImpl implements Buffer
    * adds bytes from the buffer
    */
   @Override
+  public Buffer set(int pos, Buffer buffer, int offset, int length)
+  {
+    buffer.get(offset, _data, pos, length);
+
+    return this;
+  }
+
+  /**
+   * adds bytes from the buffer
+   */
+  @Override
   public BytesImpl write(byte []buffer, int offset, int length)
   {
     while (length > 0) {

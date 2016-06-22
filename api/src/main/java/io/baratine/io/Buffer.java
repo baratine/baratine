@@ -49,30 +49,32 @@ public interface Buffer
   {
     return false;
   }
-  
+
   default ByteBuffer direct()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
-  
+
   Buffer set(int pos, byte []buffer, int offset, int length);
-  
+
+  Buffer set(int pos, Buffer buffer, int offset, int length);
+
   /**
    * adds bytes from the buffer
    */
   Buffer write(byte []buffer, int offset, int length);
-  
+
   /**
    * adds bytes from the buffer from a consumer
    */
   Buffer write(InputStream is)
     throws IOException;
-  
+
   /**
    * gets bytes from the buffer
    */
   Buffer get(int pos, byte []buffer, int offset, int length);
-  
+
   int read(byte []buffer, int offset, int length);
 
   default void read(ByteBuffer buffer)
@@ -94,7 +96,7 @@ public interface Buffer
   default void free()
   {
   }
-  
+
   public interface InputStreamConsumer
   {
     int read(byte []buffer, int offset, int length)

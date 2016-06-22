@@ -375,15 +375,15 @@ public class WebSocketBaratineImpl<T,S>
   }
 
   @Override
-  public void send(TempBuffer tBuf)
+  public void send(Buffer buffer)
   {
-    _outProxy.write(_outWriter, tBuf, false);
+    _outProxy.write(_outWriter, buffer, false);
   }
 
   @Override
-  public void sendEnd(TempBuffer tBuf)
+  public void sendEnd(Buffer buffer)
   {
-    _outProxy.write(_outWriter, tBuf, true);
+    _outProxy.write(_outWriter, buffer, true);
   }
 
   //

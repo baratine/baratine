@@ -351,16 +351,12 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   public void flush()
   {
     //complete(false);
-
-    _frameOut.flush();
   }
 
   //@Override
   public void flushEnd()
   {
     //complete(false);
-
-    _frameOut.flushEnd();
   }
 
   private void readPing(FrameInputStream fIs)
@@ -401,11 +397,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
   }
 
-  abstract public void send(TempBuffer tBuf);
+  abstract public void send(Buffer buffer);
 
-  public void sendEnd(TempBuffer tBuf)
+  public void sendEnd(Buffer buffer)
   {
-    send(tBuf);
+    send(buffer);
   }
 
   //

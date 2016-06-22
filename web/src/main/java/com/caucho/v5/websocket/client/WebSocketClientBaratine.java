@@ -552,10 +552,10 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   }
 
   @Override
-  public void send(TempBuffer tBuf)
+  public void send(Buffer buffer)
   {
     try {
-      tBuf.read(_os);
+      buffer.read(_os);
       _os.flush();
     } catch (IOException e) {
       throw new RuntimeException(e);
