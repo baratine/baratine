@@ -102,9 +102,7 @@ public class RepositoryImpl<ID, T>
         Class<?> face = interfaces[i];
         table = face.getAnnotation(Asset.class);
       }
-
-      t = t.getSuperclass();
-    } while (t != Object.class && table == null);
+    } while (table == null && ! Object.class.equals(t = t.getSuperclass()));
 
 
     _entityDesc = new AssetInfo<>(_entityClass, _idClass, table);

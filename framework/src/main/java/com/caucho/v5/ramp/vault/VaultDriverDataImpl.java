@@ -30,9 +30,7 @@
 package com.caucho.v5.ramp.vault;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -122,7 +120,20 @@ public class VaultDriverDataImpl<ID, T>
 
   private void introspect()
   {
-    Asset table = _entityClass.getAnnotation(Asset.class);
+    Asset table;
+
+    Class<?> type = _entityClass;
+
+    do {
+      table = type.getAnnotation(Asset.class);
+
+      Class<?>[] faces = type.getInterfaces();
+      for (int i = 0; table == null && i < faces.length; i++) {
+        Class<?> face = faces[i];
+        table = face.getAnnotation(Asset.class);
+      }
+    } while (table == null
+             && ! Object.class.equals(type = type.getSuperclass()));
 
     _entityInfo = new AssetInfo<>(_entityClass, _idClass, table);
 

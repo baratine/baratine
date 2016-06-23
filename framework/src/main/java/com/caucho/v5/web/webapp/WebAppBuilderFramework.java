@@ -29,6 +29,9 @@
 
 package com.caucho.v5.web.webapp;
 
+import java.io.Serializable;
+import java.util.logging.Logger;
+
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverImpl;
 import com.caucho.v5.amp.journal.JournalDriverImpl;
@@ -41,11 +44,9 @@ import com.caucho.v5.json.JsonEngine;
 import com.caucho.v5.json.JsonEngineDefault;
 import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
 import com.caucho.v5.web.view.ViewJsonDefault;
+
 import io.baratine.vault.Asset;
 import io.baratine.web.ViewResolver;
-
-import java.io.Serializable;
-import java.util.logging.Logger;
 
 /**
  * Baratine's web-app instance builder
@@ -141,9 +142,7 @@ public class WebAppBuilderFramework extends WebAppBuilder
           Class<?> face = interfaces[i];
           asset = face.getAnnotation(Asset.class);
         }
-
-        t = t.getSuperclass();
-      } while (t != Object.class && asset == null);
+      } while (asset == null && ! Object.class.equals(t = t.getSuperclass()));
 
       if (asset != null) {
         return new VaultDriverDataImpl(ampManager, entityType, idType, address);

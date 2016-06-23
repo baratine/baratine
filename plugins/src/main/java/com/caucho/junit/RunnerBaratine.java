@@ -29,6 +29,16 @@
 
 package com.caucho.junit;
 
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServicesAmp;
@@ -54,6 +64,7 @@ import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import com.caucho.v5.vfs.VfsOld;
+
 import io.baratine.config.Config;
 import io.baratine.pipe.PipeIn;
 import io.baratine.service.Api;
@@ -62,19 +73,10 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 import io.baratine.vault.Asset;
+
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-
-import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * RunnerBaratine is a junit Runner used to test services deployed in Baratine.
@@ -434,9 +436,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
           Class<?> face = interfaces[i];
           asset = face.getAnnotation(Asset.class);
         }
-
-        t = t.getSuperclass();
-      } while (t != Object.class && asset == null);
+      } while (asset == null && ! Object.class.equals(t = t.getSuperclass()));
 
       if (asset != null) {
         return new VaultDriverDataImpl(ampManager, entityType, idType, address);
