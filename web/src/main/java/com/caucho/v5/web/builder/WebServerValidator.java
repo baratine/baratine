@@ -60,80 +60,80 @@ import java.util.Set;
 class WebServerValidator
 {
   private static final L10N L = new L10N(WebServerValidator.class);
-  
+
   private static final ArrayList<Class<?>> _includeActiveInterfaces
     = new ArrayList<>();
-  
+
   private static final HashSet<Class<?>> _includeClassAnnotations
     = new HashSet<>();
-  
+
   private static final HashSet<Class<?>> _includeMethodAnnotations
     = new HashSet<>();
-  
+
   private final ValidatorService _validatorService = new ValidatorService();
-  
+
   /*
   private static final HashSet<Class<?>> _includeMethodMetaAnnotations
     = new HashSet<>();
     */
-  
+
   /**
    * {@code Web.service(Class)} validation
    */
   public <T> void serviceClass(Class<T> serviceClass)
   {
     Objects.requireNonNull(serviceClass);
-    
+
     _validatorService.serviceClass(serviceClass);
-    
+
     if (Vault.class.isAssignableFrom(serviceClass)) {
     }
     else if (serviceClass.isInterface()) {
       throw new IllegalArgumentException(L.l("service class '{0}' is invalid because it's an interface",
                                              serviceClass.getName()));
     }
-    
+
     if (serviceClass.isMemberClass()
         && ! Modifier.isStatic(serviceClass.getModifiers())) {
       throw new IllegalArgumentException(L.l("service class '{0}' is invalid because it's a non-static inner class",
                                              serviceClass.getName()));
     }
-    
+
     if (serviceClass.isPrimitive()) {
       throw new IllegalArgumentException(L.l("service class '{0}' is invalid because it's a primitive class",
                                              serviceClass.getName()));
     }
-    
+
     if (serviceClass.isArray()) {
       throw new IllegalArgumentException(L.l("service class '{0}' is invalid because it's an array",
                                              serviceClass.getName()));
     }
-    
+
     if (Class.class.equals(serviceClass)) {
       throw new IllegalArgumentException(L.l("service class '{0}' is invalid",
                                              serviceClass.getName()));
     }
   }
-  
+
   /**
    * {@code Web.include(Class)} class validation
    */
   public <T> void includeClass(Class<T> includeClass)
   {
     Objects.requireNonNull(includeClass);
-    
+
     validateIncludeClass(includeClass);
-    
+
     if (includeClass.isAnnotationPresent(Service.class)) {
       serviceClass(includeClass);
     }
-    
+
     if (! includeIsActive(includeClass)) {
       throw new IllegalArgumentException(L.l("include class '{0}' is invalid because it does not define any beans, services, or paths.",
                                              includeClass.getName()));
     }
   }
-  
+
   private <T> void validateIncludeClass(Class<T> includeClass)
   {
     if (Vault.class.isAssignableFrom(includeClass)) {
@@ -142,29 +142,29 @@ class WebServerValidator
       throw new IllegalArgumentException(L.l("include class '{0}' is invalid because it's an interface",
                                              includeClass.getName()));
     }
-    
+
     if (includeClass.isMemberClass()
         && ! Modifier.isStatic(includeClass.getModifiers())) {
       throw new IllegalArgumentException(L.l("include class '{0}' is invalid because it's a non-static inner class",
                                              includeClass.getName()));
     }
-    
+
     if (includeClass.isPrimitive()) {
       throw new IllegalArgumentException(L.l("include class '{0}' is invalid because it's a primitive class",
                                              includeClass.getName()));
     }
-    
+
     if (includeClass.isArray()) {
       throw new IllegalArgumentException(L.l("include class '{0}' is invalid because it's an array",
                                              includeClass.getName()));
     }
-    
+
     if (Class.class.equals(includeClass)) {
       throw new IllegalArgumentException(L.l("include class '{0}' is invalid",
                                              includeClass.getName()));
     }
   }
-  
+
   private <T> boolean includeIsActive(Class<T> includeClass)
   {
     for (Class<?> activeIface : _includeActiveInterfaces) {
@@ -172,17 +172,17 @@ class WebServerValidator
         return true;
       }
     }
-    
+
     if (isActiveAnnotation(includeClass, _includeClassAnnotations)) {
       return true;
     }
-    
+
     for (Method method : includeClass.getMethods()) {
       if (isActiveAnnotation(method, _includeMethodAnnotations)) {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -192,7 +192,7 @@ class WebServerValidator
     Class<?> t = annotated;
     Set<AnnotatedElement> checked = new HashSet<>();
 
-    boolean isActive;
+    boolean isActive = false;
     do {
       isActive = isActiveAnnotationRec(t, activeAnnTypes, checked);
 
@@ -200,8 +200,9 @@ class WebServerValidator
                                      activeAnnTypes,
                                      checked);
 
-    } while (!isActive && ((t = t.getSuperclass()) != null
-                           || !Object.class.equals(t)));
+    } while (! isActive
+             && ((t = t.getSuperclass()) != null
+             && ! Object.class.equals(t)));
 
     return isActive;
   }
@@ -215,8 +216,9 @@ class WebServerValidator
     for (int i = 0; !isActive && i < interfaces.length; i++) {
       Class<?> face = interfaces[i];
 
-      if (checked.contains(face))
+      if (checked.contains(face)) {
         continue;
+      }
 
       isActive = isActiveAnnotationRec(face, activeAnnTypes, checked);
     }
@@ -229,7 +231,7 @@ class WebServerValidator
   {
     return isActiveAnnotationRec(annotated, activeAnnTypes, new HashSet<>());
   }
-  
+
   private boolean isActiveAnnotationRec(AnnotatedElement annotated,
                                          Set<Class<?>> activeAnnTypes,
                                          Set<AnnotatedElement> checkedTypes)
@@ -244,29 +246,29 @@ class WebServerValidator
       if (activeAnnTypes.contains(ann.annotationType())) {
         return true;
       }
-      
+
       if (ann.annotationType() != annotated
-          && isActiveAnnotationRec(ann.annotationType(), 
+          && isActiveAnnotationRec(ann.annotationType(),
                                    activeAnnTypes,
                                    checkedTypes)) {
         return true;
       }
     }
-    
+
     return false;
   }
-  
+
   static {
     _includeActiveInterfaces.add(IncludeInject.class);
     //_includeActiveInterfaces.add(IncludeService.class);
     _includeActiveInterfaces.add(IncludeWeb.class);
-    
+
     _includeActiveInterfaces.add(ServiceWebSocket.class);
-    
+
     _includeClassAnnotations.add(Service.class);
-    
+
     _includeMethodAnnotations.add(Service.class);
-    
+
     _includeMethodAnnotations.add(Delete.class);
     _includeMethodAnnotations.add(Get.class);
     _includeMethodAnnotations.add(Options.class);
@@ -274,9 +276,9 @@ class WebServerValidator
     _includeMethodAnnotations.add(Put.class);
     _includeMethodAnnotations.add(Route.class);
     _includeMethodAnnotations.add(Trace.class);
-    
+
     // meta annotations
     _includeMethodAnnotations.add(Qualifier.class);
-    
+
   }
 }

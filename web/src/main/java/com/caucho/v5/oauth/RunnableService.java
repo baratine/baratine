@@ -10,12 +10,12 @@ public class RunnableService
 {
   public void run(Runnable runnable, Result<Void> result)
   {
-    System.err.println("RunnableService.run0");
-
-    runnable.run();
-
-    System.err.println("RunnableService.run1");
-
-    result.ok(null);
+    try {
+      runnable.run();
+      result.ok(null);
+    }
+    catch (Exception e) {
+      result.fail(e);
+    }
   }
 }

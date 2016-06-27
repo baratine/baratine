@@ -29,91 +29,40 @@
 
 package com.caucho.v5.oauth;
 
-public class State
-{
-  public enum StateEnum {
-    INIT,
-    CODE,
-    TOKEN,
-    GRANTED
-  }
+import io.baratine.service.Service;
+import io.baratine.vault.Id;
 
-  private StateEnum _state = StateEnum.INIT;
-  private String _code;
+@Service("session:")
+public class OauthSession
+{
+  @Id
+  private String _id;
+
   private String _token;
 
-  private String _url;
+  private long _grantTime;
+  private long _expiresInSeconds;
 
-  public State()
+  public String id()
   {
+    return _id;
   }
 
-  public State toInit()
+  public boolean isExpired()
   {
-    _state = StateEnum.INIT;
-
-    return this;
+    return _grantTime + _expiresInSeconds < System.currentTimeMillis() * 1000;
   }
 
-  public State toCode(String url)
+  public boolean isGranted()
   {
-    _state = StateEnum.CODE;
-
-    _url = url;
-
-    return this;
+    return _token != null;
   }
 
-  public State toToken(String code)
+  public void token(String token, int expiresInSeconds)
   {
-    _state = StateEnum.TOKEN;
-
-    _code = code;
-
-    return this;
-  }
-
-  public State toGranted(String token)
-  {
-    _state = StateEnum.GRANTED;
-
     _token = token;
 
-    return this;
-  }
-
-  public void url(String url)
-  {
-    _url = url;
-  }
-
-  public String url()
-  {
-    return _url;
-  }
-
-  public StateEnum state()
-  {
-    return _state;
-  }
-
-  public void code(String code)
-  {
-    _code = code;
-  }
-
-  public String code()
-  {
-    return _code;
-  }
-
-  public void token(String token)
-  {
-    _token = token;
-  }
-
-  public String token()
-  {
-    return _token;
+    _grantTime = System.currentTimeMillis();
+    _expiresInSeconds = expiresInSeconds;
   }
 }
