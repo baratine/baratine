@@ -68,7 +68,7 @@ abstract class BaseRunner<T extends InjectionTestPoint>
 
   private List<Logger> _loggers = new ArrayList<>();
 
-  private Handler _consoleHandler;
+  private Map<String,Handler> _handlers = new HashMap<>();
 
   public BaseRunner(Class<?> klass) throws InitializationError
   {
@@ -265,12 +265,13 @@ abstract class BaseRunner<T extends InjectionTestPoint>
   public Handler getHandler(LogConfig config)
     throws Exception
   {
-    Handler handler = null;
-    if ("console:".equals(config.handler())) {
-      if (_consoleHandler == null)
-        _consoleHandler = new ConsoleHandler();
+    Handler handler = _handlers.get(config.handler());
 
-      handler = _consoleHandler;
+    if (handler != null)
+      return handler;
+
+    if ("console:".equals(config.handler())) {
+      handler = new ConsoleHandler();
     }
     else if (config.handler().startsWith("class:")) {
       String name = config.handler().substring(6);
@@ -279,6 +280,12 @@ abstract class BaseRunner<T extends InjectionTestPoint>
 
       handler = (Handler) handerClass.newInstance();
     }
+    else {
+      throw new IllegalStateException(L.l("handler `{0}` is not supported",
+                                          config.handler()));
+    }
+
+    _handlers.put(config.handler(), handler);
 
     return handler;
   }
