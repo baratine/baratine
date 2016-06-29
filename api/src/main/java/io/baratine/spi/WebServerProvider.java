@@ -33,7 +33,6 @@ import java.lang.ref.SoftReference;
 import java.util.ServiceLoader;
 import java.util.WeakHashMap;
 
-import io.baratine.client.ServiceClient.Builder;
 import io.baratine.web.WebServerBuilder;
 
 /**
@@ -72,11 +71,13 @@ abstract public class WebServerProvider implements AutoCloseable
     _classLoader = Thread.currentThread().getContextClassLoader();
   }
 
+/*
   public Builder newClient(String url)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
-  
+*/
+
   /**
    * Gets the current <code>ServiceManagerProvider</code> for the system.
    *

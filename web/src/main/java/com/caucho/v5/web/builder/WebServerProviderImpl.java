@@ -46,12 +46,14 @@ public class WebServerProviderImpl extends WebServerProvider
     EnvLoader.addCloseListener(this);
   }
   
+/*
   @Override
   public ServiceClient.Builder newClient(String url)
   {
     //return new ServiceClientBuilderImpl(url);
     throw new UnsupportedOperationException();
   }
+*/
 
   @Override
   public WebServerBuilder webBuilder()

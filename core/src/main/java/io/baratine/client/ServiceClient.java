@@ -39,7 +39,8 @@ public interface ServiceClient extends Services, AutoCloseable
 {
   static Builder newClient(String url)
   {
-    return WebServerProvider.current().newClient(url);
+    throw new UnsupportedOperationException();
+    //return WebServerProvider.current().newClient(url);
   }
   
   ServiceClient connect();
