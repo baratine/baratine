@@ -56,7 +56,8 @@ public class SerializerH3ArrayObject extends SerializerH3Base<Object[]>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_ARRAY_OBJECT;
+    //return ConstH3.DEF_ARRAY_OBJECT;
+    return ConstH3.DEF_OBJECT_ARRAY;
   }
 
   @Override

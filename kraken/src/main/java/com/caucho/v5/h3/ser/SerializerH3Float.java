@@ -37,7 +37,8 @@ public final class SerializerH3Float extends SerializerH3ValueBase<Float>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_FLOAT;
+    //return ConstH3.DEF_FLOAT;
+    return ConstH3.DEF_FLOAT32;
   }
 
   @Override

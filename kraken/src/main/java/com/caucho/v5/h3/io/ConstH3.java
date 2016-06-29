@@ -110,34 +110,6 @@ public class ConstH3
   
   // reserved/predefined object types
   public static final int PREDEF_TYPE = 64;
-  
-  public static final int DEF_BYTE = 1;
-  public static final int DEF_SHORT = 2;
-  public static final int DEF_INT = 3;
-  public static final int DEF_FLOAT = 4;
-  public static final int DEF_DOUBLE = 5;
-  public static final int DEF_CHAR = 6;
-  
-  // HashMap<Object,Object>
-  public static final int DEF_MAP = 8;
-  
-  // ArrayList<Object>
-  public static final int DEF_LIST = 9;
-  public static final int DEF_ARRAY_OBJECT = 10;
-  
-  public static final int DEF_UBYTE = 16;
-  public static final int DEF_USHORT = 17;
-  public static final int DEF_UINT = 18;
-  public static final int DEF_ULONG = 19;
-  
-  public static final int DEF_ARRAY_BOOLEAN = 20;
-  public static final int DEF_ARRAY_CHAR = 21;
-  public static final int DEF_ARRAY_SHORT = 22;
-  public static final int DEF_ARRAY_INT = 23;
-  public static final int DEF_ARRAY_LONG = 24;
-  public static final int DEF_ARRAY_FLOAT = 25;
-  public static final int DEF_ARRAY_DOUBLE = 26;
-  public static final int DEF_ARRAY_STRING = 27;
 
   //new list
   public static final int DEF_INT8 = 1; //int8
@@ -147,11 +119,11 @@ public class ConstH3
   public static final int DEF_UINT16 = 5; //uint16
   public static final int DEF_UNIT32 = 6; //unit 32
   public static final int DEF_UINT64 = 7; //uint64
-  //public static final int DEF_CHAR = 8; //char
+  public static final int DEF_CHAR = 8; //char
   public static final int DEF_FLOAT32 = 9; //float32
   public static final int DEF_FLOAT64 = 10; //float64
-  //public static final int DEF_MAP = 11; //map
-  //public static final int DEF_LIST = 12; //list
+  public static final int DEF_MAP = 11; //map
+  public static final int DEF_LIST = 12; //list
   public static final int DEF_OBJECT_ARRAY = 13; //Object[]
   public static final int DEF_CHAR_ARRAY = 14; //char[]
   public static final int DEF_STRING_ARRAY = 15; //String[]

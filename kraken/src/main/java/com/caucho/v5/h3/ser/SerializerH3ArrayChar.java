@@ -37,7 +37,8 @@ public final class SerializerH3ArrayChar extends SerializerH3ValueBase<char[]>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_ARRAY_CHAR;
+    //return ConstH3.DEF_ARRAY_CHAR;
+    return ConstH3.DEF_CHAR_ARRAY;
   }
 
   @Override

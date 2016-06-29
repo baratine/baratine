@@ -37,7 +37,8 @@ public final class SerializerH3Integer extends SerializerH3ValueBase<Integer>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_INT;
+    //return ConstH3.DEF_INT;
+    return ConstH3.DEF_INT32;
   }
 
   @Override
