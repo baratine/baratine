@@ -39,6 +39,15 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.baratine.config.Config;
+import io.baratine.pipe.PipeIn;
+import io.baratine.service.Api;
+import io.baratine.service.Result;
+import io.baratine.service.Service;
+import io.baratine.service.ServiceRef;
+import io.baratine.service.Services;
+import io.baratine.vault.Asset;
+
 import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.AmpSystem;
 import com.caucho.v5.amp.ServicesAmp;
@@ -61,18 +70,10 @@ import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
 import com.caucho.v5.store.temp.TempStoreSystem;
 import com.caucho.v5.subsystem.RootDirectorySystem;
 import com.caucho.v5.subsystem.SystemManager;
+import com.caucho.v5.util.AnnotationsUtil;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import com.caucho.v5.vfs.VfsOld;
-
-import io.baratine.config.Config;
-import io.baratine.pipe.PipeIn;
-import io.baratine.service.Api;
-import io.baratine.service.Result;
-import io.baratine.service.Service;
-import io.baratine.service.ServiceRef;
-import io.baratine.service.Services;
-import io.baratine.vault.Asset;
 
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
@@ -423,23 +424,14 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
            Class<ID> idType,
            String address)
     {
-      Asset asset;
-
-      Class<?> t = entityType;
-
-      do {
-        asset = t.getAnnotation(Asset.class);
-
-        Class<?>[] interfaces = entityType.getInterfaces();
-
-        for (int i = 0; asset == null && i < interfaces.length; i++) {
-          Class<?> face = interfaces[i];
-          asset = face.getAnnotation(Asset.class);
-        }
-      } while (asset == null && ! Object.class.equals(t = t.getSuperclass()));
+      Asset asset = AnnotationsUtil.getAnnotation(entityType, Asset.class);
 
       if (asset != null) {
-        return new VaultDriverDataImpl(ampManager, entityType, idType, address);
+        return new VaultDriverDataImpl(ampManager,
+                                       serviceType,
+                                       entityType,
+                                       idType,
+                                       address);
       }
       else {
         return null;
@@ -458,7 +450,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       Objects.requireNonNull(serviceClass);
 
       _serviceClass = serviceClass;
-      _service = getServiceAnnotation(serviceClass);
+      _service = AnnotationsUtil.getAnnotation(serviceClass, Service.class);
 
       if (_service == null)
         throw new IllegalStateException(L.l(
@@ -471,30 +463,6 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       else {
         _api = discoverApi();
       }
-    }
-
-    private Service getServiceAnnotation(Class serviceClass)
-    {
-      Service service;
-      Class t = serviceClass;
-
-      do {
-        service = (Service) t.getAnnotation(Service.class);
-      } while (service == null
-               && t.getSuperclass() != null
-               && (t = t.getSuperclass()) != Object.class);
-
-      if (service == null) {
-        Class[] interfaces = serviceClass.getInterfaces();
-        for (Class face : interfaces) {
-          service = (Service) face.getAnnotation(Service.class);
-
-          if (service != null)
-            break;
-        }
-      }
-
-      return service;
     }
 
     private Class discoverApi()

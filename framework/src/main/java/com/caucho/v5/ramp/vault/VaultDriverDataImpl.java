@@ -39,6 +39,17 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import io.baratine.db.Cursor;
+import io.baratine.db.DatabaseServiceSync;
+import io.baratine.service.Result;
+import io.baratine.service.ResultChain;
+import io.baratine.service.Service;
+import io.baratine.service.ServiceRef;
+import io.baratine.stream.ResultStream;
+import io.baratine.vault.Asset;
+import io.baratine.vault.IdAsset;
+import io.baratine.vault.Vault;
+
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.vault.MethodVault;
@@ -48,14 +59,7 @@ import com.caucho.v5.amp.vault.VaultStore;
 import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.db.Cursor;
-import io.baratine.db.DatabaseServiceSync;
-import io.baratine.service.Result;
-import io.baratine.service.ResultChain;
-import io.baratine.service.ServiceRef;
-import io.baratine.stream.ResultStream;
-import io.baratine.vault.Asset;
-import io.baratine.vault.IdAsset;
+import static com.caucho.v5.util.AnnotationsUtil.getAnnotation;
 
 public class VaultDriverDataImpl<ID, T>
   extends VaultDriverBase<ID,T>
@@ -67,6 +71,7 @@ public class VaultDriverDataImpl<ID, T>
 
   private final static Map<Class<?>,String> _typeMap = new HashMap<>();
 
+  private Class<? extends Vault> _vaultClass;
   private Class<ID> _idClass;
   private Class<T> _entityClass;
 
@@ -88,26 +93,29 @@ public class VaultDriverDataImpl<ID, T>
   private TableInfo _tableInfo;
 
   public VaultDriverDataImpl(ServicesAmp ampManager,
-                                Class<T> entityClass,
-                                Class<ID> idClass,
-                                String address)
+                             Class<? extends Vault> vaultClass,
+                             Class<T> entityClass,
+                             Class<ID> idClass,
+                             String address)
   {
     super(ampManager, entityClass, idClass, address);
 
     Objects.requireNonNull(entityClass);
     Objects.requireNonNull(idClass);
 
+    _vaultClass = vaultClass;
     _entityClass = entityClass;
     _idClass = idClass;
 
     _services = ServicesAmp.current();
 
     _db = _services.service("bardb:///")
-                     .as(DatabaseServiceSync.class);
+                   .as(DatabaseServiceSync.class);
 
     Objects.requireNonNull(_db);
-    
-    _valueBeans = new ClassValue<FindDataVault<ID,T,?>>() {
+
+    _valueBeans = new ClassValue<FindDataVault<ID,T,?>>()
+    {
       @Override
       public FindDataVault<ID,T,?> computeValue(Class<?> api)
       {
@@ -120,22 +128,11 @@ public class VaultDriverDataImpl<ID, T>
 
   private void introspect()
   {
-    Asset table;
+    Asset table = getAnnotation(_entityClass, Asset.class);
 
-    Class<?> type = _entityClass;
+    Service serviceTable = getAnnotation(_vaultClass, Service.class);
 
-    do {
-      table = type.getAnnotation(Asset.class);
-
-      Class<?>[] faces = type.getInterfaces();
-      for (int i = 0; table == null && i < faces.length; i++) {
-        Class<?> face = faces[i];
-        table = face.getAnnotation(Asset.class);
-      }
-    } while (table == null
-             && ! Object.class.equals(type = type.getSuperclass()));
-
-    _entityInfo = new AssetInfo<>(_entityClass, _idClass, table);
+    _entityInfo = new AssetInfo<>(_entityClass, _idClass, table, serviceTable);
 
     TableManagerVault<ID,T> schemaManager = new TableManagerVault<>(_db, _entityInfo);
 

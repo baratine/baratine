@@ -29,21 +29,6 @@
 
 package com.caucho.v5.ramp.vault;
 
-import com.caucho.v5.convert.bean.FieldBase;
-import com.caucho.v5.convert.bean.FieldNull;
-import com.caucho.v5.convert.bean.FieldObject;
-import com.caucho.v5.inject.AnnotationLiteral;
-import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.kraken.info.TableInfo;
-import com.caucho.v5.util.IdentityGenerator;
-import com.caucho.v5.util.L10N;
-import com.caucho.v5.util.RandomUtil;
-import io.baratine.db.Cursor;
-import io.baratine.service.ServiceException;
-import io.baratine.vault.Asset;
-import io.baratine.vault.IdAsset;
-import io.baratine.vault.StateAsset;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -55,6 +40,23 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.logging.Logger;
+
+import io.baratine.db.Cursor;
+import io.baratine.service.Service;
+import io.baratine.service.ServiceException;
+import io.baratine.vault.Asset;
+import io.baratine.vault.IdAsset;
+import io.baratine.vault.StateAsset;
+
+import com.caucho.v5.convert.bean.FieldBase;
+import com.caucho.v5.convert.bean.FieldNull;
+import com.caucho.v5.convert.bean.FieldObject;
+import com.caucho.v5.inject.AnnotationLiteral;
+import com.caucho.v5.inject.type.TypeRef;
+import com.caucho.v5.kraken.info.TableInfo;
+import com.caucho.v5.util.IdentityGenerator;
+import com.caucho.v5.util.L10N;
+import com.caucho.v5.util.RandomUtil;
 
 class AssetInfo<ID,T>
 {
@@ -89,8 +91,9 @@ class AssetInfo<ID,T>
   private boolean _isSolo;
 
   public AssetInfo(Class<T> type,
-                    Class<ID> idType,
-                    Asset table)
+                   Class<ID> idType,
+                   Asset table,
+                   Service serviceTable)
   {
     Objects.requireNonNull(type);
     Objects.requireNonNull(idType);
@@ -99,19 +102,32 @@ class AssetInfo<ID,T>
     _idType = idType;
     
     _addressPrefix = "/" + type.getSimpleName();
-    // _addressPrefix = "/QstoreIdLongJava"; // XXX:
 
-    if (table != null && ! table.value().isEmpty()) {
-      _tableName = table.value();
-    }
-    else {
-      _tableName = type.getSimpleName();
-    }
+    _tableName = tableName(type, table, serviceTable);
     
     _fields = introspect();
     _fieldState = introspectLoadState();
   }
-  
+
+  private String tableName(Class<T> type, Asset table, Service serviceTable)
+  {
+    String tableName;
+
+    if (serviceTable != null && ! serviceTable.value().isEmpty()) {
+      tableName = serviceTable.value();
+      tableName = tableName.substring(1);
+      tableName = tableName.replace('/', '_');
+    }
+    else if (table != null && !table.value().isEmpty()) {
+      tableName = table.value();
+    }
+    else {
+      tableName = type.getSimpleName();
+    }
+
+    return tableName;
+  }
+
   private FieldInfo<T,?> []introspect()
   {
     List<FieldInfo<T,?>> fields = new ArrayList<>();

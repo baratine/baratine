@@ -43,8 +43,8 @@ import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.json.JsonEngine;
 import com.caucho.v5.json.JsonEngineDefault;
 import com.caucho.v5.ramp.vault.VaultDriverDataImpl;
+import com.caucho.v5.util.AnnotationsUtil;
 import com.caucho.v5.web.view.ViewJsonDefault;
-
 import io.baratine.vault.Asset;
 import io.baratine.web.ViewResolver;
 
@@ -129,23 +129,14 @@ public class WebAppBuilderFramework extends WebAppBuilder
            Class<ID> idType,
            String address)
     {
-      Asset asset;
-
-      Class<?> t = entityType;
-
-      do {
-        asset = t.getAnnotation(Asset.class);
-
-        Class<?>[] interfaces = t.getInterfaces();
-
-        for (int i = 0; asset == null && i < interfaces.length; i++) {
-          Class<?> face = interfaces[i];
-          asset = face.getAnnotation(Asset.class);
-        }
-      } while (asset == null && ! Object.class.equals(t = t.getSuperclass()));
+      Asset asset = AnnotationsUtil.getAnnotation(entityType, Asset.class);
 
       if (asset != null) {
-        return new VaultDriverDataImpl(ampManager, entityType, idType, address);
+        return new VaultDriverDataImpl(ampManager,
+                                       serviceType,
+                                       entityType,
+                                       idType,
+                                       address);
       }
       else {
         return null;
