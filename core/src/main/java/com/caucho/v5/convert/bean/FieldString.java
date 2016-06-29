@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Baratine; if not, write to the
- * 
+ *
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
@@ -45,18 +45,18 @@ public class FieldString<T> extends FieldBase<T>
   public FieldString(Field field)
   {
     super(field);
-    
+
     try {
       MethodHandle getter = MethodHandles.lookup().unreflectGetter(field);
       _getter = getter.asType(MethodType.methodType(String.class, Object.class));
-    
+
       MethodHandle setter = MethodHandles.lookup().unreflectSetter(field);
       _setter = setter.asType(MethodType.methodType(void.class, Object.class, String.class));
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
   }
-  
+
   @Override
   public final String getString(T bean)
   {
@@ -66,7 +66,7 @@ public class FieldString<T> extends FieldBase<T>
       throw error(e);
     }
   }
-  
+
   @Override
   public final void setString(T bean, String value)
   {
@@ -76,16 +76,16 @@ public class FieldString<T> extends FieldBase<T>
       throw error(e);
     }
   }
-  
+
   @Override
   public final Object getObject(T bean)
   {
     return getString(bean);
   }
-  
+
   @Override
   public final void setObject(T bean, Object value)
   {
-    setString(bean, String.valueOf(value));
+    setString(bean, value != null ? String.valueOf(value) : null);
   }
 }

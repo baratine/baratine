@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Baratine; if not, write to the
- * 
+ *
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
@@ -55,43 +55,43 @@ public class ConfigImpl extends AbstractMap<String,String>
   private static final L10N L = new L10N(ConfigImpl.class);
   private static final Logger log
     = Logger.getLogger(ConfigImpl.class.getName());
-  
+
   private final Map<String,String> _map;
   private final ConvertFrom<String> _converter;
-  
+
   /**
    * A new configuration from a map and converter.
-   * 
+   *
    * @param map the contents of the configuration
-   * @param converter converts from strings to types 
+   * @param converter converts from strings to types
    */
   ConfigImpl(Map<String,String> map,
              ConvertFrom<String> converter)
   {
     Objects.requireNonNull(map);
     Objects.requireNonNull(converter);
-    
+
     _map = Collections.unmodifiableMap(new TreeMap<>(map));
     _converter = converter;
   }
-  
+
   ConfigImpl(Properties properties)
   {
     HashMap<String,String> map = new HashMap<>();
-    
+
     for (Map.Entry<Object,Object> entry : properties.entrySet()) {
       Object key = entry.getKey();
       Object value = entry.getValue();
-      
+
       if (key instanceof String && value instanceof String) {
-        map.put((String) key, (String) value); 
+        map.put((String) key, (String) value);
       }
     }
-    
+
     _map = map;
     _converter = ConvertStringDefault.get();
   }
-  
+
   /**
    * Return the configuration value for the given key.
    */
@@ -100,7 +100,7 @@ public class ConfigImpl extends AbstractMap<String,String>
   {
     return _map.get(key);
   }
-  
+
   /**
    * Configuration value with a default value.
    */
@@ -108,7 +108,7 @@ public class ConfigImpl extends AbstractMap<String,String>
   public String get(String key, String defaultValue)
   {
     String value = _map.get(key);
-    
+
     if (value != null) {
       return value;
     }
@@ -116,7 +116,7 @@ public class ConfigImpl extends AbstractMap<String,String>
       return defaultValue;
     }
   }
-  
+
   /**
    * Gets a configuration value converted to a type.
    */
@@ -125,19 +125,19 @@ public class ConfigImpl extends AbstractMap<String,String>
   {
     Objects.requireNonNull(key);
     Objects.requireNonNull(type);
-    
+
     String value = _map.get(key);
-    
+
     if (value == null) {
       return defaultValue;
     }
-    
+
     if (type.equals(String.class)) {
       return (T) value;
     }
-    
+
     T valueType = _converter.convert(type, value);
-    
+
     if (valueType != null) {
       return valueType;
     }
@@ -151,7 +151,7 @@ public class ConfigImpl extends AbstractMap<String,String>
       return defaultValue;
     }
   }
-  
+
   /**
    * Gets a configuration value converted to a type.
    */
@@ -160,22 +160,22 @@ public class ConfigImpl extends AbstractMap<String,String>
   {
     Objects.requireNonNull(key);
     Objects.requireNonNull(type);
-    
+
     String value = _map.get(key);
-    
+
     if (value == null) {
       value = defaultValue;
     }
-    
+
     if (type.equals(String.class)) {
       return (T) value;
     }
-    
+
     T valueType = _converter.convert(type, value);
-    
+
     return valueType;
   }
-  
+
   /**
    * Inject a bean from the configuration
    */
@@ -183,12 +183,25 @@ public class ConfigImpl extends AbstractMap<String,String>
   public <T> void inject(T bean)
   {
     Objects.requireNonNull(bean);
-    
+
     ConfigStub stub = new ConfigStub(bean.getClass());
-    
+
     stub.inject(bean, this);
   }
-  
+
+  /**
+   * Inject a bean from the configuration
+   */
+  @Override
+  public <T> void inject(T bean, String prefix)
+  {
+    Objects.requireNonNull(bean);
+
+    ConfigStub stub = new ConfigStub(bean.getClass(), prefix);
+
+    stub.inject(bean, this);
+  }
+
   /**
    * Configuration entries as a map set.
    */
@@ -197,7 +210,7 @@ public class ConfigImpl extends AbstractMap<String,String>
   {
     return _map.entrySet();
   }
-  
+
   /**
    * Child configuration with additional data.
    */
@@ -206,13 +219,13 @@ public class ConfigImpl extends AbstractMap<String,String>
   {
     return new ConfigBuilderImpl(new HashMap<>(_map));
   }
-  
+
   @Override
   public void clear()
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
-  
+
   @Override
   public String toString()
   {
