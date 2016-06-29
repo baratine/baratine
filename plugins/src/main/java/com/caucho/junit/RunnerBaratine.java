@@ -168,8 +168,6 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
 
     void boot(boolean isClean) throws Exception
     {
-      setLoggingLevels();
-
       Thread thread = Thread.currentThread();
 
       _oldLoader = thread.getContextClassLoader();
@@ -177,6 +175,8 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
       _envLoader = EnvironmentClassLoader.create(_oldLoader, "test-loader");
 
       thread.setContextClassLoader(_envLoader);
+
+      setLoggingLevels();
 
       String baratineRoot = getWorkDir();
       System.setProperty("baratine.root", baratineRoot);

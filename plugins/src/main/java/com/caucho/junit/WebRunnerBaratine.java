@@ -29,8 +29,6 @@
 
 package com.caucho.junit;
 
-import static io.baratine.web.Web.port;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
@@ -39,19 +37,23 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.baratine.web.Path;
+import io.baratine.web.ServiceWebSocket;
+import io.baratine.web.Web;
+import io.baratine.web.WebServer;
+
 import com.caucho.v5.inject.AnnotationLiteral;
 import com.caucho.v5.loader.EnvironmentClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.RandomUtil;
 import com.caucho.v5.vfs.VfsOld;
 import com.caucho.v5.websocket.WebSocketClient;
-import io.baratine.web.Path;
-import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.Web;
-import io.baratine.web.WebServer;
+
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+
+import static io.baratine.web.Web.port;
 
 /**
  * Class {@code WebRunnerBaratine} is a JUnit Runner that will deployed services
@@ -203,10 +205,16 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
   @Override
   public void start()
   {
-    start(false);
+    try {
+      start(false);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public void start(boolean isClean)
+  public void start(boolean isClean) throws Exception
   {
     setLoggingLevels();
 
@@ -260,6 +268,10 @@ public class WebRunnerBaratine extends BaseRunner<InjectionTestPoint>
       start(true);
 
       super.runChild(child, notifier);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     } finally {
       Logger.getLogger("").setLevel(Level.INFO);
 
