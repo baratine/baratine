@@ -60,7 +60,7 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.config.Config;
-import io.baratine.inject.Factory;
+import io.baratine.inject.New;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Injector.BindingBuilder;
@@ -108,7 +108,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     _loader = loader;
       
     _scopeMap.put(Singleton.class, InjectScopeSingleton::new);
-    _scopeMap.put(Factory.class, InjectScopeFactory::new);
+    _scopeMap.put(New.class, InjectScopeFactory::new);
       
     // _qualifierSet.add(Lookup.class);
     

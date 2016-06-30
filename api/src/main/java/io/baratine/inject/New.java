@@ -29,22 +29,22 @@
 
 package io.baratine.inject;
 
-import io.baratine.inject.Injector.InjectorBuilder;
-import io.baratine.spi.ServiceManagerProvider;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import javax.inject.Scope;
 
 /**
- * Injection static constructors
+ * Factory scope creates a new object for each getter.
  */
-public interface Injection
-{
-  static InjectorBuilder newManager(ClassLoader classLoader)
-  {
-    return ServiceManagerProvider.current().injectManager(classLoader);
-  }
-
-  static InjectorBuilder newManager()
-  {
-    return newManager(Thread.currentThread().getContextClassLoader());
-  }
+@Retention(RUNTIME)
+@Target({TYPE,METHOD,FIELD,PARAMETER})
+@Scope
+public @interface New {
 }
-

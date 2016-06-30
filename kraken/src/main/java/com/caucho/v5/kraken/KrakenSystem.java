@@ -150,7 +150,11 @@ public class KrakenSystem extends SubSystemBase
   @Override
   public void stop(ShutdownModeAmp mode)
   {
-    _tableManager.close();
+    KrakenImpl tableManager = _tableManager;
+    
+    if (tableManager != null) {
+      _tableManager.close();
+    }
   }
   
   public String toString()
