@@ -93,7 +93,7 @@ public class StubContainerJournal extends StubContainerBase
     _serviceSelf = ServiceRef.current();
     
     if (_journalDelay > 0) {
-      Services manager = _serviceSelf.manager();
+      Services manager = _serviceSelf.services();
       
       _timerService = manager.service("timer:").as(Timers.class);
       Consumer<Cancel> startSave = h->startSave();

@@ -720,7 +720,7 @@ public final class TablePodImpl implements TablePod
       return;
     }
     
-    get(key, result.of(x->onFindOneGet(x, key)));
+    get(key, result.then(x->onFindOneGet(x, key)));
   }
   
   private byte []onFindOneGet(Boolean value, byte []key)

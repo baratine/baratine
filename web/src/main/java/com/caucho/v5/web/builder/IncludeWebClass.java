@@ -500,7 +500,7 @@ class IncludeWebClass implements IncludeWebAmp
     @Override
     public Object eval(RequestWeb request)
     {
-      return request.of();
+      return request.then();
     }
   }
   
@@ -645,7 +645,7 @@ class IncludeWebClass implements IncludeWebAmp
     @Override
     public void evalAsync(RequestWeb request, Result<Object> result)
     {
-      request.body(Part[].class, result.of(x -> getPart(x)));
+      request.body(Part[].class, result.then(x -> getPart(x)));
     }
 
     public Part getPart(Part[] parts)

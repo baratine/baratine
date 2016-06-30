@@ -126,7 +126,7 @@ public class ChannelClientImpl implements ChannelClient
   }
   
   @Override
-  public ServicesAmp getManager()
+  public ServicesAmp services()
   {
     return _manager;
   }
@@ -315,7 +315,7 @@ public class ChannelClientImpl implements ChannelClient
       
       // OutboxAmp outbox = _serviceRef.getManager().getCurrentOutbox();
       
-      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.manager())) {
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.services())) {
         MessageAmp msg = new QueryReplyMessage(outbox,
                                                _serviceRef,
                                                headers, 
@@ -335,7 +335,7 @@ public class ChannelClientImpl implements ChannelClient
     {
       long timeout = InboxAmp.TIMEOUT_INFINITY;
       
-      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.manager())) {
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.services())) {
         MessageAmp msg = new QueryErrorMessage(outbox,
                                                _serviceRef,
                                                headers, 

@@ -177,7 +177,7 @@ public class PodsManagerServiceImpl implements PodsManagerService
   {
     // updateBfsPath(result);
     
-    _podsConfig.update(result.of(x->{ updateAutoPod(); return null; }));
+    _podsConfig.update(result.then(x->{ updateAutoPod(); return null; }));
   }
 
   private void onServerUpdate(ServerBartender server)

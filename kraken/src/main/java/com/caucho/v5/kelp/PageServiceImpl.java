@@ -166,7 +166,7 @@ public class PageServiceImpl implements PageService
       return;
     }
 
-    checkpoint(result.of(v->_table));
+    checkpoint(result.then(v->_table));
   }
   
   public TableKelp getTable()
@@ -358,7 +358,7 @@ public class PageServiceImpl implements PageService
   {
     autoFillPut(cursor);
     
-    replaceImpl(cursor, envKelp, update, backup, result.of(x->1));
+    replaceImpl(cursor, envKelp, update, backup, result.then(x->1));
     
     // result.complete(1);
     
@@ -493,7 +493,7 @@ public class PageServiceImpl implements PageService
       int writeSequence = page.nextWriteSequence();
       _table.getReadWrite().writeBlobPage(page,
                                           writeSequence,
-                                          Result.on(x->page.afterDataFlush(this, writeSequence)));
+                                          Result.of(x->page.afterDataFlush(this, writeSequence)));
 
       return pid;
     } finally {

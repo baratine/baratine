@@ -120,7 +120,7 @@ public class RepositoryImpl<ID, T>
       values[i] = value;
     }
 
-    _db.exec(insertSql(), result.of(o -> {
+    _db.exec(insertSql(), result.then(o -> {
       log.log(Level.FINER, String.format("entity %1$s is saved", entity));
       return true;
     }), values);
@@ -241,7 +241,7 @@ public class RepositoryImpl<ID, T>
   @Override
   public void delete(ID id, Result<Boolean> result)
   {
-    _db.exec(getDeleteSql(), result.of(x -> (Boolean) x), id);
+    _db.exec(getDeleteSql(), result.then(x -> (Boolean) x), id);
   }
 
   @Override

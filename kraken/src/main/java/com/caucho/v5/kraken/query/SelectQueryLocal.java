@@ -158,14 +158,14 @@ public class SelectQueryLocal extends SelectQueryBase
     if (isStaticNode()) {
       // key is filled in
       tableKelp.get(minCursor, 
-                    result.of(v->findOneGetResult(v, envKelp, minCursor)));
+                    result.then(v->findOneGetResult(v, envKelp, minCursor)));
     }
     else {
       // QueryKelp whereKelp = _whereExpr.bind(args);
       // XXX: binding should be with unique
 
       tableKelp.findOne(minCursor, maxCursor, envKelp,
-                        result.of(cursor->findOneResult(cursor, envKelp)));
+                        result.then(cursor->findOneResult(cursor, envKelp)));
 
       // result.completed(null);
     }
@@ -206,7 +206,7 @@ public class SelectQueryLocal extends SelectQueryBase
       // XXX: binding should be with unique
 
       tableKelp.findOne(minCursor, maxCursor, envKelp,
-                        result.of(cursor->findOneResult(cursor, envKelp)));
+                        result.then(cursor->findOneResult(cursor, envKelp)));
 
       // result.completed(null);
     }
@@ -219,7 +219,7 @@ public class SelectQueryLocal extends SelectQueryBase
     EnvKelp envKelp = new EnvKelp(_whereKelp, args);
     
     tableKelp.getDirect(cursor,
-                        result.of(v->findOneGetResult(v, envKelp, cursor)));
+                        result.then(v->findOneGetResult(v, envKelp, cursor)));
   }
   
   private Cursor findOneGetResult(Boolean value, 
@@ -260,7 +260,7 @@ public class SelectQueryLocal extends SelectQueryBase
     
     EnvKelp envKelp = createEnv(args);
     
-    tableKelp.getDirect(cursor, result.of(x->onGet(envKelp, cursor, x)));
+    tableKelp.getDirect(cursor, result.then(x->onGet(envKelp, cursor, x)));
   }
 
   @Override
@@ -282,7 +282,7 @@ public class SelectQueryLocal extends SelectQueryBase
     EnvKelp whereKelp = createEnv(args);
 
     tableKelp.findAll(minCursor, maxCursor, whereKelp,
-                      result.of(x->onFindAll(whereKelp, x)));
+                      result.then(x->onFindAll(whereKelp, x)));
 
     // result.completed(null);
   }
@@ -306,7 +306,7 @@ public class SelectQueryLocal extends SelectQueryBase
     EnvKelp whereKelp = createEnv(args);
 
     tableKelp.findAll(minCursor, maxCursor, whereKelp,
-                      result.of(x->onFindAllKeys(x)));
+                      result.then(x->onFindAllKeys(x)));
   }
   
   private EnvKelp createEnv(Object []args)

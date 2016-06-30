@@ -48,7 +48,7 @@ public class SchemePodSystem extends SchemePod
   {
     //ActorPodRoot actorPod = new ActorPodRootSystem(this, getManager(), pod);
     
-    return new ServiceRefPodRoot(this, manager(), pod, address());
+    return new ServiceRefPodRoot(this, services(), pod, address());
     
     // return getManager().service(actorPod);
   }

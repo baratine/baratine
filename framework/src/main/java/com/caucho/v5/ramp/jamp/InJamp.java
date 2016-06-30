@@ -135,7 +135,7 @@ public class InJamp
   
   private ServicesAmp getManager()
   {
-    return _channelIn.getManager();
+    return _channelIn.services();
   }
   
   private InboxAmp inboxCaller()

@@ -46,7 +46,7 @@ public interface ChannelAmp extends LookupAmp
   /**
    * Returns the underlying service manager.
    */
-  ServicesAmp getManager();
+  ServicesAmp services();
   
   /**
    * Creates an outbox to the channel.
@@ -72,7 +72,7 @@ public interface ChannelAmp extends LookupAmp
   @Override
   default ServiceRefAmp service(String address)
   {
-    return getManager().service(address);
+    return services().service(address);
   }
   
   /**
@@ -96,7 +96,7 @@ public interface ChannelAmp extends LookupAmp
    */
   default ServiceRefAmp createGatewayRef(String remotePath)
   {
-    return new ServiceRefNull(getManager(), "remote://" + remotePath);
+    return new ServiceRefNull(services(), "remote://" + remotePath);
   }
 
   /**

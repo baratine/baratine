@@ -33,6 +33,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import io.baratine.inject.Injector.InjectorBuilder;
+import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.spi.ServiceManagerProvider;
 
@@ -67,7 +68,7 @@ public interface Services
    * application.
    * 
    * <pre><code>
-   * manager = ServiceManager.newManager()
+   * manager = Services.newManager()
    *                         .start();
    * </code></pre>
    */
@@ -106,11 +107,7 @@ public interface Services
   <T> ServiceRef.ServiceBuilder newService(Class<T> type, 
                                            Supplier<? extends T> supplier);
 
-  
-  /**
-   * The pod/cluster node for this manager.
-   */
-  ServiceNode node();
+  Injector injector();
   
   public interface ServicesBuilder
   {

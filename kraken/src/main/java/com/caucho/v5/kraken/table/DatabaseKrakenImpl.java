@@ -52,7 +52,7 @@ public class DatabaseKrakenImpl implements DatabaseKraken
                     String sql,
                     Object... params)
   {
-    _kraken.findAll(sql, params, result.of(it -> {
+    _kraken.findAll(sql, params, result.then(it -> {
       List<List<Object>> data = new ArrayList<>();
 
       for (Cursor cursor : it) {

@@ -97,13 +97,13 @@ public class ServiceRefImport extends ServiceRefWrapper implements ImportAware
   @Override
   public ServiceRefAmp bind(String address)
   {
-    manager().bind(this, address);
+    services().bind(this, address);
     
     return this;
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return _manager;
   }

@@ -65,7 +65,7 @@ public class ServiceRefPodAppRoot extends ServiceRefWrapper
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return _rampManager;
   }
@@ -122,6 +122,6 @@ public class ServiceRefPodAppRoot extends ServiceRefWrapper
   @Override
   protected ServiceRefAmp delegate()
   {
-    return new ServiceRefNull(manager(), address()); 
+    return new ServiceRefNull(services(), address()); 
   }
 }

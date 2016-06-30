@@ -81,7 +81,7 @@ public class JampMethodStandard extends JampMethodRest
     _factory = builder.getJsonFactory();
     
     _methodRef = builder.getMethod();
-    _manager = (ServicesAmp) _methodRef.serviceRef().manager();
+    _manager = (ServicesAmp) _methodRef.serviceRef().services();
 
 
     _params = builder.getParams();
@@ -191,7 +191,7 @@ public class JampMethodStandard extends JampMethodRest
       
       //HeadersAmp headers = HeadersNull.NULL;
       
-      ServicesAmp manager = _methodRef.serviceRef().manager();
+      ServicesAmp manager = _methodRef.serviceRef().services();
       
       Object result = manager.run(60, TimeUnit.SECONDS, 
                                   r->{ _methodRef.query(r, args); });

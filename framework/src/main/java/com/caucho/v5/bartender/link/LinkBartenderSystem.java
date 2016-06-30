@@ -33,10 +33,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
-import com.caucho.v5.amp.Amp;
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceRefAlias;
 import com.caucho.v5.amp.spi.ServiceManagerBuilderAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
@@ -55,6 +54,8 @@ import com.caucho.v5.network.NetworkSystemBartender;
 import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Result;
 
 
 /**
@@ -307,7 +308,7 @@ public class LinkBartenderSystem extends SubSystemBase
   {
     super.stop(mode);
     
-    _schemeBartenderSystem.close();
+    _schemeBartenderSystem.close(Result.ignore());
   }
 
   public void addExternalMessageRead()

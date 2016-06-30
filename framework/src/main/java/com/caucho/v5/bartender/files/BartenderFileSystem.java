@@ -29,13 +29,11 @@
 
 package com.caucho.v5.bartender.files;
 
-import io.baratine.service.ServiceRef;
-
 import java.util.logging.Logger;
 
 import com.caucho.v5.amp.AmpSystem;
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.proc.ProcKraken;
@@ -49,6 +47,9 @@ import com.caucho.v5.subsystem.SubSystemBase;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.VfsOld;
+
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 public class BartenderFileSystem extends SubSystemBase
 {
@@ -222,15 +223,15 @@ public class BartenderFileSystem extends SubSystemBase
   public void stop(ShutdownModeAmp mode)
   {
     if (_schemeRef != null) {
-      _schemeRef.close();
+      _schemeRef.close(Result.ignore());
     }
 
     if (_rootServiceRef != null) {
-      _rootServiceRef.close();
+      _rootServiceRef.close(Result.ignore());
     }
     
     if (_localServiceRef != null) {
-      _localServiceRef.close();
+      _localServiceRef.close(Result.ignore());
     }
   }
 

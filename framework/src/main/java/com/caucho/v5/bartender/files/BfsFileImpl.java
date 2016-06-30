@@ -162,7 +162,7 @@ public class BfsFileImpl implements BfsFileAmp
     }
     else {
       _root.getStatus(_path,
-                      result.of(s->{
+                      result.then(s->{
                         _root.setStatusEntry(_path, s);
                         return toStatusResult(s);
                       }));
@@ -185,7 +185,7 @@ public class BfsFileImpl implements BfsFileAmp
   @Override
   public void list(Result<String[]> result)
   {
-    _root.listImpl(_path, result.of(v->listResult(v)));
+    _root.listImpl(_path, result.then(v->listResult(v)));
   }
 
   private String []listResult(Object value)
@@ -364,7 +364,7 @@ public class BfsFileImpl implements BfsFileAmp
     
     // list(result.from((list,r)->listRemoveFile(list, tail, r)));
     
-    _root.removeDirectory(_path, tail, result.of(v->true));
+    _root.removeDirectory(_path, tail, result.then(v->true));
   }
 
   void clearStatus()

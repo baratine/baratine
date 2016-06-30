@@ -124,7 +124,7 @@ public class SelectQueryBuilder extends QueryBuilderKraken
       result.ok(build(table));
     }
     else {
-      _tableManager.loadTable(_tableName, result.of(t->build(t)));
+      _tableManager.loadTable(_tableName, result.then(t->build(t)));
     }
     
   }

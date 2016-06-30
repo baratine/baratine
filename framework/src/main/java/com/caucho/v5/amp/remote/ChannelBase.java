@@ -51,7 +51,7 @@ public class ChannelBase implements ChannelAmp
   }
   
   @Override
-  public ServicesAmp getManager()
+  public ServicesAmp services()
   {
     return _manager;
   }
@@ -70,7 +70,7 @@ public class ChannelBase implements ChannelAmp
   
   protected RegistryAmp getRegistry()
   {
-    return getManager().registry();
+    return services().registry();
   }
   
   @Override

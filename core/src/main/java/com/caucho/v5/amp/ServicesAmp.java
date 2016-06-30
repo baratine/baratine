@@ -52,6 +52,7 @@ import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
 import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
+import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 import io.baratine.spi.MessageApi;
@@ -120,6 +121,11 @@ public interface ServicesAmp extends Services, LookupAmp
   
   Injector injector();
   
+  /**
+   * The pod/cluster node for this manager.
+   */
+  ServiceNode node();
+
   InboxAmp inboxSystem();
 
   ProxyFactoryAmp proxyFactory();

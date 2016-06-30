@@ -175,7 +175,7 @@ public class TableManagerServiceImpl implements TableManagerService
     
     QueryKraken query = builder.build();
     
-    query.exec(result.of(v->_tableNameMap.get(tableName)));
+    query.exec(result.then(v->_tableNameMap.get(tableName)));
   }
   
   private String getTableName(String name)

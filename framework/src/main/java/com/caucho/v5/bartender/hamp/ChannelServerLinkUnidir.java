@@ -122,7 +122,7 @@ public class ChannelServerLinkUnidir extends ChannelServerLink
       serviceRef = getDelegate().service(remoteName);
     }
     else {
-      serviceRef = new ServiceRefNull(getManager(), "/unexpected/" + address);
+      serviceRef = new ServiceRefNull(services(), "/unexpected/" + address);
     }
     
     if (serviceRef.toString().indexOf("/s/system") >= 0) {

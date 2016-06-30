@@ -29,9 +29,6 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.ServiceExceptionIllegalState;
-import io.baratine.stream.ResultStream;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -41,8 +38,8 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.QueryErrorMessage;
 import com.caucho.v5.amp.message.QueryReplyMessage;
 import com.caucho.v5.amp.message.StreamResultActorMessage;
@@ -56,6 +53,10 @@ import com.caucho.v5.amp.spi.RegistryAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.LruCache;
+
+import io.baratine.service.Result;
+import io.baratine.service.ServiceExceptionIllegalState;
+import io.baratine.stream.ResultStream;
 
 /**
  * Channel context for a server connection. The channel is a registry
@@ -140,7 +141,7 @@ public class ChannelServerImpl implements ChannelServer
   }
   
   @Override
-  public ServicesAmp getManager()
+  public ServicesAmp services()
   {
     return _managerRef.get();
   }
@@ -191,7 +192,7 @@ public class ChannelServerImpl implements ChannelServer
    */
   protected RegistryAmp getDelegate()
   {
-    return getManager().registry();
+    return services().registry();
   }
   
   /**
@@ -236,10 +237,10 @@ public class ChannelServerImpl implements ChannelServer
         log.fine("unauthorized service " + address + " from " + this);
       }
       
-      return new ServiceRefUnauthorized(getManager(), address);
+      return new ServiceRefUnauthorized(services(), address);
     }
     else if (! isExported(address, serviceRef)) {
-      return new ServiceRefUnauthorized(getManager(), address);
+      return new ServiceRefUnauthorized(services(), address);
     }
     else {
       return serviceRef;
@@ -281,7 +282,7 @@ public class ChannelServerImpl implements ChannelServer
   
   protected ServiceRefAmp lookupService(String address)
   {
-    ServiceRefAmp serviceRef = getManager().service(address);
+    ServiceRefAmp serviceRef = services().service(address);
     
     return serviceRef;
   }
@@ -360,7 +361,7 @@ public class ChannelServerImpl implements ChannelServer
       result.cancel();
     }
     
-    _serviceRefOut.close();
+    _serviceRefOut.close(Result.ignore());
   }
   
   @Override
@@ -395,7 +396,7 @@ public class ChannelServerImpl implements ChannelServer
                            long qid,
                            Object value)
     {
-      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.manager())) {
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.services())) {
         MessageAmp msg = new QueryReplyMessage(outbox,
                                                _serviceRef,
                                                headers, 
@@ -413,7 +414,7 @@ public class ChannelServerImpl implements ChannelServer
                            long qid, 
                            Throwable exn)
     {
-      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.manager())) {
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.services())) {
         MessageAmp msg = new QueryErrorMessage(outbox,
                                                _serviceRef,
                                                headers, 
@@ -468,7 +469,7 @@ public class ChannelServerImpl implements ChannelServer
     
     private ServicesAmp getManager()
     {
-      return _serviceRef.manager();
+      return _serviceRef.services();
     }
 
     @Override
@@ -511,7 +512,7 @@ public class ChannelServerImpl implements ChannelServer
       StreamResultActorMessage msg = _prevMsg;
 
       if (msg == null || ! msg.failQueue(exn)) {
-        try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.manager())) {
+        try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.services())) {
           _prevMsg = msg = new StreamResultActorMessage(outbox, _serviceRef, _qid);
           msg.failQueue(exn);
       

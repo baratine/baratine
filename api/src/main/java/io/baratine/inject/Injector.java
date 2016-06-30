@@ -36,8 +36,8 @@ import java.util.function.Consumer;
 
 import javax.inject.Provider;
 
+import io.baratine.config.Config;
 import io.baratine.config.IncludeGenerator;
-import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertManager;
 import io.baratine.spi.ServiceManagerProvider;
 
@@ -83,6 +83,11 @@ public interface Injector
    * Returns the bindings associated with a key.
    */
   <T> List<Binding<T>> bindings(Key<T> key);
+  
+  /**
+   * Returns the configuration
+   */
+  Config config();
   
   /**
    * Returns the type converter from a source class to a target class.

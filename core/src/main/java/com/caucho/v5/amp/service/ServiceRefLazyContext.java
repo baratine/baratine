@@ -43,7 +43,7 @@ public class ServiceRefLazyContext extends ServiceRefLazy
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     // baratine/a240 vs baratine/2102
     

@@ -124,7 +124,7 @@ public class StoreRootRamp
                        + " primary key (id, hash)"
                        + ") with hash '" + PodHashGeneratorColumn.class.getName() + "'");
     
-    query.exec(result.of(table->completeCreate((TableKraken) table)));
+    query.exec(result.then(table->completeCreate((TableKraken) table)));
     
     // _db = db;
   }
@@ -155,19 +155,19 @@ public class StoreRootRamp
         key);
         */
     
-    _selectQuery.findOne(result.of(cursor -> cursor != null ? cursor.getObject(1) : null),
+    _selectQuery.findOne(result.then(cursor -> cursor != null ? cursor.getObject(1) : null),
                          key, hash(key));
   }
   
   public void put(String key, Object value, Result<Void> result)
   {
-    _insertQuery.exec(result.of(x->null),
+    _insertQuery.exec(result.then(x->null),
                       key, hash(key), value);
   }
   
   public void remove(String key, Result<Void> result)
   {
-    _removeQuery.exec(result.of(x->null),
+    _removeQuery.exec(result.then(x->null),
                       key, hash(key));
   }
 
@@ -199,7 +199,7 @@ public class StoreRootRamp
     
     QueryKraken queryKraken = _tableManager.query(sql);
     
-    queryKraken.findOne(result.of(cursor->findOneResult(cursor)),
+    queryKraken.findOne(result.then(cursor->findOneResult(cursor)),
                         args);
     
     // result.complete(null);

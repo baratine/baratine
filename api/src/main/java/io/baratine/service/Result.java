@@ -68,10 +68,10 @@ import io.baratine.service.ResultImpl.ResultJoinBuilder;
  *    service.hello(new MyHelloResult());
  *    
  *    // result chaining with function
- *    service.hello(result.of(x-&gt;"[" + x + "]"));
+ *    service.hello(result.then(x-&gt;"[" + x + "]"));
  *    
  *    // result chaining with consumer
- *    service.hello(result.of((x,r)-&gt;r.ok("[" + x + "]")));
+ *    service.hello(result.then((x,r)-&gt;r.ok("[" + x + "]")));
  *    
  *    // result fork/join
  *    Result.Fork&lt;String,String&gt; fork = result.fork();
@@ -110,7 +110,7 @@ import io.baratine.service.ResultImpl.ResultJoinBuilder;
  * {
  *   HelloService hello = ...;
  *   
- *   hello.hello(result.of(x-&gt;"Hello: " + x));
+ *   hello.hello(result.then(x-&gt;"Hello: " + x));
  * }
  * </pre></blockquote>
  * 
@@ -195,7 +195,7 @@ public interface Result<T> extends ResultChain<T>
    * Shim preserves encapsulation by isolating service objects from
    * the outside callers.
    */
-  default void shim(Object value)
+  default void okShim(Object value)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -207,80 +207,6 @@ public interface Result<T> extends ResultChain<T>
   {
     return ResultImpl.Ignore.create();
   }
-
-  /**
-   * Creates a chained result.
-   * 
-   * <pre><code>
-   * void myMiddle(Result&lt;String&gt; result)
-   * {
-   *   MyLeafService leaf = ...;
-   *   
-   *   leaf.myLeaf(result.of());
-   * }
-   * </code></pre>
-   */
-  /*
-  @Override
-  default <R extends T> Result<R> of()
-  {
-    return of(this, x->x);
-  }
-  */
-
-  /**
-   * Creates a composed result that will receive its completed value from
-   * a function. The function's value will become the
-   * result's complete value.
-   * 
-   * <pre><code>
-   * void myMiddle(Result&lt;String&gt; result)
-   * {
-   *   MyLeafService leaf = ...;
-   *   
-   *   leaf.myLeaf(result.of(v-&gt;"Leaf: " + v));
-   * }
-   * </code></pre>
-   */
-  /*
-  default <U> Result<U> of(Function<U,T> fun)
-  {
-    if (isFuture()) {
-      return new ResultChainFunFuture<U,T>(this, fun);
-    }
-    else {
-      return new ResultChainFun<U,T>(this, fun);
-    }
-  }
-    */
-
-  /**
-   * Creates a composed result that will receive its completed value from
-   * a function. The function's value will become the
-   * result's complete value.
-   * 
-   * <pre><code>
-   * void myMiddle(Result&lt;String&gt; result)
-   * {
-   *   MyLeafService leaf = ...;
-   *   
-   *   leaf.myLeaf(result.of(v-&gt;"Leaf: " + v, 
-   *                         (e,r)-&gt;{ e.printStackTrace(); r.fail(e); }));
-   * }
-   * </code></pre>
-   */
-  /*
-  default <U> Result<U> of(Function<U,T> fun,
-                           BiConsumer<Throwable,Result<T>> exnHandler)
-  {
-    if (isFuture()) {
-      return new ChainResultFunFutureExn<U,T>(this, fun, exnHandler);
-    }
-    else {
-      return new ChainResultFunExn<U,T>(this, fun, exnHandler);
-    }
-  }
-  */
   
   /**
    * Creates a chained result for calling an internal
@@ -292,48 +218,14 @@ public interface Result<T> extends ResultChain<T>
    * {
    *   MyLeafService leaf = ...;
    *   
-   *   leaf.myLeaf(result.of((v,r)-&gt;r.ok("Leaf: " + v)));
+   *   leaf.myLeaf(result.then((v,r)-&gt;r.ok("Leaf: " + v)));
    * }
    * </code></pre>
    */
   default <R> Result<R> then(BiConsumer<R,Result<T>> consumer)
   {
     return ResultChain.then(this, consumer);
-    /*
-    if (isFuture()) {
-      return new ChainResultAsync<U,T,Result<T>>(this, consumer);
-    }
-    else {
-      return new ChainResult<U,T,Result<T>>(this, consumer);
-    }
-    */
   }
-  
-  /**
-   * Creates a chained result for calling an internal
-   * service from another service. The lambda expression will complete
-   * the original result.
-   * 
-   * <pre><code>
-   * void myMiddle(Result&lt;String&gt; result)
-   * {
-   *   MyLeafService leaf = ...;
-   *   
-   *   leaf.myLeaf(result.of((v,r)-&gt;r.ok("Leaf: " + v)));
-   * }
-   * </code></pre>
-   */
-  /*
-  static <T,U,R extends Result<T>> Result<U> then(R result, BiConsumer<U,R> consumer)
-  {
-    if (result.isFuture()) {
-      return new ResultThenFuture<U,T,R>(result, consumer);
-    }
-    else {
-      return new ResultThen<U,T,R>(result, consumer);
-    }
-  }
-  */
   
   /**
    * Creates a Result as a pair of lambda consumers, one to process normal
@@ -355,21 +247,12 @@ public interface Result<T> extends ResultChain<T>
     return new AdapterMake<T>(result, exn);
   }
 
-  static <T> Result<T> on(Consumer<T> consumer)
+  static <T> Result<T> of(Consumer<T> consumer)
   {
     Objects.requireNonNull(consumer);
     
     return new ResultImpl.ResultBuilder<>(consumer, null);
   }
-
-  /*
-  static <T> Builder<T> onFail(Consumer<Throwable> fail)
-  {
-    Objects.requireNonNull(fail);
-    
-    return new ResultImpl.ResultBuilder<>(null, fail);
-  }
-  */
   
   interface Builder<U>
   {
@@ -397,23 +280,6 @@ public interface Result<T> extends ResultChain<T>
   //
   // internal methods for managing future results
   //
-
-  /*
-  default boolean isFuture()
-  {
-    return false;
-  }
-  
-  default void completeFuture(T value)
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  
-  default <U> void completeFuture(Result<U> result, U value)
-  {
-    throw new IllegalStateException(getClass().getName());
-  }
-  */
   
   public interface Fork<U,T>
   {

@@ -81,7 +81,7 @@ public class ChannelServerLink extends ChannelServerImpl
       }
     }
     
-    ServiceRefAmp serviceRef = getManager().service(address);
+    ServiceRefAmp serviceRef = services().service(address);
     
     return serviceRef;
   }
@@ -91,7 +91,7 @@ public class ChannelServerLink extends ChannelServerImpl
     String address = "public://" + path;
 
     if ("main".equals(cluster)) {
-      return getManager().service(address);
+      return services().service(address);
     }
     else {
       ServicesAmp webAppManager = getWebAppManager(cluster);
@@ -100,7 +100,7 @@ public class ChannelServerLink extends ChannelServerImpl
         return webAppManager.service(address);
       }
       else {
-        return getManager().service(address);
+        return services().service(address);
       }
     }
   }

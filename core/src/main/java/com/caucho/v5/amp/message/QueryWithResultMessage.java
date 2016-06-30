@@ -98,7 +98,7 @@ public class QueryWithResultMessage<T>
   }
   
   @Override
-  public void shim(Object value)
+  public void okShim(Object value)
   {
     ok((T) method().shim(value));
   }
@@ -164,7 +164,7 @@ public class QueryWithResultMessage<T>
     MethodAmp method = method();
     
     if (method.isDirect() && serviceRef().stub().isStarted()) {
-      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
+      try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().services())) {
         offerDirect(outbox);
       }
     }

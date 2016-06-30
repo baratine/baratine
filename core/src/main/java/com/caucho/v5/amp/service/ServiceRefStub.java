@@ -180,7 +180,7 @@ abstract class ServiceRefStub extends ServiceRefBase
   {
     Object child;
     
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(services())) {
       init();
     
       Object oldContext = outbox.getAndSetContext(inbox());
@@ -208,7 +208,7 @@ abstract class ServiceRefStub extends ServiceRefBase
       
       ServiceConfig config = null;
       
-      StubAmp stubChild = manager().stubFactory().stub(child, config);
+      StubAmp stubChild = services().stubFactory().stub(child, config);
 
       return createChild(subpath, stubChild);
     }
@@ -237,7 +237,7 @@ abstract class ServiceRefStub extends ServiceRefBase
   @Override
   public ServiceRefAmp service(String path)
   {
-    return manager().service(address() + path);
+    return services().service(address() + path);
   }
 
   @Override
@@ -247,7 +247,7 @@ abstract class ServiceRefStub extends ServiceRefBase
     
     ServiceRefAmp bindRef = new ServiceRefLocal(_stub, _inbox);
     
-    manager().bind(bindRef, address);
+    services().bind(bindRef, address);
     
     return bindRef;
   }

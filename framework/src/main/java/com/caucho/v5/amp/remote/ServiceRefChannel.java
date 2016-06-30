@@ -46,9 +46,9 @@ public class ServiceRefChannel extends ServiceRefBase
   }
 
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
-    return _channel.getManager();
+    return _channel.services();
   }
 
   @Override

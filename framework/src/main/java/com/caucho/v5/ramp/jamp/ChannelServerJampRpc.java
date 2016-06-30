@@ -179,7 +179,7 @@ public class ChannelServerJampRpc implements ChannelServer
   }
   
   @Override
-  public ServicesAmp getManager()
+  public ServicesAmp services()
   {
     return _manager;
   }
@@ -265,7 +265,7 @@ public class ChannelServerJampRpc implements ChannelServer
       log.fine("unauthorized service " + address + " from " + this);
     }
       
-    return new ServiceRefUnauthorized(getManager(), address).methodByName(methodName);
+    return new ServiceRefUnauthorized(services(), address).methodByName(methodName);
   }
   
   @Override
@@ -298,7 +298,7 @@ public class ChannelServerJampRpc implements ChannelServer
       log.fine("unauthorized service " + address + " from " + this);
     }
       
-    return new ServiceRefUnauthorized(getManager(), address);
+    return new ServiceRefUnauthorized(services(), address);
   }
   
   protected ServiceRefAmp lookupSession(ServiceRefAmp serviceRef)

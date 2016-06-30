@@ -1163,7 +1163,7 @@ public class HeartbeatImpl
         PodLocalService podService = heartbeat._bartender.getPodService();
         PodsManagerServiceLocal podClusterService = heartbeat._bartender.getPodsClusterService();
         
-        podService.onJoinStart(Result.on(x->{
+        podService.onJoinStart(Result.of(x->{
           heartbeat._bartender.getPodsClusterService().onJoinStart();
         }));
         
@@ -1362,7 +1362,7 @@ public class HeartbeatImpl
           _lastJoinTime = CurrentTime.currentTime();
           
           _joinClient.start(x->updateRack(x), 
-                            Result.on(count->onJoinComplete(count, Result.ignore())));
+                            Result.of(count->onJoinComplete(count, Result.ignore())));
         }
       } finally {
         _timer.runAfter(_joinTask, getJoinTimeout(), TimeUnit.MILLISECONDS, Result.ignore());

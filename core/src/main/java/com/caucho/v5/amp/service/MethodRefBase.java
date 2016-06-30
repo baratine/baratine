@@ -128,7 +128,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
   @Override
   public void send(Headers headers, Object... args)
   {
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().services())) {
       HeadersAmp headersAmp = (HeadersAmp) headers;
       MessageAmp msg = new SendMessage_N(outbox, headersAmp, serviceRef(), method(), args);
     
@@ -172,7 +172,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
       timeout = timeUnit.toMillis(timeout);
     }
     
-    ServicesAmp manager = serviceRef().manager();
+    ServicesAmp manager = serviceRef().services();
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(manager)) {
       // OutboxAmp outbox = manager.getCurrentOutbox();
       // InboxAmp inbox = outbox.getInbox();
@@ -196,7 +196,7 @@ abstract public class MethodRefBase implements MethodRefAmp, Serializable
     
     long timeout = -1;
     
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().services())) {
       HeadersAmp headersAmp = HeadersNull.NULL;
       
       InboxAmp inboxCaller;

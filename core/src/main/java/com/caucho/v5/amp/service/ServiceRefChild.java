@@ -61,7 +61,7 @@ public class ServiceRefChild extends ServiceRefPin implements CacheListener
       return actor;
     }
     
-    ServiceRefAmp selfRef = manager().service(address());
+    ServiceRefAmp selfRef = services().service(address());
     
     if (selfRef == this) {
       _actor = _prevActor;

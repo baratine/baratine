@@ -95,7 +95,7 @@ public class ServiceRefPodRoot extends ServiceRefWrapper
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return _manager;
   }
@@ -112,7 +112,7 @@ public class ServiceRefPodRoot extends ServiceRefWrapper
   {
     address = ServicesAmpImpl.toCanonical(address);
 
-    manager().bind(this, address);
+    services().bind(this, address);
 
     return this;
   }

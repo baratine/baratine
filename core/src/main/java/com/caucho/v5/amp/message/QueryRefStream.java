@@ -109,7 +109,7 @@ public class QueryRefStream extends QueryRefBase
   
   private void sendCancel()
   {
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_targetRef.manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_targetRef.services())) {
       StreamCancelMessage cancel = new StreamCancelMessage(outbox, _targetRef,
                                                          getFrom(), getId());
     

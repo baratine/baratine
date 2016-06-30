@@ -63,7 +63,7 @@ public class ChannelServerBase implements ChannelServer
   }
 
   @Override
-  public ServicesAmp getManager()
+  public ServicesAmp services()
   {
     return _manager;
   }
@@ -140,10 +140,10 @@ public class ChannelServerBase implements ChannelServer
         log.fine("unauthorized service " + address + " from " + this);
       }
       
-      return new ServiceRefUnauthorized(getManager(), address);
+      return new ServiceRefUnauthorized(services(), address);
     }
     else if (! isExported(address, serviceRef)) {
-      return new ServiceRefUnauthorized(getManager(), address);
+      return new ServiceRefUnauthorized(services(), address);
     }
     else {
       return serviceRef;
@@ -165,7 +165,7 @@ public class ChannelServerBase implements ChannelServer
   @Override
   public ServiceRefAmp createGatewayRef(String remoteName)
   {
-    return new ServiceRefNull(getManager(), remoteName);
+    return new ServiceRefNull(services(), remoteName);
   }
   
   @Override

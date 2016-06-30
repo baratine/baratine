@@ -90,7 +90,7 @@ public class QueryBuilderExplain extends QueryBuilderKraken
   @Override
   public void build(Result<QueryKraken> result)
   {
-    getDelegate().build(result.of(query->buildExplain(query)));
+    getDelegate().build(result.then(query->buildExplain(query)));
   }
 
   private QueryExplain buildExplain(QueryKraken query)

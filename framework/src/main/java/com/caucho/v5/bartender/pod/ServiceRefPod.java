@@ -67,7 +67,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
                 int hash)
   {
     _podRoot = podRoot;
-    _manager = podRoot.manager();
+    _manager = podRoot.services();
     _path = path;
     _hash = hash;
   }
@@ -79,7 +79,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return _manager;
   }
@@ -101,7 +101,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
   {
     address = ServicesAmpImpl.toCanonical(address);
 
-    manager().bind(this, address);
+    services().bind(this, address);
 
     return this;
   }
@@ -148,7 +148,7 @@ public class ServiceRefPod extends ServiceRefWrapper implements ImportAware
       return serviceRef.classLoader();
     }
     else {
-      return manager().classLoader();
+      return services().classLoader();
     }
   }
   

@@ -45,7 +45,7 @@ import io.baratine.spi.ServiceManagerProvider;
  * 
  * <pre>
  * //Inside of a service @OnInit
- * ServiceManager manager = ServiceManager.current();
+ * Services manager = Service.current();
  * 
  * MyService southWestRegionService = manager.newService(new MyServiceImpl(SOUTH_WEST_REGION)
  *                                           .as(MyService.class);
@@ -75,7 +75,7 @@ public interface ServiceRef
    * 
    * @return the service's manager
    */
-  Services manager();
+  Services services();
 
   /**
    * Pin an object to the service, creating a dependent service 
@@ -103,23 +103,7 @@ public interface ServiceRef
       throw new IllegalArgumentException(path + " must start with '/'");
     }
     
-    return manager().service(address() + path);
-  }
-  
-  /**
-   * Restrict the service to a specific node for a pod service.
-   */
-  default ServiceRef pinNode(int hash)
-  {
-    return this;
-  }
-  
-  /**
-   * Count of nodes in the service's pod.
-   */
-  default int nodeCount()
-  {
-    return 1;
+    return services().service(address() + path);
   }
   
   /**
@@ -133,7 +117,15 @@ public interface ServiceRef
   ServiceRef save(Result<Void> result);
 
   boolean isClosed();
-  void close();
+  
+  default void close(Result<Void> result)
+  {
+    result.ok(null);
+  }
+  
+  default void closeImmediate()
+  {
+  }
 
   static ServiceRef valueOf(String address)
   {
@@ -191,7 +183,7 @@ public interface ServiceRef
      */
     ServiceBuilder address(String address);
     
-    ServiceBuilder addressAuto();
+    ServiceBuilder auto();
     
     ServiceBuilder workers(int workers);
     

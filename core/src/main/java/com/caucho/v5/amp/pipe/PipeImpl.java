@@ -506,7 +506,7 @@ public class PipeImpl<T> implements Pipe<T>, Deliver<T>
       stateNew = stateOld.toWake();
     } while (! _stateOutRef.compareAndSet(stateOld, stateNew));
       
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_outRef.manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_outRef.services())) {
       Objects.requireNonNull(outbox);
     
       PipeWakeOutMessage<T> msg = new PipeWakeOutMessage<>(outbox, _outRef, this, outFlow);

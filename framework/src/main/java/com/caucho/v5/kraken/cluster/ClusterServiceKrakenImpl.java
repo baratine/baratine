@@ -153,7 +153,7 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
                   Result<GetStreamResult> result)
   {
     _tableManager.getKelpBacking().getLocal(tableKey, key, version, 
-                                            result.of(gs->getImpl(gs)));
+                                            result.then(gs->getImpl(gs)));
   }
   
   private GetStreamResult getImpl(GetStreamResult getStream)
@@ -291,7 +291,7 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
       
     QueryKraken query = builder.build();
     
-    query.findOne(result.of(cursor->findKeyResult(cursor)), arg);
+    query.findOne(result.then(cursor->findKeyResult(cursor)), arg);
   }
 
   private byte []findKeyResult(Cursor value)
@@ -364,7 +364,7 @@ public class ClusterServiceKrakenImpl implements ClusterServiceKraken
                        String serverId)
   {
     _tableManager.loadTable(tableKey, 
-                            Result.on(table->addWatchImpl(table, tableKey, key, serverId)));
+                            Result.of(table->addWatchImpl(table, tableKey, key, serverId)));
   }
   
   private void addWatchImpl(TableKraken table,

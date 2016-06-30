@@ -94,7 +94,7 @@ public class MethodRefNull extends MethodRefBase
   {
     return new InboxNull(_serviceRef.address(), 
                            _serviceRef,
-                           _serviceRef.manager());
+                           _serviceRef.services());
   }
   
   @Override

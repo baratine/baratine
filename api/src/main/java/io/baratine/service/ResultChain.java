@@ -63,26 +63,9 @@ public interface ResultChain<T>
    * }
    * </code></pre>
    */
-  default <R extends T> Result<R> of()
+  default <R extends T> Result<R> then()
   {
-    return of(this, x->x);
-  }
-
-  /**
-   * Creates a chained result.
-   * 
-   * <pre><code>
-   * void myMiddle(Result&lt;String&gt; result)
-   * {
-   *   MyLeafService leaf = ...;
-   *   
-   *   leaf.myLeaf(result.of());
-   * }
-   * </code></pre>
-   */
-  default <R> Result<R> of(Function<R,T> fun)
-  {
-    return of(this, fun);
+    return then(this, x->x);
   }
 
   /**
@@ -99,8 +82,27 @@ public interface ResultChain<T>
    * }
    * </code></pre>
    */
+  default <R> Result<R> then(Function<R,T> fun)
+  {
+    return then(this, fun);
+  }
+
+  /**
+   * Creates a composed result that will receive its completed value from
+   * a function. The function's value will become the
+   * result's complete value.
+   * 
+   * <pre><code>
+   * void myMiddle(Result&lt;String&gt; result)
+   * {
+   *   MyLeafService leaf = ...;
+   *   
+   *   leaf.myLeaf(result.then(v-&gt;"Leaf: " + v));
+   * }
+   * </code></pre>
+   */
   static <R,T,C extends ResultChain<T>> 
-  Result<R> of(C result, Function<R,T> fun)
+  Result<R> then(C result, Function<R,T> fun)
   {
     if (result.isFuture()) {
       return new ResultChainFunFuture<>(result, fun);
@@ -120,15 +122,15 @@ public interface ResultChain<T>
    * {
    *   MyLeafService leaf = ...;
    *   
-   *   leaf.myLeaf(result.of(v-&gt;"Leaf: " + v, 
+   *   leaf.myLeaf(result.then(v-&gt;"Leaf: " + v, 
    *                         (e,r)-&gt;{ e.printStackTrace(); r.fail(e); }));
    * }
    * </code></pre>
    */
   static <T,U,R extends ResultChain<U>>
-  Result<T> of(R next,
-               Function<T,U> fun,
-               BiConsumer<Throwable,R> exnHandler)
+  Result<T> then(R next,
+                 Function<T,U> fun,
+                 BiConsumer<Throwable,R> exnHandler)
   {
     if (next.isFuture()) {
       return new ChainResultFunFutureExn<>(next, fun, exnHandler);
@@ -148,7 +150,7 @@ public interface ResultChain<T>
    * {
    *   MyLeafService leaf = ...;
    *   
-   *   leaf.myLeaf(result.of((v,r)-&gt;r.ok("Leaf: " + v)));
+   *   leaf.myLeaf(result.then((v,r)-&gt;r.ok("Leaf: " + v)));
    * }
    * </code></pre>
    */

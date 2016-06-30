@@ -111,7 +111,7 @@ public class MethodEnsureImpl implements MethodEnsureAmp
     
     _driver.put(id, _methodId, stub.name(), args);
     
-    return ResultChain.of(result, 
+    return ResultChain.then(result, 
                           x->{ onComplete(id); return x; },
                           (exn,r)->{ onComplete(id); r.fail(exn); }); 
   }

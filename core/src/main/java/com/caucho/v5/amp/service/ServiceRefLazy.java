@@ -60,13 +60,13 @@ public class ServiceRefLazy extends ServiceRefLazyBase
   @Override
   protected ServiceRefAmp newDelegate()
   {
-    ServiceRefAmp delegate = manager().service(_address);
+    ServiceRefAmp delegate = services().service(_address);
 
     if (delegate != null && ! delegate.isClosed()) {
       return delegate;
     }
     else {
-      return new ServiceRefNull(manager(), _address);
+      return new ServiceRefNull(services(), _address);
     }
   }
   

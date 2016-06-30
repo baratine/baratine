@@ -169,7 +169,7 @@ public class JdbcConnectionPoolImpl //implements JdbcService
           _logger.log(Level.FINE, "closing expired connection service: " + conn);
         }
 
-        ServiceRef.toRef(conn).close();
+        ServiceRef.toRef(conn).close(Result.ignore());
       }
       else {
         break;

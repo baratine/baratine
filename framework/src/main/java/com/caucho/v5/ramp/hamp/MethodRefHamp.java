@@ -94,7 +94,7 @@ public class MethodRefHamp
       serviceRef = _channelIn.service(_address);
 
       if (serviceRef.isClosed()) {
-        serviceRef = new ServiceRefLazyInvalid(_channelIn.getManager(),
+        serviceRef = new ServiceRefLazyInvalid(_channelIn.services(),
                                                _channelIn, _address);
       }
 
@@ -104,7 +104,7 @@ public class MethodRefHamp
     } catch (Throwable e) {
       log.log(Level.FINE, e.toString(), e);
 
-      serviceRef = new ServiceRefLazyInvalid(_channelIn.getManager(),
+      serviceRef = new ServiceRefLazyInvalid(_channelIn.services(),
                                              _channelIn, _address);
       delegate = serviceRef.methodByName(_methodName);
       
@@ -160,7 +160,7 @@ public class MethodRefHamp
   ClassLoader getClassLoader()
   {
     ClassLoader serviceLoader;
-    serviceLoader = getMethod().serviceRef().manager().classLoader();
+    serviceLoader = getMethod().serviceRef().services().classLoader();
     
     if (_podCaller != null) {
       String podId;

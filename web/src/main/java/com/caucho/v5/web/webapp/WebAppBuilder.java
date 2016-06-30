@@ -1104,7 +1104,7 @@ public class WebAppBuilder
           service = inject.instance(_serviceType);
         }
         else {
-          ServiceRef ref = service(_serviceType).addressAuto().ref();
+          ServiceRef ref = service(_serviceType).auto().ref();
 
           if (serviceAnn.value().startsWith("session:") || sessionAnn != null) {
             fun = req->req.session(_serviceType);

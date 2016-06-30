@@ -40,6 +40,7 @@ import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 
+import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionIllegalArgument;
 import io.baratine.service.ServiceRef;
 
@@ -57,7 +58,7 @@ public interface ServiceRefAmp extends ServiceRef
   String address();
   
   @Override
-  ServicesAmp manager();
+  ServicesAmp services();
   
   boolean isUp();
 
@@ -67,7 +68,7 @@ public interface ServiceRefAmp extends ServiceRef
 
   default ClassLoader classLoader()
   {
-    return manager().classLoader();
+    return services().classLoader();
   }
   
   void offer(MessageAmp message);
@@ -105,16 +106,26 @@ public interface ServiceRefAmp extends ServiceRef
   
   ServiceRefAmp start();
   
-  @Override
+  /**
+   * Restrict the service to a specific node for a pod service.
+   */
   default ServiceRefAmp pinNode(int hash)
   {
     return this;
   }
   
+  /**
+   * Count of nodes in the service's pod.
+   */
+  default int nodeCount()
+  {
+    return 1;
+  }
+  
   // @Override ServiceRefAmp unsubscribe(Object service);
 
   void shutdown(ShutdownModeAmp mode);
-  void close();
+  void close(Result<Void> result);
   
   static ServiceRefAmp toRef(Object proxy)
   {

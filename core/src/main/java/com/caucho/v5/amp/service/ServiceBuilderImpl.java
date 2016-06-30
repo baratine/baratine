@@ -545,7 +545,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
   }
   
   @Override
-  public ServiceBuilderImpl addressAuto()
+  public ServiceBuilderImpl auto()
   {
     return addressAuto(_serviceClass);
   }

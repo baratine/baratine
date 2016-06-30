@@ -112,7 +112,7 @@ public class ChannelClientLinkUnidir extends ChannelClientBartender
       serviceRef = getLookup().service(remoteName);
     }
     else {
-      serviceRef = new ServiceRefNull(getManager(), "/unexpected/" + name);
+      serviceRef = new ServiceRefNull(services(), "/unexpected/" + name);
     }
     
     return new GatewayReplyBase(serviceRef);

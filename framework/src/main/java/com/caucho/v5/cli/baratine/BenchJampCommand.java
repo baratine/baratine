@@ -318,7 +318,7 @@ public class BenchJampCommand extends ServerCommandBase<ArgsCli>
         MethodRefAmp methodRef = (MethodRefAmp)_methodRef;
         Object []args = _args;
         
-        ServicesAmp manager = methodRef.serviceRef().manager();
+        ServicesAmp manager = methodRef.serviceRef().services();
 
         _context.waitForStart();
 

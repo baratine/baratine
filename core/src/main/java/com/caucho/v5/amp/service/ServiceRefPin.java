@@ -117,7 +117,7 @@ public class ServiceRefPin extends ServiceRefStub
       _bindAddress = address;
     }
 
-    manager().bind(this, address);
+    services().bind(this, address);
       
     return this;
   }
@@ -126,7 +126,7 @@ public class ServiceRefPin extends ServiceRefStub
   public <T> T as(Class<T> api)
   {
     //return getManager().createPinProxy(this, api, apis);
-    return manager().newProxy(this, api);
+    return services().newProxy(this, api);
   }
 
   @Override

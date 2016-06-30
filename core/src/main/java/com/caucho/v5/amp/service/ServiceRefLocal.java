@@ -53,7 +53,7 @@ public class ServiceRefLocal extends ServiceRefStub
     InboxAmp inbox = inbox();
     
     if (inbox.bind(address)) {
-      manager().bind(this, address);
+      services().bind(this, address);
       
       return this;
     }

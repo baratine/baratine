@@ -71,7 +71,7 @@ public class ServiceRefClient extends ServiceRefStub
       
       ServiceConfig config = null;
       
-      StubAmp childActor = manager().stubFactory().stub(child, config);
+      StubAmp childActor = services().stubFactory().stub(child, config);
 
       return new ServiceRefClient(subpath, childActor, inbox());
     }

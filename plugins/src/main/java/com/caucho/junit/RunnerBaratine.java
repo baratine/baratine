@@ -333,7 +333,7 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
         ServiceTestDescriptor descriptor
           = ServiceTestDescriptor.of(serviceClass);
 
-        ServiceRef ref = manager.newService(serviceClass).addressAuto().ref();
+        ServiceRef ref = manager.newService(serviceClass).auto().ref();
 
         descriptors.put(descriptor, ref);
       }

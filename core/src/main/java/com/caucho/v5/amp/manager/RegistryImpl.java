@@ -170,9 +170,9 @@ class RegistryImpl implements RegistryAmp
   @Override
   public void bind(String address, ServiceRefAmp serviceRef)
   {
-    if (_manager != serviceRef.manager()) {
+    if (_manager != serviceRef.services()) {
       throw new IllegalStateException(L.l("Binding in mismatched manager {0} with {1} and {2}",
-                                          _manager, serviceRef, serviceRef.manager()));
+                                          _manager, serviceRef, serviceRef.services()));
     }
     ServiceRefAmp oldServiceRef = _serviceMap.get(address);
     

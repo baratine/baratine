@@ -51,7 +51,7 @@ abstract public class ServiceRefLazyBase extends ServiceRefWrapper
   }
 
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return _manager;
   }

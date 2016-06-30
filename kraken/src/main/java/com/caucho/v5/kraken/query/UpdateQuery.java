@@ -132,7 +132,7 @@ public class UpdateQuery extends QueryKraken
     tableKelp.update(minCursor, maxCursor, whereKelp,
                      _update,
                      _table.getBackupCallback(),
-                     result.of(x->x));
+                     result.then(x->x));
     
     // result.completed(null);
   }

@@ -59,6 +59,6 @@ public class MethodRefError extends MethodRefNull
     
     return new InboxErrorReply(serviceRef.address(), 
                                serviceRef,
-                               serviceRef.manager());
+                               serviceRef.services());
   }
 }

@@ -368,7 +368,7 @@ public class StubAmpBean extends StubAmpBase
       return handle.__caucho_getServiceRef();
     }
     else {
-      ServicesAmp manager = parentRef.manager();
+      ServicesAmp manager = parentRef.services();
       
       String address = parentRef.address() + path;
       

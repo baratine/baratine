@@ -655,7 +655,7 @@ public class TableKelp
   public void close(ShutdownModeAmp mode, Result<Void> result)
   {
     if (mode == ShutdownModeAmp.GRACEFUL) {
-      _tableService.checkpoint(result.of(x->closeImpl()));
+      _tableService.checkpoint(result.then(x->closeImpl()));
     }
     else {
       result.ok(closeImpl());

@@ -329,17 +329,17 @@ public class FileServiceRootImpl
     FileEntry entry = getOwnerEntry(path);
 
     if (entry == null) {
-      _fileRead.findOne(result.of(cursor->openReadStream(cursor)), 
+      _fileRead.findOne(result.then(cursor->openReadStream(cursor)), 
                         parentHash, key, hash);
     }
     else if (entry.isReadClean()) {
-      _fileRead.findOneDirect(result.of(cursor->openReadStream(cursor)), 
+      _fileRead.findOneDirect(result.then(cursor->openReadStream(cursor)), 
                               parentHash, key, hash);
     }
     else {
       long writeCount = entry.getWriteCount();
       
-      _fileRead.findOne(result.of(cursor->openReadStream(cursor, entry, writeCount)), 
+      _fileRead.findOne(result.then(cursor->openReadStream(cursor, entry, writeCount)), 
                         parentHash, key, hash);
     }
   }
@@ -371,7 +371,7 @@ public class FileServiceRootImpl
     else {
       long writeCount = entry.getWriteCount();
       
-      _fileRead.findOne(result.of(cursor->openReadCursor(cursor, entry, writeCount)), 
+      _fileRead.findOne(result.then(cursor->openReadCursor(cursor, entry, writeCount)), 
                         parentHash, key, hash);
     }
   }
@@ -419,17 +419,17 @@ public class FileServiceRootImpl
     FileEntry entry = getOwnerEntry(path);
 
     if (entry == null) {
-      _fileRead.findOne(result.of(cursor->openReadBlobStream(cursor, entry)), 
+      _fileRead.findOne(result.then(cursor->openReadBlobStream(cursor, entry)), 
                         parentHash, key, hash);
     }
     else if (entry.isReadClean()) {
-      _fileRead.findOneDirect(result.of(cursor->openReadBlobStream(cursor, entry)), 
+      _fileRead.findOneDirect(result.then(cursor->openReadBlobStream(cursor, entry)), 
                               parentHash, key, hash);
     }
     else {
       long writeCount = entry.getWriteCount();
       
-      _fileRead.findOne(result.of(cursor->openReadBlobStream(cursor, entry, writeCount)), 
+      _fileRead.findOne(result.then(cursor->openReadBlobStream(cursor, entry, writeCount)), 
                         parentHash, key, hash);
     }
   }
@@ -529,7 +529,7 @@ public class FileServiceRootImpl
       putResult = Result.ignore();
     }
     
-    _fileInsert.exec(putResult.of(v->afterWriteClose(path)),
+    _fileInsert.exec(putResult.then(v->afterWriteClose(path)),
                      getParentHash(path), getPathKey(path), hash(path),
                      getParent(path), getName(path),
                      cursor.getInputStream(1), 
@@ -638,7 +638,7 @@ public class FileServiceRootImpl
   public void listQueryImpl(String path,
                             Result<List<String>> result)
   {
-    _dirList.findAll(result.of(cursorIter->listResult(cursorIter, path)), 
+    _dirList.findAll(result.then(cursorIter->listResult(cursorIter, path)), 
                      calculateParentHash(path), path);
   }
   
@@ -767,7 +767,7 @@ public class FileServiceRootImpl
   
   public void getStatus(String path, Result<? super FileStatusImpl> result)
   {
-    _fileStatus.findOne(result.of(cursor->statusResult(cursor, path)),
+    _fileStatus.findOne(result.then(cursor->statusResult(cursor, path)),
                         getParentHash(path),
                         getPathKey(path),
                         hash(path));
@@ -920,7 +920,7 @@ public class FileServiceRootImpl
     }
     */
     
-    cursor.exec(result.of(v->afterWriteClose(path)));
+    cursor.exec(result.then(v->afterWriteClose(path)));
 
     /*
     FileEntry entry = getEntry(path);
@@ -1043,12 +1043,12 @@ public class FileServiceRootImpl
   
   private void updateDir(String dirName)
   {
-    listQueryImpl(dirName, Result.on(list->updateDirList(dirName, list)));
+    listQueryImpl(dirName, Result.of(list->updateDirList(dirName, list)));
   }
   
   private void updateDirList(String dirName, List<String> list)
   {
-    openReadFile(dirName, Result.on(is->updateDirFile(dirName, list, is)));
+    openReadFile(dirName, Result.of(is->updateDirFile(dirName, list, is)));
   }
   
   private void updateDirFile(String dirName, 
@@ -1379,7 +1379,7 @@ public class FileServiceRootImpl
         file.onChange();
       }
       
-      _fileName.findOneDirect(Result.on(c->onFileChange(c)),
+      _fileName.findOneDirect(Result.of(c->onFileChange(c)),
                               getParentHash(key),
                               getPathKey(key),
                               getHash(key));
@@ -1394,7 +1394,7 @@ public class FileServiceRootImpl
         file.onChange();
       }
       
-      _fileName.findOneDirect(Result.on(c->onFileChange(c)),
+      _fileName.findOneDirect(Result.of(c->onFileChange(c)),
                               getParentHash(key),
                               getPathKey(key),
                               getHash(key));

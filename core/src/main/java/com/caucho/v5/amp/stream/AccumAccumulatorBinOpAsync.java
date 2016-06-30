@@ -51,7 +51,7 @@ public class AccumAccumulatorBinOpAsync<T>
 
     // XXX: major timing issues
     if (prevValue != null) {
-      _op.apply(prevValue, value, result.of(x->{ accum.set(x); return null; }));
+      _op.apply(prevValue, value, result.then(x->{ accum.set(x); return null; }));
     }
     else {
       accum.set(value);

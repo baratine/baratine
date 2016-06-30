@@ -671,7 +671,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     }
 
     @Override
-    public ServiceBuilder addressAuto()
+    public ServiceBuilder auto()
     {
       _isAddressAuto = true;
       
@@ -712,7 +712,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
         builder.address(_address);
       }
       else if (_isAddressAuto) {
-        builder.addressAuto();
+        builder.auto();
       }
       
       if (_workers >= 0) {

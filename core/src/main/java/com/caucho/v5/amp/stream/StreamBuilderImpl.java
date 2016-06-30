@@ -169,7 +169,7 @@ public class StreamBuilderImpl<T,U> implements ResultStreamBuilderSync<T>, Seria
                                         ()->result(future));
                                         */
     //System.err.println("CURR: " + OutboxAmp.getCurrent());
-    return _serviceRef.manager().run(60, TimeUnit.SECONDS, 
+    return _serviceRef.services().run(60, TimeUnit.SECONDS, 
                                         r->result(r));
   }
   
@@ -444,7 +444,7 @@ public class StreamBuilderImpl<T,U> implements ResultStreamBuilderSync<T>, Seria
   {
     long expires = 600 * 1000L;
 
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.services())) {
       HeadersAmp headers = HeadersNull.NULL;
     
       ResultStream<U> stream = build(resultStream);

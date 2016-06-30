@@ -86,7 +86,7 @@ public class ServiceBuilderWebImpl
   }
 
   @Override
-  public ServiceBuilderWebImpl addressAuto()
+  public ServiceBuilderWebImpl auto()
   {
     _isAddressAuto = true;
     
@@ -151,7 +151,7 @@ public class ServiceBuilderWebImpl
       builder.address(_address);
     }
     else {
-      builder.addressAuto();
+      builder.auto();
     }
 
     //builder.ref();

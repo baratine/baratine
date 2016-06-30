@@ -101,7 +101,7 @@ public class NotifyQueryBuilder extends QueryBuilderKraken
     }
     else {
       _tableManager.loadTable(_tableName, 
-                              result.of(t->buildImpl(t)));
+                              result.then(t->buildImpl(t)));
       /*
       throw new QueryException(L.l("'{0}' is an unknown table\n  {1}",
                                    _tableName, getSql()));

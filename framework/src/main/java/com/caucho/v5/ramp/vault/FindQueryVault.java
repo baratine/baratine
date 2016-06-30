@@ -100,7 +100,7 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
     {
       driver().findOne(_sql,
                              args,
-                             result.of(_cursorToId));
+                             result.then(_cursorToId));
     }
   }
 
@@ -144,7 +144,7 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
     {
       driver().findOne(_sql,
                              args,
-                             result.of(this::toProxy));
+                             result.then(this::toProxy));
     }
     
     private V toProxy(Cursor cursor)
@@ -198,7 +198,7 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
     {
       driver().findOne(_sql,
                              args,
-                             result.of(_cursorToBean));
+                             result.then(_cursorToBean));
     }
   }
 
@@ -235,7 +235,7 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
     {
       driver().findAll(_sql,
                               args,
-                              result.of(this::listResult));
+                              result.then(this::listResult));
     }
     
     private List<ID> listResult(Iterable<Cursor> iter)
@@ -291,7 +291,7 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
     {
       driver().findAll(_sql,
                               args,
-                              result.of(this::toProxies));
+                              result.then(this::toProxies));
     }
     
     private List<V> toProxies(Iterable<Cursor> results)
@@ -344,7 +344,7 @@ abstract class FindQueryVault<ID,T,V> implements MethodVault<V>
     {
       driver().findAll(_sql,
                               args,
-                              result.of(this::listResult));
+                              result.then(this::listResult));
     }
     
     private List<V> listResult(Iterable<Cursor> iter)

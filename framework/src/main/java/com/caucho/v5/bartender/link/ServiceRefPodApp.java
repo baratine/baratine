@@ -193,7 +193,7 @@ public class ServiceRefPodApp extends ServiceRefWrapper
       
       exn.fillInStackTrace();
       
-      return new ServiceRefException(manager(), serverId, exn);
+      return new ServiceRefException(services(), serverId, exn);
       
       // return new ServiceRefNull(_rampManager, _hostName + _contextPath);
     }

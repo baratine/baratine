@@ -172,7 +172,7 @@ public class VaultDriverDataImpl<ID, T>
     }
 
     _db.findOne(_loadSql,
-                result.of(c -> onLoad(c, entity)),
+                result.then(c -> onLoad(c, entity)),
                 _entityInfo.id().toParam(id));
   }
 

@@ -61,7 +61,7 @@ public class GatewayReplyBase implements GatewayReply
   @Override
   public void queryOk(HeadersAmp headers, long qid, Object value)
   {
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.services())) {
       MessageAmp msg = new QueryReplyMessage(outbox,
                                              _serviceRef, 
                                              headers,
@@ -80,7 +80,7 @@ public class GatewayReplyBase implements GatewayReply
   @Override
   public void queryFail(HeadersAmp headers, long qid, Throwable exn)
   {
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(_serviceRef.services())) {
       _serviceRef.offer(new QueryErrorMessage(outbox,
                                               _serviceRef, 
                                               headers,

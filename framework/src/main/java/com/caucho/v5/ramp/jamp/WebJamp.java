@@ -189,7 +189,7 @@ public class WebJamp implements ServiceWeb
     
     InJamp in = new InJamp(channel, _jsonFactory); // , outbox);
 
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(channel.getManager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(channel.services())) {
       int queryCount = in.readMessages(is, outbox);
       
       JampRestMessage msg;

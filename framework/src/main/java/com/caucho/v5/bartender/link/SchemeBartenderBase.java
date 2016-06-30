@@ -98,7 +98,7 @@ public class SchemeBartenderBase extends ServiceRefBase
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return _ampManager;
   }

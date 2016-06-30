@@ -229,7 +229,7 @@ public class QueryMessageBase<T> extends MethodMessageBase
       return;
     }
     
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().manager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().services())) {
       outbox.offer(this);
     }
   }

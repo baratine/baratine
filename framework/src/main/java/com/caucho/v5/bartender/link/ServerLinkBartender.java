@@ -31,21 +31,21 @@ package com.caucho.v5.bartender.link;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
-import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.remote.ChannelClient;
 import com.caucho.v5.amp.remote.ChannelClientFactory;
 import com.caucho.v5.amp.remote.OutAmpManager;
 import com.caucho.v5.amp.remote.ServiceRefLinkFactory;
 import com.caucho.v5.amp.remote.ServiceRefLinkFactoryBuilder;
-import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.hamp.ChannelClientBartender;
 import com.caucho.v5.bartender.pod.PodRef;
 import com.caucho.v5.http.pod.PodContainer;
 import com.caucho.v5.util.L10N;
+
+import io.baratine.service.Result;
 
 /**
  * Manages the link/connections to a remote Bartender server.
@@ -230,7 +230,7 @@ class ServerLinkBartender
     ServiceRefAmp linkServiceRef = _linkServiceRef;
 
     if (linkServiceRef != null) {
-      linkServiceRef.close();
+      linkServiceRef.close(Result.ignore());
     }
   }
   

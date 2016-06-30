@@ -731,7 +731,7 @@ public class TableWriterServiceImpl
     _nodeStream = null;
       
     if (nodeStream != null) {
-      nodeStream.closeFsync(result.of(v->closeImpl()));
+      nodeStream.closeFsync(result.then(v->closeImpl()));
     }
     else {
       result.ok(true);

@@ -164,7 +164,7 @@ public class RouteJampPodsImpl implements RouteBaratine
     
     InJamp in = new InJamp(channel, _jsonFactory); // , outbox);
     
-    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(channel.getManager())) {
+    try (OutboxAmp outbox = OutboxAmp.currentOrCreate(channel.services())) {
       Reader reader = null;//req.body(Reader.class);
       
       int queryCount = in.readMessages(reader, outbox);

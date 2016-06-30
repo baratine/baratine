@@ -102,7 +102,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return inbox().manager();
   }
@@ -200,7 +200,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   @Override
   public ServiceRefAmp service(String path)
   {
-    return manager().service(address() + path);
+    return services().service(address() + path);
   }
   
   /*
@@ -248,7 +248,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   @Override
   public <T> T as(Class<T> api)
   {
-    return manager().newProxy(this, api);
+    return services().newProxy(this, api);
   }
 
   @Override
@@ -258,7 +258,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
     
     // start();
     
-    return manager().pin(this, serviceImpl);
+    return services().pin(this, serviceImpl);
   }
 
   @Override
@@ -268,21 +268,22 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
     
     // start();
     
-    return manager().pin(this, serviceImpl, path);
+    return services().pin(this, serviceImpl, path);
   }
 
   @Override
   public ServiceRefAmp bind(String address)
   {
-    manager().bind(this, address);
+    services().bind(this, address);
     
     return this;
   }
   
   @Override
-  public void close()
+  public void close(Result<Void> result)
   {
     shutdown(ShutdownModeAmp.GRACEFUL);
+    result.ok(null);
   }
 
   @Override
@@ -311,7 +312,7 @@ abstract public class ServiceRefBase implements ServiceRefAmp, Serializable
   
   private Object writeReplace()
   {
-    return new ServiceRefHandle(address(), manager());
+    return new ServiceRefHandle(address(), services());
   }
 
   @Override

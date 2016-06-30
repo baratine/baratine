@@ -79,7 +79,7 @@ public class SchemeBartenderPodProxy extends ServiceRefBase
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return _manager;
   }
@@ -98,7 +98,7 @@ public class SchemeBartenderPodProxy extends ServiceRefBase
   {
     address = ServicesAmpImpl.toCanonical(address);
 
-    manager().bind(this, address);
+    services().bind(this, address);
 
     return this;
   }

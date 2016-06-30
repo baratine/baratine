@@ -47,7 +47,7 @@ abstract public class ServiceRefDynamic extends ServiceRefWrapper
   private InboxAmp _inbox = new InboxDynamic();
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
     return _manager;
   }
@@ -94,7 +94,7 @@ abstract public class ServiceRefDynamic extends ServiceRefWrapper
     @Override
     public ServicesAmp delegate()
     {
-      return (ServicesAmp) ServiceRefDynamic.this.delegate().manager();
+      return (ServicesAmp) ServiceRefDynamic.this.delegate().services();
     }
     
     public InboxAmp getInbox()

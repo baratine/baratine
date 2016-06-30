@@ -174,7 +174,7 @@ public class FilesDeployServiceImpl
 
   private void copyFileImpl(String src, String dest, Result<Boolean> result)
   {
-    getFile(src, result.of(stream -> {
+    getFile(src, result.then(stream -> {
         putFile(dest, stream);
 
         return true;

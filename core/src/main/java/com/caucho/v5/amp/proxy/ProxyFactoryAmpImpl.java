@@ -116,7 +116,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
     // Thread thread = Thread.currentThread();
     // baratine/8098
     // ClassLoader loader = thread.getContextClassLoader();
-    ClassLoader loader = serviceRef.manager().classLoader();
+    ClassLoader loader = serviceRef.services().classLoader();
     
     try {
       //thread.setContextClassLoader(_ampManager.getClassLoader());
@@ -139,7 +139,7 @@ public class ProxyFactoryAmpImpl implements ProxyFactoryAmp
         }
       }
       
-      InboxAmp systemInbox = serviceRef.manager().inboxSystem();
+      InboxAmp systemInbox = serviceRef.services().inboxSystem();
       MessageFactoryAmp messageFactory = _messageFactory;
 
       return (T) proxyFactory.newInstance(serviceRef, systemInbox, messageFactory);

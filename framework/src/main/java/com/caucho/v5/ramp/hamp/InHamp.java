@@ -930,7 +930,7 @@ public class InHamp implements InAmpWebSocket
       ServiceRefAmp serviceRef = _channelIn.service(address);
 
       if (serviceRef.isClosed()) {
-        serviceRef = new ServiceRefLazyInvalid(_channelIn.getManager(),
+        serviceRef = new ServiceRefLazyInvalid(_channelIn.services(),
                                                _channelIn, address);
       }
 

@@ -521,7 +521,7 @@ public class MethodPod implements MethodAmp
       else {
         ServiceRefAmp serviceRef = _methodRef.serviceRef();
 
-        try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef.manager())) {
+        try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef.services())) {
           StreamForkMessage<T> msg;
           
           long expires = 10000;

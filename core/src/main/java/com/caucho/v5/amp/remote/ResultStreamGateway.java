@@ -65,7 +65,7 @@ public class ResultStreamGateway implements ResultStream<Object>, Cancel
   
   private ServicesAmp getManager()
   {
-    return _serviceRef.manager();
+    return _serviceRef.services();
   }
 
   @Override

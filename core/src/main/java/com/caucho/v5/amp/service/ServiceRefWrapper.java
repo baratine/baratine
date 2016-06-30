@@ -77,9 +77,9 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   }
   
   @Override
-  public ServicesAmp manager()
+  public ServicesAmp services()
   {
-    return delegate().manager();
+    return delegate().services();
   }
   
   @Override
@@ -224,7 +224,7 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   @Override
   public ServiceRefAmp service(String path)
   {
-    return manager().service(address() + path);
+    return services().service(address() + path);
   }
   
   /*
@@ -255,9 +255,10 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   }
 
   @Override
-  public void close()
+  public void close(Result<Void> result)
   {
     shutdown(ShutdownModeAmp.GRACEFUL);
+    result.ok(null);
   }
 
   /*
@@ -271,25 +272,25 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   @Override
   public <T> T as(Class<T> api)
   {
-    return manager().newProxy(this, api);
+    return services().newProxy(this, api);
   }
 
   @Override
   public ServiceRefAmp pin(Object listener)
   {
-    return manager().pin(this, listener);
+    return services().pin(this, listener);
   }
 
   @Override
   public ServiceRefAmp pin(Object listener, String path)
   {
-    return manager().pin(this, listener, path);
+    return services().pin(this, listener, path);
   }
 
   @Override
   public ServiceRefAmp bind(String address)
   {
-    manager().bind(this, address);
+    services().bind(this, address);
     
     return this;
   }
@@ -311,7 +312,7 @@ abstract public class ServiceRefWrapper implements ServiceRefAmp, Serializable
   private Object writeReplace()
   {
     try {
-      return new ServiceRefHandle(address(), manager());
+      return new ServiceRefHandle(address(), services());
     } catch (IllegalStateException e) {
       if (log.isLoggable(Level.FINEST)) {
         log.log(Level.FINEST, e.toString(), e);

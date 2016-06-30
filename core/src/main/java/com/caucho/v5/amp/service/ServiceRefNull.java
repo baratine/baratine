@@ -35,6 +35,8 @@ import com.caucho.v5.amp.spi.InboxAmp;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
+import io.baratine.service.Result;
+
 /**
  * Sender for an actor ref.
  */
@@ -79,8 +81,9 @@ public final class ServiceRefNull extends ServiceRefBase
   }
   
   @Override
-  public void close()
+  public void close(Result<Void> result)
   {
+    result.ok(null);
   }
   
   @Override
