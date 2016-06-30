@@ -519,9 +519,9 @@ public class WebSocketBartender<T,S>
   }
 
   @Override
-  public void send(TempBuffer tBuf)
+  public void send(Buffer buffer)
   {
-    _outProxy.write(_outWriter, tBuf, false);
+    _outProxy.write(_outWriter, buffer, false);
   }
 
   /*

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -24,30 +24,29 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Alex Rojkov
  */
 
-package io.baratine.client;
+package com.caucho.v5.util;
 
-import io.baratine.service.Services;
-import io.baratine.spi.WebServerProvider;
+import java.lang.annotation.Annotation;
 
-/**
- * Client interface to a remote Baratine service.
- */
-public interface ServiceClient extends Services, AutoCloseable
+public class AnnotationsUtil
 {
-  static Builder newClient(String url)
+  public static <A extends Annotation> A getAnnotation(Class<?> type, Class<A> ann)
   {
-    return WebServerProvider.current().newClient(url);
-  }
-  
-  ServiceClient connect();
-  
-  @Override
-  void close();
-  
-  interface Builder {
-    ServiceClient build();
+    A a;
+
+    do {
+      a = type.getAnnotation(ann);
+
+      Class<?>[] faces = type.getInterfaces();
+      for (int i = 0; a == null && i < faces.length; i++) {
+        Class<?> face = faces[i];
+        a = face.getAnnotation(ann);
+      }
+    } while (a == null && ! Object.class.equals(type = type.getSuperclass()));
+
+    return a;
   }
 }

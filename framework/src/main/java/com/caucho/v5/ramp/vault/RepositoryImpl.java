@@ -37,8 +37,8 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import com.caucho.v5.util.AnnotationsUtil;
 import com.caucho.v5.util.L10N;
-
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseService;
 import io.baratine.service.OnInit;
@@ -89,9 +89,9 @@ public class RepositoryImpl<ID, T>
   @OnInit
   public void init()
   {
-    Asset table = _entityClass.getAnnotation(Asset.class);
+    Asset table = AnnotationsUtil.getAnnotation(_entityClass, Asset.class);
 
-    _entityDesc = new AssetInfo<>(_entityClass, _idClass, table);
+    _entityDesc = new AssetInfo<>(_entityClass, _idClass, table, null);
 
     _idDesc = _entityDesc.id();
     /*

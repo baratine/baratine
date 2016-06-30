@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Baratine; if not, write to the
- * 
+ *
  *   Free Software Foundation, Inc.
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
@@ -42,17 +42,19 @@ public interface Config extends Map<String,String>
   String get(String key, String defaultValue);
 
   <T> T get(String key, Class<T> type, T defaultValue);
-  
+
   <T> T get(String key, Class<T> type, String defaultValue);
-  
+
   <T> void inject(T bean);
-  
+
+  <T> void inject(T bean, String prefix);
+
   ConfigBuilder newChild();
-  
+
   public interface ConfigBuilder
   {
     ConfigBuilder add(String key, String value);
-    
+
     default ConfigBuilder add(String key, Object value)
     {
       return add(key, String.valueOf(value));
@@ -63,10 +65,10 @@ public interface Config extends Map<String,String>
       if (! get().containsKey(key)) {
         add(key, value);
       }
-      
+
       return this;
     }
-    
+
     default ConfigBuilder addDefault(String key, Object value)
     {
       return addDefault(key, String.valueOf(value));
@@ -77,12 +79,12 @@ public interface Config extends Map<String,String>
       for (Map.Entry<String,String> entry : env.entrySet()) {
         add(entry.getKey(), entry.getValue());
       }
-      
+
       return this;
     }
-    
+
     void converter(ConvertFrom<String> convertManager);
-    
+
     Config get();
   }
 }

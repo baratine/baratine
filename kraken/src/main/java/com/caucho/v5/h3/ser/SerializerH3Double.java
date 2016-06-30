@@ -37,7 +37,8 @@ public final class SerializerH3Double extends SerializerH3ValueBase<Double>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_DOUBLE;
+    //return ConstH3.DEF_DOUBLE;
+    return ConstH3.DEF_FLOAT64;
   }
 
   @Override

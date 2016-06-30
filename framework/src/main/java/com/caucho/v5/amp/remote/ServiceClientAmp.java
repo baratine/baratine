@@ -41,7 +41,8 @@ public interface ServiceClientAmp extends ServiceClient, ServicesAmp
 {
   static BuilderAmp newClient(String url)
   {
-    return (BuilderAmp) WebServerProvider.current().newClient(url);
+    //return (BuilderAmp) WebServerProvider.current().newClient(url);
+    throw new UnsupportedOperationException();
   }
   
   ServiceClientAmp connect();

@@ -63,7 +63,8 @@ public class SerializerH3ArrayString extends SerializerH3Base<String[]>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_ARRAY_STRING;
+    //return ConstH3.DEF_ARRAY_STRING;
+    return ConstH3.DEF_STRING_ARRAY;
   }
 
   @Override

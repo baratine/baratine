@@ -37,7 +37,8 @@ public final class SerializerH3Short extends SerializerH3ValueBase<Short>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_SHORT;
+    //return ConstH3.DEF_SHORT;
+    return ConstH3.DEF_INT16;
   }
 
   @Override

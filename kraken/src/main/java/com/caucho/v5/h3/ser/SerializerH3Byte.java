@@ -37,7 +37,8 @@ public final class SerializerH3Byte extends SerializerH3ValueBase<Byte>
   @Override
   public int typeSequence()
   {
-    return ConstH3.DEF_BYTE;
+    //return ConstH3.DEF_BYTE;
+    return ConstH3.DEF_INT8;
   }
 
   @Override

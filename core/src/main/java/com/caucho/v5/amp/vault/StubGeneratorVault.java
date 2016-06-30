@@ -211,7 +211,7 @@ public class StubGeneratorVault implements StubGenerator
       }
     }
     
-    return new VaultDriverBase(ampManager, entityType, idType, null);
+    return new VaultDriverBase(ampManager, entityType, idType, address);
   }
 
   public void driver(VaultDriver<?,?> driver)

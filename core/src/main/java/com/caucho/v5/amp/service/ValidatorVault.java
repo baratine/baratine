@@ -36,15 +36,17 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
-
-import com.caucho.v5.amp.stub.ShimConverter;
-import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.util.L10N;
 
 import io.baratine.service.Result;
 import io.baratine.vault.Id;
 import io.baratine.vault.Vault;
+
+import com.caucho.v5.amp.stub.ShimConverter;
+import com.caucho.v5.inject.type.TypeRef;
+import com.caucho.v5.util.L10N;
 
 /**
  * Validation of the configuration
@@ -70,11 +72,14 @@ class ValidatorVault
     if (! Vault.class.isAssignableFrom(vaultClass)) {
       throw new IllegalStateException();
     }
-    
+
+    Set<?> bogusMethods;
     if (Modifier.isAbstract(vaultClass.getModifiers())
-        && ! abstractMethods(vaultClass)) {
-      throw error("vault class '{0}' is invalid because the abstract methods can't be generated.",
-                  vaultClass.getName());
+        && (bogusMethods = getBogusMethods(vaultClass)).size() > 0) {
+      throw error(
+        "vault class '{0}' is invalid because the abstract methods '{1}' can't be generated.",
+        vaultClass.getName(),
+        bogusMethods);
     }
     
     TypeRef vaultRef = TypeRef.of(vaultClass);
@@ -237,31 +242,33 @@ class ValidatorVault
     
     return findId(assetClass.getSuperclass());
   }
-  
-  private <T> boolean abstractMethods(Class<T> serviceClass)
+
+  private <T> Set<Method> getBogusMethods(Class<T> serviceClass)
   {
+    Set<Method> bogusMethods = new HashSet<>();
+
     for (Method method : serviceClass.getDeclaredMethods()) {
       if (Modifier.isAbstract(method.getModifiers())) {
-        if (! abstractMethod(serviceClass, method)) {
-          return false;
+        if (! isSupported(serviceClass, method)) {
+          bogusMethods.add(method);
         }
       }
     }
-    
+
     // check all public methods, because there might be a subclass or 
     // interface method that's not implemented
     for (Method method : serviceClass.getMethods()) {
       if (Modifier.isAbstract(method.getModifiers())) {
-        if (! abstractMethod(serviceClass, method)) {
-          return false;
+        if (! isSupported(serviceClass, method)) {
+          bogusMethods.add(method);
         }
       }
     }
-    
-    return true;
+
+    return bogusMethods;
   }
   
-  private boolean abstractMethod(Class<?> serviceClass, Method method)
+  private boolean isSupported(Class<?> serviceClass, Method method)
   {
     if (method.getName().startsWith("get")) {
       return abstractGetTransfer(serviceClass, method);

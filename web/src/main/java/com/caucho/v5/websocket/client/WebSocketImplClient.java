@@ -255,9 +255,9 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   }
 
   @Override
-  public void send(TempBuffer tBuf)
+  public void send(Buffer buffer)
   {
-    System.out.println("SEND: " + tBuf);
+    System.out.println("SEND: " + buffer);
   }
 
   @Override

@@ -29,6 +29,8 @@
 
 package io.baratine.vault;
 
+import io.baratine.service.Service;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -103,6 +105,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Service
 public @interface Asset
 {
   String value() default "";

@@ -43,4 +43,6 @@ public @interface LogConfig
   String value();
 
   String level() default "FINER";
+
+  String handler() default "console:";
 }

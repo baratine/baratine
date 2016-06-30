@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,37 +27,28 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.v5.web.builder;
+package io.baratine.client;
 
-import com.caucho.v5.loader.EnvLoader;
-import com.caucho.v5.web.BaratineWebProvider;
-
-import io.baratine.client.ServiceClient;
+import io.baratine.service.Services;
 import io.baratine.spi.WebServerProvider;
-import io.baratine.web.WebServerBuilder;
 
 /**
- * Default web server provider.
+ * Client interface to a remote Baratine service.
  */
-public class WebServerProviderImpl extends WebServerProvider
+public interface ServiceClient extends Services, AutoCloseable
 {
-  public WebServerProviderImpl()
+  static Builder newClient(String url)
   {
-    EnvLoader.addCloseListener(this);
+    throw new UnsupportedOperationException();
+    //return WebServerProvider.current().newClient(url);
   }
   
-/*
+  ServiceClient connect();
+  
   @Override
-  public ServiceClient.Builder newClient(String url)
-  {
-    //return new ServiceClientBuilderImpl(url);
-    throw new UnsupportedOperationException();
-  }
-*/
-
-  @Override
-  public WebServerBuilder webBuilder()
-  {
-    return BaratineWebProvider.builder();
+  void close();
+  
+  interface Builder {
+    ServiceClient build();
   }
 }

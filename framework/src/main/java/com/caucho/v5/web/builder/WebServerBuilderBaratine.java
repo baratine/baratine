@@ -34,6 +34,7 @@ import com.caucho.v5.bartender.BartenderSystem;
 import com.caucho.v5.bartender.journal.JournalSystem;
 import com.caucho.v5.cli.args.ArgsBase;
 import com.caucho.v5.kraken.KrakenSystem;
+import com.caucho.v5.oauth.OauthFilter;
 import com.caucho.v5.util.TriFunction;
 import com.caucho.v5.web.WebServerImpl;
 import com.caucho.v5.web.cli.ArgsBaratine;
@@ -44,6 +45,7 @@ import com.caucho.v5.web.webapp.RouteBuilderAmp;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Key;
 import io.baratine.web.CrossOrigin;
+import io.baratine.web.Oauth;
 import io.baratine.web.ServiceWeb;
 import io.baratine.web.ViewResolver;
 
@@ -54,43 +56,51 @@ public class WebServerBuilderBaratine extends WebServerBuilderImpl
   {
     return new ArgsBaratine(argv);
   }
-  
+
   @Override
   public WebServerImpl build(WebServerBuilderImpl builder)
   {
     //builder.bean(ViewJsonDefault.class).to(new Key<ViewResolver<Object>>() {});
-    
+
     builder.bean(new TriFunction<CrossOrigin,InjectionPoint<?>,RouteBuilderAmp,ServiceWeb>() {
-      public ServiceWeb apply(CrossOrigin ann, 
+      public ServiceWeb apply(CrossOrigin ann,
                               InjectionPoint<?> ip,
-                              RouteBuilderAmp builder) { 
-        return new FilterCrossOrigin(ann, ip, builder); 
+                              RouteBuilderAmp builder) {
+        return new FilterCrossOrigin(ann, ip, builder);
+      }
+    });
+
+    builder.bean(new TriFunction<Oauth,InjectionPoint<?>,RouteBuilderAmp,ServiceWeb>() {
+      public ServiceWeb apply(Oauth ann,
+                              InjectionPoint<?> ip,
+                              RouteBuilderAmp builder) {
+        return new OauthFilter(ann, ip, builder);
       }
     });
 
     //ServerBuilderBaratine serverBuilder;
     //serverBuilder = new ServerBuilderBaratine(builder.config());
-    
+
     builder.init(()->{
       initBartender(builder);
     });
-    
+
     builder.init(()->{
       KrakenSystem.createAndAddSystem(builder.serverSelf());
     });
-    
+
     builder.init(()->{
       JournalSystem.createAndAddSystem();
     });
-    
+
     //builder.serverBuilder(serverBuilder);
-    
+
     //return new WebServerImpl(builder);
-    
+
     //return builder.build();
     return super.build();
   }
-  
+
   private void initBartender(WebServerBuilderImpl builder)
   {
     //String clusterId = "cluster";
@@ -99,9 +109,9 @@ public class WebServerBuilderBaratine extends WebServerBuilderImpl
       = BartenderSystem.newSystem(builder.config());
 
     //initTopologyStatic(builder);
-    
+
     BartenderSystem system = builderBar.build();
-    
+
     builder.serverSelf(system.serverSelf());
   }
 }

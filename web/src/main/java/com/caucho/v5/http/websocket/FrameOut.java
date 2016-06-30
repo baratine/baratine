@@ -44,15 +44,10 @@ public class FrameOut<T,S>
   private static final L10N L = new L10N(FrameOut.class);
   private static final Logger log = Logger.getLogger(FrameOut.class.getName());
 
-  private static final int MAX_HEADER_LENGTH_NO_MASK = 14;
-
   private WebSocketBase<T,S> _ws;
 
   private char []_charBuf = new char[256];
-  private TempBuffer _tBuf = TempBuffer.create();
-
-  private int _headerLength;
-
+  private TempBuffer _payload = TempBuffer.create();
   private MessageState _state = MessageState.IDLE;
 
   public FrameOut(WebSocketBase<T,S> ws)
@@ -65,7 +60,7 @@ public class FrameOut<T,S>
     int end = offset + length;
 
     do {
-      offset = writeBytes(buffer, offset, end - offset, isFinal);
+      offset += writeBytes(buffer, offset, end - offset, isFinal);
     } while (offset < end);
   }
 
@@ -73,39 +68,13 @@ public class FrameOut<T,S>
   {
     _state = _state.toBinary();
 
-    int end = offset + length;
+    int sublen = Math.min(_payload.capacity() - _payload.length(), length);
+    _payload.write(buffer, offset, sublen);
 
-    // preallocate space for header
-    preHeader(length);
+    Buffer b = completeFrame(isFinal && sublen == length);
+    send(b);
 
-    while (true) {
-      TempBuffer tBuf = _tBuf;
-      int tCapacity = tBuf.capacity();
-      int tOffset = tBuf.length();
-
-      int sublen = Math.min(end - offset, tCapacity - tOffset - MAX_HEADER_LENGTH_NO_MASK);
-      System.arraycopy(buffer, offset, tBuf.buffer(), tOffset, sublen);
-
-      offset += sublen;
-      tOffset += sublen;
-
-      if (offset == end) {
-        tBuf.length(tOffset);
-        completeFrame(isFinal);
-        flush();
-
-        break;
-      }
-      else if (tOffset == tCapacity) {
-        tBuf.length(tOffset);
-        completeFrame(false);
-        flush();
-
-        break;
-      }
-    }
-
-    return offset;
+    return sublen;
   }
 
   public void write(Buffer buffer, boolean isFinal)
@@ -115,7 +84,7 @@ public class FrameOut<T,S>
     int end = offset + len;
 
     do {
-      offset = write(buffer, offset, end - offset, isFinal);
+      offset += write(buffer, offset, end - offset, isFinal);
 
     } while (offset < end);
   }
@@ -124,38 +93,24 @@ public class FrameOut<T,S>
   {
     _state = _state.toBinary();
 
-    int end = offset + length;
+    int sublen = Math.min(_payload.capacity() - _payload.length(), length);
+    _payload.set(_payload.length(), buffer, offset, sublen);
+    _payload.length(_payload.length() + sublen);
 
-    // preallocate space for header
-    preHeader(length);
+    Buffer b = completeFrame(isFinal && sublen == length);
+    send(b);
 
-    TempBuffer tBuf = _tBuf;
-    int tCapacity = tBuf.capacity();
-    int tOffset = tBuf.length();
-
-    int sublen = Math.min(end - offset, tCapacity - tOffset - MAX_HEADER_LENGTH_NO_MASK);
-
-    buffer.get(offset, tBuf.buffer(), tOffset, sublen);
-
-    offset += sublen;
-    tOffset += sublen;
-
-    tBuf.length(tOffset);
-
-    completeFrame(offset == end ? isFinal : false);
-    flush();
-
-    return offset;
+    return sublen;
   }
 
   public void writeString(String data, boolean isFinal)
   {
     int offset = 0;
-    int len = data.length();
-    int end = offset + len;
+    int end = data.length();
 
     do {
-      offset = writeString(data, offset, end - offset, isFinal);
+      offset += writeString(data, offset, end - offset, isFinal);
+
     } while (offset < end);
   }
 
@@ -163,103 +118,72 @@ public class FrameOut<T,S>
   {
     _state = _state.toText();
 
-    preHeader(length);
-
+    int writeLen = 0;
     int end = offset + length;
 
-    try {
     while (true) {
-      TempBuffer tBuf = _tBuf;
-
-      // leave extra space in case need to resize header
-      int tBufCapacity = tBuf.capacity() + _headerLength - MAX_HEADER_LENGTH_NO_MASK;
-
       char cBuf[] = _charBuf;
 
       int sublen = Math.min(end - offset, cBuf.length);
-
       data.getChars(offset, offset + sublen, cBuf, 0);
-      int cOffset = Utf8Util.write(tBuf, tBuf.length(), tBufCapacity, cBuf, 0, sublen);
+
+      int cOffset = Utf8Util.write(_payload, _payload.length(), _payload.capacity(), cBuf, 0, sublen);
 
       offset += cOffset;
+      writeLen += cOffset;
 
-      if (offset == end) {
-        completeFrame(isFinal);
-        flush();
-
-        break;
-      }
-      else if (tBufCapacity - tBuf.length() < 4) {
-        completeFrame(false);
-        flush();
+      if (writeLen == length) {
+        Buffer buffer = completeFrame(isFinal);
+        send(buffer);
 
         break;
       }
-    }
-    }
-    catch (Throwable e) {
-      e.printStackTrace();
+      else if (_payload.capacity() - _payload.length() < 4) {
+        Buffer buffer = completeFrame(false);
+        send(buffer);
 
-      throw e;
+        break;
+      }
     }
 
-    return offset;
+    return writeLen;
   }
 
   public void pong(String data)
   {
     MessageState state = _state;
-
     _state = MessageState.PONG;
 
     char cBuf[] = _charBuf;
-    TempBuffer tBuf = _tBuf;
 
     int sublen = Math.min(125, data.length());
-    preHeader(sublen);
-
-    int length = tBuf.length();
-
     data.getChars(0, sublen, cBuf, 0);
-    int cOffset = Utf8Util.write(tBuf, cBuf, 0, sublen);
 
-    // control frames bodies must not exceed 125 bytes
-    tBuf.length(Math.min(length + 125, tBuf.length()));
-
-    completeFrame(true);
+    // control frame payloads must not exceed 0x7d bytes
+    int cOffset = Utf8Util.write(_payload, _payload.length(), 0x7d, cBuf, 0, sublen);
+    Buffer buffer = completeFrame(true);
+    send(buffer);
 
     _state = state;
-    flush();
   }
 
   public void ping(String data)
   {
     MessageState state = _state;
-
     _state = MessageState.PING;
 
     char cBuf[] = _charBuf;
-    TempBuffer tBuf = _tBuf;
 
     int sublen = Math.min(125, data.length());
-    preHeader(sublen);
-
-    int length = tBuf.length();
-
     data.getChars(0, sublen, cBuf, 0);
-    int cOffset = Utf8Util.write(tBuf, cBuf, 0, sublen);
 
-    // control frames bodies must not exceed 125 bytes
-    tBuf.length(Math.min(length + 125, tBuf.length()));
+    // control frame payloads must not exceed 0x7d bytes
+    int cOffset = Utf8Util.write(_payload, _payload.length(), 0x7d, cBuf, 0, sublen);
 
-    completeFrame(true);
-
-    for (int i = 0; i < tBuf.length(); i++) {
-      byte[] buffer = tBuf.buffer();
-    }
+    Buffer buffer = completeFrame(true);
+    send(buffer);
 
     _state = state;
-    flush();
   }
 
   public void close(WebSocketClose reason, String data)
@@ -267,82 +191,31 @@ public class FrameOut<T,S>
     _state = _state.toClose();
 
     char cBuf[] = _charBuf;
-    TempBuffer tBuf = _tBuf;
-    byte []buffer = tBuf.buffer();
-
-    int sublen = Math.min(125, data.length());
-    preHeader(sublen);
 
     int code = reason.code();
-    int length = tBuf.length();
 
-    buffer[length + 0] = (byte) (code >> 8);
-    buffer[length + 1] = (byte) (code);
+    byte[] buffer = _payload.buffer();
+    buffer[0] = (byte) (code >> 8);
+    buffer[1] = (byte) code;
+    _payload.length(2);
 
-    tBuf.length(length + 2);
-
+    int sublen = Math.min(125, data.length());
     data.getChars(0, sublen, cBuf, 0);
-    int cOffset = Utf8Util.write(tBuf, cBuf, 0, sublen);
 
-    // control frames bodies must not exceed 125 bytes
-    tBuf.length(Math.min(length + 125, tBuf.length()));
+    // control frame payloads must not exceed 0x7d bytes
+    int cOffset = Utf8Util.write(_payload, _payload.length(), 0x7d, cBuf, 0, sublen);
 
-    completeFrame(true);
-
-    flushEnd();
+    Buffer b = completeFrame(true);
+    sendEnd(b);
   }
 
-  private void preHeader(int length)
-  {
-    int capacity = _tBuf.capacity();
-
-    if (capacity + 2 <= 0x7d) {
-      _headerLength = 2;
-    }
-    else if (capacity + 4 <= 1024 * 64) {
-      if (length <= 0x7d) {
-        _headerLength = 2;
-      }
-      else {
-        _headerLength = 4;
-      }
-    }
-    else {
-      if (length <= 0x7d) {
-        _headerLength = 2;
-      }
-      else if (length <= 1024 * 64) {
-        _headerLength = 4;
-      }
-      else {
-        _headerLength = 10;
-      }
-    }
-
-    _tBuf.length(_headerLength);
-  }
-
-  public void completeFrame(boolean isFinal)
+  private Buffer completeFrame(boolean isFinal)
   {
     if (isFinal) {
       _state = _state.toFinal();
     }
 
-    byte []buffer = _tBuf.buffer();
-    int bufferLen = _tBuf.length();
-
-    int actualPayloadLen = bufferLen - _headerLength;
-
-    int expectedLenBytes = _headerLength - 2;
-    int actualLenBytes = calculatePayloadLengthHeaderBytes(actualPayloadLen);
-
-    if (expectedLenBytes != actualLenBytes) {
-      System.arraycopy(buffer, _headerLength,
-                       buffer, _headerLength + actualLenBytes - expectedLenBytes,
-                       bufferLen);
-    }
-
-    writeHeader(actualPayloadLen);
+    byte[] header = createHeader(_state.code(), isFinal);
 
     if (isFinal) {
       _state = _state.toIdle();
@@ -350,92 +223,57 @@ public class FrameOut<T,S>
     else {
       _state = _state.toCont();
     }
+
+    return new FrameOutBuffer(header, _payload);
   }
 
-  private void writeHeader(int length)
+  private byte[] createHeader(int opCode, boolean isFinal)
   {
-    byte []buffer = _tBuf.buffer();
+    byte[] header;
 
-    // XXX: mask
-    int mask = 0;
+    long len = _payload.length();
 
-    buffer[0] = (byte) _state.code();
-
-    int sizeBytes = writeLengthHeader(length, mask);
-
-    int headerLength = 2 + sizeBytes;
-
-    _headerLength = headerLength;
-  }
-
-  /**
-   * @return size of payload size header
-   */
-  private int writeLengthHeader(int length, int mask)
-  {
-    byte []buffer = _tBuf.buffer();
-
-    if (length <= 125) {
-      // 0x7d
-      buffer[1] = (byte) (mask | length);
-
-      return 0;
+    if (len <= 0x7d) {
+      header = new byte[2];
+      header[1] = (byte) (len);
     }
-    else if (length <= 1024 * 64) {
-      // 0x7e
-      buffer[1] = (byte) (mask | 126);
-      buffer[2] = (byte) (length >> 8);
-      buffer[3] = (byte) (length & 0xff);
+    else if (len <= 1024 * 64) {
+      header = new byte[4];
 
-      return 2;
+      header[1] = (byte) (0x7e);
+      header[2] = (byte) (len >> 8);
+      header[3] = (byte) (len & 0xff);
     }
     else {
-      // 0x7f
-      buffer[1] = (byte) (mask | 127);
-      buffer[2] = (byte) (length >> 56);
-      buffer[3] = (byte) (length >> 48);
-      buffer[4] = (byte) (length >> 40);
-      buffer[5] = (byte) (length >> 32);
-      buffer[6] = (byte) (length >> 24);
-      buffer[7] = (byte) (length >> 16);
-      buffer[8] = (byte) (length >> 8);
-      buffer[9] = (byte) (length & 0xff);
+      header = new byte[10];
 
-      return 8;
+      header[1] = (byte) (0x7f);
+      header[2] = (byte) (len >> 56);
+      header[3] = (byte) (len >> 48);
+      header[4] = (byte) (len >> 40);
+      header[5] = (byte) (len >> 32);
+      header[6] = (byte) (len >> 24);
+      header[7] = (byte) (len >> 16);
+      header[8] = (byte) (len >> 8);
+      header[9] = (byte) (len & 0xff);
     }
+
+    header[0] = (byte) opCode;
+
+    return header;
   }
 
-  public void flush()
+  public void send(Buffer buffer)
   {
-    _ws.send(_tBuf);
+    _ws.send(buffer);
 
-    _tBuf = TempBuffer.create();
+    _payload = TempBuffer.create();
   }
 
-  public void flushEnd()
+  public void sendEnd(Buffer buffer)
   {
-    _ws.sendEnd(_tBuf);
+    _ws.sendEnd(buffer);
 
-    _tBuf = TempBuffer.create();
+    _payload = TempBuffer.create();
   }
-
-  private static int calculateExpectedHeaderLength(int length)
-  {
-    return 2 + calculatePayloadLengthHeaderBytes(length);
-  }
-
-  private static int calculatePayloadLengthHeaderBytes(int length)
-  {
-    if (length <= 125) {
-      return 0;
-    }
-    else if (length <= 1024 * 64) {
-      return 2;
-    }
-    else {
-      return 8;
-    }
-  }
-
-
 }

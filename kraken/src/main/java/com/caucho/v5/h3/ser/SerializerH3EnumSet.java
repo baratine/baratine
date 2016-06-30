@@ -93,13 +93,8 @@ public class SerializerH3EnumSet<T extends EnumSet<?>> extends SerializerH3Base<
   @Override
   public void skip(InRawH3 is, InH3Amp in)
   {
-    long chunk = is.readUnsigned();
-    long len = InRawH3.chunkSize(chunk);
-    boolean isFinal = InRawH3.chunkIsFinal(chunk);
-    
-    for (long i = 0; i < len; i++) {
-      is.skip(in);
-    }
+    is.skip(in);
+    is.skip(in);
   }
 
   /**

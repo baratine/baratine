@@ -29,14 +29,6 @@
 
 package com.caucho.junit;
 
-import com.caucho.v5.util.L10N;
-import org.junit.Test;
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.FrameworkField;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.TestClass;
-
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -47,8 +39,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.caucho.v5.util.L10N;
+
+import org.junit.Test;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkField;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.TestClass;
 
 abstract class BaseRunner<T extends InjectionTestPoint>
   extends BlockJUnit4ClassRunner
@@ -62,6 +65,10 @@ abstract class BaseRunner<T extends InjectionTestPoint>
   private static final Level defaultBaratineLoggingLevel = Level.INFO;
 
   private Map<Class<?>,Class<?>> _replacements = new HashMap<>();
+
+  private List<Logger> _loggers = new ArrayList<>();
+
+  private Map<String,Handler> _handlers = new HashMap<>();
 
   public BaseRunner(Class<?> klass) throws InitializationError
   {
@@ -216,7 +223,7 @@ abstract class BaseRunner<T extends InjectionTestPoint>
     return result;
   }
 
-  protected void setLoggingLevels()
+  protected void setLoggingLevels() throws Exception
   {
     LogConfigs logConfigs = getTestClass().getAnnotation(LogConfigs.class);
     LogConfig[] logs = null;
@@ -236,9 +243,51 @@ abstract class BaseRunner<T extends InjectionTestPoint>
     }
 
     for (LogConfig config : logs) {
+      Logger log = Logger.getLogger(config.value());
+
+      _loggers.add(log); //GC protect
+
       Level level = Level.parse(config.level());
-      Logger.getLogger(config.value()).setLevel(level);
+      log.setLevel(level);
+
+      Handler handler = getHandler(config);
+
+      if (handler == null)
+        continue;
+
+      if (handler.getLevel().intValue() > level.intValue())
+        handler.setLevel(level);
+
+      log.addHandler(handler);
     }
+  }
+
+  public Handler getHandler(LogConfig config)
+    throws Exception
+  {
+    Handler handler = _handlers.get(config.handler());
+
+    if (handler != null)
+      return handler;
+
+    if ("console:".equals(config.handler())) {
+      handler = new ConsoleHandler();
+    }
+    else if (config.handler().startsWith("class:")) {
+      String name = config.handler().substring(6);
+
+      Class handerClass = Class.forName(name);
+
+      handler = (Handler) handerClass.newInstance();
+    }
+    else {
+      throw new IllegalStateException(L.l("handler `{0}` is not supported",
+                                          config.handler()));
+    }
+
+    _handlers.put(config.handler(), handler);
+
+    return handler;
   }
 
   public abstract void stop();

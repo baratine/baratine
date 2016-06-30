@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
  * This file is part of Baratine(TM)
  *
@@ -24,40 +24,32 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Nam Nguyen
  */
 
-package com.caucho.v5.web.builder;
+package io.baratine.web;
 
-import com.caucho.v5.loader.EnvLoader;
-import com.caucho.v5.web.BaratineWebProvider;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import io.baratine.client.ServiceClient;
-import io.baratine.spi.WebServerProvider;
-import io.baratine.web.WebServerBuilder;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-/**
- * Default web server provider.
- */
-public class WebServerProviderImpl extends WebServerProvider
+@Documented
+@Retention(RUNTIME)
+@Target({TYPE, METHOD})
+@FilterBefore(ServiceWeb.class)
+public @interface Oauth
 {
-  public WebServerProviderImpl()
-  {
-    EnvLoader.addCloseListener(this);
-  }
-  
-/*
-  @Override
-  public ServiceClient.Builder newClient(String url)
-  {
-    //return new ServiceClientBuilderImpl(url);
-    throw new UnsupportedOperationException();
-  }
-*/
+  String name() default "";
 
-  @Override
-  public WebServerBuilder webBuilder()
-  {
-    return BaratineWebProvider.builder();
-  }
+  String clientId() default "";
+  String clientSecret() default "";
+
+  String codeUri() default "";
+  String tokenUri() default "";
+
+  long expiresIn() default 3600;
 }

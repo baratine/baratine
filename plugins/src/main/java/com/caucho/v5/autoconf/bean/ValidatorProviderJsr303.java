@@ -49,24 +49,23 @@ public class ValidatorProviderJsr303
 {
   private static final Logger log
     = Logger.getLogger(ValidatorProviderJsr303.class.getName());
-  
+
   private final ValidatorFactory _validatorFactory;
-  
 
   public ValidatorProviderJsr303()
   {
     ValidatorFactory validatorFactory = null;
-    
+
     try {
       validatorFactory = Validation.buildDefaultValidatorFactory();
-      
+
       if (validatorFactory.getValidator() == null) {
         validatorFactory = null;
       }
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
+    } catch (Throwable t) {
+      log.log(Level.WARNING, t.toString(), t);
     }
-    
+
     _validatorFactory = validatorFactory;
   }
 
