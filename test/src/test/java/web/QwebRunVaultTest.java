@@ -82,7 +82,7 @@ public class QwebRunVaultTest
     @Get("/foo/{id}")
     public void get(@Path("id") Q_fooBean foo, Result<Q_fooBean> result)
     {
-      foo.value(result.of());
+      foo.value(result.then());
     }
   }
 
