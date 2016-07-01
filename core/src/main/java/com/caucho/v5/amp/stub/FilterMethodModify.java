@@ -72,7 +72,9 @@ public class FilterMethodModify extends MethodAmpWrapper
                     ResultChain<?> result,
                     StubAmp stub)
   {
-    delegate().query(headers, result, stub);
+    delegate().query(headers, 
+                     nextModified(result, stub), 
+                     stub);
     
     setModified(stub);
   }
@@ -83,7 +85,10 @@ public class FilterMethodModify extends MethodAmpWrapper
                     StubAmp stub,
                     Object a1)
   {
-    delegate().query(headers, result, stub, a1);
+    delegate().query(headers, 
+                     nextModified(result, stub),
+                     stub,
+                     a1);
     
     setModified(stub);
   }
@@ -95,7 +100,10 @@ public class FilterMethodModify extends MethodAmpWrapper
                     Object a1,
                     Object a2)
   {
-    delegate().query(headers, result, stub, a1, a2);
+    delegate().query(headers, 
+                     nextModified(result, stub),
+                     stub,
+                     a1, a2);
     
     setModified(stub);
   }
@@ -108,9 +116,12 @@ public class FilterMethodModify extends MethodAmpWrapper
                     Object a2,
                     Object a3)
   {
-    delegate().query(headers, result, stub, a1, a2, a3);
+    delegate().query(headers, 
+                     nextModified(result, stub), 
+                     stub, 
+                     a1, a2, a3);
     
-    setModified(stub);
+    //setModified(stub);
   }
 
   @Override
@@ -119,9 +130,22 @@ public class FilterMethodModify extends MethodAmpWrapper
                     StubAmp stub,
                     Object []args)
   {
-    delegate().query(headers, result, stub, args);
+    delegate().query(headers, 
+                     nextModified(result, stub), 
+                     stub, 
+                     args);
 
-    setModified(stub);
+    // setModified(stub);
+  }
+  
+  private ResultChain<?> nextModified(ResultChain<?> result,
+                                      StubAmp stub)
+  {
+    return ResultChain.then(result, 
+                            (v,r)->{ 
+                              setModified(stub); 
+                              ((ResultChain) r).ok(v); 
+                            });
   }
   
   private void setModified(StubAmp stub)
