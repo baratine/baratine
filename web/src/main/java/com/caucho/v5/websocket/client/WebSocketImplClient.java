@@ -91,18 +91,7 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   {
     super.open();
 
-    if (Frame.class.equals(_type)) {
-      readFrame((ServiceWebSocket) _service);
-    }
-    else if (String.class.equals(_type)) {
-      readString((ServiceWebSocket) _service);
-    }
-    else if (Buffer.class.equals(_type)) {
-      read((ServiceWebSocket) _service);
-    }
-    else {
-      throw new UnsupportedOperationException(_type.toString());
-    }
+    readInit(_type, (ServiceWebSocket) _service, null);
   }
 
   @Override
@@ -193,6 +182,7 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   }
   */
 
+  /*
   @Override
   public void readInputStream(Pipe<InputStream> handler)
   {
@@ -204,6 +194,7 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   {
     assertBeforeOpen();
   }
+  */
 
   /*
   @Override

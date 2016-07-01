@@ -29,27 +29,20 @@
 
 package com.caucho.v5.http.websocket;
 
-import static com.caucho.v5.websocket.io.WebSocketConstants.OP_BINARY;
-import static com.caucho.v5.websocket.io.WebSocketConstants.OP_TEXT;
 import static io.baratine.web.HttpStatus.METHOD_NOT_ALLOWED;
 
-import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.http.protocol.OutHttpTcp;
 import com.caucho.v5.http.protocol.OutHttpProxy;
-import com.caucho.v5.http.protocol.OutHttpApp;
-import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.http.protocol.OutHttpTcp;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.Base64Util;
-import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
-import com.caucho.v5.util.ModulePrivate;
 import com.caucho.v5.web.webapp.RequestBaratine;
 import com.caucho.v5.web.webapp.RequestBaratineImpl;
 import com.caucho.v5.websocket.io.Frame;
@@ -58,8 +51,6 @@ import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
 import io.baratine.io.Buffer;
-import io.baratine.io.Buffers;
-import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpStatus;
 import io.baratine.web.ServiceWebSocket;
@@ -67,7 +58,7 @@ import io.baratine.web.ServiceWebSocket;
 /**
  * websocket server container
  */
-@ModulePrivate
+//@ModulePrivate
 public class WebSocketBaratineImpl<T,S>
   extends WebSocketBase<T,S>
   implements WebSocketBaratine<S>
@@ -76,28 +67,28 @@ public class WebSocketBaratineImpl<T,S>
   private static final Logger log
     = Logger.getLogger(WebSocketBaratineImpl.class.getName());
 
-  private String _uri;
+  //private String _uri;
 
   //private FrameInputStream _fIs;
 
-  private InWebSocket _inBinary = new InWebSocketSkip();
-  private InWebSocket _inText = new InWebSocketSkip();
+  //private InWebSocket _inBinary = new InWebSocketSkip();
+  //private InWebSocket _inText = new InWebSocketSkip();
 
   //private char []_charBuf = new char[256];
 
-  private OutHttpApp _os;
+  //private OutHttpApp _os;
 
   private RequestBaratine _request;
   private ServiceWebSocket<T,S> _service;
 
-  private MessageState _state = MessageState.IDLE;
-  private TempBuffer _tBuf;
-  private int _headOffset;
-  private int _offset;
-  private int _frameLength;
+  //private MessageState _state = MessageState.IDLE;
+  //private TempBuffer _tBuf;
+  //private int _headOffset;
+  //private int _offset;
+  //private int _frameLength;
   private OutHttpProxy _outProxy;
   private OutWebSocketWriter _outWriter;
-  private int _opMessage;
+  //private int _opMessage;
 
   public WebSocketBaratineImpl(WebSocketManager manager,
                                ServiceWebSocket<T,S> service,
@@ -125,21 +116,40 @@ public class WebSocketBaratineImpl<T,S>
     }
     */
 
-    if (Frame.class.equals(type)) {
-      readFrame((ServiceWebSocket) service);
-    }
-    else if (String.class.equals(type)) {
-      readString((ServiceWebSocket) service);
-    }
-    else if (Buffer.class.equals(type)) {
-      read((ServiceWebSocket) service);
-    }
-    else {
-      readString(manager.createSerializer(type, service));
-    }
+    readInit(type, (ServiceWebSocket) service, manager);
     //System.out.println("VALUE: " + type + " " + typeRefService + " " + typeRef);
   }
 
+  /**
+   * HTTP uri for the websocket
+   */
+  @Override
+  public String uri()
+  {
+    return _request.uri();
+  }
+
+  /**
+   * HTTP path for the websocket
+   */
+  @Override
+  public String path()
+  {
+    return _request.path();
+  }
+
+  /**
+   * HTTP pathInfo for the websocket
+   */
+  @Override
+  public String pathInfo()
+  {
+    return _request.pathInfo();
+  }
+  
+  /**
+   * start the upgrade handshake for HTTP to WebSocket
+   */
   public boolean handshake(RequestBaratine request)
     throws Exception
   {
@@ -155,7 +165,7 @@ public class WebSocketBaratineImpl<T,S>
     }
 
     String method = req.method();
-    String uri = req.uri();
+    // String uri = req.uri();
 
     if (! "GET".equals(method)) {
       req.halt(METHOD_NOT_ALLOWED);
@@ -280,21 +290,13 @@ public class WebSocketBaratineImpl<T,S>
 
     return true;
   }
+  
+  /**
+   * initialization when the websocket completes.
+   */
 
   /*
-  //@Override
-  public void init(ReadStream is, OutResponseBase os)
-  {
-    Objects.requireNonNull(is);
-    Objects.requireNonNull(os);
-
-    _fIs.init(this, is);
-
-    _os = os;
-  }
-  */
-
-  //@Override
+  @Override
   public void open()
   {
     if (_inBinary == null) {
@@ -305,24 +307,7 @@ public class WebSocketBaratineImpl<T,S>
       _inText = new InWebSocketSkip();
     }
   }
-
-  @Override
-  public String uri()
-  {
-    return _request.uri();
-  }
-
-  @Override
-  public String path()
-  {
-    return _request.path();
-  }
-
-  @Override
-  public String pathInfo()
-  {
-    return _request.pathInfo();
-  }
+  */
 
   /*
   @Override
@@ -342,38 +327,6 @@ public class WebSocketBaratineImpl<T,S>
   }
   */
 
-  private void toTextFromIdle(int length)
-  {
-    TempBuffer tBuf = TempBuffer.create();
-    _tBuf = tBuf;
-
-    if (length >> 2 < 0x7d) {
-      _frameLength = 2;
-    }
-    else {
-      _frameLength = 4;
-    }
-
-    _headOffset = 0;
-    tBuf.length(_headOffset + _frameLength);
-  }
-
-  private void toBinaryFromIdle(int length)
-  {
-    TempBuffer tBuf = TempBuffer.create();
-    _tBuf = tBuf;
-
-    if (length >> 2 < 0x7d) {
-      _frameLength = 2;
-    }
-    else {
-      _frameLength = 4;
-    }
-
-    _headOffset = 0;
-    tBuf.length(_headOffset + _frameLength);
-  }
-
   @Override
   public void send(Buffer buffer)
   {
@@ -389,17 +342,6 @@ public class WebSocketBaratineImpl<T,S>
   //
   // impl
   //
-
-  @Override
-  public StateConnection service()
-  {
-    if (readFrame()) {
-      return StateConnection.READ;
-    }
-    else {
-      return StateConnection.CLOSE;
-    }
-  }
 
   private String calculateWebSocketAccept(String key)
   {
@@ -425,6 +367,48 @@ public class WebSocketBaratineImpl<T,S>
     }
   }
 
+  /**
+   * initialize a text message from the idle state.
+   */
+  /*
+  private void toTextFromIdle(int length)
+  {
+    TempBuffer tBuf = TempBuffer.create();
+//    _tBuf = tBuf;
+
+    if (length >> 2 < 0x7d) {
+      _frameLength = 2;
+    }
+    else {
+      _frameLength = 4;
+    }
+
+    _headOffset = 0;
+    tBuf.length(_headOffset + _frameLength);
+  }
+  */
+
+  /**
+   * initialize a binary message from the idle state.
+   */
+  /*
+  private void toBinaryFromIdle(int length)
+  {
+    TempBuffer tBuf = TempBuffer.create();
+    //_tBuf = tBuf;
+
+    if (length >> 2 < 0x7d) {
+      _frameLength = 2;
+    }
+    else {
+      _frameLength = 4;
+    }
+
+    _headOffset = 0;
+    tBuf.length(_headOffset + _frameLength);
+  }
+  */
+
   @Override
   public String toString()
   {
@@ -435,13 +419,16 @@ public class WebSocketBaratineImpl<T,S>
   // readers
   //
 
+  /*
   private static interface InWebSocket
   {
     void read(FrameInputStream fIs)
       throws IOException;
 
   }
+  */
 
+  /*
   private static class InWebSocketSkip implements InWebSocket
   {
     @Override
@@ -451,7 +438,9 @@ public class WebSocketBaratineImpl<T,S>
       fIs.skipToFrameEnd();
     }
   }
+  */
 
+  /*
   private static class InReadBinary implements InWebSocket
   {
     private Pipe<Buffer> _out;
@@ -476,7 +465,9 @@ public class WebSocketBaratineImpl<T,S>
       _out.next(buffer);
     }
   }
+  */
 
+  /*
   private static class InFrameBinary implements InWebSocket
   {
     private Pipe<Frame> _out;
@@ -505,7 +496,9 @@ public class WebSocketBaratineImpl<T,S>
       _out.next(frame);
     }
   }
+  */
 
+  /*
   private static class FrameBinary implements Frame
   {
     private long _length;
@@ -555,8 +548,10 @@ public class WebSocketBaratineImpl<T,S>
               + "]");
     }
   }
+  */
 
-  enum MessageState {
+  /*
+  private enum MessageState {
     IDLE {
       @Override
       public MessageState toBinary() { return BINARY; }
@@ -649,6 +644,7 @@ public class WebSocketBaratineImpl<T,S>
       throw new IllegalStateException(toString());
     }
   }
+  */
 
   /*
   private class OutFlushImpl implements OutWebSocketFlush

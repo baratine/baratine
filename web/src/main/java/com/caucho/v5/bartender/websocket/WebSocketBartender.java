@@ -588,6 +588,7 @@ public class WebSocketBartender<T,S>
   }
   */
 
+  /*
   public StateConnection service()
   {
     if (readFrame()) {
@@ -597,6 +598,7 @@ public class WebSocketBartender<T,S>
       return StateConnection.CLOSE;
     }
   }
+  */
 
   private String calculateWebSocketAccept(String key)
   {

@@ -44,16 +44,15 @@ import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.io.ReadStream;
 import com.caucho.v5.io.SocketBar;
-import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.tcp.TcpConnection;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.websocket.WebSocketClient;
-import com.caucho.v5.websocket.io.Frame;
 import com.caucho.v5.websocket.io.FrameInputStream;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 import com.caucho.v5.websocket.io.WebSocketProtocolException;
+
 import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.ServiceWebSocket;
@@ -177,19 +176,21 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
       valueType = String.class;
     }
 
+    readInit(valueType, (ServiceWebSocket) _service, null);
+    /*
     if (Frame.class.equals(valueType)) {
-      readFrame((ServiceWebSocket) _service);
+      readFrameInit((ServiceWebSocket) _service);
     }
     else if (String.class.equals(valueType)) {
-      readString((ServiceWebSocket) _service);
+      readStringInit((ServiceWebSocket) _service);
     }
     else if (Buffer.class.equals(valueType)) {
-      read((ServiceWebSocket) _service);
+      readBufferInit((ServiceWebSocket) _service);
     }
     else {
       throw new UnsupportedOperationException(valueType.toString());
     }
-
+    */
   }
 
   public String getHost()
@@ -525,11 +526,13 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     return handler;
   }
 
+  /*
   @Override
   protected boolean readFrame()
   {
     return super.readFrame();
   }
+  */
 
   public void disconnect()
   {
