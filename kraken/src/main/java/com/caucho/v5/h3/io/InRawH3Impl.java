@@ -620,9 +620,16 @@ public class InRawH3Impl implements InRawH3
   
   private String readString(int strlen)
   {
-    readString(_charBuffer, strlen);
+    if (strlen <= _charBuffer.length) {
+      readString(_charBuffer, strlen);
+      
+      return new String(_charBuffer, 0, strlen);
+    }
     
-    return new String(_charBuffer, 0, strlen);
+    char []charBuffer = new char[strlen];
+    readString(charBuffer, strlen);
+
+    return new String(charBuffer, 0, strlen);
   }
   
   private long readLong(long value, int shift)
