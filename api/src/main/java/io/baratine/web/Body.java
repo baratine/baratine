@@ -36,10 +36,29 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation @Body is used to assign method parameter value from a POST body.
+ *
+ * Body may be one of the following
+ * a) a JSON formatted value with content-type 'application/json'
+ * b) a form encoded with 'application/x-www-form-urlencoded'
+ * c) a form encoded with 'multipart/form-data'
+ *
+ * Parameter may be on of the following types
+ * a) io.baratine.web.Form e.g. void foo(@Body Form form) {}
+ * b) primitive type e.g. void foo(@Body("user") String username, ...) {}
+ * c) a type for JSON conversion, e.g. UserBean
+ *
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({PARAMETER})
 public @interface Body
 {
+  /**
+   * Specifies name in a submitted form name / value pair
+   *
+   * @return
+   */
   String value() default "";
 }
