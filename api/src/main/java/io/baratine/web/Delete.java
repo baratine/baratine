@@ -37,6 +37,23 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation @Delete makes service method accessible via HTTP for DELETE requests.
+ *
+ * By default the URI is inferred from the method name but can be overridden
+ * using @Delete's value() attribute.
+ *
+ * e.g.
+ *
+ * <pre>
+ *   <code>
+ *     @Delete
+ *     public void delete(Result<String> result) {  result.ok();  }
+ *   </code>
+ * </pre>
+ *
+ * The above maps DELETE requests to /delete URI to method delete().
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})

@@ -37,7 +37,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation @Body is used to assign method parameter value from a POST body.
+ * Annotation @Body is used to assign a value from POST body to a service method parameter
  *
  * Body may be one of the following
  * a) a JSON formatted value with content-type 'application/json'

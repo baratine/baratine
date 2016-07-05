@@ -37,6 +37,10 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Cross Origin annotation configures Cross Origin Resource Sharing(CORS) behaviour
+ * which allows browser to access resources from a different domain.
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
