@@ -37,6 +37,13 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation FilterBefore used to declare a RequestWeb filter.
+ *
+ * Can be used as a meta annotation for annotating filter annotations
+ *
+ * @see ServiceWeb
+ */
 @Retention(RUNTIME)
 @Target({METHOD,TYPE})
 @Repeatable(FiltersBefore.class)
