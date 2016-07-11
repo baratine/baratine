@@ -167,7 +167,7 @@ public class WebServerImpl implements WebServer, AutoCloseable
     logStartComplete();
 
     // non-daemon thread to prevent quick exit
-    Thread thread = new Thread(()->join());
+    Thread thread = new Thread(this::join);
     thread.setName("baratine-join");
     thread.start();
   }

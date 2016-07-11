@@ -79,6 +79,7 @@ import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
+import io.baratine.inject.New;
 import io.baratine.io.Buffers;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
@@ -1101,7 +1102,12 @@ public class WebAppBuilder
         type = itemType(_serviceType);
 
         if (serviceAnn == null) {
-          service = inject.instance(_serviceType);
+          if (_serviceType.getAnnotation(New.class) != null) {
+            fun = req->inject.instance(_serviceType);
+          }
+          else {
+            service = inject.instance(_serviceType);
+          }
         }
         else {
           ServiceRef ref = service(_serviceType).auto().ref();
