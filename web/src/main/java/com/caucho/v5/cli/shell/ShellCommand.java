@@ -151,8 +151,11 @@ public class ShellCommand extends CommandBase<ArgsBase>
     throws IOException
   {
     String line;
-
+    
+    boolean isCommand = false;
+    
     while ((line = IoUtil.readln(is)) != null) {
+      isCommand = true;
       line = line.trim();
 
       if (line.equals("")) {
@@ -162,8 +165,16 @@ public class ShellCommand extends CommandBase<ArgsBase>
       if (line.startsWith("#")) {
         continue;
       }
+    }
 
-      executeCommand(args, line);
+    // gradle run has empty input stream instead of console
+    if (! isCommand) {
+      try {
+        synchronized (this) {
+          wait();
+        }
+      } catch (Exception e) {
+      }
     }
   }
 

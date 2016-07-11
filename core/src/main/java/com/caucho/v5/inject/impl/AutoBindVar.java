@@ -51,7 +51,7 @@ class AutoBindVar implements InjectAutoBind
                                   InjectionPoint<T> ip)
   {
     Var var = ip.annotation(Var.class);
-    
+
     if (var == null) {
       return null;
     }
@@ -63,7 +63,7 @@ class AutoBindVar implements InjectAutoBind
     }
     
     String defaultValue = var.defaultValue();
-    
+
     return new ProviderVar<T>((InjectorAmp) injector,
                               (Class<T>) ip.key().type(),
                               name,
@@ -99,7 +99,20 @@ class AutoBindVar implements InjectAutoBind
     @Override
     public T get()
     {
-      return _injector.config().get(_var, _type, _defaultValue);
+      T value = _injector.config().get(_var, _type, _defaultValue);
+      
+      if (value == null
+          && ! _type.isPrimitive()
+          && ! (Enum.class.isAssignableFrom(_type))
+          && ! _type.isArray()) {
+        value = _injector.instance(_type);
+        
+        if (value != null) {
+          _injector.config().inject(value, _var);
+        }
+      }
+      
+      return value;
     }
   }
 }
