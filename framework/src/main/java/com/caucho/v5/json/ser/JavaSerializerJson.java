@@ -55,8 +55,8 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.json.JsonName;
 import com.caucho.v5.json.JsonTransient;
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
 {
@@ -184,7 +184,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
   }
 
   @Override
-  public void write(JsonWriter out, Object value)
+  public void write(JsonWriterImpl out, Object value)
   {
     out.writeStartObject();
     
@@ -207,7 +207,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
   }
   */
   
-  private void writeFields(JsonWriter out, Object value)
+  private void writeFields(JsonWriterImpl out, Object value)
   {
     for (JsonField field : _fields) {
       field.write(out, value);
@@ -239,7 +239,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
   }
 
   @Override
-  public Object read(JsonReader in)
+  public Object read(JsonReaderImpl in)
   {
     Event event = in.next();
 
@@ -276,7 +276,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
   }
 
   @Override
-  public void readField(JsonReader in, Object bean, String fieldName)
+  public void readField(JsonReaderImpl in, Object bean, String fieldName)
   {
     JsonField jsonField = _fieldMap.get(fieldName);
 
@@ -337,9 +337,9 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     
     //abstract V get(T bean);
     
-    abstract void write(JsonWriter out, T bean);
+    abstract void write(JsonWriterImpl out, T bean);
     
-    void read(JsonReader in, T bean)
+    void read(JsonReaderImpl in, T bean)
     {
       throw new UnsupportedOperationException(getClass().getName());
     }
@@ -374,7 +374,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     */
     
     @Override
-    final void write(JsonWriter out, T bean)
+    final void write(JsonWriterImpl out, T bean)
     {
       String fieldValue = _fieldRef.getString(bean);
 
@@ -385,7 +385,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     }
 
     @Override
-    void read(JsonReader in, T bean)
+    void read(JsonReaderImpl in, T bean)
     {
       String value = in.readString();
 
@@ -416,7 +416,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     */
     
     @Override
-    final void write(JsonWriter out, T bean)
+    final void write(JsonWriterImpl out, T bean)
     {
       boolean fieldValue = _fieldRef.getBoolean(bean);
 
@@ -425,7 +425,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     }
 
     @Override
-    void read(JsonReader in, T bean)
+    void read(JsonReaderImpl in, T bean)
     {
       _fieldRef.setBoolean(bean, in.readBoolean());
     }
@@ -451,7 +451,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     */
     
     @Override
-    final void write(JsonWriter out, T bean)
+    final void write(JsonWriterImpl out, T bean)
     {
       String fieldValue = _fieldRef.getString(bean);
 
@@ -460,7 +460,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     }
 
     @Override
-    void read(JsonReader in, T bean)
+    void read(JsonReaderImpl in, T bean)
     {
       try {
         String v = in.readString();
@@ -517,7 +517,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     */
     
     @Override
-    final void write(JsonWriter out, T bean)
+    final void write(JsonWriterImpl out, T bean)
     {
       long fieldValue = _fieldRef.getLong(bean);
 
@@ -526,7 +526,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     }
 
     @Override
-    void read(JsonReader in, T bean)
+    void read(JsonReaderImpl in, T bean)
     {
       _fieldRef.setLong(bean, in.readLong());
     }
@@ -562,7 +562,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     */
     
     @Override
-    final void write(JsonWriter out, T bean)
+    final void write(JsonWriterImpl out, T bean)
     {
       double fieldValue = _fieldRef.getDouble(bean);
 
@@ -571,7 +571,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     }
 
     @Override
-    void read(JsonReader in, T bean)
+    void read(JsonReaderImpl in, T bean)
     {
       _fieldRef.setDouble(bean, in.readDouble());
     }
@@ -596,7 +596,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     }
 
     @Override
-    void read(JsonReader in, T bean)
+    void read(JsonReaderImpl in, T bean)
     {
       V value = _ser.read(in);
 
@@ -604,7 +604,7 @@ public class JavaSerializerJson<T> extends JsonObjectSerializerBase<Object>
     }
 
     @Override
-    void write(JsonWriter out, T bean)
+    void write(JsonWriterImpl out, T bean)
     {
       V fieldValue = _fieldRef.getObject(bean);
 

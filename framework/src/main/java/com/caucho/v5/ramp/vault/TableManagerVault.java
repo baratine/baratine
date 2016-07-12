@@ -46,7 +46,7 @@ import com.caucho.v5.inject.InjectorAmp;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.json.Json;
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.kraken.info.TableInfo;
 import com.caucho.v5.util.L10N;
 
@@ -209,7 +209,7 @@ public class TableManagerVault<ID,T>
                      type.getSimpleName(), pathName));
       }
       
-      try (JsonReader in = json.in(is)) {
+      try (JsonReaderImpl in = json.in(is)) {
         initTableData(in);
       }
     } catch (FileNotFoundException e) {
@@ -234,7 +234,7 @@ public class TableManagerVault<ID,T>
   }
 
   
-  private void initTableData(JsonReader in)
+  private void initTableData(JsonReaderImpl in)
   {
     Event token = in.next();
     

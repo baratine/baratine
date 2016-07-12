@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -40,12 +40,12 @@ import java.lang.annotation.Target;
 /**
  * @Var marks a field or type for config lookup.
  */
-@Documented  
+@Documented
 @Retention(RUNTIME)
 @Target({FIELD,TYPE})
 public @interface Var
 {
   String value() default "";
-  
+
   String defaultValue() default "";
 }

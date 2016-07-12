@@ -29,8 +29,8 @@
 
 package com.caucho.v5.json.ser;
 
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.io.InJson.Event;
 
 import java.time.Instant;
@@ -59,13 +59,13 @@ public class ZonedDateTimeSerializer extends JsonSerializerBase<ZonedDateTime>
   */
 
   @Override
-  public void write(JsonWriter out, ZonedDateTime value)
+  public void write(JsonWriterImpl out, ZonedDateTime value)
   {
     out.write(value.format(_formatter));
   }
 
   @Override
-  public ZonedDateTime read(JsonReader in)
+  public ZonedDateTime read(JsonReaderImpl in)
   {
     try {
       Event event = in.peek();

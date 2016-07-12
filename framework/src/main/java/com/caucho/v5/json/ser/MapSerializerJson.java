@@ -34,8 +34,8 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 public class MapSerializerJson<K,V> 
@@ -63,7 +63,7 @@ public class MapSerializerJson<K,V>
   }
 
   @Override
-  public void write(JsonWriter out, 
+  public void write(JsonWriterImpl out, 
                     Map<K, V> value)
   {
     out.writeStartObject();
@@ -77,7 +77,7 @@ public class MapSerializerJson<K,V>
   }
 
   @Override
-  public Map<K,V> read(JsonReader in)
+  public Map<K,V> read(JsonReaderImpl in)
   {
     Event event = in.next();
     

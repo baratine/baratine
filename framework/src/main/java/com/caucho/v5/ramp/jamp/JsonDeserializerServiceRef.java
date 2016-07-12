@@ -30,7 +30,7 @@
 package com.caucho.v5.ramp.jamp;
 
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.json.ser.JsonSerializerBase;
 
 import io.baratine.service.Services;
@@ -38,7 +38,7 @@ import io.baratine.service.Services;
 public class JsonDeserializerServiceRef extends JsonSerializerBase
 {
   @Override
-  public Object read(JsonReader in)
+  public Object read(JsonReaderImpl in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

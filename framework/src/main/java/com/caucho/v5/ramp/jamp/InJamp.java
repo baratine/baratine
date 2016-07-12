@@ -58,7 +58,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.QueryRefAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.vfs.ReadStreamOld;
@@ -153,10 +153,10 @@ public class InJamp
     _is = is;
   }
 
-  public JsonReader startSequence(Reader is)
+  public JsonReaderImpl startSequence(Reader is)
     throws IOException
   {
-    JsonReader jIn = new JsonReader(is, _jsonFactory);
+    JsonReaderImpl jIn = new JsonReaderImpl(is, _jsonFactory);
     
     InJson.Event event;
     
@@ -187,7 +187,7 @@ public class InJamp
   public MessageType readMessage(Reader is)
     throws IOException
   {
-    JsonReader jIn = new JsonReader(is, _jsonFactory);
+    JsonReaderImpl jIn = new JsonReaderImpl(is, _jsonFactory);
     
     return readMessage(jIn);
   }
@@ -218,12 +218,12 @@ public class InJamp
   {
     Objects.requireNonNull(outbox);
     
-    JsonReader jIn = new JsonReader(is, _jsonFactory);
+    JsonReaderImpl jIn = new JsonReaderImpl(is, _jsonFactory);
       
     return readMessages(jIn, outbox);
   }
   
-  public int readMessages(JsonReader jIn, OutboxAmp outbox)
+  public int readMessages(JsonReaderImpl jIn, OutboxAmp outbox)
     throws IOException
   {
     int queryCount = 0;
@@ -249,7 +249,7 @@ public class InJamp
     return queryCount;
   }
   
-  public MessageType readMessage(JsonReader jIn)
+  public MessageType readMessage(JsonReaderImpl jIn)
     throws IOException
   {
     try (OutboxAmp outbox = OutboxAmp.currentOrCreate(getManager())) {
@@ -261,7 +261,7 @@ public class InJamp
     }
   }
     
-  public MessageType readMessage(JsonReader jIn, OutboxAmp outbox)
+  public MessageType readMessage(JsonReaderImpl jIn, OutboxAmp outbox)
       throws IOException
   {
     MessageType value = readMessageImpl(jIn, outbox);
@@ -271,7 +271,7 @@ public class InJamp
     return value;
   }
   
-  private MessageType readMessageImpl(JsonReader jIn, OutboxAmp outbox)
+  private MessageType readMessageImpl(JsonReaderImpl jIn, OutboxAmp outbox)
       throws IOException
   {
     InJson.Event event;
@@ -331,7 +331,7 @@ public class InJamp
     }
   }
   
-  private MessageType parseSend(JsonReader jIn,
+  private MessageType parseSend(JsonReaderImpl jIn,
                                 HeadersAmp headers)
     throws IOException
   {
@@ -394,7 +394,7 @@ public class InJamp
     return MessageType.SEND;
   }
   
-  private MessageType parseQuery(JsonReader jIn,
+  private MessageType parseQuery(JsonReaderImpl jIn,
                                  OutboxAmp outbox,
                                  HeadersAmp headers)
     throws IOException
@@ -434,7 +434,7 @@ public class InJamp
     }
   }
     
-  MessageType parseQueryMethod(JsonReader jIn,
+  MessageType parseQueryMethod(JsonReaderImpl jIn,
                                OutboxAmp outbox,
                                HeadersAmp headers,
                                String from,
@@ -525,7 +525,7 @@ public class InJamp
     return MessageType.QUERY;
   }
   
-  private MessageType parseReply(JsonReader jIn,
+  private MessageType parseReply(JsonReaderImpl jIn,
                                  HeadersAmp headers)
     throws IOException
   {
@@ -571,7 +571,7 @@ public class InJamp
     return MessageType.QUERY_REPLY;
   }
   
-  private MessageType parseError(JsonReader jIn,
+  private MessageType parseError(JsonReaderImpl jIn,
                                  HeadersAmp headers)
     throws IOException
   {
@@ -639,7 +639,7 @@ public class InJamp
     return MessageType.QUERY_ERROR;
   }
   
-  private MessageType parseStream(JsonReader jIn,
+  private MessageType parseStream(JsonReaderImpl jIn,
                                   OutboxAmp outbox,
                                  HeadersAmp headers)
     throws IOException
@@ -684,7 +684,7 @@ public class InJamp
    * [stream ...]
    * </pre></code>
    */
-  MessageType parseStreamMethod(JsonReader jIn,
+  MessageType parseStreamMethod(JsonReaderImpl jIn,
                                 OutboxAmp outbox,
                                 HeadersAmp headers,
                                 String from,
@@ -784,7 +784,7 @@ public class InJamp
     return MessageType.QUERY;
   }
   
-  private MessageType parseStreamCancel(JsonReader jIn,
+  private MessageType parseStreamCancel(JsonReaderImpl jIn,
                                         HeadersAmp headers)
     throws IOException
   {
@@ -831,7 +831,7 @@ public class InJamp
     */
   }
   
-  private String readString(JsonReader jIn)
+  private String readString(JsonReaderImpl jIn)
     throws IOException
   {
     InJson.Event event;
@@ -850,7 +850,7 @@ public class InJamp
     }
   }
   
-  private Object []readArgs(JsonReader jIn, 
+  private Object []readArgs(JsonReaderImpl jIn, 
                             String address,
                             String method,
                             ParameterAmp []paramTypes,
@@ -953,7 +953,7 @@ public class InJamp
     }
   }
   
-  private Object readVarArgs(JsonReader jIn,
+  private Object readVarArgs(JsonReaderImpl jIn,
                              String address,
                              String method,
                              Type type)
@@ -1016,7 +1016,7 @@ public class InJamp
     }
   }
   
-  private HeadersAmp parseHeaders(JsonReader jIn)
+  private HeadersAmp parseHeaders(JsonReaderImpl jIn)
     throws IOException
   {
     InJson.Event event;
@@ -1124,7 +1124,7 @@ public class InJamp
     
   }
   
-  private InJson.Event next(JsonReader jIn)
+  private InJson.Event next(JsonReaderImpl jIn)
   {
     return jIn.next();
   }

@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ErrorAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.vfs.WriteStreamOld;
 
@@ -54,7 +54,7 @@ public class OutJamp
   
   private final JsonFactory _jsonFactory;
 
-  private JsonWriter _jOut;
+  private JsonWriterImpl _jOut;
   
   private Writer _writer;
 
@@ -69,7 +69,7 @@ public class OutJamp
     
     _jsonFactory = jsonFactory;
     
-    _jOut = new JsonWriter(_jsonFactory);
+    _jOut = new JsonWriterImpl(_jsonFactory);
   }
   
   public void init(Writer writer)
@@ -107,7 +107,7 @@ public class OutJamp
     }
     
     try {
-      JsonWriter jOut = _jOut;
+      JsonWriterImpl jOut = _jOut;
 
       jOut.init();
 
@@ -152,7 +152,7 @@ public class OutJamp
     }
  
     try {
-      JsonWriter jOut = _jOut;
+      JsonWriterImpl jOut = _jOut;
       jOut.init();
 
       jOut.writeStartArray();
@@ -197,7 +197,7 @@ public class OutJamp
     }
 
     try {
-      JsonWriter jOut = _jOut;
+      JsonWriterImpl jOut = _jOut;
       jOut.init();
 
       jOut.writeStartArray();
@@ -240,7 +240,7 @@ public class OutJamp
     }
     
     try {
-      JsonWriter jOut = _jOut;
+      JsonWriterImpl jOut = _jOut;
       jOut.init();
 
       jOut.writeStartArray();
@@ -297,7 +297,7 @@ public class OutJamp
     }
  
     try {
-      JsonWriter jOut = _jOut;
+      JsonWriterImpl jOut = _jOut;
       jOut.init();
 
       jOut.writeStartArray();
@@ -336,7 +336,7 @@ public class OutJamp
     }
     
     try {
-      JsonWriter jOut = _jOut;
+      JsonWriterImpl jOut = _jOut;
       jOut.init();
 
       jOut.writeStartArray();
@@ -369,7 +369,7 @@ public class OutJamp
     }
  
     try {
-      JsonWriter jOut = _jOut;
+      JsonWriterImpl jOut = _jOut;
       jOut.init();
 
       jOut.writeStartArray();
@@ -401,7 +401,7 @@ public class OutJamp
     }
  
     try {
-      JsonWriter jOut = _jOut;
+      JsonWriterImpl jOut = _jOut;
       jOut.init();
 
       jOut.writeStartArray();
@@ -428,7 +428,7 @@ public class OutJamp
     _writer.write(",\n");
   }
         
-  private void writeHeaders(JsonWriter jOut, HeadersAmp headers)
+  private void writeHeaders(JsonWriterImpl jOut, HeadersAmp headers)
   {
     jOut.writeStartObject();
     
@@ -440,7 +440,7 @@ public class OutJamp
     jOut.writeEndObject();
   }
   
-  private void writeArgs(JsonWriter jOut, Object []args)
+  private void writeArgs(JsonWriterImpl jOut, Object []args)
     throws IOException
   {
     int argLen = args != null ? args.length : 0;

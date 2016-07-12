@@ -43,8 +43,8 @@ import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.json.io.InJson;
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.JsonFactory;
 
 import io.baratine.service.MethodRef;
@@ -224,7 +224,7 @@ public class JampMethodStandard extends JampMethodRest
                      String pathInfo)
     throws IOException
   {
-    JsonReader jIn = null;//new JsonReader(req.body(Reader.class));
+    JsonReaderImpl jIn = null;//new JsonReader(req.body(Reader.class));
 
     if (jIn.peek() != InJson.Event.START_ARRAY) {
       req.halt(HttpStatus.FORBIDDEN);
@@ -260,7 +260,7 @@ public class JampMethodStandard extends JampMethodRest
       return;
     }
 
-    JsonReader jIn = null;//new JsonReader(req.body(Reader.class));
+    JsonReaderImpl jIn = null;//new JsonReader(req.body(Reader.class));
 
     if (jIn.peek() != InJson.Event.START_ARRAY) {
       ServiceException exn = new ServiceExceptionIllegalArgument();
@@ -370,7 +370,7 @@ public class JampMethodStandard extends JampMethodRest
       }
 
       try {
-        try (JsonWriter jOut = new JsonWriter(out, _factory)) {
+        try (JsonWriterImpl jOut = new JsonWriterImpl(out, _factory)) {
           jOut.writeStartObject();
           
           jOut.writeKey("status");
@@ -428,7 +428,7 @@ public class JampMethodStandard extends JampMethodRest
     }
   }
 
-  private Object []readArgs(JsonReader jIn, ParameterAmp []paramTypes)
+  private Object []readArgs(JsonReaderImpl jIn, ParameterAmp []paramTypes)
   {
     InJson.Event event;
     ArrayList<Object> args = null;

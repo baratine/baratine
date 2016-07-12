@@ -30,14 +30,14 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 
 public class ShortSerializer extends LongSerializer
 {
   static final ShortSerializer SER = new ShortSerializer();
 
   @Override
-  public Number read(JsonReader in)
+  public Number read(JsonReaderImpl in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

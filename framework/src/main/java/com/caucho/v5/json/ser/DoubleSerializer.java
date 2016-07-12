@@ -30,15 +30,15 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class DoubleSerializer extends JsonSerializerBase<Number>
 {
   static final DoubleSerializer SER = new DoubleSerializer();
   
   @Override
-  public void write(JsonWriter out, Number value)
+  public void write(JsonWriterImpl out, Number value)
   {
     double dValue = value.doubleValue();
     
@@ -46,7 +46,7 @@ public class DoubleSerializer extends JsonSerializerBase<Number>
   }
 
   @Override
-  public Double read(JsonReader in)
+  public Double read(JsonReaderImpl in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

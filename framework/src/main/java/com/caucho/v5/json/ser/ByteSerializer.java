@@ -30,14 +30,14 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 
 public class ByteSerializer extends LongSerializer
 {
   static final ByteSerializer SER = new ByteSerializer();
 
   @Override
-  public Byte read(JsonReader in)
+  public Byte read(JsonReaderImpl in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

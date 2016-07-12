@@ -30,8 +30,8 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class ClassSerializer extends JsonSerializerBase<Class<?>>
 {
@@ -40,14 +40,14 @@ public class ClassSerializer extends JsonSerializerBase<Class<?>>
   private ClassSerializer() {}
 
   @Override
-  public void write(JsonWriter out, Class<?> value)
+  public void write(JsonWriterImpl out, Class<?> value)
   {
     //out.write(QDate.formatISO8601(value.getTime()));
     out.write(value.getName());
   }
   
   @Override
-  public Class<?> read(JsonReader in)
+  public Class<?> read(JsonReaderImpl in)
   {
     try {
       Event event = in.peek();

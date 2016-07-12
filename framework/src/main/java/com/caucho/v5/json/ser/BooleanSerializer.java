@@ -30,15 +30,15 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class BooleanSerializer extends JsonSerializerBase<Boolean>
 {
   static final BooleanSerializer SER = new BooleanSerializer();
   
   @Override
-  public void write(JsonWriter out, Boolean value)
+  public void write(JsonWriterImpl out, Boolean value)
   {
     if (value == null) {
       out.writeNull();
@@ -49,7 +49,7 @@ public class BooleanSerializer extends JsonSerializerBase<Boolean>
   }
 
   @Override
-  public Boolean read(JsonReader in)
+  public Boolean read(JsonReaderImpl in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

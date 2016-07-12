@@ -30,15 +30,15 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class LongSerializer extends JsonSerializerBase<Number>
 {
   static final LongSerializer SER = new LongSerializer();
   
   @Override
-  public Number read(JsonReader in)
+  public Number read(JsonReaderImpl in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();
@@ -51,7 +51,7 @@ public class LongSerializer extends JsonSerializerBase<Number>
   }
   
   @Override
-  public void write(JsonWriter out, Number value)
+  public void write(JsonWriterImpl out, Number value)
   {
     if (value != null) {
       out.write(value.longValue());

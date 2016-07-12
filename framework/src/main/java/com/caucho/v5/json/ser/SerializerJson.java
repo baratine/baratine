@@ -30,8 +30,8 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public interface SerializerJson<T>
 {
@@ -49,7 +49,7 @@ public interface SerializerJson<T>
    * @param fieldName the field key
    * @param fieldValue the fieldValue
    */
-  void write(JsonWriter out, T value);
+  void write(JsonWriterImpl out, T value);
   
   /**
    * Writing a JSON value in an object context.
@@ -68,14 +68,14 @@ public interface SerializerJson<T>
     throws IOException;
     */
 
-  void writeTop(JsonWriter jsonWriter, T value);
+  void writeTop(JsonWriterImpl jsonWriter, T value);
   
-  default T read(JsonReader in)
+  default T read(JsonReaderImpl in)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  default void readField(JsonReader in, Object bean, String fieldName)
+  default void readField(JsonReaderImpl in, Object bean, String fieldName)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

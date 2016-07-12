@@ -32,7 +32,11 @@ package com.caucho.v5.json;
 import java.io.IOException;
 import java.io.Writer;
 
-public interface JsonSerializer
+public interface JsonWriter
 {
-  public void serialize(Writer writer, Object value) throws IOException;
+  void init(Writer writer);
+
+  void write(Object value) throws IOException;
+
+  void flush() throws IOException;
 }

@@ -1,6 +1,6 @@
 package com.caucho.v5.json.ser;
 
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class EnumSerializer extends JsonSerializerBase<Enum<?>>
 {
@@ -15,7 +15,7 @@ public class EnumSerializer extends JsonSerializerBase<Enum<?>>
   */
 
   @Override 
-  public void write(JsonWriter out, Enum<?> value)
+  public void write(JsonWriterImpl out, Enum<?> value)
   {
     out.write(value.name());
   }

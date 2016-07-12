@@ -31,7 +31,7 @@ package com.caucho.v5.json;
 
 public interface JsonEngine
 {
-  public JsonSerializer getSerializer();
+  public JsonWriter newWriter();
 
-  public JsonDeserializer getDeserializer();
+  public JsonReader newReader();
 }

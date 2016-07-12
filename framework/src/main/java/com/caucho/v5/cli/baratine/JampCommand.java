@@ -40,7 +40,7 @@ import com.caucho.v5.cli.server.BootArgumentException;
 import com.caucho.v5.cli.server.ServerCommandBase;
 import com.caucho.v5.cli.spi.CommandArgumentException;
 import com.caucho.v5.health.shutdown.ExitCode;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.service.ResultFuture;
@@ -138,7 +138,7 @@ public class JampCommand extends ServerCommandBase<ArgsCli>
       Object result = future.get(30, TimeUnit.SECONDS);
 
       PrintWriter out = args.envCli().getOut().getPrintWriter();
-      try (JsonWriter jOut = new JsonWriter(out)) {
+      try (JsonWriterImpl jOut = new JsonWriterImpl(out)) {
         jOut.writeObjectTop(result);
       }
       out.println();

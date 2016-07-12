@@ -33,8 +33,8 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 class StringValueOfSerializer<T> extends JsonSerializerBase<T>
 {
@@ -55,7 +55,7 @@ class StringValueOfSerializer<T> extends JsonSerializerBase<T>
   }
   
   @Override
-  public T read(JsonReader in)
+  public T read(JsonReaderImpl in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();
@@ -74,7 +74,7 @@ class StringValueOfSerializer<T> extends JsonSerializerBase<T>
   }
   
   @Override
-  public void write(JsonWriter out, T value)
+  public void write(JsonWriterImpl out, T value)
   {
     if (value != null) {
       out.write(value.toString());

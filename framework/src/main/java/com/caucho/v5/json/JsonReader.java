@@ -32,7 +32,9 @@ package com.caucho.v5.json;
 import java.io.IOException;
 import java.io.Reader;
 
-public interface JsonDeserializer
+public interface JsonReader
 {
-  <T> T deserialize(Reader reader, Class<T> cls) throws IOException;
+  void init(Reader reader);
+
+  <T> T readObject(Class<T> cls) throws IOException;
 }

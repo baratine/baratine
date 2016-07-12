@@ -1,7 +1,7 @@
 package com.caucho.v5.json.ser;
 
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 public abstract class JsonSerializerBase<T>
@@ -19,7 +19,7 @@ public abstract class JsonSerializerBase<T>
   */
   
   @Override
-  public void write(JsonWriter out, T value)
+  public void write(JsonWriterImpl out, T value)
   {
     if (value == null) {
       out.writeNull();
@@ -40,7 +40,7 @@ public abstract class JsonSerializerBase<T>
   */
   
   @Override
-  public void writeTop(JsonWriter out, T value)
+  public void writeTop(JsonWriterImpl out, T value)
   {
     out.writeStartArray();
     write(out, value);
@@ -52,13 +52,13 @@ public abstract class JsonSerializerBase<T>
   //
   
   @Override
-  public T read(JsonReader in)
+  public T read(JsonReaderImpl in)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
-  public void readField(JsonReader in, Object bean, String fieldName)
+  public void readField(JsonReaderImpl in, Object bean, String fieldName)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

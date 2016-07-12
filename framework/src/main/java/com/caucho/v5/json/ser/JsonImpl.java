@@ -34,8 +34,8 @@ import java.io.Writer;
 import java.util.Objects;
 
 import com.caucho.v5.json.Json;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 class JsonImpl implements Json
 {
@@ -47,18 +47,18 @@ class JsonImpl implements Json
   }
   
   @Override
-  public JsonWriter out(Writer os)
+  public JsonWriterImpl out(Writer os)
   {
     Objects.requireNonNull(os);
     
-    return new JsonWriter(os, _factory);
+    return new JsonWriterImpl(os, _factory);
   }
   
   @Override
-  public JsonReader in(Reader is)
+  public JsonReaderImpl in(Reader is)
   {
     Objects.requireNonNull(is);
     
-    return new JsonReader(is, _factory);
+    return new JsonReaderImpl(is, _factory);
   }
 }

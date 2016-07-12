@@ -35,8 +35,8 @@ import java.util.Objects;
 
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 public class IterableSerializer<V>
@@ -65,7 +65,7 @@ public class IterableSerializer<V>
   }
 
   @Override
-  public void write(JsonWriter out, Iterable<V> value)
+  public void write(JsonWriterImpl out, Iterable<V> value)
   {
     out.writeStartArray();
     
@@ -77,7 +77,7 @@ public class IterableSerializer<V>
   }
 
   @Override
-  public Iterable<V> read(JsonReader in)
+  public Iterable<V> read(JsonReaderImpl in)
   {
     Event event = in.next();
     

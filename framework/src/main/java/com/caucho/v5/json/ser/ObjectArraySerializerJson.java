@@ -33,8 +33,8 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 public class ObjectArraySerializerJson 
@@ -53,7 +53,7 @@ public class ObjectArraySerializerJson
   }
   
   @Override
-  public void write(JsonWriter out, Object[] value)
+  public void write(JsonWriterImpl out, Object[] value)
   {
     out.writeStartArray();
     
@@ -65,7 +65,7 @@ public class ObjectArraySerializerJson
   }
 
   @Override
-  public Object []read(JsonReader in)
+  public Object []read(JsonReaderImpl in)
   {
     Event event = in.next();
     

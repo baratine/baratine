@@ -32,8 +32,8 @@ package com.caucho.v5.json.ser;
 import java.util.Date;
 
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.QDate;
 
 public class DateSerializer extends JsonSerializerBase<Date>
@@ -43,13 +43,13 @@ public class DateSerializer extends JsonSerializerBase<Date>
   private DateSerializer() {}
 
   @Override
-  public void write(JsonWriter out, Date value)
+  public void write(JsonWriterImpl out, Date value)
   {
     out.write(QDate.formatISO8601(value.getTime()));
   }
   
   @Override
-  public Date read(JsonReader in)
+  public Date read(JsonReaderImpl in)
   {
     try {
       Event event = in.peek();

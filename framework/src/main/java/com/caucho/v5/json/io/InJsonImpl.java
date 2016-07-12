@@ -40,42 +40,42 @@ import com.caucho.v5.vfs.VfsOld;
 public class InJsonImpl implements InJson
 {
   private static final L10N L = new L10N(InJsonImpl.class);
-  
+
   private int _peek;
   private Reader _is;
-  
+
   private int _line;
   private int _offset;
-  
+
   private Event _event;
-  
+
   private boolean _isInt;
 
   private String _stringValue;
   private long _longValue;
 
   private BigDecimal _bigDecimalValue;
-  
+
   protected InJsonImpl()
   {
   }
-  
+
   public InJsonImpl(Reader is)
   {
     init(is);
   }
-  
+
   /*
   public InJsonImpl(InputStream is)
   {
     init(Vfs.openRead(is).getReader());
   }
   */
-  
-  protected final void init(Reader is)
+
+  public void init(Reader is)
   {
     _is = is;
-    
+
     _line = 1;
     _offset = 0;
   }
@@ -84,22 +84,22 @@ public class InJsonImpl implements InJson
   public final boolean hasNext()
   {
     Event event = _event;
-    
+
     if (event == null) {
       _event = event = scanNext();
     }
-    
+
     return event != null;
   }
 
   public final Event peek()
   {
     Event event = _event;
-    
+
     if (event == null) {
       _event = event = scanNext();
     }
-    
+
     return event;
   }
 
@@ -108,14 +108,14 @@ public class InJsonImpl implements InJson
   {
     Event event = _event;
     _event = null;
-    
+
     if (event == null) {
       event = scanNext();
     }
 
     return event;
   }
-  
+
   @Override
   public final String getString()
   {
@@ -155,55 +155,55 @@ public class InJsonImpl implements InJson
   {
     return _bigDecimalValue;
   }
-  
+
   private Event scanNext()
   {
     while (true) {
       int ch = read();
-      
+
       switch (ch) {
       case ' ': case '\t': case '\r':
         break;
-        
+
       case '\n':
         _line++;
         _offset = 0;
         break;
-        
+
       case ',':
         break;
-        
+
       case '[':
         return Event.START_ARRAY;
-        
+
       case ']':
         return Event.END_ARRAY;
-        
+
       case '{':
         return Event.START_OBJECT;
-        
+
       case '}':
         return Event.END_OBJECT;
-        
+
       case '"':
         _stringValue = parseString();
-        
+
         return peekKey();
-        
+
       case '-':
         parseNumberValue(-1, 0);
         return Event.VALUE_LONG;
-        
+
       case '+':
         parseNumberValue(1, 0);
         return Event.VALUE_LONG;
-        
+
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
         parseNumberValue(1, ch - '0');
-        
+
         return Event.VALUE_LONG;
-        
+
       case 'n':
         if ((ch = read()) != 'u'
             || (ch = read()) != 'l'
@@ -213,7 +213,7 @@ public class InJsonImpl implements InJson
                           String.valueOf((char) ch)));
         }
         return Event.VALUE_NULL;
-        
+
       case 'f':
         if ((ch = read()) != 'a'
             || (ch = read()) != 'l'
@@ -224,7 +224,7 @@ public class InJsonImpl implements InJson
                           String.valueOf((char) ch)));
         }
         return Event.VALUE_FALSE;
-        
+
       case 't':
         if ((ch = read()) != 'r'
             || (ch = read()) != 'u'
@@ -234,7 +234,7 @@ public class InJsonImpl implements InJson
                           String.valueOf((char) ch)));
         }
         return Event.VALUE_TRUE;
-        
+
       default:
         if (ch < 0) {
           return null;
@@ -251,7 +251,7 @@ public class InJsonImpl implements InJson
   private String parseString()
   {
     int ch;
-    
+
     StringBuilder sb = new StringBuilder();
 
     while ((ch = read()) >= 0 && ch != '"') {
@@ -290,7 +290,7 @@ public class InJsonImpl implements InJson
   private void parseNumberValue(int sign, long value)
   {
     int ch;
-    
+
     while ((ch = read()) >= 0) {
       switch (ch) {
       case '0': case '1': case '2': case '3': case '4':
@@ -306,26 +306,26 @@ public class InJsonImpl implements InJson
       default:
         _peek = ch;
         _longValue = sign * value;
-        
+
         _isInt = true;
         return;
       }
     }
-    
+
     _longValue = sign * value;
   }
 
   private void parseDouble(int sign, long value, int ch)
   {
     StringBuilder sb = new StringBuilder();
-    
+
     if (sign < 0) {
       sb.append('-');
     }
-    
+
     sb.append(value);
     sb.append((char) ch);
-    
+
     while ((ch = read()) >= 0) {
       switch (ch) {
       case '0': case '1': case '2': case '3': case '4':
@@ -340,13 +340,13 @@ public class InJsonImpl implements InJson
 
       default:
         _peek = ch;
-        
+
         _isInt = false;
         _bigDecimalValue = new BigDecimal(sb.toString());
         return;
       }
     }
-    
+
     _isInt = false;
     _bigDecimalValue = new BigDecimal(sb.toString());
   }
@@ -355,43 +355,43 @@ public class InJsonImpl implements InJson
   {
     while (true) {
       int ch = read();
-      
+
       switch (ch) {
       case ' ': case '\t': case '\r': case '\n':
         break;
-        
+
       case ':':
         return Event.KEY_NAME;
-       
+
       default:
         _peek = ch;
         return Event.VALUE_STRING;
       }
     }
   }
-  
+
   private int read()
   {
     try {
       int ch = _peek;
-      
+
       if (ch <= 0) {
         ch = _is.read();
-        
+
         _offset++;
-        
+
         return ch;
       }
       else {
         _peek = -1;
-        
+
         return ch;
       }
     } catch (Exception e) {
       throw new JsonException(L.l("Exception while parsing JSON '{0}'", e), e);
     }
   }
-  
+
   private JsonException error(String msg)
   {
     return new JsonParsingException(":" + _line + ":" + _offset + ": " + msg);
@@ -401,7 +401,7 @@ public class InJsonImpl implements InJson
   public void close()
   {
   }
-  
+
   @Override
   public String toString()
   {

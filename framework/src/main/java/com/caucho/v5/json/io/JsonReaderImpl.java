@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 
+import com.caucho.v5.json.JsonReader;
 import com.caucho.v5.json.ser.JsonException;
 import com.caucho.v5.json.ser.SerializerJson;
 import com.caucho.v5.json.ser.JsonFactory;
@@ -41,33 +42,38 @@ import com.caucho.v5.util.L10N;
 /**
  * Input stream for JSON requests.
  */
-public class JsonReader extends InJsonImpl implements AutoCloseable
+public class JsonReaderImpl extends InJsonImpl implements AutoCloseable, JsonReader
 {
-  private static final L10N L = new L10N(JsonReader.class);
-  
+  private static final L10N L = new L10N(JsonReaderImpl.class);
+
   private JsonFactory _factory;
-  
+
   private Reader _is;
   private int _peek = -1;
-  
-  public JsonReader(Reader is)
+
+  public JsonReaderImpl()
+  {
+    this(null, new JsonFactory());
+  }
+
+  public JsonReaderImpl(Reader is)
   {
     this(is, new JsonFactory());
   }
-  
-  public JsonReader(Reader is, JsonFactory factory)
+
+  public JsonReaderImpl(Reader is, JsonFactory factory)
   {
     super(is);
-    
+
     _factory = factory;
   }
-  
+
   //Added this hack to be able to read object, assume it will get ripped out later.
-  public void setPeek(char peek) 
+  public void setPeek(char peek)
   {
     _peek = peek;
   }
-  
+
   /*
   public void init(InputStream is)
   {
@@ -78,20 +84,20 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
   public void parseBeanMap(Object bean, SerializerJson deser)
   {
     Event event;
-    
+
     while ((event = next()) == Event.KEY_NAME) {
       String fieldName = getString();
-      
+
       deser.readField(this, bean, fieldName);
     }
-    
+
     if (event != Event.END_OBJECT) {
       throw new JsonParsingException(L.l("Unexpected JSON {0} while parsing Java object {1}",
                                         event,
                                         bean));
     }
   }
-  
+
   public Object readObject()
   {
     return readObject(Object.class);
@@ -103,25 +109,31 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
 
     return deser.read(this);
   }
-  
+
+  @Override
+  public <T> T readObject(Class<T> cls)
+  {
+    return (T) readObject(cls);
+  }
+
   public boolean readBoolean()
   {
     Event event = next();
-    
+
     if (event == null) {
       return false;
     }
-    
+
     switch (event) {
     case VALUE_NULL:
       return false;
-      
+
     case VALUE_FALSE:
       return false;
-      
+
     case VALUE_TRUE:
       return true;
-      
+
     case VALUE_LONG:
       if (isIntegralNumber()) {
         return getLong() != 0;
@@ -129,12 +141,12 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
       else {
         return getDoubleValue() != 0;
       }
-      
+
     case VALUE_STRING:
     {
       String sValue = getString();
-      
-      if (sValue == null 
+
+      if (sValue == null
           || sValue.equals("")
           || sValue.equals("null")
           || sValue.equals("false")
@@ -145,31 +157,31 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
         return true;
       }
     }
-      
+
     default:
       throw new JsonException(L.l("{0} is unexpected where a boolean was expected",
                                   event));
     }
   }
-  
+
   public long readLong()
   {
     Event event = next();
-    
+
     if (event == null) {
       return 0;
     }
-    
+
     switch (event) {
     case VALUE_NULL:
       return 0;
-      
+
     case VALUE_FALSE:
       return 0;
-      
+
     case VALUE_TRUE:
       return 1;
-      
+
     case VALUE_LONG:
       if (isIntegralNumber()) {
         return getLong();
@@ -177,45 +189,45 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
       else {
         return (long) getDoubleValue();
       }
-      
+
     case VALUE_STRING:
       return Long.parseLong(getString());
-      
+
     default:
       throw new JsonException(L.l("{0} is unexpected where a long was expected",
                                   event));
     }
   }
-  
+
   public double readDouble()
   {
     Event event = next();
-    
+
     if (event == null) {
       return 0;
     }
-    
+
     switch (event) {
     case VALUE_NULL:
       return 0;
-      
+
     case VALUE_FALSE:
       return 0;
-      
+
     case VALUE_TRUE:
       return 1;
-      
+
     case VALUE_LONG:
       if (isIntegralNumber()) {
         return getLong();
       }
       else {
         return getDoubleValue();
-      }        
-      
+      }
+
     case VALUE_STRING:
       return Double.parseDouble(getString());
-      
+
     default:
       throw new JsonException(L.l("{0} is unexpected where a double was expected",
                                   event));
@@ -225,24 +237,24 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
   public String readString()
   {
     Event event = next();
-    
+
     if (event == null) {
       return null;
     }
-    
+
     switch (event) {
     case VALUE_NULL:
       return null;
-      
+
     case VALUE_TRUE:
       return "true";
-      
+
     case VALUE_FALSE:
       return "false";
-      
+
     case VALUE_STRING:
       return getString();
-      
+
     case VALUE_LONG:
       if (isIntegralNumber()) {
         return String.valueOf(getLong());
@@ -250,7 +262,7 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
       else {
         return String.valueOf(getDoubleValue());
       }
-      
+
     default:
       throw new JsonException(L.l("Unexpected JSON {0} where a string was expected",
                                   event));
@@ -260,7 +272,7 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
   //
   // utility
   //
-  
+
   private int read(Reader is)
   {
     try {
@@ -269,7 +281,7 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
       throw new JsonException(e);
     }
   }
-  
+
   private JsonParsingException error(String msg)
   {
     return new JsonParsingException(msg);
@@ -278,7 +290,7 @@ public class JsonReader extends InJsonImpl implements AutoCloseable
   private String parseString()
   {
     int ch;
-    
+
     StringBuilder sb = new StringBuilder();
 
     while ((ch = read()) >= 0 && ch != '"') {

@@ -33,6 +33,7 @@ import java.io.Writer;
 import java.util.Objects;
 
 import com.caucho.v5.json.ser.SerializerJson;
+import com.caucho.v5.json.JsonWriter;
 import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.vfs.WriteStreamOld;
 
@@ -49,40 +50,40 @@ import com.caucho.v5.vfs.WriteStreamOld;
  * out.completeCall();      // complete the call
  * </pre>
  */
-public class JsonWriter extends OutJsonImpl
+public class JsonWriterImpl extends OutJsonImpl implements JsonWriter
 {
   private final JsonFactory _factory;
-  
-  public JsonWriter()
+
+  public JsonWriterImpl()
   {
     this(new JsonFactory());
   }
-  
-  public JsonWriter(JsonFactory factory)
+
+  public JsonWriterImpl(JsonFactory factory)
   {
     Objects.requireNonNull(factory);
-    
+
     _factory = factory;
   }
-  
-  public JsonWriter(Writer out, JsonFactory factory)
+
+  public JsonWriterImpl(Writer out, JsonFactory factory)
   {
     this(factory);
-    
+
     init(out);
   }
 
-  public JsonWriter(Writer os)
+  public JsonWriterImpl(Writer os)
   {
     this();
-    
+
     init(os);
   }
 
-  public JsonWriter(WriteStreamOld out)
+  public JsonWriterImpl(WriteStreamOld out)
   {
     this();
-    
+
     init(out.getPrintWriter());
   }
 
@@ -97,7 +98,7 @@ public class JsonWriter extends OutJsonImpl
 
     ser.write(this, value);
   }
-  
+
   public void writeObject(String name, Object value)
   {
     if (value == null) {
@@ -107,12 +108,12 @@ public class JsonWriter extends OutJsonImpl
     }
 
     writeKey(name);
-    
+
     SerializerJson ser = _factory.serializer(value.getClass());
     //ser.write(this, name, value);
     ser.write(this, value);
   }
-  
+
   public void writeObjectValue(Object value)
   {
     if (value == null) {
@@ -131,7 +132,7 @@ public class JsonWriter extends OutJsonImpl
       writeEndArray();
       return;
     }
-    
+
     SerializerJson ser = _factory.serializer(value.getClass());
 
     ser.writeTop(this, value);

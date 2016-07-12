@@ -57,8 +57,8 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.value.JsonValue;
 import com.caucho.v5.reflect.ClassImpl;
 
@@ -404,23 +404,23 @@ public class JsonFactory
   // i/o streams
   //
   
-  public JsonWriter out()
+  public JsonWriterImpl out()
   {
-    return new JsonWriter(this);
+    return new JsonWriterImpl(this);
   }
 
-  public JsonWriter out(Writer os)
+  public JsonWriterImpl out(Writer os)
   {
-    JsonWriter out = new JsonWriter(this);
+    JsonWriterImpl out = new JsonWriterImpl(this);
     
     out.init(os);
     
     return out;
   }
 
-  public JsonReader in(StringReader is)
+  public JsonReaderImpl in(StringReader is)
   {
-    JsonReader in = new JsonReader(is, this);
+    JsonReaderImpl in = new JsonReaderImpl(is, this);
     
     return in;
   }

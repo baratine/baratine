@@ -34,8 +34,8 @@ import java.io.StringReader;
 import java.io.Writer;
 
 import com.caucho.v5.http.websocket.WebSocketManager;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.SerializerJson;
 import com.caucho.v5.json.ser.JsonFactory;
 import com.caucho.v5.vfs.TempCharBuffer;
@@ -62,7 +62,7 @@ public class WebSocketManagerFramework extends WebSocketManager
     try (WriterWs writer = new WriterWs(ws)) {
       SerializerJson<S> ser = (SerializerJson) _serializer.serializer(value.getClass());
       
-      try (JsonWriter jsOut = _serializer.out(writer)) {
+      try (JsonWriterImpl jsOut = _serializer.out(writer)) {
         ser.writeTop(jsOut, value);
       }
     }
@@ -93,7 +93,7 @@ public class WebSocketManagerFramework extends WebSocketManager
     public void next(String data, WebSocket<S> webSocket) throws IOException
     {
       try (StringReader reader = new StringReader(data)) {
-        try (JsonReader in = _serializer.in(reader)) {
+        try (JsonReaderImpl in = _serializer.in(reader)) {
           T value = (T) _ser.read(in);
           
           _service.next(value, webSocket);

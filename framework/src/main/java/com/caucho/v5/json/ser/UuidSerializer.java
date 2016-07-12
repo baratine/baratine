@@ -31,8 +31,8 @@ package com.caucho.v5.json.ser;
 
 import java.util.UUID;
 
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.io.InJson.Event;
 
 public class UuidSerializer extends JsonSerializerBase<UUID>
@@ -42,13 +42,13 @@ public class UuidSerializer extends JsonSerializerBase<UUID>
   private UuidSerializer() {}
 
   @Override
-  public void write(JsonWriter out, UUID value)
+  public void write(JsonWriterImpl out, UUID value)
   {
     out.write(value.toString());
   }
   
   @Override
-  public UUID read(JsonReader in)
+  public UUID read(JsonReaderImpl in)
   {
     try {
       Event event = in.peek();

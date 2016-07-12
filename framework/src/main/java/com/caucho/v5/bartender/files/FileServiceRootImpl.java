@@ -67,7 +67,7 @@ import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.bartender.pod.NodePodAmp;
 import com.caucho.v5.bartender.pod.PodBartender;
 import com.caucho.v5.io.TempOutputStream;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.kelp.TableListener;
 import com.caucho.v5.kraken.KrakenSystem;
 import com.caucho.v5.kraken.query.QueryKraken;
@@ -1075,7 +1075,7 @@ public class FileServiceRootImpl
   private List<String> readDirFile(InputStream is)
   {
     try (ReadStreamOld in = VfsOld.openRead(is)) {
-      JsonReader jIn = new JsonReader(in.getReader());
+      JsonReaderImpl jIn = new JsonReaderImpl(in.getReader());
       
       Object value = jIn.readObject();
       

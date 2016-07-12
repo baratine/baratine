@@ -29,8 +29,8 @@
 
 package com.caucho.v5.json.ser;
 
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class CharSerializer extends JsonSerializerBase<Character> {
   static final CharSerializer SER = new CharSerializer();
@@ -38,7 +38,7 @@ public class CharSerializer extends JsonSerializerBase<Character> {
   private CharSerializer() {}
   
   @Override
-  public Character read(JsonReader in)
+  public Character read(JsonReaderImpl in)
   {
     String v = in.readString();
     
@@ -51,7 +51,7 @@ public class CharSerializer extends JsonSerializerBase<Character> {
   }
 
   @Override
-  public void write(JsonWriter out, Character value)
+  public void write(JsonWriterImpl out, Character value)
   {
     out.write(String.valueOf(value));
   }

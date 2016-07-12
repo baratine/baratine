@@ -32,7 +32,7 @@ package com.caucho.v5.json.ser;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.json.io.InJson.Event;
 import com.caucho.v5.util.L10N;
 
@@ -54,7 +54,7 @@ public class MapDeserializer extends JsonSerializerBase
   }
 
   @Override
-  public Object read(JsonReader in)
+  public Object read(JsonReaderImpl in)
   {
     Event event = in.next();
     

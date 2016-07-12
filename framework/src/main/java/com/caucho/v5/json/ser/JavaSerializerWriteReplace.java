@@ -33,7 +33,7 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class JavaSerializerWriteReplace extends JsonObjectSerializerBase<Object> {
   private static final Logger log
@@ -50,7 +50,7 @@ public class JavaSerializerWriteReplace extends JsonObjectSerializerBase<Object>
   }
 
   @Override
-  public void write(JsonWriter out, Object value)
+  public void write(JsonWriterImpl out, Object value)
   {
     value = replaceObject(value);
     
@@ -58,7 +58,7 @@ public class JavaSerializerWriteReplace extends JsonObjectSerializerBase<Object>
   }
   
   @Override
-  public void writeTop(JsonWriter out, Object value)
+  public void writeTop(JsonWriterImpl out, Object value)
   {
     value = replaceObject(value);
     

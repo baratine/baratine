@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 
 import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 
 public class EnumerationSerializer<T extends Enumeration<V>,V>
   extends JsonSerializerBase<T>
@@ -53,7 +53,7 @@ public class EnumerationSerializer<T extends Enumeration<V>,V>
   }
 
   @Override
-  public T read(JsonReader in)
+  public T read(JsonReaderImpl in)
   {
     Collection<V> result = _ser.read(in);
     

@@ -30,8 +30,8 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.L10N;
 
@@ -56,7 +56,7 @@ public class ByteArraySerializer extends JsonSerializerBase<byte[]>
   */
 
   @Override
-  public void write(JsonWriter out, byte []value)
+  public void write(JsonWriterImpl out, byte []value)
   {
     StringBuilder sb = new StringBuilder();
 
@@ -66,7 +66,7 @@ public class ByteArraySerializer extends JsonSerializerBase<byte[]>
   }
 
   @Override
-  public byte []read(JsonReader in)
+  public byte []read(JsonReaderImpl in)
   {
     Event event = in.next();
     

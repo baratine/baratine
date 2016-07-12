@@ -52,8 +52,8 @@ import com.caucho.v5.io.SocketSystem;
 import com.caucho.v5.io.SocketSystem.SocketBarBuilder;
 import com.caucho.v5.io.VfsStream;
 import com.caucho.v5.io.WriteStream;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -426,7 +426,7 @@ public class HttpClient implements AutoCloseable
 
       try (
         OutputStreamWriter writer = new OutputStreamWriter(buffer);
-        JsonWriter jsonWriter = new JsonWriter(writer)) {
+        JsonWriterImpl jsonWriter = new JsonWriterImpl(writer)) {
         jsonWriter.write(bean);
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -675,8 +675,8 @@ public class HttpClient implements AutoCloseable
       if (_headers == null)
         parseHeaders();
 
-      JsonReader reader
-        = new JsonReader(new InputStreamReader(getInputStream()));
+      JsonReaderImpl reader
+        = new JsonReaderImpl(new InputStreamReader(getInputStream()));
 
       return (T) reader.readObject(type);
     }

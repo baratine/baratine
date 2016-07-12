@@ -30,13 +30,13 @@
 package com.caucho.v5.ramp.jamp;
 
 import com.caucho.v5.amp.service.ServiceRefHandle;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.JsonSerializerBase;
 
 public class JsonSerializerServiceRef extends JsonSerializerBase<ServiceRefHandle>
 {
   @Override
-  public void write(JsonWriter out, 
+  public void write(JsonWriterImpl out, 
                     ServiceRefHandle value)
   {
     if (value != null) {

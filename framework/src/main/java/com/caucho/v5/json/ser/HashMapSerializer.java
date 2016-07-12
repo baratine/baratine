@@ -35,7 +35,7 @@ import java.util.Objects;
 
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.util.L10N;
 
 public class HashMapSerializer<T extends HashMap<K,V>,K,V>

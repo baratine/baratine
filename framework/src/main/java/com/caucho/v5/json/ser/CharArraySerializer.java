@@ -29,7 +29,7 @@
 
 package com.caucho.v5.json.ser;
 
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class CharArraySerializer extends JsonSerializerBase<char[]> {
   static final SerializerJson<?> SER = new CharArraySerializer();
@@ -45,7 +45,7 @@ public class CharArraySerializer extends JsonSerializerBase<char[]> {
   */
   
   @Override
-  public void write(JsonWriter out, char []value)
+  public void write(JsonWriterImpl out, char []value)
   {
     out.write(String.valueOf(value, 0, value.length));
   }

@@ -30,8 +30,8 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 public class IntArraySerializer extends AbstractJsonArraySerializer<int[]>
@@ -43,7 +43,7 @@ public class IntArraySerializer extends AbstractJsonArraySerializer<int[]>
   private IntArraySerializer() {}
 
   @Override
-  public void write(JsonWriter out, int []value)
+  public void write(JsonWriterImpl out, int []value)
   {
     out.writeStartArray();
     
@@ -55,7 +55,7 @@ public class IntArraySerializer extends AbstractJsonArraySerializer<int[]>
   }
 
   @Override
-  public int []read(JsonReader in)
+  public int []read(JsonReaderImpl in)
   {
     Event event = in.next();
     

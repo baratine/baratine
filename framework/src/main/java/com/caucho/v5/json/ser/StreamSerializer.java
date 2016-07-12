@@ -35,8 +35,8 @@ import java.util.stream.Stream;
 
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 public class StreamSerializer<V>
@@ -65,7 +65,7 @@ public class StreamSerializer<V>
   }
 
   @Override
-  public void write(JsonWriter out, Stream<V> value)
+  public void write(JsonWriterImpl out, Stream<V> value)
   {
     out.writeStartArray();
     
@@ -75,7 +75,7 @@ public class StreamSerializer<V>
   }
 
   @Override
-  public Stream<V> read(JsonReader in)
+  public Stream<V> read(JsonReaderImpl in)
   {
     Event event = in.next();
     

@@ -37,7 +37,8 @@ import java.io.Reader;
 import javax.inject.Inject;
 
 import com.caucho.v5.json.JsonEngine;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -71,9 +72,11 @@ public class BodyResolverFramework extends BodyResolverBase
       try {
         Reader reader = new InputStreamReader(is, "utf-8");
 
-        JsonReader isJson = new JsonReader(reader);
+        JsonReader jsonReader = _jsonEngine.newReader();
+        jsonReader.init(reader);
 
-        return (T) isJson.readObject(type);
+        return jsonReader.readObject(type);
+
       } catch (IOException e) {
         throw new BodyException(e);
       }

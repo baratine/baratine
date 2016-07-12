@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.json.io.InJson.Event;
 import com.caucho.v5.util.L10N;
 
@@ -47,7 +47,7 @@ public class ObjectSerializer extends JsonSerializerBase
   private ObjectSerializer() {}
 
   @Override
-  public Object read(JsonReader in)
+  public Object read(JsonReaderImpl in)
   {
     Event event = in.next();
     
@@ -87,7 +87,7 @@ public class ObjectSerializer extends JsonSerializerBase
     }
   }
   
-  private Map<?,?> parseMap(JsonReader in)
+  private Map<?,?> parseMap(JsonReaderImpl in)
   {
     Event event;
     
@@ -108,7 +108,7 @@ public class ObjectSerializer extends JsonSerializerBase
     return map;
   }
   
-  private List<?> parseList(JsonReader in)
+  private List<?> parseList(JsonReaderImpl in)
   {
     Event event;
     

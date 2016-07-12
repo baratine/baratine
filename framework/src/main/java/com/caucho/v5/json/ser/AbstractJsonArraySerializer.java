@@ -29,13 +29,13 @@
 
 package com.caucho.v5.json.ser;
 
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 abstract public class AbstractJsonArraySerializer<T>
   extends JsonSerializerBase<T>
 {
   @Override
-  public void writeTop(JsonWriter out, T value)
+  public void writeTop(JsonWriterImpl out, T value)
   {
     write(out, value);
   }

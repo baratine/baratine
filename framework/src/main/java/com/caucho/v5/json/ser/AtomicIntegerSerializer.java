@@ -31,7 +31,7 @@ package com.caucho.v5.json.ser;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class AtomicIntegerSerializer
   extends JsonSerializerBase<AtomicInteger>
@@ -51,7 +51,7 @@ public class AtomicIntegerSerializer
   */
 
   @Override
-  public void write(JsonWriter out, AtomicInteger value)
+  public void write(JsonWriterImpl out, AtomicInteger value)
   {
     out.write(value.get());
   }

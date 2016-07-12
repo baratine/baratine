@@ -29,13 +29,15 @@
 package com.caucho.v5.web.view;
 
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.json.JsonEngine;
-import com.caucho.v5.json.JsonSerializer;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.JsonFactory;
 
 import io.baratine.web.RequestWeb;
@@ -44,12 +46,13 @@ import io.baratine.web.ViewResolver;
 /**
  * Default JSON render
  */
-
 @Priority(-100)
 public class ViewJsonDefault implements ViewResolver<Object>
 {
+  private static Logger LOG = Logger.getLogger(ViewJsonDefault.class.getName());
+
   private JsonFactory _serializer = new JsonFactory();
-  private JsonWriter _jOut = _serializer.out();
+  private JsonWriterImpl _jOut = _serializer.out();
 
   @Inject
   private JsonEngine _jsonEngine;
@@ -74,7 +77,9 @@ public class ViewJsonDefault implements ViewResolver<Object>
       return false;
     }
 
-    try (Writer writer = req.writer()) {
+    try {
+      Writer writer = req.writer();
+
       String callback = req.query("callback");
 
       if (callback != null) {
@@ -89,8 +94,11 @@ public class ViewJsonDefault implements ViewResolver<Object>
 
       // req.header("Access-Control-Allow-Origin", "*");
 
-      JsonSerializer serializer = _jsonEngine.getSerializer();
-      serializer.serialize(writer, value);
+      JsonWriter jsonWriter = _jsonEngine.newWriter();
+
+      jsonWriter.init(writer);
+      jsonWriter.write(value);
+      jsonWriter.flush();
 
       /*
       JsonWriter jOut = _jOut;
@@ -113,7 +121,7 @@ public class ViewJsonDefault implements ViewResolver<Object>
 
       return true;
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.log(Level.FINER, e.getMessage(), e);
 
       req.fail(e);
 

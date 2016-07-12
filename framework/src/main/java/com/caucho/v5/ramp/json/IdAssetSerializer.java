@@ -32,8 +32,8 @@ package com.caucho.v5.ramp.json;
 import java.util.Date;
 
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.JsonException;
 import com.caucho.v5.json.ser.JsonSerializerBase;
 import com.caucho.v5.util.QDate;
@@ -47,13 +47,13 @@ public class IdAssetSerializer extends JsonSerializerBase<IdAsset>
   private IdAssetSerializer() {}
 
   @Override
-  public void write(JsonWriter out, IdAsset value)
+  public void write(JsonWriterImpl out, IdAsset value)
   {
     out.write(value.toString());
   }
   
   @Override
-  public IdAsset read(JsonReader in)
+  public IdAsset read(JsonReaderImpl in)
   {
     try {
       Event event = in.peek();

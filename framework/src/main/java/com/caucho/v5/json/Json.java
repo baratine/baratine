@@ -32,8 +32,8 @@ package com.caucho.v5.json;
 import java.io.Reader;
 import java.io.Writer;
 
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.JsonBuilderImpl;
 
 public interface Json
@@ -43,9 +43,9 @@ public interface Json
     return new JsonBuilderImpl();
   }
 
-  JsonWriter out(Writer os);
+  JsonWriterImpl out(Writer os);
   
-  JsonReader in(Reader is);
+  JsonReaderImpl in(Reader is);
   
   public interface JsonBuilder
   {

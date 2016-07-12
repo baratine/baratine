@@ -29,7 +29,7 @@
 
 package com.caucho.v5.json.ser;
 
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 import java.io.*;
 
@@ -38,7 +38,7 @@ public class NullSerializer extends JsonSerializerBase {
 
   private NullSerializer() {}
   
-  public void write(JsonWriter out, Object value, boolean annotated)
+  public void write(JsonWriterImpl out, Object value, boolean annotated)
     throws IOException
   {
     out.write((Object) null);

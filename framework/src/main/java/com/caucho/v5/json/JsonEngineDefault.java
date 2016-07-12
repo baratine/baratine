@@ -29,56 +29,20 @@
 
 package com.caucho.v5.json;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
-import com.caucho.v5.json.ser.JsonFactory;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 
 public class JsonEngineDefault implements JsonEngine
 {
-  private JsonFactory _factory = new JsonFactory();
-  private JsonWriter _jOut = _factory.out();
-
-  private JsonSerializer _serializer = new JsonSerializerDefault();
-  private JsonDeserializer _deserializer = new JsonDeserializerDefault();
-
   @Override
-  public JsonSerializer getSerializer()
+  public JsonWriter newWriter()
   {
-    return _serializer;
+    return new JsonWriterImpl();
   }
 
   @Override
-  public JsonDeserializer getDeserializer()
+  public JsonReader newReader()
   {
-    return _deserializer;
-  }
-
-  class JsonSerializerDefault implements JsonSerializer {
-    public void serialize(Writer writer, Object value)
-      throws IOException
-    {
-      _jOut.init(writer);
-
-      _jOut.write(value);
-
-      _jOut.flush();
-    }
-  }
-
-  class JsonDeserializerDefault implements JsonDeserializer {
-    public <T> T deserialize(Reader reader, Class<T> cls)
-      throws IOException
-    {
-      try (JsonReader r = new JsonReader(reader)) {
-
-        Object obj = r.readObject(cls);
-
-        return (T) obj;
-      }
-    }
+    return new JsonReaderImpl();
   }
 }

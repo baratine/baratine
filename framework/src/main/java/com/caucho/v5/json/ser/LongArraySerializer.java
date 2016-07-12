@@ -30,8 +30,8 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson.Event;
-import com.caucho.v5.json.io.JsonReader;
-import com.caucho.v5.json.io.JsonWriter;
+import com.caucho.v5.json.io.JsonReaderImpl;
+import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
 public class LongArraySerializer extends AbstractJsonArraySerializer<long[]>
@@ -43,7 +43,7 @@ public class LongArraySerializer extends AbstractJsonArraySerializer<long[]>
   private LongArraySerializer() {}
 
   @Override
-  public void write(JsonWriter out, long []value)
+  public void write(JsonWriterImpl out, long []value)
   {
     out.writeStartArray();
     
@@ -55,7 +55,7 @@ public class LongArraySerializer extends AbstractJsonArraySerializer<long[]>
   }
 
   @Override
-  public long []read(JsonReader in)
+  public long []read(JsonReaderImpl in)
   {
     Event event = in.next();
     

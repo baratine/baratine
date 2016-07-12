@@ -30,7 +30,7 @@
 package com.caucho.v5.json.ser;
 
 import com.caucho.v5.json.io.InJson;
-import com.caucho.v5.json.io.JsonReader;
+import com.caucho.v5.json.io.JsonReaderImpl;
 
 public class FloatSerializer extends JsonSerializerBase<Number>
 {
@@ -38,7 +38,7 @@ public class FloatSerializer extends JsonSerializerBase<Number>
 
 
   @Override
-  public Float read(JsonReader in)
+  public Float read(JsonReaderImpl in)
   {
     if (in.peek() == InJson.Event.VALUE_NULL) {
       in.next();

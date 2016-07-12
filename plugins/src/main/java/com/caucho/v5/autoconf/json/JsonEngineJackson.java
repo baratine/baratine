@@ -29,55 +29,104 @@
 
 package com.caucho.v5.autoconf.json;
 
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import com.caucho.v5.json.JsonDeserializer;
+import com.caucho.v5.json.JsonReader;
 import com.caucho.v5.json.JsonEngine;
-import com.caucho.v5.json.JsonSerializer;
+import com.caucho.v5.json.JsonWriter;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonEngineJackson implements JsonEngine
 {
-  private final JsonSerializer _serializer = new JsonSerializerJackson();
-  private final JsonDeserializer _deserialzier = new JsonDeserializerJackson();
+  private static Logger LOG = Logger.getLogger(JsonEngineJackson.class.getName());
 
   private final ObjectMapper _mapper;
-
-  public JsonEngineJackson()
-  {
-    _mapper = new ObjectMapper();
-  }
 
   public JsonEngineJackson(ObjectMapper mapper)
   {
     _mapper = mapper;
   }
 
-  public JsonSerializer getSerializer()
+  @Override
+  public JsonWriter newWriter()
   {
-    return _serializer;
+    return new JsonWriterJackson(_mapper);
   }
 
-  public JsonDeserializer getDeserializer()
+  @Override
+  public JsonReader newReader()
   {
-    return _deserialzier;
+    return new JsonReaderJackson(_mapper);
   }
 
-  class JsonSerializerJackson implements JsonSerializer {
-    public void serialize(Writer writer, Object value)
+  class JsonWriterJackson implements JsonWriter {
+    private ObjectMapper _mapper;
+    private Writer _writer;
+
+    private CharArrayWriter _charWriter = new CharArrayWriter();
+
+    public JsonWriterJackson(ObjectMapper mapper)
+    {
+      _mapper = mapper;
+    }
+
+    @Override
+    public void init(Writer writer)
+    {
+      _writer = writer;
+    }
+
+    @Override
+    public void write(Object value)
       throws IOException
     {
-      _mapper.writeValue(writer, value);
+      try {
+        _mapper.writeValue(_charWriter, value);
+
+        _charWriter.writeTo(_writer);
+
+        _charWriter.reset();
+      }
+      catch (Exception e) {
+        LOG.log(Level.FINE, e.getMessage(), e);
+
+        throw e;
+      }
+    }
+
+    @Override
+    public void flush()
+    {
     }
   }
 
-  class JsonDeserializerJackson implements JsonDeserializer {
-    public <T> T deserialize(Reader reader, Class<T> cls)
+  static class JsonReaderJackson implements JsonReader {
+    private ObjectMapper _mapper;
+    private Reader _reader;
+
+    public JsonReaderJackson(ObjectMapper mapper)
+    {
+      _mapper = mapper;
+    }
+
+    @Override
+    public void init(Reader reader)
+    {
+      _reader = reader;
+    }
+
+    @Override
+    public <T> T readObject(Class<T> cls)
       throws IOException
     {
-      return _mapper.readValue(reader, cls);
+      return _mapper.readValue(_reader, cls);
     }
   }
 }
