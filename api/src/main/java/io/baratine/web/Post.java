@@ -37,6 +37,26 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation @Post makes service method accessible via HTTP for POST requests.
+ *
+ * By default the URI is inferred from the method name but can be overridden
+ * using @Post's value() attribute.
+ *
+ * e.g.
+ *
+ * <pre>
+ *   <code>
+ *     @Post
+ *     public void post(@Body Form form, Result<Void> result) {
+ *       //process form
+ *       result.ok(null);
+ *     }
+ *   </code>
+ * </pre>
+ *
+ * The above maps POST requests to /post URI to method post().
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})

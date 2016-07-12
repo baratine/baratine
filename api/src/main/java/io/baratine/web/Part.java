@@ -33,21 +33,74 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
+/**
+ * Interface Part represents part in multipart/form-data request.
+ *
+ * e.g.
+ *
+ * <pre>
+ *   <code>
+ *     @Post
+ *     public void (@Body Part[] parts, Result<String> result)
+ *     {
+ *       result.ok("received " + parts.length + " parts");
+ *     }
+ *   </code>
+ * </pre>
+ */
 public interface Part
 {
+  /**
+   * Content-Type header of the part
+   * @return
+   */
   String contentType();
 
+  /**
+   * An arbitrary header
+   *
+   * @param name
+   * @return
+   */
   String header(String name);
 
+  /**
+   * All header values matching header name
+   * @param name
+   * @return
+   */
   Collection<String> headers(String name);
 
+  /**
+   * All header names
+   * @return
+   */
   Collection<String> headerNames();
 
+  /**
+   * Name of the part
+   * @return
+   */
   String name();
 
+  /**
+   * Client submitted file name of the part
+   *
+   * @return
+   */
   String getFileName();
 
+  /**
+   * Size of the part
+   * @return
+   */
   long size();
 
+  /**
+   * InputStream with part's data
+   *
+   * @return
+   * @throws IOException
+   */
   InputStream data() throws IOException;
 }

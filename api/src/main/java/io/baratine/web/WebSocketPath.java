@@ -29,17 +29,35 @@
 
 package io.baratine.web;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+/**
+ * Annotation WebSocketPath binds a method capable of upgrading HTTP protocol
+ * to a WebSocket Protocol
+ *
+ * <pre>
+ *   <code>
+ *     @Session
+ *     public class UserSession {
+ *       @WebSocketPath("/updates")
+ *       public void registerForUpdates(RequestWeb request) {
+ *         request.upgrade(new StockTickerServiceWebSocket());
+ *       }
+ *     }
+ *   </code>
+ * </pre>
+ *
+ * @see ServiceWebSocket
+ */
 @Documented
 @Retention(RUNTIME)
-@Target({TYPE, METHOD})
+@Target({METHOD})
 public @interface WebSocketPath
 {
   /**

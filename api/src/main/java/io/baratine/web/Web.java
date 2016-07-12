@@ -63,12 +63,22 @@ public interface Web
   //
   // webserver
   //
-  
+
+  /**
+   * Specifies http port (defaults to 8080)
+   *
+   * @param port
+   * @return
+   */
   static WebServerBuilder port(int port)
   {
     return builder().port(port);
   }
-  
+
+  /** Obtains SslBuilder allowing specifying SSL options.
+   *
+   * @return
+   */
   static SslBuilder ssl()
   {
     return builder().ssl();
@@ -77,7 +87,15 @@ public interface Web
   //
   // routing
   //
-  
+
+  /**
+   * Enlists class for automatic service discovery. An inlcuded class
+   * must be annotated with one of Baratine service annotations such as
+   * @Service, @Path, @Get or @Post, etc.
+   *
+   * @param type
+   * @return
+   */
   static WebServerBuilder include(Class<?> type)
   {
     return builder().include(type);
@@ -86,12 +104,55 @@ public interface Web
   //
   // view
   //
-  
+
+  /**
+   * Registers ViewRenderer that will be used to render objects for type &lth;T>
+   * e.g.
+   * <pre>
+   *   <code>
+   *   class MyBeanRender extends ViewRender&lth;MyBean>{
+   *     void render(RequestWeb req, MyBean value) {
+   *       req.write(value.toString());
+   *       req.ok();
+   *     }
+   *   }
+   *
+   *   Web.view(new MyBeanRender());
+   *   </code>
+   * </pre>
+   * @param view
+   * @param <T>
+   * @return
+   *
+   * @see ViewRender
+   */
   static <T> WebServerBuilder view(ViewRender<T> view)
   {
     return builder().view(view);
   }
-  
+
+  /**
+   * Registers ViewRenderer that will be used to render objects for type &lth;T>
+   * e.g.
+   * <pre>
+   *   <code>
+   *   class MyBeanRender extends ViewRender&lth;MyBean>{
+   *     void render(RequestWeb req, MyBean value) {
+   *       req.write(value.toString());
+   *       req.ok();
+   *     }
+   *   }
+   *
+   *   Web.view(MyBeanRender.class);
+   *   </code>
+   * </pre>
+   * @param view
+   * @param <T>
+   * @return
+   *
+   * @see #view(ViewRender)
+   * @see ViewRender
+   */
   static <T> WebServerBuilder view(Class<? extends ViewRender<T>> view)
   {
     return builder().view(view);
@@ -100,11 +161,34 @@ public interface Web
   //
   // configuration
   //
+
+  /**
+   * Adds class to WebServerBuilder in one of the following ways.
+   *
+   * If an @IncludeOn annotation is present and the specified in @IncludeOn
+   * annotation class is present the class is tested for @Include annotation.
+   *
+   * If an @Include annotation is present the class is included using #include method.
+   *
+   * If a @Service annotation is present the class is included using #service method.
+   *
+   * If type extends {@code IncludeWeb} the class is instantiated and used to
+   * generate services or includes.
+   *
+   * @param type
+   * @return
+   */
   static WebServerBuilder scan(Class<?> type)
   {
     return builder().scan(type);
   }
 
+  /**
+   * Auto discovers all classes in packages named *.autoconf.* and enlists
+   * all classes annotated ith @Include and @IncludeOn annotations.
+   *
+   * @return
+   */
   static WebServerBuilder scanAutoConf()
   {
     return builder().scanAutoconf();
@@ -117,6 +201,20 @@ public interface Web
   }
   */
 
+  /**
+   * Specifies server property.
+   *
+   * e.g.
+   * <pre>
+   *   <code>
+   *     Web.property("server.http", "8080");
+   *   </code>
+   * </pre>
+   *
+   * @param name
+   * @param value
+   * @return
+   */
   static WebServerBuilder property(String name, String value)
   {
     Objects.requireNonNull(name);
@@ -154,7 +252,7 @@ public interface Web
   //
   // services
   //
-  
+
   static <T> ServiceBuilder service(Supplier<? extends T> supplier)
   {
     Objects.requireNonNull(supplier);
@@ -162,7 +260,14 @@ public interface Web
     //return BaratineWebProvider.builder().service(supplier);
     return null;
   }
-  
+
+  /**
+   * Registers class as a service. The class must be a valid
+   * Baratine service class.
+   *
+   * @param serviceClass
+   * @return
+   */
   static ServiceRef.ServiceBuilder service(Class<?> serviceClass)
   {
     Objects.requireNonNull(serviceClass);
@@ -173,47 +278,109 @@ public interface Web
   //
   // routes
   //
-  
+
+  /**
+   * Configures a route corresponding to HTTP DELETE method
+   *
+   * @param path
+   * @return
+   * @see #get;
+   *
+   */
   static RouteBuilder delete(String path)
   {
     return builder().delete(path);
   }
-  
+
+  /**
+   * Configures a route corresponding ot HTTP GET method
+   *
+   * e.g.
+   * <pre>
+   *   <code>
+   *     Web.get("/hello").to(req->{ req.ok("hello world"); });
+   *   </code>
+   * </pre>
+   *
+   * @param path
+   * @return
+   */
   static RouteBuilder get(String path)
   {
     return builder().get(path);
   }
-  
+
+  /**
+   * Configures a route corresponding to HTTP OPTIONS method
+   *
+   * @param path
+   * @return
+   */
   static RouteBuilder options(String path)
   {
     return builder().options(path);
   }
-  
+
+  /**
+   * Configures a route corresponding to HTTP PATCH method
+   *
+   * @param path
+   * @return
+   */
   static RouteBuilder patch(String path)
   {
     return builder().patch(path);
   }
-  
+
+  /**
+   * Configures a route corresponding to HTTP POST method
+   *
+   * @param path
+   * @return
+   */
   static RouteBuilder post(String path)
   {
     return builder().post(path);
   }
-  
+
+  /**
+   * Configures a route corresponding to HTTP PUT method
+   *
+   * @param path
+   * @return
+   */
   static RouteBuilder put(String path)
   {
     return builder().put(path);
   }
-  
+
+  /**
+   * Configures a route corresponding to HTTP trace method
+   * @param path
+   * @return
+   */
   static RouteBuilder trace(String path)
   {
     return builder().trace(path);
   }
-  
+
+  /**
+   * Configures a 'catch all' route
+   *
+   * @param path
+   * @return
+   */
   static RouteBuilder route(String path)
   {
     return builder().route(path);
   }
-  
+
+  /**
+   * Configures WebSocket handler for specified path
+   *
+   * @param path
+   * @return
+   */
   static WebSocketBuilder websocket(String path)
   {
     return builder().websocket(path);
@@ -222,12 +389,23 @@ public interface Web
   //
   // lifecycle
   //
-  
+
+  /**
+   * Creates an instance of a server and starts it, returning the instance.
+   * @param args
+   * @return
+   */
   static WebServer start(String ...args)
   {
     return builder().start(args);
   }
-  
+
+  /**
+   * Creates an instance of a server and executes it the context of the calling
+   * thread.
+   *
+   * @param args
+   */
   static void go(String ...args)
   {
     builder().go(args);
@@ -239,7 +417,12 @@ public interface Web
     builder().join();
   }
   */
-  
+
+  /**
+   * Returns an instance of WebServerBuilder
+   *
+   * @return
+   */
   static WebServerBuilder builder()
   {
     return WebServerProvider.current().webBuilder();

@@ -37,27 +37,43 @@ import io.baratine.pipe.Credits;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.WebSocketClose.WebSocketCloses;
 
+/**
+ * WebSocket wraps end point of the web socket connection.
+ * <p>
+ * On the server side WebSocket is passed to the service implementing
+ * ServiceWebSocket
+ *
+ * @param <T>
+ * @see ServiceWebSocket
+ */
 public interface WebSocket<T> extends Pipe<T>
 {
   String uri();
+
   String path();
+
   String pathInfo();
 
   @Override
   void next(T data);
+
   @Override
   Credits credits();
 
   void write(Buffer data);
+
   void writePart(Buffer data);
 
-  void write(byte []buffer, int offset, int length);
-  void writePart(byte []buffer, int offset, int length);
+  void write(byte[] buffer, int offset, int length);
+
+  void writePart(byte[] buffer, int offset, int length);
 
   void write(String data);
+
   void writePart(String data);
 
   void ping(String data);
+
   void pong(String data);
 
   default OutputStream outputStream()

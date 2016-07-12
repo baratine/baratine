@@ -51,6 +51,7 @@ import javax.inject.Scope;
 import javax.inject.Singleton;
 
 import com.caucho.v5.config.Configs;
+import com.caucho.v5.config.Priority;
 import com.caucho.v5.convert.ConvertAutoBind;
 import com.caucho.v5.inject.BindingAmp;
 import com.caucho.v5.inject.InjectorAmp;
@@ -339,6 +340,10 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     Class<?> []pTypes = method.getParameterTypes();
     Parameter []params = method.getParameters();
     
+    int priority = priority(method);
+    Class<? extends Annotation> scopeType = scope(method);
+    InjectScope<T> scope = injector.scope(scopeType);
+    
     int ipIndex = findInjectionPoint(pTypes);
       
     if (ipIndex >= 0) {
@@ -356,10 +361,33 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     }
     else {
       ProviderMethod producer
-      = new ProviderMethod(injector, ownerBinding, method);
+      = new ProviderMethod(injector, priority, scope, ownerBinding, method);
       
     injector.addProvider(producer);
     }
+  }
+  
+  private int priority(Method method)
+  {
+    Priority priority = method.getAnnotation(Priority.class);
+    
+    if (priority != null) {
+      return priority.value();
+    }
+    else {
+      return 0;
+    }
+  }
+  
+  private Class<? extends Annotation> scope(Method method)
+  {
+    for (Annotation ann : method.getAnnotations()) {
+      if (ann.annotationType().isAnnotationPresent(Scope.class)) {
+        return ann.annotationType();
+      }
+    }
+    
+    return Singleton.class;
   }
   
   private int findInjectionPoint(Class<?> []pTypes)
@@ -591,17 +619,17 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
       injector.addProvider(producer(injector));
     }
     
-    BindingAmp<T> producer(InjectorImpl manager)
+    BindingAmp<T> producer(InjectorImpl injector)
     {
       BindingAmp<T> producer;
       
       Provider<T> supplier;
       
       if (_impl != null) {
-        InjectScope<T> scope = manager.scope(_scopeType);
+        InjectScope<T> scope = injector.scope(_scopeType);
         
         ProviderConstructor<T> provider
-          = new ProviderConstructor(manager, _key, _priority, scope, _impl);
+          = new ProviderConstructor(injector, _key, _priority, scope, _impl);
         
         return provider;
       }
@@ -609,7 +637,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
         // XXX: InjectScope<T> scope = manager.scope(_scopeType);
         
         ProviderFunction<T,?> provider
-          = new ProviderFunction(manager, _key, _priority, _function);
+          = new ProviderFunction(injector, _key, _priority, _function);
         
         return provider;
       }
@@ -621,7 +649,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
         throw new UnsupportedOperationException();
       }
       
-      producer = new ProviderDelegate<T>(manager, (Key) _key, _priority, (Provider) supplier); 
+      producer = new ProviderDelegate<T>(injector, (Key) _key, _priority, (Provider) supplier); 
       
       return producer;
     }

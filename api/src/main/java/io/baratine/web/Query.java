@@ -36,6 +36,20 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation @Query maps service method parameter to a value in URI query.
+ *
+ * e.g.
+ *
+ * <pre>
+ *   <code>
+ *     @Get
+ *     public void search(Query("q") String term, Result<List<String>> result) {}
+ *   </code>
+ * </pre>
+ *
+ * /GET /search?q=java
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({PARAMETER})

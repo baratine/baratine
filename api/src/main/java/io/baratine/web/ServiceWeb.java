@@ -29,6 +29,34 @@
 
 package io.baratine.web;
 
+/**
+ * Interface ServiceWeb is used in three following ways
+ * a) define a before RequestWeb filter
+ * b) define an after RequestWeb filter
+ * c) define a RequestWeb processor
+ * <p>
+ * e.g.
+ * <p>
+ * <pre>
+ *   <code>
+ *     Web.get("/hello").to(HelloService.class);
+ *
+ *     class HelloService implements ServiceWeb {
+ *        @Override
+ *        public void service(RequestWeb request)
+ *        {
+ *          request.ok("hello");
+ *        }
+ *     }
+ *   </code>
+ * </pre>
+ *
+ * @see FilterBefore
+ * @see FilterAfter
+ * @see RouteBuilder#before(Class)
+ * @see RouteBuilder#to(Class)
+ * @see RouteBuilder#after(Class)
+ */
 @FunctionalInterface
 public interface ServiceWeb
 {

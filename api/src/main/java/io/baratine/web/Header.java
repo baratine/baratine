@@ -36,6 +36,20 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation @Header maps service method parameter to a header value.
+ *
+ * e.g.
+ *
+ * <pre>
+ *   <code>
+ *     @Get
+ *     public void foo(@Header("Content-Type") String type, Result<List<String>> result) {}
+ *   </code>
+ * </pre>
+ *
+ * /GET /foo
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({PARAMETER})

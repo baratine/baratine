@@ -51,48 +51,58 @@ import io.baratine.inject.Key;
  * }
  * </code></pre> 
  */
-public class ProviderMethod<T,X> implements BindingAmp<T>, Provider<T>
+public class ProviderMethod<T,X> extends ProviderBase<T>
 {
   private InjectorAmp _manager;
   private Method _method;
-  private Key<T> _key;
-  private int _priority;
+  //private Key<T> _key;
+  //private int _priority;
   
   private BindingAmp<X> _ownerBinding;
   private Provider<X> _ownerProvider;
   private Provider<?>[] _program;
 
   public ProviderMethod(InjectorAmp manager,
-                       BindingAmp<X> ownerBinding,
-                       Method method)
+                        int priority,
+                        InjectScope<T> scope,
+                        BindingAmp<X> ownerBinding,
+                        Method method)
   {
+    super(Key.of(method), priority, scope);
+    
     _manager = manager;
     _ownerBinding = ownerBinding;
     _method = method;
     
+    /*
     Priority priority = _method.getAnnotation(Priority.class);
     
     if (priority != null) {
       _priority = priority.value();
     }
+    */
     
     _program = manager.program(method.getParameters());
     
     method.setAccessible(true);
     
-    _key = Key.of(method);
+    //_key = Key.of(method);
   }
   
+  /*
   @Override  
   public Key<T> key()
   {
     return _key;
   }
+  */
   
+  /*
   public int priority()
   {
     return _priority;
   }
+  */
   
   @Override
   public void bind()
@@ -113,7 +123,7 @@ public class ProviderMethod<T,X> implements BindingAmp<T>, Provider<T>
   }
   
   @Override
-  public T get()
+  public T create()
   {
     X bean = _ownerProvider.get();
     
@@ -132,10 +142,12 @@ public class ProviderMethod<T,X> implements BindingAmp<T>, Provider<T>
     }
   }
   
+  /*
   @Override
   public String toString()
   {
     return getClass().getSimpleName() + "[" + _key + "]";
   }
+  */
 }
 

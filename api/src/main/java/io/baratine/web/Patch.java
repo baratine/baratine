@@ -37,6 +37,23 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation @Patch makes service method accessible via HTTP for PATCH requests.
+ *
+ * By default the URI is inferred from the method name but can be overridden
+ * using @Patch's value() attribute.
+ *
+ * e.g.
+ *
+ * <pre>
+ *   <code>
+ *     @Patch
+ *     public void patch(Result<String> result) {  result.ok("Hello World");  }
+ *   </code>
+ * </pre>
+ *
+ * The above maps PATCH requests to /patch URI to method patch().
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
