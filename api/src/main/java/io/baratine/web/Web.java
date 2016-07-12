@@ -400,12 +400,6 @@ public interface Web
     return builder().start(args);
   }
 
-  /**
-   * Creates an instance of a server and executes it the context of the calling
-   * thread.
-   *
-   * @param args
-   */
   static void go(String ...args)
   {
     builder().go(args);
