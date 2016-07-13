@@ -98,6 +98,7 @@ public interface ServiceWebSocket<T, S>
    * @param webSocket
    */
   default void open(WebSocket<S> webSocket)
+    throws Exception
   {
   }
 
@@ -105,25 +106,25 @@ public interface ServiceWebSocket<T, S>
    * Called when new message arrives via WebSocket
    * @param value
    * @param webSocket
-   * @throws IOException
+   * @throws Exception
    */
-  void next(T value, WebSocket<S> webSocket) throws IOException;
+  void next(T value, WebSocket<S> webSocket) throws Exception;
 
   /**
    * WebSocket ping
    *
    * @param value
    * @param webSocket
-   * @throws IOException
+   * @throws Exception
    */
   default void ping(String value, WebSocket<S> webSocket)
-    throws IOException
+    throws Exception
   {
     webSocket.pong(value);
   }
 
   default void pong(String value, WebSocket<S> webSocket)
-    throws IOException
+    throws Exception
   {
   }
 
@@ -138,7 +139,7 @@ public interface ServiceWebSocket<T, S>
   default void close(WebSocketClose code,
                      String msg,
                      WebSocket<S> webSocket)
-    throws IOException
+    throws Exception
   {
     close(webSocket);
   }

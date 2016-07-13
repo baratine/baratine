@@ -90,7 +90,7 @@ public class WebSocketManagerFramework extends WebSocketManager
     }
 
     @Override
-    public void next(String data, WebSocket<S> webSocket) throws IOException
+    public void next(String data, WebSocket<S> webSocket) throws Exception
     {
       try (StringReader reader = new StringReader(data)) {
         try (JsonReaderImpl in = _serializer.in(reader)) {

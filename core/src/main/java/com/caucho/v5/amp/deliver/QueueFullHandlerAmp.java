@@ -34,12 +34,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
+import com.caucho.v5.amp.inbox.QueueFullHandler;
 import com.caucho.v5.health.shutdown.ExitCode;
 import com.caucho.v5.health.shutdown.Shutdown;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceExceptionQueueFull;
 import io.baratine.service.ServiceRef;
 import io.baratine.spi.MessageApi;

@@ -34,13 +34,13 @@ import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverAmp;
+import com.caucho.v5.amp.inbox.QueueFullHandler;
 import com.caucho.v5.amp.journal.JournalDriverAmp;
 import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
 import com.caucho.v5.amp.stub.StubGenerator;
 import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 
-import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.Services;
 

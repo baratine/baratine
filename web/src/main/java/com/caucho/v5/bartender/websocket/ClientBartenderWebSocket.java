@@ -30,7 +30,6 @@
 package com.caucho.v5.bartender.websocket;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Objects;
@@ -126,7 +125,7 @@ public class ClientBartenderWebSocket
   }
 
   public void connect()
-    throws IOException
+    throws Exception
   {
     /*
     if (_socketConn != null) {
@@ -138,7 +137,7 @@ public class ClientBartenderWebSocket
   }
 
   protected void connectImpl()
-    throws IOException
+    throws Exception
   {
     /*
     if (_endpoint == null) {

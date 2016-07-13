@@ -27,8 +27,9 @@
 
 package io.baratine.db;
 
+import com.caucho.v5.amp.spi.MethodRef;
+
 import io.baratine.service.Cancel;
-import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.stream.ResultStreamBuilder;

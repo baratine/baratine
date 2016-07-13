@@ -61,7 +61,6 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.lifecycle.Lifecycle;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionClosed;
 

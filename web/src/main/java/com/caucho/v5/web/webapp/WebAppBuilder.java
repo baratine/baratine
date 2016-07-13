@@ -29,7 +29,6 @@
 
 package com.caucho.v5.web.webapp;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -1246,21 +1245,21 @@ public class WebAppBuilder
 
     @Override
     public void next(T value, WebSocket<S> webSocket)
-      throws IOException
+      throws Exception
     {
       _service.next(value, webSocket);
     }
 
     @Override
     public void ping(String value, WebSocket<S> webSocket)
-      throws IOException
+      throws Exception
     {
       _service.ping(value, webSocket);
     }
 
     @Override
     public void pong(String value, WebSocket<S> webSocket)
-      throws IOException
+      throws Exception
     {
       _service.pong(value, webSocket);
     }
@@ -1268,7 +1267,7 @@ public class WebAppBuilder
     @Override
     public void close(WebSocketClose code, String msg,
                       WebSocket<S> webSocket)
-      throws IOException
+      throws Exception
     {
       _service.close(code, msg, webSocket);
     }

@@ -104,6 +104,8 @@ public @interface Queue
   /**
    * Handler when the queue is full and times out.
    */
+  /*
   Class<? extends QueueFullHandler> queueFullHandler()
     default QueueFullHandler.class;
+    */
 }

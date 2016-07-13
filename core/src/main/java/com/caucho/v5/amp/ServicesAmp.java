@@ -34,6 +34,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.caucho.v5.amp.ensure.MethodEnsureAmp;
+import com.caucho.v5.amp.inbox.QueueFullHandler;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.manager.ServicesBuilderImpl;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
@@ -50,7 +51,6 @@ import com.caucho.v5.amp.stub.StubClassFactoryAmp;
 import io.baratine.convert.Convert;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
-import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;

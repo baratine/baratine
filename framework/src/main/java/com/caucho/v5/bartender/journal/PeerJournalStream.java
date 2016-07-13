@@ -198,7 +198,7 @@ public class PeerJournalStream implements JournalStream
   }
   
   public JournalClientEndpoint connect()
-    throws IOException
+    throws Exception
   {
     JournalClientEndpoint endpoint = _endpoint;
     

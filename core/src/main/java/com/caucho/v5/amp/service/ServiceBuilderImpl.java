@@ -36,6 +36,7 @@ import com.caucho.v5.amp.deliver.QueueDeliver;
 import com.caucho.v5.amp.deliver.QueueDeliverBuilder;
 import com.caucho.v5.amp.deliver.QueueDeliverBuilderImpl;
 import com.caucho.v5.amp.inbox.InboxQueue;
+import com.caucho.v5.amp.inbox.QueueFullHandler;
 import com.caucho.v5.amp.inbox.QueueServiceFactoryInbox;
 import com.caucho.v5.amp.journal.JournalAmp;
 import com.caucho.v5.amp.journal.StubJournal;
@@ -56,7 +57,6 @@ import io.baratine.inject.Key;
 import io.baratine.service.Api;
 import io.baratine.service.Journal;
 import io.baratine.service.Queue;
-import io.baratine.service.QueueFullHandler;
 import io.baratine.service.Service;
 import io.baratine.service.Startup;
 import io.baratine.service.Workers;
@@ -411,6 +411,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
         offerTimeout(queue.offerTimeout(), TimeUnit.MILLISECONDS);
       }
       
+      /*
       if (queue.queueFullHandler() != null
           && queue.queueFullHandler() != QueueFullHandler.class) {
         Class<? extends QueueFullHandler> handlerClass = queue.queueFullHandler();
@@ -423,6 +424,7 @@ public class ServiceBuilderImpl<T> implements ServiceBuilderAmp, ServiceConfig
           throw new RuntimeException(e);
         }
       }
+      */
     }
     
     Api api = serviceClass.getAnnotation(Api.class);

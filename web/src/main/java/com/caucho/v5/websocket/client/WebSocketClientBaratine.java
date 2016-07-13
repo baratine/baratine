@@ -458,7 +458,11 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     }
     */
 
-    _service.open(this);
+    try {
+      _service.open(this);
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
 
     // now can start the reader
     if (_threadTask != null) {

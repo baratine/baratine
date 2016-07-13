@@ -27,23 +27,51 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.service;
-
-import io.baratine.spi.MessageApi;
-
-import java.util.concurrent.TimeUnit;
+package io.baratine.spi;
 
 /**
- * This interface is a callback for when a queue is full.
+ * This interface represents a Message to Service actor.
+ * One can get access to this by getting access to an <code>AmpProvider</code>.
  * 
- * The default handler throws an exception.
+ * Normally services and actors do not need to access their underlying messages.
+ * 
+ * There may be some special circumstances for debugging, logging, auditing, security where a service might need to access
+ * this information.
+ * 
+ * Example:
+ * 
+ * <pre>
+ * //Inside of a amp service
+ * AmpProvider ampProvider = Amp.getProvider();
+ * AmpMessage message = ampProvider.getCurrentMessage();
+ * 
+ * if (message.getType()==SEND) {
+ *     //do something special
+ * }
+ * 
+ * String securityToken = message.getHeaders().get("MY_SPECIAL_SECURITY_TOKEN");
+ * </pre>
+ * 
  */
 
-public interface QueueFullHandler
+public interface MessageApi
 {
-  void onQueueFull(ServiceRef service, 
-                   int queueSize,
-                   long timeout,
-                   TimeUnit unit,
-                   MessageApi message);
+  static MessageApi current()
+  {
+    //return ServiceManagerProvider.current().getCurrentMessage();
+    return null;
+  }
+  
+  //Type getType();
+  
+  Headers getHeaders();
+  /*
+  enum Type {
+    UNKNOWN,
+    SEND,
+    QUERY,
+    REPLY,
+    ERROR;
+  }
+  */
 }

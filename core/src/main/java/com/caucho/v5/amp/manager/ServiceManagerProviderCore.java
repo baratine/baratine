@@ -107,7 +107,7 @@ public class ServiceManagerProviderCore
     }
   }
 
-  @Override
+  //@Override
   public MessageAmp getCurrentMessage()
   {
     OutboxAmp outbox = OutboxAmp.current();

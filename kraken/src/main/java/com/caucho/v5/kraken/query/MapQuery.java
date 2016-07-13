@@ -32,6 +32,7 @@ import java.lang.reflect.Type;
 import java.util.Objects;
 
 import com.caucho.v5.amp.message.HeadersNull;
+import com.caucho.v5.amp.spi.MethodRef;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.kelp.MapKelp;
@@ -41,7 +42,6 @@ import com.caucho.v5.kelp.query.EnvKelp;
 import com.caucho.v5.kelp.query.ExprKelp;
 import com.caucho.v5.kraken.table.TableKraken;
 
-import io.baratine.service.MethodRef;
 import io.baratine.spi.Headers;
 
 

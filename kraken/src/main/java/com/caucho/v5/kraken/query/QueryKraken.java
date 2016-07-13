@@ -32,7 +32,6 @@ import io.baratine.db.Cursor;
 import io.baratine.db.CursorPrepareSync;
 import io.baratine.db.DatabaseWatch;
 import io.baratine.service.Cancel;
-import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
 import io.baratine.stream.ResultStream;
@@ -41,6 +40,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.spi.MethodRef;
 import com.caucho.v5.kelp.RowCursor;
 import com.caucho.v5.kraken.table.TableKraken;
 import com.caucho.v5.util.L10N;

@@ -332,7 +332,12 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
     if (_service != null) {
       WebSocketClose codeWs = WebSocketCloses.of(code);
-      _service.close(codeWs, sb.toString(), this);
+      
+      try {
+        _service.close(codeWs, sb.toString(), this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
     }
     else {
       close();
@@ -404,7 +409,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     fIs.readText(sb);
 
     if (_service != null) {
-      _service.ping(sb.toString(), WebSocketBase.this);
+      try {
+        _service.ping(sb.toString(), WebSocketBase.this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
     }
   }
 
@@ -423,7 +432,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     fIs.readText(sb);
 
     if (_service != null) {
-      _service.pong(sb.toString(), WebSocketBase.this);
+      try {
+        _service.pong(sb.toString(), WebSocketBase.this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
     }
   }
 
@@ -578,7 +591,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
       fIs.readBuffer(buffer);
 
-      _out.next(buffer, WebSocketBase.this);
+      try {
+        _out.next(buffer, WebSocketBase.this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
 
       ServiceRef.flushOutbox();
     }
@@ -613,7 +630,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
       fIs.readBuffer(buffer);
 
-      _out.next(new FrameBinary(len, isPart, buffer), WebSocketBase.this);
+      try {
+        _out.next(new FrameBinary(len, isPart, buffer), WebSocketBase.this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
       /*
 
       byte []buffer = new byte[(int) len];
@@ -649,7 +670,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
       fIs.readText(sb);
 
-      _out.next(sb.toString(), WebSocketBase.this);
+      try {
+        _out.next(sb.toString(), WebSocketBase.this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
     }
   }
 
@@ -679,7 +704,11 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
       fIs.readText(sb);
 
-      _out.next(new FrameText(len, isPart, sb.toString()), WebSocketBase.this);
+      try {
+        _out.next(new FrameText(len, isPart, sb.toString()), WebSocketBase.this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
     }
   }
 
@@ -709,9 +738,13 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
       fIs.readText(sb);
 
-      _out.next(new FramePong(len, isPart, sb.toString()), WebSocketBase.this);
+      try {
+        _out.next(new FramePong(len, isPart, sb.toString()), WebSocketBase.this);
 
-      _out.pong(sb.toString(), WebSocketBase.this);
+        _out.pong(sb.toString(), WebSocketBase.this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
     }
   }
 
@@ -741,10 +774,14 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
       fIs.readText(sb);
 
-      _out.next(new FramePing(len, isPart, sb.toString()),
-                WebSocketBase.this);
+      try {
+        _out.next(new FramePing(len, isPart, sb.toString()),
+                  WebSocketBase.this);
 
-      _out.ping(sb.toString(), WebSocketBase.this);
+        _out.ping(sb.toString(), WebSocketBase.this);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
     }
   }
 

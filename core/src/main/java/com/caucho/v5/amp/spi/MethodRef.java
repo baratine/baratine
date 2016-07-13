@@ -27,10 +27,13 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.service;
+package com.caucho.v5.amp.spi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+
+import io.baratine.service.Result;
+import io.baratine.service.ServiceRef;
 
 /**
  * Low level interface to Baratine service methods.

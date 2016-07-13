@@ -44,6 +44,7 @@ import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverAmp;
 import com.caucho.v5.amp.ensure.EnsureDriverNull;
+import com.caucho.v5.amp.inbox.QueueFullHandler;
 import com.caucho.v5.amp.journal.JournalDriverAmp;
 import com.caucho.v5.amp.journal.JournalDriverNull;
 import com.caucho.v5.amp.proxy.ProxyFactoryAmp;
@@ -63,7 +64,6 @@ import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
-import io.baratine.service.QueueFullHandler;
 import io.baratine.service.ServiceInitializer;
 import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;

@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.message.HeadersNull;
+import com.caucho.v5.amp.spi.MethodRef;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.json.io.InJson;
@@ -47,7 +48,6 @@ import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.JsonFactory;
 
-import io.baratine.service.MethodRef;
 import io.baratine.service.ResultFuture;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;

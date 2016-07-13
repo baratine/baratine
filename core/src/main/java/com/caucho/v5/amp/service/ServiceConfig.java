@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.service;
 
-import io.baratine.service.QueueFullHandler;
+import com.caucho.v5.amp.inbox.QueueFullHandler;
 
 public interface ServiceConfig
 {

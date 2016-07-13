@@ -253,7 +253,11 @@ public class WebSocketBartender<T,S>
 
     _outWriter = new OutWebSocketWriter();
 
-    _service.open(this);
+    try {
+      _service.open(this);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
 
     ServiceRef.flushOutbox();
   }

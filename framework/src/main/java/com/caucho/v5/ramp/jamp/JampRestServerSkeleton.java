@@ -29,13 +29,12 @@
 
 package com.caucho.v5.ramp.jamp;
 
-import io.baratine.service.MethodRef;
-
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Objects;
 
 import com.caucho.v5.amp.ServiceRefAmp;
+import com.caucho.v5.amp.spi.MethodRef;
 import com.caucho.v5.amp.spi.MethodRefAmp;
 import com.caucho.v5.json.ser.JsonFactory;
 

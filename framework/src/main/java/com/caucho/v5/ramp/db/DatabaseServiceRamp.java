@@ -32,6 +32,7 @@ package com.caucho.v5.ramp.db;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.caucho.v5.amp.spi.MethodRef;
 import com.caucho.v5.io.Vfs;
 import com.caucho.v5.kraken.Kraken;
 import com.caucho.v5.kraken.KrakenBuilder;
@@ -43,7 +44,6 @@ import io.baratine.db.CursorPrepareSync;
 import io.baratine.db.DatabaseService;
 import io.baratine.db.DatabaseWatch;
 import io.baratine.service.Cancel;
-import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.stream.ResultStream;

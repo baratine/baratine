@@ -59,7 +59,7 @@ public interface ResultPipeIn<T> extends ResultChain<Void>
    * 
    * Clients that need more control over the flow should use the pipe().
    */
-  void handle(T next, Throwable fail, boolean ok);
+  void handle(T next, Throwable fail, boolean isClosed);
   
   @Override
   default void ok(Void value)
@@ -76,16 +76,6 @@ public interface ResultPipeIn<T> extends ResultChain<Void>
   {
     return ResultChain.then(this, consumer);
   }
-  
-  /*
-  @Override
-  default void handle(Void ok, Throwable fail)
-  {
-    if (fail != null) {
-      handle(null, fail, false);
-    }
-  }
-  */
   
   /**
    * The prefetch size.

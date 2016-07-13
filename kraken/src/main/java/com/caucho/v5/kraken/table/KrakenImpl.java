@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.ServicesAmp;
+import com.caucho.v5.amp.spi.MethodRef;
 import com.caucho.v5.bartender.ServerBartender;
 import com.caucho.v5.kelp.RowCursor;
 import com.caucho.v5.kelp.TableKelp;
@@ -53,7 +54,6 @@ import com.caucho.v5.util.L10N;
 import io.baratine.db.Cursor;
 import io.baratine.db.DatabaseWatch;
 import io.baratine.service.Cancel;
-import io.baratine.service.MethodRef;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
 import io.baratine.service.ServiceRef;
