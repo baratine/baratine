@@ -35,8 +35,8 @@ import java.lang.reflect.Type;
 
 import com.caucho.v5.json.JsonReader;
 import com.caucho.v5.json.ser.JsonException;
-import com.caucho.v5.json.ser.SerializerJson;
 import com.caucho.v5.json.ser.JsonFactory;
+import com.caucho.v5.json.ser.SerializerJson;
 import com.caucho.v5.util.L10N;
 
 /**
@@ -113,7 +113,7 @@ public class JsonReaderImpl extends InJsonImpl implements AutoCloseable, JsonRea
   @Override
   public <T> T readObject(Class<T> cls)
   {
-    return (T) readObject(cls);
+    return (T) readObject((Type) cls);
   }
 
   public boolean readBoolean()
