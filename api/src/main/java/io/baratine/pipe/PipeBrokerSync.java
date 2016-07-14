@@ -27,17 +27,17 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package io.baratine.pipe;
 
-import java.util.List;
-import java.util.Map;
+import io.baratine.service.Service;
+
 
 /**
- * Session context, available when a session service is instantiated.
+ * The Pipes service is a broker between publishers and subscribers, available
+ * at the "pipe:" scheme.
  */
-public interface SessionContext
+@Service("pipe:///{name}")
+public interface PipeBrokerSync<T> extends PipeBroker<T>
 {
-  Map<String,List<String>> getHeaders();
-  
-  boolean isSecure();
+  Void send(T value);
 }

@@ -39,7 +39,7 @@ import io.baratine.service.ServiceException;
  * </code></pre>
  */
 @FunctionalInterface
-public interface ResultPipeOut<T> extends ResultChain<Pipe<T>>
+public interface PipePub<T> extends ResultChain<Pipe<T>>
 {  
   void handle(Pipe<T> pipe, Throwable exn) throws Exception;
   
@@ -50,7 +50,7 @@ public interface ResultPipeOut<T> extends ResultChain<Pipe<T>>
    * 
    * If {@code PREFETCH_DISABLE} is returned, use the credits instead. 
    */
-  default ResultPipeOut<T> prefetch(int prefetch)
+  default PipePub<T> prefetch(int prefetch)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
@@ -64,7 +64,7 @@ public interface ResultPipeOut<T> extends ResultChain<Pipe<T>>
    * If {@code CREDIT_DISABLE} is returned, use the prefetch instead. This
    * is the default behavior. 
    */
-  default ResultPipeOut<T> credits(long credits)
+  default PipePub<T> credits(long credits)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }

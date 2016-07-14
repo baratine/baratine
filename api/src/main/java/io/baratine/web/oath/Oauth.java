@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -24,40 +24,35 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Scott Ferguson
+ * @author Nam Nguyen
  */
 
-package io.baratine.service;
+package io.baratine.web.oath;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Cluster pod.
- */
-public interface ServiceNode
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import io.baratine.web.FilterBefore;
+import io.baratine.web.ServiceWeb;
+
+@Documented
+@Retention(RUNTIME)
+@Target({TYPE, METHOD})
+@FilterBefore(ServiceWeb.class)
+public @interface Oauth
 {
-  /**
-   * The pod name.
-   * 
-   * @return name of the current pod
-   */
-  String podName();
-  
-  /**
-   * The number of nodes in the pod.
-   * 
-   * @return number of nodes in the pod
-   */
-  int nodeCount();
-  
-  /**
-   * The node index of the current node.
-   * 
-   * @return index of the node in the current pod 
-   */
-  int nodeIndex();
-  
-  /**
-   * Hash a string to get the node of the path.
-   */
-  //int hash(String path);
+  String name() default "";
+
+  String clientId() default "";
+  String clientSecret() default "";
+
+  String codeUri() default "";
+  String tokenUri() default "";
+
+  long expiresIn() default 3600;
 }

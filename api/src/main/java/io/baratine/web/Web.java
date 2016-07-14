@@ -381,7 +381,7 @@ public interface Web
    * @param path
    * @return
    */
-  static WebSocketBuilder websocket(String path)
+  static RouteBuilder websocket(String path)
   {
     return builder().websocket(path);
   }

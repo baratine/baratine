@@ -32,8 +32,8 @@ package com.caucho.v5.amp.proxy;
 import com.caucho.v5.amp.ServiceRefAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 import io.baratine.stream.ResultStream;
 
@@ -85,13 +85,13 @@ public interface MessageFactoryAmp
                     MethodAmp method,
                     Object []args);
 
-  <V> void resultPipeOut(ResultPipeOut<V> result,
+  <V> void resultPipeOut(PipePub<V> result,
                        long timeout,
                        ServiceRefAmp serviceRef,
                        MethodAmp method,
                        Object []args);
 
-  <V> void resultPipeIn(ResultPipeIn<V> result,
+  <V> void resultPipeIn(PipeSub<V> result,
                        long timeout,
                        ServiceRefAmp serviceRef,
                        MethodAmp method,

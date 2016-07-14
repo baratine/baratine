@@ -628,7 +628,7 @@ public class WebAppBuilder
   }
 
   @Override
-  public WebSocketBuilder websocket(String path)
+  public RouteBuilder websocket(String path)
   {
     WebSocketPath route = new WebSocketPath(path);
 
@@ -790,6 +790,13 @@ public class WebAppBuilder
 
       _filtersBefore.addAll(_filtersBeforeWebApp);
     }
+    
+    protected void predicate(Predicate<RequestWeb> predicate)
+    {
+      Objects.requireNonNull(predicate);
+      
+      _predicateList.add(predicate);
+    }
 
     @Override
     public WebBuilderAmp webBuilder()
@@ -816,7 +823,7 @@ public class WebAppBuilder
       
       if (contentTypeAnn != null) {
         for (String contentType : contentTypeAnn.value()) {
-          _predicateList.add(req->contentType.equals(req.header("content-type")));
+          predicate(req->contentType.equals(req.header("content-type")));
         }
       }
       
@@ -1043,122 +1050,13 @@ public class WebAppBuilder
   /**
    * WebSocketPath is a route to a websocket service.
    */
-  class WebSocketPath implements WebSocketBuilder, RouteWebApp
+  class WebSocketPath extends RoutePath
   {
-    private String _path;
-
-    private Supplier<? extends ServiceWebSocket<?,?>> _serviceFactory;
-    private Class<? extends ServiceWebSocket<?,?>> _serviceType;
-
     WebSocketPath(String path)
     {
-      _path = path;
-    }
-
-    @Override
-    public <T,S> void to(ServiceWebSocket<T,S> service)
-    {
-      _serviceFactory = ()->service;
-    }
-
-    @Override
-    public <T,S> InstanceBuilder<ServiceWebSocket<T,S>>
-    to(Class<? extends ServiceWebSocket<T,S>> type)
-    {
-      _serviceType = type;
-
-      return null;
-    }
-
-    @Override
-    public <T,S> void to(Supplier<? extends ServiceWebSocket<T,S>> supplier)
-    {
-      _serviceFactory = supplier;
-    }
-
-    @Override
-    public List<RouteMap> toMap(InjectorAmp inject,
-                                ServiceRefAmp serviceRef)
-    {
-      Function<RequestWeb,ServiceWebSocket<?,?>> fun = null;
-      Supplier<? extends ServiceWebSocket<?,?>> supplier = _serviceFactory;
-
-      ServiceWebSocket<?,?> service = null;
-
-      Class<?> type = null;
-
-      if (supplier != null) {
-        service = supplier.get();
-        Objects.requireNonNull(service);
-      }
-      else if (_serviceType == null) {
-        throw new IllegalStateException();
-      }
-      else {
-        Service serviceAnn = _serviceType.getAnnotation(Service.class);
-        Session sessionAnn = _serviceType.getAnnotation(Session.class);
-
-        type = itemType(_serviceType);
-
-        if (serviceAnn == null) {
-          if (_serviceType.getAnnotation(New.class) != null) {
-            fun = req->inject.instance(_serviceType);
-          }
-          else {
-            service = inject.instance(_serviceType);
-          }
-        }
-        else {
-          ServiceRef ref = service(_serviceType).auto().ref();
-
-          if (serviceAnn.value().startsWith("session:") || sessionAnn != null) {
-            fun = req->req.session(_serviceType);
-          }
-          else {
-            fun = req->req.service(_serviceType);
-          }
-        }
-      }
-
-      if (fun == null) {
-        Objects.requireNonNull(service);
-
-        type = itemType(service.getClass());
-
-        ServiceWebSocket<?,?> serviceWs;
-
-        /*
-        serviceWs = serviceRef.pin(new WebSocketWrapper<>(service))
-                             .as(ServiceWebSocket.class);
-                             */
-        serviceWs = serviceRef.pin(service).as(ServiceWebSocket.class);
-
-        fun = req->serviceWs;
-      }
-
-      WebSocketApply routeApply = new WebSocketApply(fun, type);
-
-      List<RouteMap> list = new ArrayList<>();
-      list.add(new RouteMap(_path, routeApply));
-
-      return list;
-    }
-
-    private Class<?> itemType(Class<?> serviceClass)
-    {
-      TypeRef typeRef = TypeRef.of(serviceClass);
-      TypeRef typeRefService = typeRef.to(ServiceWebSocket.class);
-      TypeRef typeService = typeRefService.param(0);
-
-      Class<?> type;
-      if (typeService != null) {
-        type = typeService.rawClass();
-      }
-      else {
-        type = String.class;
-      }
-
-      return type;
+      super(HttpMethod.GET, path);
+      
+      predicate(req->"WebSocket".equals(req.header("upgrade")));
     }
   }
 

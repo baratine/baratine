@@ -189,7 +189,7 @@ public interface WebBuilder
    * @param path
    * @return
    */
-  WebSocketBuilder websocket(String path);
+  RouteBuilder websocket(String path);
 
   /**
    * Adds an instance of a ViewRender to the list of available view renders.

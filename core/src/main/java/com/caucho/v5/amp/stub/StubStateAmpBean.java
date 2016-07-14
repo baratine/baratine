@@ -40,7 +40,7 @@ import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 import com.caucho.v5.amp.spi.StubStateAmp;
 
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceExceptionClosed;
 import io.baratine.stream.ResultStream;
@@ -477,7 +477,7 @@ public enum StubStateAmpBean implements StubStateAmp
                         StubAmp stubMessage,
                         MethodAmp method,
                         HeadersAmp headers,
-                        ResultPipeOut<?> result, 
+                        PipePub<?> result, 
                         Object[] args)
     {
       RuntimeException exn

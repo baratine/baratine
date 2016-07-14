@@ -35,8 +35,8 @@ import java.util.Arrays;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceExceptionMethodNotFound;
 import io.baratine.stream.ResultStream;
@@ -205,7 +205,7 @@ public class MethodAmpBase implements MethodAmp
 
   @Override
   public <T> void outPipe(HeadersAmp headers,
-                          ResultPipeOut<T> result,
+                          PipePub<T> result,
                           StubAmp actor,
                           Object []args)
   {
@@ -216,7 +216,7 @@ public class MethodAmpBase implements MethodAmp
 
   @Override
   public <T> void inPipe(HeadersAmp headers,
-                          ResultPipeIn<T> result,
+                          PipeSub<T> result,
                           StubAmp actor,
                           Object []args)
   {

@@ -38,8 +38,8 @@ import java.util.logging.Logger;
 import com.caucho.v5.amp.manager.TraceAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
 
@@ -380,7 +380,7 @@ public class MethodAmpTrace implements MethodAmp
 
   @Override
   public <T> void outPipe(HeadersAmp headers,
-                          ResultPipeOut<T> result,
+                          PipePub<T> result,
                           StubAmp actor,
                           Object []args)
   {
@@ -389,7 +389,7 @@ public class MethodAmpTrace implements MethodAmp
 
   @Override
   public <T> void inPipe(HeadersAmp headers,
-                          ResultPipeIn<T> result,
+                          PipeSub<T> result,
                           StubAmp actor,
                           Object []args)
   {

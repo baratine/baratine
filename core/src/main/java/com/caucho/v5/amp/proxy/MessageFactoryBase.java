@@ -49,8 +49,8 @@ import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.OutboxAmp;
 import com.caucho.v5.amp.stub.MethodAmp;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 import io.baratine.service.ResultFuture;
 import io.baratine.stream.ResultStream;
@@ -272,7 +272,7 @@ public final class MessageFactoryBase implements MessageFactoryAmp
   }
   
   @Override
-  public <V> void resultPipeOut(ResultPipeOut<V> result, 
+  public <V> void resultPipeOut(PipePub<V> result, 
                                 long timeout,
                                 ServiceRefAmp serviceRef,
                                 MethodAmp method,
@@ -295,7 +295,7 @@ public final class MessageFactoryBase implements MessageFactoryAmp
   }
   
   @Override
-  public <V> void resultPipeIn(ResultPipeIn<V> result, 
+  public <V> void resultPipeIn(PipeSub<V> result, 
                                 long timeout,
                                 ServiceRefAmp serviceRef,
                                 MethodAmp method,

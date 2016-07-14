@@ -39,8 +39,8 @@ import com.caucho.v5.amp.spi.MessageAmp;
 import com.caucho.v5.amp.spi.StubStateAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
@@ -301,7 +301,7 @@ public class StubStateAmpUnload implements StubStateAmp
                        StubAmp stubMessage,
                        MethodAmp method,
                        HeadersAmp headers,
-                       ResultPipeOut<?> result, 
+                       PipePub<?> result, 
                        Object[] args)
   {
     queryFail(stubMessage, method, result);
@@ -312,7 +312,7 @@ public class StubStateAmpUnload implements StubStateAmp
                        StubAmp stubMessage,
                        MethodAmp method,
                        HeadersAmp headers,
-                       ResultPipeIn<?> result, 
+                       PipeSub<?> result, 
                        Object[] args)
   {
     queryFail(stubMessage, method, result);

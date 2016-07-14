@@ -103,18 +103,18 @@ import io.baratine.service.Service;
  * </pre>
  * </code>
  *
- * @see ResultPipeOut
- * @see ResultPipeIn
+ * @see PipePub
+ * @see PipeSub
  */
 @Service("pipe:///{name}")
-public interface Pipes<T>
+public interface PipeBroker<T>
 {
   /**
    * Registers a message consumer.
    *
    * @param result
    */
-  void consume(ResultPipeIn<T> result);
+  void consume(PipeSub<T> result);
 
   /**
    * Registers a message subscriber. Multiple message subscribers can be
@@ -122,14 +122,14 @@ public interface Pipes<T>
    *
    * @param result
    */
-  void subscribe(ResultPipeIn<T> result);
+  void subscribe(PipeSub<T> result);
 
   /**
    * Registers a message publisher.
    *
    * @param result
    */
-  void publish(ResultPipeOut<T> result);
+  void publish(PipePub<T> result);
 
   /**
    * Convenience method for sending messages without a dedicated publisher.

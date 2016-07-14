@@ -29,20 +29,24 @@
 
 package com.caucho.v5.web.builder;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Objects;
-import java.util.function.Supplier;
 
-import io.baratine.web.InstanceBuilder;
-import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.WebSocketBuilder;
+import io.baratine.inject.InjectionPoint;
+import io.baratine.web.HttpMethod;
+import io.baratine.web.OutBuilder;
+import io.baratine.web.RouteBuilder;
+import io.baratine.web.ServiceWeb;
 
-public class WebSocketBuilderImpl implements WebSocketBuilder
+public class WebSocketBuilderImpl implements RouteBuilder
 {
   private WebServerBuilderImpl _serverBuilder;
   
   private String _path;
+  private HttpMethod _method;
   
-  //private WebSocket<S> _webSocket;
+  private ServiceWeb _route;
   
   WebSocketBuilderImpl(WebServerBuilderImpl serverBuilder,
                        String path)
@@ -51,31 +55,71 @@ public class WebSocketBuilderImpl implements WebSocketBuilder
     Objects.requireNonNull(path);
     
     _serverBuilder = serverBuilder;
+    _method = HttpMethod.GET;
     _path = path;
   }
 
   @Override
-  public <T,S> void to(ServiceWebSocket<T,S> service)
+  public WebSocketBuilderImpl ifAnnotation(Method method)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  @Override
+  public WebSocketBuilderImpl after(Class<? extends ServiceWeb> filter)
+  {
+    Objects.requireNonNull(filter);
+
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  @Override
+  public <X extends Annotation> 
+  WebSocketBuilderImpl after(X ann, InjectionPoint<?> ip)
+  {
+    Objects.requireNonNull(ann);
+
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  @Override
+  public WebSocketBuilderImpl before(Class<? extends ServiceWeb> filter)
+  {
+    Objects.requireNonNull(filter);
+
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  @Override
+  public <X extends Annotation> 
+  WebSocketBuilderImpl before(X ann, InjectionPoint<?> ip)
+  {
+    Objects.requireNonNull(ann);
+
+    throw new UnsupportedOperationException(getClass().getName());
+  }
+
+  @Override
+  public OutBuilder to(ServiceWeb service)
   {
     Objects.requireNonNull(service);
     
-    _serverBuilder.include(new WebSocketItem<>(_path, service));
+    RouteGenService route = new RouteGenService(_path, _method, service);
+    
+    _serverBuilder.include(route);
+    
+    return route;
   }
 
   @Override
-  public <T,S> InstanceBuilder<ServiceWebSocket<T,S>>
-  to(Class<? extends ServiceWebSocket<T,S>> type)
+  public OutBuilder to(Class<? extends ServiceWeb> type)
   {
     Objects.requireNonNull(type);
     
-    _serverBuilder.include(new WebSocketClass<>(_path, type));
+    RouteGenServiceClass route = new RouteGenServiceClass(_path, _method, type);
     
-    return null;
-  }
-
-  @Override
-  public <T,S> void to(Supplier<? extends ServiceWebSocket<T,S>> supplier)
-  {
-    throw new UnsupportedOperationException();
+    _serverBuilder.include(route);
+    
+    return route;
   }
 }

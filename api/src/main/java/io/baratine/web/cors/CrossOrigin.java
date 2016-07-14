@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -24,10 +24,10 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Nam Nguyen
+ * @author Alex Rojkov
  */
 
-package io.baratine.web;
+package io.baratine.web.cors;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
@@ -37,19 +37,31 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import io.baratine.web.FilterBefore;
+import io.baratine.web.HttpMethod;
+import io.baratine.web.ServiceWeb;
+
+/**
+ * Cross Origin annotation configures Cross Origin Resource Sharing(CORS) behaviour
+ * which allows browser to access resources from a different domain.
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
 @FilterBefore(ServiceWeb.class)
-public @interface Oauth
+public @interface CrossOrigin
 {
-  String name() default "";
+  boolean allowCredentials() default false;
 
-  String clientId() default "";
-  String clientSecret() default "";
+  String[] allowHeaders() default {"Content-Type"};
 
-  String codeUri() default "";
-  String tokenUri() default "";
+  String[] exposeHeaders() default {};
 
-  long expiresIn() default 3600;
+  long maxAge() default 1800;
+
+  HttpMethod[] allowMethods() default {};
+
+  String[] allowOrigin() default {};
+
+  String[] value() default {};
 }

@@ -27,7 +27,7 @@
  * @author Alex Rojkov
  */
 
-package io.baratine.vault;
+package com.caucho.v5.amp.vault;
 
 /**
  * Asset load state. Used by assets to communicate with the Vault driver

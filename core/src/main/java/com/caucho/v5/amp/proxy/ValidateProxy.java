@@ -44,8 +44,8 @@ import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 import io.baratine.service.ServiceException;
 import io.baratine.stream.ResultStream;
@@ -222,8 +222,8 @@ class ValidateProxy
   
   static {
     _resultClasses.add(Result.class);
-    _resultClasses.add(ResultPipeIn.class);
-    _resultClasses.add(ResultPipeOut.class);
+    _resultClasses.add(PipeSub.class);
+    _resultClasses.add(PipePub.class);
     _resultClasses.add(ResultStream.class);
     
     _methodIgnore.add("equals");

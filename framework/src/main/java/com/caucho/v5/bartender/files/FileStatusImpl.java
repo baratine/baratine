@@ -29,8 +29,9 @@
 
 package com.caucho.v5.bartender.files;
 
+import com.caucho.v5.amp.manager.ServiceNode;
+
 import io.baratine.files.Status;
-import io.baratine.service.ServiceNode;
 
 /**
  * Entry to the filesystem.

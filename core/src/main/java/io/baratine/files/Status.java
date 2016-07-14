@@ -27,7 +27,7 @@
 
 package io.baratine.files;
 
-import io.baratine.service.ServiceNode;
+import com.caucho.v5.amp.manager.ServiceNode;
 
 /**
  * Callback for file events.

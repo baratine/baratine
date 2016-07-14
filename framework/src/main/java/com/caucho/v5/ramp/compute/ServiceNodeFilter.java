@@ -29,9 +29,9 @@
 
 package com.caucho.v5.ramp.compute;
 
-import io.baratine.service.ServiceNode;
-
 import java.io.Serializable;
+
+import com.caucho.v5.amp.manager.ServiceNode;
 
 /**
  * Stream filter to select items belonging to service nodes.

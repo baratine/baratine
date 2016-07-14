@@ -45,7 +45,7 @@ import io.baratine.service.Result;
 class PipeStatic<T>
 {
   static class ResultPipeInHandlerImpl<T> extends ResultPipeInBase<T>
-    implements ResultPipeIn<T>, Pipe<T>, PipeInBuilder<T>
+    implements PipeSub<T>, Pipe<T>, PipeInBuilder<T>
   {
     private InHandler<T> _handler;
     
@@ -97,9 +97,9 @@ class PipeStatic<T>
   
   static class PipeInResultImpl<T> implements Pipe<T>
   {
-    private ResultPipeIn<T> _pipeIn;
+    private PipeSub<T> _pipeIn;
     
-    PipeInResultImpl(ResultPipeIn<T> pipeIn)
+    PipeInResultImpl(PipeSub<T> pipeIn)
     {
       Objects.requireNonNull(pipeIn);
       
@@ -288,7 +288,7 @@ class PipeStatic<T>
   
   static class ResultPipeInImpl<T>
     extends ResultPipeInBase<T>
-    implements ResultPipeIn<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
+    implements PipeSub<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
   {
     private final Pipe<T> _pipe;
     
@@ -465,7 +465,7 @@ class PipeStatic<T>
     */
 
     @Override
-    public ResultPipeIn<T> chain(Credits flowNext)
+    public PipeSub<T> chain(Credits flowNext)
     {
       _builtPipe = this;
       
@@ -542,7 +542,7 @@ class PipeStatic<T>
   }
   
   abstract static class ResultPipeInBase<T>
-    implements ResultPipeIn<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
+    implements PipeSub<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
   {
     private Consumer<Void> _onOk;
     
@@ -703,7 +703,7 @@ class PipeStatic<T>
     }
 
     @Override
-    public ResultPipeIn<T> chain(Credits flowNext)
+    public PipeSub<T> chain(Credits flowNext)
     {
       _flowNext = flowNext;
       

@@ -64,8 +64,8 @@ import com.caucho.v5.loader.ProxyClassLoader;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.ModulePrivate;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
 import io.baratine.service.OnActive;
@@ -388,8 +388,8 @@ public class ProxyGeneratorAmp<T>
         
         int ampResult = findAmpResult(paramTypes, Result.class);
         int ampResultStream = findAmpResult(paramTypes, ResultStream.class);
-        int ampResultPipeOut = findAmpResult(paramTypes, ResultPipeOut.class);
-        int ampResultPipeIn = findAmpResult(paramTypes, ResultPipeIn.class);
+        int ampResultPipeOut = findAmpResult(paramTypes, PipePub.class);
+        int ampResultPipeIn = findAmpResult(paramTypes, PipeSub.class);
         
         if (ResultStreamBuilder.class.isAssignableFrom(method.getReturnType())) {
           if (ampResult >= 0 || ampResultStream >= 0) {
@@ -644,8 +644,8 @@ public class ProxyGeneratorAmp<T>
     
     for (Class<?> paramType : method.getParameterTypes()) {
       if (paramType.equals(Result.class)
-          || paramType.equals(ResultPipeIn.class)
-          || paramType.equals(ResultPipeOut.class)) {
+          || paramType.equals(PipeSub.class)
+          || paramType.equals(PipePub.class)) {
         continue;
       }
       
@@ -1268,7 +1268,7 @@ public class ProxyGeneratorAmp<T>
                                             int resultOffset)
   {
     createAmpResultPipeMethod(jClass, method, resultOffset,
-                              ResultPipeOut.class,
+                              PipePub.class,
                               "resultPipeOut");
   }
   
@@ -1277,7 +1277,7 @@ public class ProxyGeneratorAmp<T>
                                             int resultOffset)
   {
     createAmpResultPipeMethod(jClass, method, resultOffset,
-                              ResultPipeIn.class,
+                              PipeSub.class,
                               "resultPipeIn");
   }
   

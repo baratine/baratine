@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)
+ * This file is part of Baratine(TM)(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -27,21 +27,37 @@
  * @author Scott Ferguson
  */
 
-package io.baratine.timer;
+package com.caucho.v5.amp.manager;
+
 
 /**
- * Schedules the next timer invocation.
- *
- * @see Timers
+ * Cluster pod.
  */
-public interface TimerScheduler
+public interface ServiceNode
 {
   /**
-   * @param now the current time in milliseconds, as if returned by
-   * System.currentTimeMillis().
-   *
-   * @return the next time the service should be scheduled or if the time
-   * is less than zero, to unschedule the service.
+   * The pod name.
+   * 
+   * @return name of the current pod
    */
-  long nextRunTime(long now);
+  String podName();
+  
+  /**
+   * The number of nodes in the pod.
+   * 
+   * @return number of nodes in the pod
+   */
+  int nodeCount();
+  
+  /**
+   * The node index of the current node.
+   * 
+   * @return index of the node in the current pod 
+   */
+  int nodeIndex();
+  
+  /**
+   * Hash a string to get the node of the path.
+   */
+  //int hash(String path);
 }

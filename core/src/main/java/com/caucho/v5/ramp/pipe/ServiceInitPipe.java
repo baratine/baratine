@@ -45,7 +45,7 @@ import io.baratine.inject.Key;
 import io.baratine.pipe.Message;
 import io.baratine.pipe.Pipe;
 import io.baratine.pipe.PipeIn;
-import io.baratine.pipe.Pipes;
+import io.baratine.pipe.PipeBroker;
 import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceInitializer;
 import io.baratine.service.Services.ServicesBuilder;

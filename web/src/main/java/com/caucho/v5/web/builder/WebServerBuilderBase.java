@@ -161,7 +161,7 @@ class WebServerBuilderBase implements WebServerBuilder
   }
 
   @Override
-  public WebSocketBuilder websocket(String path)
+  public RouteBuilder websocket(String path)
   {
     return delegate().websocket(path);
   }

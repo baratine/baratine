@@ -24,40 +24,20 @@
  *   59 Temple Place, Suite 330
  *   Boston, MA 02111-1307  USA
  *
- * @author Alex Rojkov
+ * @author Scott Ferguson
  */
 
-package io.baratine.web;
+package com.caucho.v5.amp.session;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Cross Origin annotation configures Cross Origin Resource Sharing(CORS) behaviour
- * which allows browser to access resources from a different domain.
+ * Session context, available when a session service is instantiated.
  */
-@Documented
-@Retention(RUNTIME)
-@Target({TYPE, METHOD})
-@FilterBefore(ServiceWeb.class)
-public @interface CrossOrigin
+public interface SessionContext
 {
-  boolean allowCredentials() default false;
-
-  String[] allowHeaders() default {"Content-Type"};
-
-  String[] exposeHeaders() default {};
-
-  long maxAge() default 1800;
-
-  HttpMethod[] allowMethods() default {};
-
-  String[] allowOrigin() default {};
-
-  String[] value() default {};
+  Map<String,List<String>> getHeaders();
+  
+  boolean isSecure();
 }

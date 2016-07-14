@@ -36,8 +36,8 @@ import java.util.ArrayList;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.amp.spi.StubContainerAmp;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.stream.ResultStream;
@@ -216,7 +216,7 @@ public interface MethodAmp
   //
   
   default <T> void outPipe(HeadersAmp headers,
-                           ResultPipeOut<T> result,
+                           PipePub<T> result,
                            StubAmp stub,
                            Object []args)
   {
@@ -224,7 +224,7 @@ public interface MethodAmp
   }
   
   default <T> void inPipe(HeadersAmp headers,
-                          ResultPipeIn<T> result,
+                          PipeSub<T> result,
                           StubAmp stub,
                           Object []args)
   {
@@ -239,8 +239,8 @@ public interface MethodAmp
       if (Result.class.equals(param)
           || ResultChain.class.equals(param)
           || ResultStream.class.equals(param)
-          || ResultPipeIn.class.equals(param)
-          || ResultPipeOut.class.equals(param)) {
+          || PipeSub.class.equals(param)
+          || PipePub.class.equals(param)) {
         continue;
       }
       

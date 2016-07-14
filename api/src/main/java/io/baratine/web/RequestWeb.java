@@ -51,7 +51,7 @@ public interface RequestWeb extends OutWeb, ResultChain<Object>
    *
    * @return
    */
-  String protocol();
+  String scheme();
 
   /**
    * Returns protocol version HTTP/1.1, HTTP/1.0 or HTTP/2.0

@@ -35,9 +35,9 @@ import java.util.function.BiConsumer;
 
 import io.baratine.pipe.Credits.OnAvailable;
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.Pipes;
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeBroker;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Cancel;
 import io.baratine.service.Pin;
 import io.baratine.service.Result;
@@ -45,7 +45,7 @@ import io.baratine.service.Result;
 /**
  * Implementation of the pipes
  */
-class PipeNode<T> implements Pipes<T>
+class PipeNode<T> implements PipeBroker<T>
 {
   //private SchemePipeImpl _scheme;
   private String _address;
@@ -69,7 +69,7 @@ class PipeNode<T> implements Pipes<T>
   }
 
   @Override
-  public void subscribe(ResultPipeIn<T> result)
+  public void subscribe(PipeSub<T> result)
   {
     SubscriberNode sub = new SubscriberNode(result.pipe());
     
@@ -82,7 +82,7 @@ class PipeNode<T> implements Pipes<T>
   }
 
   @Override
-  public void consume(ResultPipeIn<T> result)
+  public void consume(PipeSub<T> result)
   {
     SubscriberNode sub = new SubscriberNode(result.pipe());
     
@@ -101,7 +101,7 @@ class PipeNode<T> implements Pipes<T>
   }
 
   @Override
-  public void publish(ResultPipeOut<T> result)
+  public void publish(PipePub<T> result)
   {
     /*
     if (! init() && pendingPublish(result)) {

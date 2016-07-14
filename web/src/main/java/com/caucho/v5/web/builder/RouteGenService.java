@@ -62,7 +62,7 @@ class RouteGenService implements IncludeWebAmp, OutBuilder
     return _method.name();
   }
   
-  String getPath()
+  String path()
   {
     return _path;
   }

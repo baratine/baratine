@@ -55,7 +55,7 @@ abstract public class IncludeWebBase implements IncludeWeb
     return builder().route(path);
   }
   
-  public WebSocketBuilder websocket(String path)
+  public RouteBuilder websocket(String path)
   {
     return builder().websocket(path);
   }

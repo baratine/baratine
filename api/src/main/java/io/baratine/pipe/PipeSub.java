@@ -39,7 +39,7 @@ import io.baratine.service.ResultChain;
  * {@code ResultInPipe} returns a pipe subscription.
  */
 @FunctionalInterface
-public interface ResultPipeIn<T> extends ResultChain<Void>
+public interface PipeSub<T> extends ResultChain<Void>
 {
   //
   // caller/subscriber side
@@ -72,7 +72,7 @@ public interface ResultPipeIn<T> extends ResultChain<Void>
     handle(null, exn, false);
   }
   
-  default <R> Result<R> then(BiConsumer<R,ResultPipeIn<T>> consumer)
+  default <R> Result<R> then(BiConsumer<R,PipeSub<T>> consumer)
   {
     return ResultChain.then(this, consumer);
   }

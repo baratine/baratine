@@ -42,9 +42,9 @@ import io.baratine.config.Config;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.service.Services;
 import io.baratine.web.HttpStatus;
-import io.baratine.web.Oauth;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWeb;
+import io.baratine.web.oath.Oauth;
 
 public class OauthFilter implements ServiceWeb
 {
@@ -107,7 +107,7 @@ public class OauthFilter implements ServiceWeb
 
     StringBuilder sb = new StringBuilder();
 
-    sb.append(request.protocol());
+    sb.append(request.scheme());
     sb.append("://");
     sb.append(request.host());
 

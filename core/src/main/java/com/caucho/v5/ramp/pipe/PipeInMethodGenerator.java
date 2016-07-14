@@ -47,7 +47,7 @@ import io.baratine.convert.ConvertTo;
 import io.baratine.pipe.Message;
 import io.baratine.pipe.Pipe;
 import io.baratine.pipe.PipeIn;
-import io.baratine.pipe.Pipes;
+import io.baratine.pipe.PipeBroker;
 import io.baratine.service.ResultChain;
 
 /**
@@ -72,7 +72,7 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
       path = "pipe:///" + method.getName();
     }
 
-    Pipes<?> pipes = services.service(path).as(Pipes.class);
+    PipeBroker<?> pipes = services.service(path).as(PipeBroker.class);
     
     method.setAccessible(true);
     Parameter []params = method.getParameters();
@@ -104,11 +104,11 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
 
   private static class PipeInMethod<T> implements MethodAmp
   {
-    private Pipes<T> _pipes;
+    private PipeBroker<T> _pipes;
     private Method _method;
     private PipeArg[] _args;
 
-    PipeInMethod(Pipes<T> pipes,
+    PipeInMethod(PipeBroker<T> pipes,
                  Method method,
                  PipeArg []args)
     {

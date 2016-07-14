@@ -31,7 +31,6 @@ package com.caucho.v5.ramp.timer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -54,8 +53,6 @@ import io.baratine.service.Pin;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 import io.baratine.service.ServiceRef;
-import io.baratine.timer.TaskInfo;
-import io.baratine.timer.TimerScheduler;
 import io.baratine.timer.Timers;
 
 /**
@@ -199,6 +196,7 @@ public class TimerServiceRamp implements TimerServiceAmp
   /**
    * Implements {@link Timers#cron(Runnable, String)}
    */
+  /*
   @Override
   public void cron(@Pin Consumer<? super Cancel> task, 
                    String cronExpr,
@@ -208,6 +206,7 @@ public class TimerServiceRamp implements TimerServiceAmp
 
     schedule(task, new CronScheduler(cron), result);
   }
+  */
 
   /**
    * Implements {@link Timers#cancel(Runnable)}
@@ -227,42 +226,6 @@ public class TimerServiceRamp implements TimerServiceAmp
       listener.close();
     }
     */
-  }
-
-  /**
-   * Implements {@link Timers#getTask(Runnable, Result)}
-   */
-  public TaskInfo getTask(@Service Runnable task)
-  {
-    /*
-    TimerListener listener = _timerMap.get(task);
-
-    if (listener == null) {
-      return null;
-    }
-
-    return listener.getTaskInfo();
-    */
-    
-    return null;
-  }
-
-  /**
-   * Implements {@link Timers#getTasks(Result)}
-   */
-  public List<TaskInfo> getTasks()
-  {
-    ArrayList<TaskInfo> list = new ArrayList<>();
-
-    /*
-    for (TimerListener listener : _timerMap.values()) {
-      TaskInfo info = listener.getTaskInfo();
-
-      list.add(info);
-    }
-    */
-
-    return list;
   }
 
   void remove(Runnable task)

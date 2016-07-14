@@ -158,6 +158,8 @@ public interface TimersSync extends Timers
    * @param task
    * @param cron basic cron syntax
    */
+  /*
   Cancel cron(@Pin Consumer<? super Cancel> task, 
                     String cron);
+                    */
 }

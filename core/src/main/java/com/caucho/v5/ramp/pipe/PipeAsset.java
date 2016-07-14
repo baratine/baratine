@@ -34,15 +34,15 @@ import java.util.Objects;
 
 import io.baratine.pipe.Credits.OnAvailable;
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.Pipes;
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeBroker;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 
 /**
  * Implementation of the pipes
  */
-abstract public class PipeAsset<T> implements Pipes<T>
+abstract public class PipeAsset<T> implements PipeBroker<T>
 {
   //private SchemePipeImpl _scheme;
   //private String _address;
@@ -62,7 +62,7 @@ abstract public class PipeAsset<T> implements Pipes<T>
   abstract public String id();
 
   @Override
-  public void subscribe(ResultPipeIn<T> result)
+  public void subscribe(PipeSub<T> result)
   {
     initReceive();
     
@@ -75,7 +75,7 @@ abstract public class PipeAsset<T> implements Pipes<T>
   }
 
   @Override
-  public void consume(ResultPipeIn<T> result)
+  public void consume(PipeSub<T> result)
   {
     initReceive();
     
@@ -94,7 +94,7 @@ abstract public class PipeAsset<T> implements Pipes<T>
   }
 
   @Override
-  public void publish(ResultPipeOut<T> result)
+  public void publish(PipePub<T> result)
   {
     initSend();
     

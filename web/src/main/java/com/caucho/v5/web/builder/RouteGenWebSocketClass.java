@@ -29,31 +29,58 @@
 
 package com.caucho.v5.web.builder;
 
-import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.WebBuilder;
+import java.util.Objects;
 
-class WebSocketItem<S,C> implements IncludeWebAmp
+import io.baratine.web.HttpMethod;
+import io.baratine.web.OutBuilder;
+import io.baratine.web.ServiceWeb;
+import io.baratine.web.ViewRender;
+
+class RouteGenWebSocketClass implements IncludeWebAmp, OutBuilder
 {
   private String _path;
+  private HttpMethod _method;
   
-  private ServiceWebSocket<S,C> _service;
+  private Class<? extends ServiceWeb> _serviceClass;
   
-  WebSocketItem(String path,
-                ServiceWebSocket<S,C> service)
+  private ViewRender<?> _view;
+  
+  RouteGenWebSocketClass(String path,
+               Class<? extends ServiceWeb> serviceClass)
   {
+    Objects.requireNonNull(path);
+    Objects.requireNonNull(serviceClass);
+    
+    _method = HttpMethod.GET;
     _path = path;
-    _service = service;
+    _serviceClass = serviceClass;
+  }
+  
+  String getMethod()
+  {
+    return _method.name();
+  }
+  
+  String getPath()
+  {
+    return _path;
+  }
+  
+  @Override
+  public <T> OutBuilder view(ViewRender<T> view)
+  {
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override
   public void build(WebBuilderAmp builder)
   {
-    builder.websocket(_path).to(_service);
+    OutBuilder out = builder.websocket(_path).to(_serviceClass);
   }
   
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + _path + "," + _service + "]";
+    return getClass().getSimpleName() + "[" + _path + "," + _serviceClass + "]";
   }
 }

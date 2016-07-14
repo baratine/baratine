@@ -43,16 +43,16 @@ import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.ResultPipeIn;
+import io.baratine.pipe.PipeSub;
 
 /**
  * Register a publisher to a pipe.
  */
 public class PipeInMessage<T>
   extends QueryMessageBase<Void>
-  implements ResultPipeIn<T>
+  implements PipeSub<T>
 {
-  private final ResultPipeIn<T> _result;
+  private final PipeSub<T> _result;
 
   private Object[] _args;
 
@@ -64,7 +64,7 @@ public class PipeInMessage<T>
                         HeadersAmp headers,
                         ServiceRefAmp serviceRef,
                         MethodAmp method,
-                        ResultPipeIn<T> result,
+                        PipeSub<T> result,
                         long expires,
                         Object []args)
   {

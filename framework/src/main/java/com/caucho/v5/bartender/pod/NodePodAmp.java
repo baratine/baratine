@@ -29,8 +29,7 @@
 
 package com.caucho.v5.bartender.pod;
 
-import io.baratine.service.ServiceNode;
-
+import com.caucho.v5.amp.manager.ServiceNode;
 import com.caucho.v5.bartender.ServerBartender;
 
 public interface NodePodAmp extends ServiceNode

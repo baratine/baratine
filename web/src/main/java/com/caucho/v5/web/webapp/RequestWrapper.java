@@ -122,9 +122,9 @@ public class RequestWrapper implements RequestWebSpi
   */
 
   @Override
-  public String protocol()
+  public String scheme()
   {
-    return delegate().protocol();
+    return delegate().scheme();
   }
 
   @Override

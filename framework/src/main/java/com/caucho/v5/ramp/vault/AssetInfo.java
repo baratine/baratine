@@ -46,8 +46,8 @@ import io.baratine.service.Service;
 import io.baratine.service.ServiceException;
 import io.baratine.vault.Asset;
 import io.baratine.vault.IdAsset;
-import io.baratine.vault.StateAsset;
 
+import com.caucho.v5.amp.vault.StateAsset;
 import com.caucho.v5.convert.bean.FieldBase;
 import com.caucho.v5.convert.bean.FieldNull;
 import com.caucho.v5.convert.bean.FieldObject;

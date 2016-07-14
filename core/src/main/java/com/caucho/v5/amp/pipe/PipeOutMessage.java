@@ -43,20 +43,20 @@ import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipePub;
 
 /**
  * Register a publisher to a pipe.
  */
 public class PipeOutMessage<T>
   extends QueryWithResultMessage<Pipe<T>>
-  implements ResultPipeOut<T>
+  implements PipePub<T>
 {
   private static final L10N L = new L10N(PipeOutMessage.class);
   private static final Logger log 
     = Logger.getLogger(PipeOutMessage.class.getName());
   
-  private final ResultPipeOut<T> _result;
+  private final PipePub<T> _result;
 
   private Object[] _args;
   
@@ -69,7 +69,7 @@ public class PipeOutMessage<T>
                         HeadersAmp headers,
                         ServiceRefAmp serviceRef,
                         MethodAmp method,
-                        ResultPipeOut<T> result,
+                        PipePub<T> result,
                         long expires,
                         Object []args)
   {
@@ -127,7 +127,7 @@ public class PipeOutMessage<T>
   }
   
   @Override
-  public ResultPipeOut<T> prefetch(int prefetch)
+  public PipePub<T> prefetch(int prefetch)
   {
     _prefetch = prefetch;
     
@@ -140,7 +140,7 @@ public class PipeOutMessage<T>
   }
   
   @Override
-  public ResultPipeOut<T> credits(long credits)
+  public PipePub<T> credits(long credits)
   {
     _credits = credits;
     

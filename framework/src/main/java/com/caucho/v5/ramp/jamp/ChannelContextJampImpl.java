@@ -30,7 +30,6 @@
 package com.caucho.v5.ramp.jamp;
 
 import io.baratine.web.RequestWeb;
-import io.baratine.web.SessionContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +37,7 @@ import java.util.Map;
 
 import com.caucho.v5.amp.remote.ChannelAmp;
 import com.caucho.v5.amp.remote.ChannelServer;
+import com.caucho.v5.amp.session.SessionContext;
 import com.caucho.v5.amp.spi.ShutdownModeAmp;
 
 /**

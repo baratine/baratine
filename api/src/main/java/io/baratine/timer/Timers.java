@@ -169,7 +169,9 @@ public interface Timers
    * @param task
    * @param cron basic cron syntax
    */
+  /*
   void cron(@Pin Consumer<? super Cancel> task, 
             String cron,
             Result<? super Cancel> result);
+            */
 }

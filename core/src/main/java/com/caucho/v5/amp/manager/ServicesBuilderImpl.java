@@ -65,7 +65,6 @@ import com.caucho.v5.util.L10N;
 import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.service.ServiceInitializer;
-import io.baratine.service.ServiceNode;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.service.Services;

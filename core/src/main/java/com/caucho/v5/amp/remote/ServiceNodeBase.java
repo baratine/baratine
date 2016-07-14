@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.remote;
 
-import io.baratine.service.ServiceNode;
+import com.caucho.v5.amp.manager.ServiceNode;
 
 
 /**

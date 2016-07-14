@@ -56,8 +56,8 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.inject.Key;
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.AfterBatch;
 import io.baratine.service.BeforeBatch;
 import io.baratine.service.Ensure;
@@ -599,11 +599,11 @@ public class StubClass
         }
       }
       
-      if (isResult(params, ResultPipeOut.class)) {
+      if (isResult(params, PipePub.class)) {
         return new MethodStubResultOutPipe_N(services(), method);
       }
       
-      if (isResult(params, ResultPipeIn.class)) {
+      if (isResult(params, PipeSub.class)) {
         return new MethodStubResultInPipe_N(services(), method);
       }
       

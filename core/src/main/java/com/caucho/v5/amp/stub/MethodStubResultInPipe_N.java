@@ -38,7 +38,7 @@ import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.spi.HeadersAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.ResultPipeIn;
+import io.baratine.pipe.PipeSub;
 import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceExceptionIllegalArgument;
@@ -61,7 +61,7 @@ class MethodStubResultInPipe_N extends MethodStubResult_N
   @Override
   protected Class<?> getResultClass()
   {
-    return ResultPipeIn.class;
+    return PipeSub.class;
   }
 
   @Override
@@ -96,7 +96,7 @@ class MethodStubResultInPipe_N extends MethodStubResult_N
 
   @Override
   public <T> void inPipe(HeadersAmp headers,
-                          ResultPipeIn<T> result,
+                          PipeSub<T> result,
                           StubAmp actor,
                           Object []args)
   {

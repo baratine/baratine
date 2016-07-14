@@ -129,13 +129,13 @@ public interface Pipe<T>
     void handle(T next, Throwable exn, boolean isCancel);
   }
   
-  public interface PipeOutBuilder<T> extends ResultPipeOut<T>
+  public interface PipeOutBuilder<T> extends PipePub<T>
   {
     PipeOutBuilder<T> flow(OnAvailable flow);
     PipeOutBuilder<T> fail(Consumer<Throwable> onFail);
   }
   
-  public interface PipeInBuilder<T> extends ResultPipeIn<T>
+  public interface PipeInBuilder<T> extends PipeSub<T>
   {
     PipeInBuilder<T> ok(Consumer<Void> onOkSubscription);
     
@@ -150,6 +150,6 @@ public interface Pipe<T>
     
     PipeInBuilder<T> capacity(int size);
     
-    ResultPipeIn<T> chain(Credits creditsNext);
+    PipeSub<T> chain(Credits creditsNext);
   }
 }

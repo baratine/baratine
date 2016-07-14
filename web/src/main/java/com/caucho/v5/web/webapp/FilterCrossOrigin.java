@@ -35,13 +35,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.baratine.inject.InjectionPoint;
-import io.baratine.web.CrossOrigin;
 import io.baratine.web.Get;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.Post;
 import io.baratine.web.Put;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWeb;
+import io.baratine.web.cors.CrossOrigin;
 
 /**
  * Filter managing @CrossOrigin

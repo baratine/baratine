@@ -50,8 +50,8 @@ import com.caucho.v5.amp.stub.ParameterAmp;
 import com.caucho.v5.amp.stub.StubAmp;
 import com.caucho.v5.util.L10N;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceExceptionUnavailable;
@@ -270,7 +270,7 @@ public class MethodPod implements MethodAmp
    */
   @Override
   public <T> void outPipe(HeadersAmp headers, 
-                          ResultPipeOut<T> result,
+                          PipePub<T> result,
                           StubAmp actor,
                           Object[] args)
   {
@@ -282,7 +282,7 @@ public class MethodPod implements MethodAmp
    */
   @Override
   public <T> void inPipe(HeadersAmp headers, 
-                          ResultPipeIn<T> result,
+                          PipeSub<T> result,
                           StubAmp actor,
                           Object[] args)
   {

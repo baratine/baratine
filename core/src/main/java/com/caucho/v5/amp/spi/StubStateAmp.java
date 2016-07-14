@@ -35,8 +35,8 @@ import com.caucho.v5.amp.stub.MethodAmp;
 import com.caucho.v5.amp.stub.SaveResult;
 import com.caucho.v5.amp.stub.StubAmp;
 
-import io.baratine.pipe.ResultPipeIn;
-import io.baratine.pipe.ResultPipeOut;
+import io.baratine.pipe.PipeSub;
+import io.baratine.pipe.PipePub;
 import io.baratine.service.Result;
 import io.baratine.stream.ResultStream;
 
@@ -281,7 +281,7 @@ public interface StubStateAmp
                        StubAmp stubMessage,
                        MethodAmp method,
                        HeadersAmp headers,
-                       ResultPipeOut<?> result, 
+                       PipePub<?> result, 
                        Object[] args)
   {
     method.outPipe(headers, result, 
@@ -293,7 +293,7 @@ public interface StubStateAmp
                        StubAmp stubMessage,
                        MethodAmp method,
                        HeadersAmp headers,
-                       ResultPipeIn<?> result, 
+                       PipeSub<?> result, 
                        Object[] args)
   {
     method.inPipe(headers, result, 

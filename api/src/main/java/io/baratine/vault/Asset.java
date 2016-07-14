@@ -29,12 +29,12 @@
 
 package io.baratine.vault;
 
-import io.baratine.service.Service;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import io.baratine.service.Service;
 
 /**
  * Annotation {@code Asset} marks Baratine service as an Asset.

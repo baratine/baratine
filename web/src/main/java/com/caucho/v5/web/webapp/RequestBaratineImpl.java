@@ -380,7 +380,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   }
 
   @Override
-  public String protocol()
+  public String scheme()
   {
     return requestHttp().scheme();
   }

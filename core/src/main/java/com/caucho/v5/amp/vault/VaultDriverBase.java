@@ -59,7 +59,6 @@ import com.caucho.v5.util.L10N;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.vault.Id;
-import io.baratine.vault.StateAsset;
 
 public class VaultDriverBase<ID,T>
   implements VaultDriver<ID,T>
