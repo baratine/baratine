@@ -93,7 +93,6 @@ import com.caucho.v5.web.webapp.HttpBaratineBuilder;
 
 import io.baratine.config.Config;
 import io.baratine.config.Include;
-import io.baratine.config.Stage;
 import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertFrom;
 import io.baratine.convert.ConvertFrom.ConvertFromBuilder;
@@ -228,12 +227,12 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   @Override
-  public WebServerBuilderImpl scan(Class<?> type)
+  public WebServerBuilderImpl scan(Package pkg)
   {
     ScanManager manager = new ScanManager();
     
     manager.scan(x->onScanClass(x))
-           .baseClass(type)
+           .basePackage(pkg)
            .go();
            
     return this;

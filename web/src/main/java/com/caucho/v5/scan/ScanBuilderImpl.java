@@ -89,18 +89,21 @@ class ScanBuilderImpl implements ScanBuilder, ScanListenerByteCode
   }
   
   @Override
-  public ScanBuilderImpl baseClass(Class<?> type)
+  public ScanBuilderImpl basePackage(Package pkg)
   {
-    Objects.requireNonNull(type);
+    Objects.requireNonNull(pkg);
     
-    String className = type.getName();
+    String packageName = pkg.getName();
     
+    /*
     int p = className.lastIndexOf('.');
     
     if (p > 0) {
       String packageName = className.substring(0, p + 1);
       _packageNames.add(packageName);
     }
+    */
+    _packageNames.add(packageName);
     
     return this;
   }

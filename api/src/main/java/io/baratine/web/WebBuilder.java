@@ -29,11 +29,14 @@
 
 package io.baratine.web;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
 import javax.inject.Provider;
 
 import io.baratine.convert.Convert;
+import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Injector.BindingBuilder;
 import io.baratine.inject.Injector.InjectAutoBind;
@@ -179,7 +182,7 @@ public interface WebBuilder
    * @param path
    * @return
    */
-  default RouteBuilder route(String path)
+  default RouteBuilder path(String path)
   {
     return route(HttpMethod.UNKNOWN, path);
   }
@@ -269,5 +272,25 @@ public interface WebBuilder
   default <S,T> Convert<S,T> converter(Class<S> source, Class<T> target)
   {
     return injector().converter().converter(source, target);
+  }
+  
+  public interface RouteBuilder
+  {
+    RouteBuilder ifAnnotation(Method method);
+    
+    RouteBuilder before(Class<? extends ServiceWeb> typeBefore);
+    <X extends Annotation> RouteBuilder before(X ann, InjectionPoint<?> ip);
+    
+    OutBuilder to(ServiceWeb service);
+    OutBuilder to(Class<? extends ServiceWeb> service);
+    
+    RouteBuilder after(Class<? extends ServiceWeb> typeAfter);
+    <X extends Annotation> RouteBuilder after(X ann, InjectionPoint<?> ip);
+    
+  }
+  
+  public interface OutBuilder
+  {
+    <T> OutBuilder view(ViewRender<T> view);
   }
 }

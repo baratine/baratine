@@ -29,22 +29,6 @@
 
 package com.caucho.v5.web.builder;
 
-import com.caucho.v5.amp.service.ValidatorService;
-import com.caucho.v5.util.L10N;
-import io.baratine.inject.Injector.IncludeInject;
-import io.baratine.service.Service;
-import io.baratine.vault.Vault;
-import io.baratine.web.Delete;
-import io.baratine.web.Get;
-import io.baratine.web.IncludeWeb;
-import io.baratine.web.Options;
-import io.baratine.web.Post;
-import io.baratine.web.Put;
-import io.baratine.web.Route;
-import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.Trace;
-
-import javax.inject.Qualifier;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -53,6 +37,24 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import javax.inject.Qualifier;
+
+import com.caucho.v5.amp.service.ValidatorService;
+import com.caucho.v5.util.L10N;
+
+import io.baratine.inject.Injector.IncludeInject;
+import io.baratine.service.Service;
+import io.baratine.vault.Vault;
+import io.baratine.web.Delete;
+import io.baratine.web.Get;
+import io.baratine.web.IncludeWeb;
+import io.baratine.web.Options;
+import io.baratine.web.Path;
+import io.baratine.web.Post;
+import io.baratine.web.Put;
+import io.baratine.web.ServiceWebSocket;
+import io.baratine.web.Trace;
 
 /**
  * Validation of the configuration
@@ -274,7 +276,7 @@ class WebServerValidator
     _includeMethodAnnotations.add(Options.class);
     _includeMethodAnnotations.add(Post.class);
     _includeMethodAnnotations.add(Put.class);
-    _includeMethodAnnotations.add(Route.class);
+    _includeMethodAnnotations.add(Path.class);
     _includeMethodAnnotations.add(Trace.class);
 
     // meta annotations

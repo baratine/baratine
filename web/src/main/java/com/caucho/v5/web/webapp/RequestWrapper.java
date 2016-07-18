@@ -45,7 +45,6 @@ import io.baratine.service.ServiceRef;
 import io.baratine.service.Services;
 import io.baratine.web.HttpStatus;
 import io.baratine.web.MultiMap;
-import io.baratine.web.OutWeb;
 import io.baratine.web.RequestWeb;
 
 
@@ -60,31 +59,31 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
-  public OutWeb write(Buffer buffer)
+  public RequestWeb write(Buffer buffer)
   {
     return delegate().write(buffer);
   }
 
   @Override
-  public OutWeb write(byte[] buffer, int offset, int length)
+  public RequestWeb write(byte[] buffer, int offset, int length)
   {
     return delegate().write(buffer, offset, length);
   }
 
   @Override
-  public OutWeb write(String value)
+  public RequestWeb write(String value)
   {
     return delegate().write(value);
   }
 
   @Override
-  public OutWeb write(char[] buffer, int offset, int length)
+  public RequestWeb write(char[] buffer, int offset, int length)
   {
     return delegate().write(buffer, offset, length);
   }
 
   @Override
-  public OutWeb flush()
+  public RequestWeb flush()
   {
     return delegate().flush();
   }
@@ -102,7 +101,7 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
-  public OutWeb push(OutFilterWeb filter)
+  public RequestWeb push(OutFilterWeb filter)
   {
     return delegate().push(filter);
   }
@@ -383,6 +382,7 @@ public class RequestWrapper implements RequestWebSpi
     delegate().ok(value);
   }
 
+  /*
   @Override
   public void ok(Object value, Throwable exn)
   {
@@ -393,6 +393,7 @@ public class RequestWrapper implements RequestWebSpi
       ok(value);
     }
   }
+  */
 
   @Override
   public void fail(Throwable exn)

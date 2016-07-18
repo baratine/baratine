@@ -35,7 +35,6 @@ import java.io.OutputStream;
 import com.caucho.v5.http.protocol.RequestHttpBase;
 
 import io.baratine.web.HttpStatus;
-import io.baratine.web.OutWeb;
 import io.baratine.web.RequestWeb;
 
 /**
@@ -101,7 +100,7 @@ public final class RequestBaratineNext extends RequestWrapper
   }
   
   @Override
-  public OutWeb write(byte []buffer, int offset, int length)
+  public RequestWeb write(byte []buffer, int offset, int length)
   {
     try {
       out().write(buffer, offset, length);

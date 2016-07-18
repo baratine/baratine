@@ -32,7 +32,7 @@ package com.caucho.v5.web.webapp;
 import com.caucho.v5.web.builder.WebBuilderAmp;
 
 import io.baratine.web.HttpMethod;
-import io.baratine.web.RouteBuilder;
+import io.baratine.web.WebBuilder.RouteBuilder;
 
 /**
  * Route builder.

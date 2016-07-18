@@ -39,9 +39,8 @@ import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.util.BitsUtil;
 
 import io.baratine.io.Buffer;
-import io.baratine.web.OutWeb;
-import io.baratine.web.OutWeb.OutFilterWeb;
 import io.baratine.web.RequestWeb;
+import io.baratine.web.RequestWeb.OutFilterWeb;
 import io.baratine.web.ServiceWeb;
 
 /**
@@ -130,7 +129,7 @@ class FilterBeforeGzipFactory implements FilterFactory<ServiceWeb>
     }
     
     @Override
-    public void ok(OutWeb out)
+    public void ok(RequestWeb out)
     {
       if (_outGzip != null) {
         _outGzip.close();
@@ -149,9 +148,9 @@ class FilterBeforeGzipFactory implements FilterFactory<ServiceWeb>
       new Deflater(Deflater.DEFAULT_COMPRESSION, true);
     private final CRC32 _crc = new CRC32();
     private TempBuffer _tBuf = TempBuffer.create();
-    private OutWeb _out;
+    private RequestWeb _out;
     
-    GzipOutput(OutWeb out)
+    GzipOutput(RequestWeb out)
     {
       _out = out;
       
@@ -196,12 +195,12 @@ class FilterBeforeGzipFactory implements FilterFactory<ServiceWeb>
       _deflater.end();
     }
     
-    private void writeHeader(OutWeb out)
+    private void writeHeader(RequestWeb out)
     {
       out.write(HEADER, 0, HEADER.length);
     }
     
-    private void writeFooter(OutWeb out)
+    private void writeFooter(RequestWeb out)
     {
       try {
         BitsUtil.writeInt(out.output(), (int) _crc.getValue());

@@ -29,8 +29,6 @@
 
 package io.baratine.web;
 
-import io.baratine.inject.Injector.InjectorBuilder;
-
 public interface WebServerBuilder extends WebBuilder
 {
   WebServerBuilder args(String []args);
@@ -42,7 +40,7 @@ public interface WebServerBuilder extends WebBuilder
   @Override
   WebServerBuilder include(Class<?> type);
 
-  WebServerBuilder scan(Class<?> type);
+  WebServerBuilder scan(Package pkg);
   
   WebServerBuilder scanAutoconf();
   

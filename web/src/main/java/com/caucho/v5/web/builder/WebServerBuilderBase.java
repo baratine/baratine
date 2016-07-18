@@ -29,7 +29,6 @@
 
 package com.caucho.v5.web.builder;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.inject.Provider;
@@ -43,10 +42,8 @@ import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpMethod;
 import io.baratine.web.ViewRender;
-import io.baratine.web.RouteBuilder;
 import io.baratine.web.WebServer;
 import io.baratine.web.WebServerBuilder;
-import io.baratine.web.WebSocketBuilder;
 
 class WebServerBuilderBase implements WebServerBuilder
 {
@@ -66,9 +63,9 @@ class WebServerBuilderBase implements WebServerBuilder
   }
 
   @Override
-  public WebServerBuilder scan(Class<?> rootClass)
+  public WebServerBuilder scan(Package pkg)
   {
-    return delegate().scan(rootClass);
+    return delegate().scan(pkg);
   }
 
   @Override

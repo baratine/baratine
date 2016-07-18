@@ -33,10 +33,9 @@ import java.io.IOException;
 import java.util.Objects;
 
 import com.caucho.v5.http.protocol.RequestOut;
-import com.caucho.v5.io.OutputStreamWithBuffer;
 import com.caucho.v5.io.TempBuffer;
 
-import io.baratine.web.OutWeb.OutFilterWeb;
+import io.baratine.web.RequestWeb.OutFilterWeb;
 
 /**
  * User facade for baratine http requests.

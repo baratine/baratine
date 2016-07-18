@@ -29,6 +29,8 @@
 
 package io.baratine.web;
 
+import io.baratine.web.WebBuilder.RouteBuilder;
+
 abstract public class IncludeWebBase implements IncludeWeb
 {
   private WebBuilder _builder;
@@ -52,7 +54,7 @@ abstract public class IncludeWebBase implements IncludeWeb
   
   public RouteBuilder route(String path)
   {
-    return builder().route(path);
+    return builder().path(path);
   }
   
   public RouteBuilder websocket(String path)

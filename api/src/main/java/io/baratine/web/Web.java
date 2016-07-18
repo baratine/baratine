@@ -33,10 +33,10 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import io.baratine.inject.Injector;
-import io.baratine.inject.Key;
 import io.baratine.service.ServiceRef;
 import io.baratine.service.ServiceRef.ServiceBuilder;
 import io.baratine.spi.WebServerProvider;
+import io.baratine.web.WebBuilder.RouteBuilder;
 import io.baratine.web.WebServerBuilder.SslBuilder;
 
 /**
@@ -178,9 +178,9 @@ public interface Web
    * @param type
    * @return
    */
-  static WebServerBuilder scan(Class<?> type)
+  static WebServerBuilder scan(Package pkg)
   {
-    return builder().scan(type);
+    return builder().scan(pkg);
   }
 
   /**
@@ -370,9 +370,9 @@ public interface Web
    * @param path
    * @return
    */
-  static RouteBuilder route(String path)
+  static RouteBuilder path(String path)
   {
-    return builder().route(path);
+    return builder().path(path);
   }
 
   /**

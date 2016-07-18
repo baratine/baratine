@@ -73,7 +73,6 @@ import io.baratine.service.ServiceException;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpStatus;
 import io.baratine.web.MultiMap;
-import io.baratine.web.OutWeb;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.ViewResolver;
@@ -593,6 +592,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
     return this;
   }
 
+  /*
   @Override
   public void ok(Object result, Throwable exn)
   {
@@ -603,6 +603,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
       ok(result);
     }
   }
+  */
 
   @Override
   public void halt()
@@ -638,7 +639,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   }
 
   @Override
-  public OutWeb push(OutFilterWeb filter)
+  public RequestWeb push(OutFilterWeb filter)
   {
     _out = new RequestOutFilter(new RequestBaratineNext(this), filter);
     
@@ -674,7 +675,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   }
 
   @Override
-  public OutWeb write(char[] buffer, int offset, int length)
+  public RequestWeb write(char[] buffer, int offset, int length)
   {
     try {
       writer().write(buffer, offset, length);
@@ -686,7 +687,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   }
 
   @Override
-  public OutWeb write(Buffer buffer)
+  public RequestWeb write(Buffer buffer)
   {
     requestHttp().out().write(buffer);
 
@@ -706,7 +707,7 @@ public final class RequestBaratineImpl extends RequestHttpWeb
   }
 
   @Override
-  public OutWeb write(byte[] buffer, int offset, int length)
+  public RequestWeb write(byte[] buffer, int offset, int length)
   {
     try {
       out().write(buffer, offset, length);

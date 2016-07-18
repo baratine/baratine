@@ -54,7 +54,7 @@ public class ScanManager
   
   public interface ScanBuilder
   {
-    ScanBuilder baseClass(Class<?> type);
+    ScanBuilder basePackage(Package pkg);
     
     ScanBuilder classNameTest(Predicate<String> classNameTest);
     

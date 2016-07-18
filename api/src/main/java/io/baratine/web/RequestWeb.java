@@ -29,13 +29,17 @@
 
 package io.baratine.web;
 
+import java.io.OutputStream;
+import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 import io.baratine.config.Config;
 import io.baratine.inject.Injector;
+import io.baratine.io.Buffer;
 import io.baratine.io.Buffers;
+import io.baratine.pipe.Credits;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceRef;
@@ -44,7 +48,7 @@ import io.baratine.service.Services;
 /**
  * Interface RequestWeb provides methods to access information in http request.
  */
-public interface RequestWeb extends OutWeb, ResultChain<Object>
+public interface RequestWeb extends ResultChain<Object> // OutWeb
 {
   /**
    * Returns protocol scheme (http vs. https)
@@ -285,7 +289,7 @@ public interface RequestWeb extends OutWeb, ResultChain<Object>
    * @param result
    * @param exn
    */
-  void ok(Object result, Throwable exn);
+  //void ok(Object result, Throwable exn);
 
   /**
    * Completes processing with a fail status and exception
@@ -392,6 +396,51 @@ public interface RequestWeb extends OutWeb, ResultChain<Object>
    * @return
    */
   Buffers buffers();
+  RequestWeb write(Buffer buffer);
+  RequestWeb write(byte []buffer, int offset, int length);
+  
+  RequestWeb write(String value);
+  RequestWeb write(char []buffer, int offset, int length);
+  
+  RequestWeb flush();
+  
+  Writer writer();
+  
+  OutputStream output();
+
+  Credits credits();
+  RequestWeb push(OutFilterWeb outFilter);
+  
+  //void halt();
+  //void halt(HttpStatus status);
+  
+  //void fail(Throwable exn);
+  
+  public interface OutFilterWeb
+  {
+    default void header(RequestWeb request, String key, String value)
+    {
+      request.header(key, value);
+    }
+    
+    default void type(RequestWeb request, String type)
+    {
+      request.type(type);
+    }
+    
+    default void length(RequestWeb request, long length)
+    {
+      request.length(length);
+    }
+    
+    void write(RequestWeb out, Buffer buffer);
+    void ok(RequestWeb out);
+    
+    default Credits credits(RequestWeb out)
+    {
+      return out.credits();
+    }
+  }
 
   //
   // chaining

@@ -35,9 +35,9 @@ import java.util.Objects;
 
 import io.baratine.inject.InjectionPoint;
 import io.baratine.web.HttpMethod;
-import io.baratine.web.OutBuilder;
-import io.baratine.web.RouteBuilder;
 import io.baratine.web.ServiceWeb;
+import io.baratine.web.WebBuilder.OutBuilder;
+import io.baratine.web.WebBuilder.RouteBuilder;
 
 public class RouteBuilderImpl implements RouteBuilder
 {

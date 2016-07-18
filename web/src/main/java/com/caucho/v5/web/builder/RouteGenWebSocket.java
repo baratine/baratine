@@ -31,10 +31,9 @@ package com.caucho.v5.web.builder;
 
 import java.util.Objects;
 
-import io.baratine.web.HttpMethod;
-import io.baratine.web.OutBuilder;
 import io.baratine.web.ServiceWeb;
 import io.baratine.web.ViewRender;
+import io.baratine.web.WebBuilder.OutBuilder;
 
 class RouteGenWebSocket implements IncludeWebAmp, OutBuilder
 {
