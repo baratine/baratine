@@ -29,6 +29,8 @@
 
 package com.caucho.v5.web.cli;
 
+import java.util.Objects;
+
 import com.caucho.v5.cli.args.CommandBase;
 import com.caucho.v5.cli.args.CommandLineException;
 import com.caucho.v5.config.ConfigException;
@@ -56,6 +58,8 @@ public class CommandStart extends CommandBase<ArgsBaratine>
     throws CommandLineException
   {
     WebServerBuilderImpl builder = args.env().get(WebServerBuilderImpl.class);
+    
+    Objects.requireNonNull(builder);
     
     WebServer server = args.env().get(WebServer.class);
     

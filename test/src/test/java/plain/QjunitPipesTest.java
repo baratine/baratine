@@ -35,7 +35,7 @@ import com.caucho.junit.RunnerBaratine;
 import com.caucho.junit.ServiceTest;
 import com.caucho.junit.State;
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.Pipes;
+import io.baratine.pipe.PipeBroker;
 import io.baratine.service.OnInit;
 import io.baratine.service.Service;
 import io.baratine.service.Startup;
@@ -72,7 +72,7 @@ public class QjunitPipesTest
 
     @Inject
     @Service("pipe:///test")
-    Pipes<String> _pipes;
+    PipeBroker<String> _pipes;
 
     @OnInit
     public void init()
@@ -98,7 +98,7 @@ public class QjunitPipesTest
   {
     @Inject
     @Service("pipe:///test")
-    Pipes<String> _pipes;
+    PipeBroker<String> _pipes;
 
     StringBuilder _state = new StringBuilder();
 
