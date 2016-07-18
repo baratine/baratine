@@ -36,7 +36,7 @@ import com.caucho.junit.ServiceTest;
 import com.caucho.junit.State;
 import io.baratine.pipe.Message;
 import io.baratine.pipe.PipeIn;
-import io.baratine.pipe.PipesSync;
+import io.baratine.pipe.PipeBrokerSync;
 import io.baratine.service.Service;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
 public class QjunitPipeTest
 {
   @Test
-  public void test(@Service("pipe:///test") PipesSync<Message<String>> pipes)
+  public void test(@Service("pipe:///test") PipeBrokerSync<Message<String>> pipes)
   {
     pipes.send(Message.newMessage("hello"));
 

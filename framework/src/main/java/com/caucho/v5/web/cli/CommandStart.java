@@ -59,7 +59,10 @@ public class CommandStart extends CommandBase<ArgsBaratine>
   {
     WebServerBuilderImpl builder = args.env().get(WebServerBuilderImpl.class);
     
-    Objects.requireNonNull(builder);
+    if (builder == null) {
+      throw new ConfigException(L.l("Baratine must be started by an applications Web.go or Web.start.\n"
+          + "\nA 'start' on the command line has no application to start."));
+    }
     
     WebServer server = args.env().get(WebServer.class);
     
