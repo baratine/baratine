@@ -29,6 +29,12 @@
 
 package io.baratine.pipe;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import io.baratine.pipe.Credits.OnAvailable;
+import io.baratine.pipe.PipeStatic.PipePubImpl;
+import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 import io.baratine.service.ServiceException;
 
@@ -96,5 +102,26 @@ public interface PipePub<T> extends ResultChain<Pipe<T>>
     } catch (Throwable e) {
       throw ServiceException.createAndRethrow(e);
     }
+  }
+
+  public static <T> PipePubBuilder<T> of(Result<Pipe<T>> result)
+  {
+    return new PipePubImpl<>(result);
+  }
+  
+  public static <T> PipePubBuilder<T> of(Function<Pipe<T>,OnAvailable> onOk)
+  {
+    return new PipePubImpl<>(onOk);
+  }
+  
+  public static <T> PipePubBuilder<T> out(OnAvailable flow)
+  {
+    return new PipePubImpl<>(flow);
+  }
+  
+  public interface PipePubBuilder<T> extends PipePub<T>
+  {
+    PipePubBuilder<T> flow(OnAvailable flow);
+    PipePubBuilder<T> fail(Consumer<Throwable> onFail);
   }
 }

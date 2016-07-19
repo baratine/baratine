@@ -46,8 +46,9 @@ import io.baratine.convert.Convert;
 import io.baratine.convert.ConvertTo;
 import io.baratine.pipe.Message;
 import io.baratine.pipe.Pipe;
-import io.baratine.pipe.PipeIn;
 import io.baratine.pipe.PipeBroker;
+import io.baratine.pipe.PipeIn;
+import io.baratine.pipe.PipeSub;
 import io.baratine.service.ResultChain;
 
 /**
@@ -132,7 +133,7 @@ class PipeInMethodGenerator implements MethodOnInitGenerator
       PipeSubscriber<T> sub
         = new PipeSubscriber<>(stub.bean(), _method, _args[0]);
 
-      _pipes.subscribe(Pipe.in(sub));
+      _pipes.subscribe(PipeSub.of(sub));
 
       result.ok(null);
     }

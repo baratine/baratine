@@ -30,8 +30,11 @@
 package io.baratine.pipe;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-import io.baratine.pipe.PipeStatic.PipeInResultImpl;
+import io.baratine.pipe.Pipe.PipeHandler;
+import io.baratine.pipe.PipeStatic.PipeImplSub;
+import io.baratine.pipe.PipeStatic.PipeSubBuilderImpl;
 import io.baratine.service.Result;
 import io.baratine.service.ResultChain;
 
@@ -51,7 +54,7 @@ public interface PipeSub<T> extends ResultChain<Void>
    */
   default Pipe<T> pipe()
   {
-    return new PipeInResultImpl<>(this);
+    return new PipeImplSub<>(this);
   }
 
   /**
@@ -106,5 +109,38 @@ public interface PipeSub<T> extends ResultChain<Void>
   default int capacity()
   {
     return 0;
+  }
+  
+  public static <T> PipeSubBuilder<T> of(Pipe<T> pipe)
+  {
+    return new PipeSubBuilderImpl<>(pipe);
+  }
+  
+  public static <T> PipeSubBuilder<T> of(Consumer<T> next)
+  {
+    return new PipeSubBuilderImpl<>(next);
+  }
+  
+  public static <T> PipeSubBuilder<T> of(PipeHandler<T> handler)
+  {
+    return of(Pipe.of(handler));
+  }
+
+  public interface PipeSubBuilder<T> extends PipeSub<T>
+  {
+    PipeSubBuilder<T> ok(Consumer<Void> onOkSubscription);
+    
+    PipeSubBuilder<T> fail(Consumer<Throwable> onFail);
+    PipeSubBuilder<T> close(Runnable onClose);
+    
+    PipeSubBuilder<T> credits(Consumer<Credits> onCredits);
+    
+    PipeSubBuilder<T> credits(long initialCredit);
+        
+    PipeSubBuilder<T> prefetch(int prefetch);
+    
+    PipeSubBuilder<T> capacity(int size);
+    
+    PipeSub<T> chain(Credits creditsNext);
   }
 }

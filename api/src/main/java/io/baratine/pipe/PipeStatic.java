@@ -34,8 +34,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.baratine.pipe.Credits.OnAvailable;
-import io.baratine.pipe.Pipe.PipeInBuilder;
-import io.baratine.pipe.Pipe.PipeOutBuilder;
+import io.baratine.pipe.PipePub.PipePubBuilder;
+import io.baratine.pipe.PipeSub.PipeSubBuilder;
 import io.baratine.service.Result;
 
 
@@ -44,12 +44,12 @@ import io.baratine.service.Result;
  */
 class PipeStatic<T>
 {
-  static class ResultPipeInHandlerImpl<T> extends ResultPipeInBase<T>
-    implements PipeSub<T>, Pipe<T>, PipeInBuilder<T>
+  static class PipeSubHandlerImpl<T> extends PipeSubBase<T>
+    implements PipeSub<T>, Pipe<T>, PipeSubBuilder<T>
   {
-    private InHandler<T> _handler;
+    private PipeHandler<T> _handler;
     
-    ResultPipeInHandlerImpl(InHandler<T> handler)
+    PipeSubHandlerImpl(PipeHandler<T> handler)
     {
       Objects.requireNonNull(handler);
       
@@ -95,11 +95,11 @@ class PipeStatic<T>
     }
   }
   
-  static class PipeInResultImpl<T> implements Pipe<T>
+  static class PipeImplSub<T> implements Pipe<T>
   {
     private PipeSub<T> _pipeIn;
     
-    PipeInResultImpl(PipeSub<T> pipeIn)
+    PipeImplSub(PipeSub<T> pipeIn)
     {
       Objects.requireNonNull(pipeIn);
       
@@ -125,134 +125,12 @@ class PipeStatic<T>
     }
   }
   
-  /*
-  static class PipeOutFlowImpl<T> implements FlowOut<Pipe<T>>
-  {
-    private ResultPipeOut<T> _result;
-    
-    PipeOutFlowImpl(ResultPipeOut<T> result)
-    {
-      Objects.requireNonNull(result);
-      
-      _result = result;
-    }
-
-    @Override
-    public void ready(Pipe<T> pipe)
-    {
-      try {
-        _result.handle(pipe, null);
-      } catch (Exception e) {
-        throw ServiceException.createAndRethrow(e);
-      }
-    }
-
-    @Override
-    public void fail(Throwable exn)
-    {
-      try {
-        _result.handle((Pipe<T>) null, exn);
-      } catch (Exception e) {
-        throw ServiceException.createAndRethrow(e);
-      }
-    }
-  }
-  */
-  
-  static class PipeOutResultImpl<T> extends Result.Wrapper<Pipe<T>, Pipe<T>>
-    implements PipeOutBuilder<T>
-  {
-    private Function<Pipe<T>,OnAvailable> _onOk;
-    
-    private Consumer<Throwable> _onFail;
-    
-    private OnAvailable _flow;
-    
-    PipeOutResultImpl(OnAvailable flow)
-    {
-      super(Result.ignore());
-      
-      Objects.requireNonNull(flow);
-      
-      _flow = flow;
-    }
-    
-    PipeOutResultImpl(Function<Pipe<T>,OnAvailable> onOk)
-    {
-      super(Result.ignore());
-      
-      Objects.requireNonNull(onOk);
-      
-      _onOk = onOk;
-    }
-    
-    PipeOutResultImpl(Result<Pipe<T>> result)
-    {
-      super(result);
-    }
-
-    @Override
-    public PipeOutResultImpl<T> flow(OnAvailable flow)
-    {
-      Objects.requireNonNull(flow);
-      
-      _flow = flow;
-      
-      return this;
-    }
-
-    @Override
-    public PipeOutBuilder<T> fail(Consumer<Throwable> onFail)
-    {
-      Objects.requireNonNull(onFail);
-      
-      _onFail = onFail;
-      
-      return this;
-    }
-    
-    @Override
-    public void ok(Pipe<T> pipe)
-    {
-      if (_onOk != null) {
-        OnAvailable flow = _onOk.apply(pipe);
-        pipe.credits().onAvailable(flow);
-      }
-      
-      delegate().ok(pipe);
-
-      if (_flow != null) {
-        pipe.credits().onAvailable(_flow);
-      }
-
-      /*
-      if (_flow != null) {
-        _flow.ready(pipe);
-      }
-      */
-    }
-    
-    @Override
-    public void fail(Throwable exn)
-    {
-      if (_flow != null) {
-        _flow.fail(exn);
-      }
-      
-      if (_onFail != null) {
-        _onFail.accept(exn);
-      }
-      
-      delegate().fail(exn);
-    }
-  }
-  
-  static class PipeInBuilderImpl<T> implements Pipe<T>
+  static class PipeImplConsumer<T> implements Pipe<T>
   {
     private final Consumer<T> _onNext;
-    private ResultPipeInImpl<T> _resultPipe;
+    private PipeSubBuilderImpl<T> _resultPipe;
     
-    PipeInBuilderImpl(ResultPipeInImpl<T> resultPipe,
+    PipeImplConsumer(PipeSubBuilderImpl<T> resultPipe,
                       Consumer<T> onNext)
     {
       _resultPipe = resultPipe;
@@ -286,13 +164,13 @@ class PipeStatic<T>
     }
   }
   
-  static class ResultPipeInImpl<T>
-    extends ResultPipeInBase<T>
-    implements PipeSub<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
+  static class PipeSubBuilderImpl<T>
+    extends PipeSubBase<T>
+    implements PipeSub<T>, PipeSubBuilder<T>, Pipe<T>, OnAvailable
   {
     private final Pipe<T> _pipe;
     
-    private PipeInBuilderImpl<T> _pipeBuilder;
+    private PipeImplConsumer<T> _pipeBuilder;
     
     private Consumer<Void> _onOk;
     
@@ -308,18 +186,18 @@ class PipeStatic<T>
     
     //private long _sequenceIn;
     
-    ResultPipeInImpl(Pipe<T> pipe)
+    PipeSubBuilderImpl(Pipe<T> pipe)
     {
       Objects.requireNonNull(pipe);
       
       _pipe = pipe;
     }
     
-    ResultPipeInImpl(Consumer<T> onNext)
+    PipeSubBuilderImpl(Consumer<T> onNext)
     {
       Objects.requireNonNull(onNext);
       
-      _pipeBuilder = new PipeInBuilderImpl<>(this, onNext);
+      _pipeBuilder = new PipeImplConsumer<>(this, onNext);
       _pipe = _pipeBuilder;
     }
     
@@ -521,7 +399,7 @@ class PipeStatic<T>
     */
 
     @Override
-    public PipeInBuilder<T> ok(Consumer<Void> onOkSubscription)
+    public PipeSubBuilder<T> ok(Consumer<Void> onOkSubscription)
     {
       _onOk = onOkSubscription;
       
@@ -529,20 +407,20 @@ class PipeStatic<T>
     }
 
     @Override
-    public PipeInBuilder<T> fail(Consumer<Throwable> onFail)
+    public PipeSubBuilder<T> fail(Consumer<Throwable> onFail)
     {
       throw new IllegalStateException();
     }
 
     @Override
-    public PipeInBuilder<T> close(Runnable onClose)
+    public PipeSubBuilder<T> close(Runnable onClose)
     {
       throw new IllegalStateException();
     }
   }
   
-  abstract static class ResultPipeInBase<T>
-    implements PipeSub<T>, PipeInBuilder<T>, Pipe<T>, OnAvailable
+  abstract static class PipeSubBase<T>
+    implements PipeSub<T>, PipeSubBuilder<T>, Pipe<T>, OnAvailable
   {
     private Consumer<Void> _onOk;
     
@@ -573,7 +451,7 @@ class PipeStatic<T>
     abstract protected Pipe<T> pipeImpl();
     
     @Override
-    public PipeInBuilder<T> credits(Consumer<Credits> onCredits)
+    public PipeSubBuilder<T> credits(Consumer<Credits> onCredits)
     {
       _onCredits = onCredits;
       
@@ -668,7 +546,7 @@ class PipeStatic<T>
     //
 
     @Override
-    public PipeInBuilder<T> credits(long credits)
+    public PipeSubBuilder<T> credits(long credits)
     {
       _credits = credits;
       
@@ -676,7 +554,7 @@ class PipeStatic<T>
     }
 
     @Override
-    public PipeInBuilder<T> prefetch(int prefetch)
+    public PipeSubBuilder<T> prefetch(int prefetch)
     {
       _prefetch = prefetch;
       
@@ -684,7 +562,7 @@ class PipeStatic<T>
     }
 
     @Override
-    public PipeInBuilder<T> capacity(int size)
+    public PipeSubBuilder<T> capacity(int size)
     {
       _capacity = size;
       
@@ -755,7 +633,7 @@ class PipeStatic<T>
     */
 
     @Override
-    public PipeInBuilder<T> ok(Consumer<Void> onOkSubscription)
+    public PipeSubBuilder<T> ok(Consumer<Void> onOkSubscription)
     {
       _onOk = onOkSubscription;
       
@@ -763,15 +641,103 @@ class PipeStatic<T>
     }
 
     @Override
-    public PipeInBuilder<T> fail(Consumer<Throwable> onFail)
+    public PipeSubBuilder<T> fail(Consumer<Throwable> onFail)
     {
       throw new IllegalStateException();
     }
 
     @Override
-    public PipeInBuilder<T> close(Runnable onClose)
+    public PipeSubBuilder<T> close(Runnable onClose)
     {
       throw new IllegalStateException();
+    }
+  }
+  
+  static class PipePubImpl<T> extends Result.Wrapper<Pipe<T>, Pipe<T>>
+    implements PipePubBuilder<T>
+  {
+    private Function<Pipe<T>,OnAvailable> _onOk;
+    
+    private Consumer<Throwable> _onFail;
+    
+    private OnAvailable _flow;
+    
+    PipePubImpl(OnAvailable flow)
+    {
+      super(Result.ignore());
+      
+      Objects.requireNonNull(flow);
+      
+      _flow = flow;
+    }
+    
+    PipePubImpl(Function<Pipe<T>,OnAvailable> onOk)
+    {
+      super(Result.ignore());
+      
+      Objects.requireNonNull(onOk);
+      
+      _onOk = onOk;
+    }
+    
+    PipePubImpl(Result<Pipe<T>> result)
+    {
+      super(result);
+    }
+
+    @Override
+    public PipePubImpl<T> flow(OnAvailable flow)
+    {
+      Objects.requireNonNull(flow);
+      
+      _flow = flow;
+      
+      return this;
+    }
+
+    @Override
+    public PipePubBuilder<T> fail(Consumer<Throwable> onFail)
+    {
+      Objects.requireNonNull(onFail);
+      
+      _onFail = onFail;
+      
+      return this;
+    }
+    
+    @Override
+    public void ok(Pipe<T> pipe)
+    {
+      if (_onOk != null) {
+        OnAvailable flow = _onOk.apply(pipe);
+        pipe.credits().onAvailable(flow);
+      }
+      
+      delegate().ok(pipe);
+
+      if (_flow != null) {
+        pipe.credits().onAvailable(_flow);
+      }
+
+      /*
+      if (_flow != null) {
+        _flow.ready(pipe);
+      }
+      */
+    }
+    
+    @Override
+    public void fail(Throwable exn)
+    {
+      if (_flow != null) {
+        _flow.fail(exn);
+      }
+      
+      if (_onFail != null) {
+        _onFail.accept(exn);
+      }
+      
+      delegate().fail(exn);
     }
   }
 }

@@ -29,14 +29,8 @@
 
 package io.baratine.pipe;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import io.baratine.pipe.Credits.OnAvailable;
-import io.baratine.pipe.PipeStatic.PipeOutResultImpl;
-import io.baratine.pipe.PipeStatic.ResultPipeInHandlerImpl;
-import io.baratine.pipe.PipeStatic.ResultPipeInImpl;
-import io.baratine.service.Result;
+import io.baratine.pipe.Pipe.PipeHandler;
+import io.baratine.pipe.PipeStatic.PipeSubHandlerImpl;
 
 /**
  * {@code Pipe} sends a sequence of values from a source to a sink.
@@ -88,68 +82,14 @@ public interface Pipe<T>
   {
     return false;
   }
+  
+  public static <T> Pipe<T> of(PipeHandler<T> handler)
+  {
+    return new PipeSubHandlerImpl<T>(handler);
+  }
 
-  public static <T> PipeOutBuilder<T> out(Result<Pipe<T>> result)
-  {
-    return new PipeOutResultImpl<>(result);
-  }
-  
-  public static <T> PipeOutBuilder<T> out(Function<Pipe<T>,OnAvailable> onOk)
-  {
-    return new PipeOutResultImpl<>(onOk);
-  }
-  
-  public static <T> PipeOutBuilder<T> out(OnAvailable flow)
-  {
-    return new PipeOutResultImpl<>(flow);
-  }
-  
-  public static <T> PipeInBuilder<T> in(Pipe<T> pipe)
-  {
-    return new ResultPipeInImpl<>(pipe);
-  }
-  
-  public static <T> PipeInBuilder<T> in(Consumer<T> next)
-  {
-    return new ResultPipeInImpl<>(next);
-  }
-  
-  public static <T> Pipe<T> pipe(InHandler<T> handler)
-  {
-    return new ResultPipeInHandlerImpl<T>(handler);
-  }
-  
-  public static <T> PipeInBuilder<T> in(InHandler<T> handler)
-  {
-    return in(pipe(handler));
-  }
-  
-  public interface InHandler<T>
+  public interface PipeHandler<T>
   {
     void handle(T next, Throwable exn, boolean isCancel);
-  }
-  
-  public interface PipeOutBuilder<T> extends PipePub<T>
-  {
-    PipeOutBuilder<T> flow(OnAvailable flow);
-    PipeOutBuilder<T> fail(Consumer<Throwable> onFail);
-  }
-  
-  public interface PipeInBuilder<T> extends PipeSub<T>
-  {
-    PipeInBuilder<T> ok(Consumer<Void> onOkSubscription);
-    
-    PipeInBuilder<T> fail(Consumer<Throwable> onFail);
-    PipeInBuilder<T> close(Runnable onClose);
-    
-    PipeInBuilder<T> credits(Consumer<Credits> onCredits);
-    
-    PipeInBuilder<T> credits(long initialCredit);
-        
-    PipeInBuilder<T> prefetch(int prefetch);
-    
-    PipeInBuilder<T> capacity(int size);
-    
-    PipeSub<T> chain(Credits creditsNext);
   }
 }
