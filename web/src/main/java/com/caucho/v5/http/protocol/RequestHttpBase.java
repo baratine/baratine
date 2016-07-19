@@ -803,8 +803,9 @@ public abstract class RequestHttpBase implements OutHttpTcp, RequestOut
   protected boolean addHeaderInt(char []keyBuf, int keyOff, int keyLen,
                                  CharSegment value)
   {
-    if (keyLen < 4)
+    if (keyLen < 4) {
       return true;
+    }
 
     int key1 = keyBuf[keyOff] | 0x20 | (keyLen << 8);
     
@@ -814,22 +815,30 @@ public abstract class RequestHttpBase implements OutHttpTcp, RequestOut
         char []valueBuffer = value.buffer();
         int valueOffset = value.offset();
         int valueLength = value.length();
+        int end = valueOffset + valueLength;
+
         boolean isKeepalive = false;
 
-        switch (valueBuffer[valueOffset]) {
-        case 'k':
-        case 'K':
-          if (match(valueBuffer, valueOffset, valueLength, KEEPALIVE)) {
+        while (valueOffset < end) {
+          char ch = Character.toLowerCase(valueBuffer[valueOffset]);
+
+          if (ch == 'k'
+              && match(valueBuffer, valueOffset, KEEPALIVE.length, KEEPALIVE)) {
             isKeepalive = true;
+            valueOffset += KEEPALIVE.length;
           }
-          break;
-          
-        case 'u':
-        case 'U':
-          if (match(valueBuffer, valueOffset, UPGRADE.length, UPGRADE)) {
+          else if (ch == 'u'
+                   && match(valueBuffer, valueOffset, UPGRADE.length, UPGRADE)) {
             _isUpgrade = true;
+            valueOffset += UPGRADE.length;
           }
-          break;
+
+          while (valueOffset < end && valueBuffer[valueOffset++] != ',') {
+          }
+
+          if (valueBuffer[valueOffset] == ' ') {
+            valueOffset++;
+          }
         }
         
         _isKeepalive = isKeepalive;
