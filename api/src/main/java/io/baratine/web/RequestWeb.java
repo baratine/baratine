@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 import io.baratine.config.Config;
@@ -77,6 +78,8 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * @return
    */
   String uri();
+  
+  String uriRaw();
 
   /**
    * Returns the matching part of the URI. i.e. the part that matches the path
@@ -144,12 +147,26 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   String header(String string);
 
   /**
+   * Returns map of header name to header values
+   *
+   * @return
+   */
+  MultiMap<String,String> headerMap();
+
+  /**
    * Returns cookie value of a matching cookie
    *
    * @param name
    * @return
    */
   String cookie(String name);
+
+  /**
+   * Returns map of cookie name to cookie values
+   *
+   * @return
+   */
+  Map<String,String> cookieMap();
 
   /**
    * Returns value of a 'Host' header
@@ -467,5 +484,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
     CookieBuilder path(String path);
 
     CookieBuilder domain(String domain);
+    
+    CookieBuilder maxAge(long time, TimeUnit unit);
   }
 }

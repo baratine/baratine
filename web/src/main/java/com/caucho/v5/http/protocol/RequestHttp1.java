@@ -2217,6 +2217,11 @@ public class RequestHttp1 extends RequestHttpBase
       os.print(cookie.path());
     }
     
+    if (cookie.maxAge() >= 0) {
+      os.print("; MaxAge=");
+      os.print(cookie.maxAge() / 1000);
+    }
+    
     if (cookie.httpOnly()) {
       os.print("; HttpOnly");
     }

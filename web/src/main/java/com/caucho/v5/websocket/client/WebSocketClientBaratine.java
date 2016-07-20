@@ -56,6 +56,8 @@ import com.caucho.v5.websocket.io.WebSocketProtocolException;
 import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
 import io.baratine.web.ServiceWebSocket;
+import io.baratine.web.WebSocketClose;
+import io.baratine.web.WebSocketClose.WebSocketCloses;
 
 /**
  * WebSocketClient
@@ -542,14 +544,19 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   {
   }
 
+  @Override
   public boolean isClosed()
   {
     return _isClosed;
   }
 
+  @Override
   public void close()
   {
-    disconnect();
+    close(WebSocketCloses.NORMAL_CLOSURE, "ok");
+    //public void close(WebSocketClose reason, String text)
+    
+    //disconnect();
   }
 
   @Override

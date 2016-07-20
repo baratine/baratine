@@ -98,7 +98,8 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
   private long _sequenceOut;
   private Credits _credits = new CreditsWebSocket();
-
+  
+  private StateWs _state = StateWs.OPEN;
   protected WebSocketBase(WebSocketManager manager)
   {
     Objects.requireNonNull(manager);
@@ -244,8 +245,24 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   public void close(WebSocketClose reason, String text)
   {
     Objects.requireNonNull(reason);
+    
+    if (_state.isClosed()) {
+      return;
+    }
+    
+    _state = _state.closeSelf();
 
     _frameOut.close(reason, text);
+    
+    if (_state.isClosed()) {
+      disconnect();
+    }
+  }
+  
+  protected void disconnect()
+  {
+    //_fIs.// asdf
+    //_frameOut.dis
   }
 
   @Override
@@ -322,6 +339,12 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   private void readClose(FrameInputStream fIs)
     throws IOException
   {
+    if (_state.isClosed()) {
+      return;
+    }
+    
+    _state = _state.closePeer();
+    
     int c1 = fIs.readBinary();
     int c2 = fIs.readBinary();
 
@@ -341,6 +364,10 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
     else {
       close();
+    }
+    
+    if (_state.isClosed()) {
+      disconnect();
     }
     //System.out.println("READ_C: " + code + " " + sb);;
   }
@@ -838,5 +865,42 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
       return _prefetch;
     }
 
+  }
+
+  enum StateWs {
+    OPEN {
+      @Override
+      StateWs closePeer() { return CLOSE_PEER; }
+      
+      @Override
+      StateWs closeSelf() { return CLOSE_SELF; }
+    },
+    CLOSE_PEER {
+      @Override
+      StateWs closeSelf() { return CLOSE; }
+    },
+    CLOSE_SELF {
+      @Override
+      StateWs closePeer() { return CLOSE; }
+    },
+    CLOSE {
+      @Override
+      boolean isClosed() { return true; }
+    };
+    
+    boolean isClosed()
+    {
+      return false;
+    }
+    
+    StateWs closePeer()
+    {
+      return this;
+    }
+    
+    StateWs closeSelf()
+    {
+      return this;
+    }
   }
 }

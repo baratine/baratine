@@ -145,6 +145,12 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
+  public String uriRaw()
+  {
+    return delegate().uriRaw();
+  }
+
+  @Override
   public String path()
   {
     return delegate().path();
@@ -193,9 +199,21 @@ public class RequestWrapper implements RequestWebSpi
   }
 
   @Override
+  public MultiMap<String,String> headerMap()
+  {
+    return delegate().headerMap();
+  }
+
+  @Override
   public String cookie(String name)
   {
     return delegate().cookie(name);
+  }
+
+  @Override
+  public Map<String,String> cookieMap()
+  {
+    return delegate().cookieMap();
   }
 
   @Override

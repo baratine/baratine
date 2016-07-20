@@ -40,4 +40,6 @@ public interface CookieWeb
   
   String path();
   String domain();
+  
+  long maxAge();
 }

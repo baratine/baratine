@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -160,11 +161,34 @@ public final class RequestBaratineImpl extends RequestHttpWeb
     return requestHttp().header(key);
   }
 
+  @Override
+  public MultiMap<String,String> headerMap()
+  {
+    int size = requestHttp().getHeaderSize();
+    
+    MultiMap<String,String> headerMap = new MultiMapImpl<>(size + 1);
+    
+    for (int i = 0; i < size; i++) {
+      ArrayList<String> values = new ArrayList<>();
+      
+      values.add(requestHttp().getHeaderValue(i).toString());
+      
+      headerMap.put(requestHttp().getHeaderKey(i).toString(), values);
+    }
+
+    return headerMap;
+  }
 
   @Override
   public String uri()
   {
     return invocation().uri();
+  }
+  
+  @Override
+  public String uriRaw()
+  {
+    return invocation().getRawURI();
   }
 
   @Override
@@ -189,6 +213,18 @@ public final class RequestBaratineImpl extends RequestHttpWeb
     }
 
     return null;
+  }
+
+  @Override
+  public Map<String,String> cookieMap()
+  {
+    HashMap<String,String> cookieMap = new HashMap<>();
+    
+    for (CookieWeb cookie : requestHttp().cookies()) {
+      cookieMap.put(cookie.name(), cookie.value());
+    }
+
+    return cookieMap;
   }
 
   @Override
@@ -1157,6 +1193,8 @@ public final class RequestBaratineImpl extends RequestHttpWeb
     private String _path;
     private String _domain;
     
+    private long _maxAge = -1;
+    
     CookieBuilderImpl(String key, String value)
     {
       Objects.requireNonNull(key);
@@ -1226,6 +1264,19 @@ public final class RequestBaratineImpl extends RequestHttpWeb
       _secure = isSecure;
       
       return this;
+    }
+    
+    @Override
+    public CookieBuilder maxAge(long time, TimeUnit unit)
+    {
+      _maxAge = unit.toMillis(time);
+      
+      return this;
+    }
+    
+    public long maxAge()
+    {
+      return _maxAge;
     }
 
     @Override

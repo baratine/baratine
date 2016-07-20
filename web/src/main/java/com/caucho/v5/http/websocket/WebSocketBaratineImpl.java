@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.OutHttpProxy;
 import com.caucho.v5.http.protocol.OutHttpTcp;
 import com.caucho.v5.io.WriteStream;
@@ -408,6 +409,22 @@ public class WebSocketBaratineImpl<T,S>
     tBuf.length(_headOffset + _frameLength);
   }
   */
+
+  @Override
+  protected void disconnect()
+  {
+    ConnectionHttp conn = _request.connHttp();
+    
+    if (conn != null) {
+      try {
+        _request.ok();
+        //conn.connTcp().writeStream().close();
+        //conn.connTcp().disconnect();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
 
   @Override
   public String toString()

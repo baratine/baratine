@@ -176,9 +176,10 @@ public class WebCookie implements Cloneable, Serializable, CookieWeb {
   /**
    * Returns the max age of the cookie in seconds.
    */
-  public int getMaxAge()
+  @Override
+  public long maxAge()
   {
-    return this.maxAge;
+    return this.maxAge * 1000;
   }
 
   /**
