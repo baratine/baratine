@@ -23,9 +23,13 @@ allprojects {
 
   javadoc.options.links("http://docs.oracle.com/javase/8/docs/api/");
   javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-  
+
   eclipse.project {
     natures 'org.eclipse.buildship.core.gradleprojectnature'
+  }
+
+  eclipse.classpath {
+    defaultOutputDir = file('build/classes/main')
   }
 }
 
