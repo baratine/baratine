@@ -109,7 +109,7 @@ class ViewImpl implements ViewBuilder, View
     Objects.requireNonNull(key);
     Objects.requireNonNull(value);
     
-    _map.put(key, value);
+    map().put(key, value);
     
     return this;
   }
