@@ -183,6 +183,8 @@ public class RunnerBaratine extends BaseRunner<RunnerInjectionTestPoint>
 
       long startTime = getStartTime();
 
+      TestTime.clear();
+
       if (startTime != -1) {
         TestTime.setTime(startTime);
 
