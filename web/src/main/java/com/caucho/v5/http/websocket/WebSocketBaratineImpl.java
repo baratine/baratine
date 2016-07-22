@@ -47,7 +47,7 @@ import com.caucho.v5.util.L10N;
 import com.caucho.v5.web.webapp.RequestBaratine;
 import com.caucho.v5.web.webapp.RequestBaratineImpl;
 import com.caucho.v5.websocket.io.Frame;
-import com.caucho.v5.websocket.io.FrameInputStream;
+import com.caucho.v5.websocket.io.FrameIn;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
@@ -258,9 +258,9 @@ public class WebSocketBaratineImpl<T,S>
 
     req.length(0);
 
-    FrameInputStream fIs;
+    FrameIn fIs;
 
-    fIs = new FrameInputStream();
+    fIs = new FrameIn();
 
     // _fIs = fIs;
 

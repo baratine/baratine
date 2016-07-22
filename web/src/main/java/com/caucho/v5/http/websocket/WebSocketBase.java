@@ -46,7 +46,7 @@ import com.caucho.v5.websocket.io.Frame.FrameBinary;
 import com.caucho.v5.websocket.io.Frame.FramePing;
 import com.caucho.v5.websocket.io.Frame.FramePong;
 import com.caucho.v5.websocket.io.Frame.FrameText;
-import com.caucho.v5.websocket.io.FrameInputStream;
+import com.caucho.v5.websocket.io.FrameIn;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
@@ -76,7 +76,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
   private WebSocketManager _manager;
 
-  private FrameInputStream _fIs;
+  private FrameIn _fIs;
 
   private InWebSocket _inBinary = WS_SKIP;
   private InWebSocket _inText = WS_SKIP;
@@ -98,7 +98,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
   private long _sequenceOut;
   private Credits _credits = new CreditsWebSocket();
-  
+
   private StateWs _state = StateWs.OPEN;
   protected WebSocketBase(WebSocketManager manager)
   {
@@ -123,7 +123,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
   }
 
-  protected void frameInput(FrameInputStream fIs)
+  protected void frameInput(FrameIn fIs)
   {
     Objects.requireNonNull(fIs);
 
@@ -245,20 +245,20 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   public void close(WebSocketClose reason, String text)
   {
     Objects.requireNonNull(reason);
-    
+
     if (_state.isClosed()) {
       return;
     }
-    
+
     _state = _state.closeSelf();
 
     _frameOut.close(reason, text);
-    
+
     if (_state.isClosed()) {
       disconnect();
     }
   }
-  
+
   protected void disconnect()
   {
     //_fIs.// asdf
@@ -281,8 +281,8 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   {
     _frameOut.writeString(data, isFinal);
   }
-  
-  protected void readInit(Class<?> type, 
+
+  protected void readInit(Class<?> type,
                           ServiceWebSocket<?,S> service,
                           WebSocketManager manager)
   {
@@ -336,26 +336,23 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   /**
    * Read a close frame.
    */
-  private void readClose(FrameInputStream fIs)
+  private void readClose(FrameIn fIs)
     throws IOException
   {
     if (_state.isClosed()) {
       return;
     }
-    
-    _state = _state.closePeer();
-    
-    int c1 = fIs.readBinary();
-    int c2 = fIs.readBinary();
 
-    int code = (c1 << 8) + c2;
+    _state = _state.closePeer();
+
+    int code = fIs.readClose();
 
     StringBuilder sb = new StringBuilder();
     fIs.readText(sb);
 
     if (_service != null) {
       WebSocketClose codeWs = WebSocketCloses.of(code);
-      
+
       try {
         _service.close(codeWs, sb.toString(), this);
       } catch (Exception e) {
@@ -365,7 +362,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     else {
       close();
     }
-    
+
     if (_state.isClosed()) {
       disconnect();
     }
@@ -385,7 +382,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   }
 
   /**
-   * Close the websocket with a failure. 
+   * Close the websocket with a failure.
    */
   @Override
   public void fail(Throwable exn)
@@ -421,7 +418,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     //complete(false);
   }
 
-  private void readPing(FrameInputStream fIs)
+  private void readPing(FrameIn fIs)
     throws IOException
   {
     //int len = (int) fIs.length();
@@ -444,7 +441,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
   }
 
-  private void readPong(FrameInputStream fIs)
+  private void readPong(FrameIn fIs)
     throws IOException
   {
     //int len = (int) fIs.length();
@@ -581,7 +578,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
 
   private static interface InWebSocket
   {
-    void read(FrameInputStream fIs)
+    void read(FrameIn fIs)
       throws IOException;
 
   }
@@ -589,7 +586,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   private static class InWebSocketSkip implements InWebSocket
   {
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       fIs.skipToFrameEnd();
@@ -611,7 +608,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
 
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       Buffer buffer = Buffers.factory().create();
@@ -643,7 +640,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
 
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       //int op = fIs.getOpcode();
@@ -690,7 +687,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
 
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       StringBuilder sb = new StringBuilder();
@@ -720,7 +717,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
 
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       int op = fIs.getOpcode();
@@ -751,7 +748,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
 
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       int len = (int) fIs.length();
@@ -787,7 +784,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     }
 
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       int len = (int) fIs.length();
@@ -871,7 +868,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
     OPEN {
       @Override
       StateWs closePeer() { return CLOSE_PEER; }
-      
+
       @Override
       StateWs closeSelf() { return CLOSE_SELF; }
     },
@@ -887,17 +884,17 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
       @Override
       boolean isClosed() { return true; }
     };
-    
+
     boolean isClosed()
     {
       return false;
     }
-    
+
     StateWs closePeer()
     {
       return this;
     }
-    
+
     StateWs closeSelf()
     {
       return this;

@@ -48,14 +48,14 @@ public class InWebSocketReaderImpl
   private static final Logger log
     = Logger.getLogger(InWebSocketReaderImpl.class.getName());
   
-  private final FrameInputStream _inFrame;
+  private final FrameIn _inFrame;
 
   private FrameListener _session;
   private int _op;
 
   private boolean _isClosed;
   
-  public InWebSocketReaderImpl(FrameInputStream is)
+  public InWebSocketReaderImpl(FrameIn is)
   {
     Objects.requireNonNull(is);
     

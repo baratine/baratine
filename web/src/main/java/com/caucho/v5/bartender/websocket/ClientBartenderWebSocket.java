@@ -46,7 +46,7 @@ import com.caucho.v5.io.WriteStream;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.websocket.client.WebSocketImplClient;
 import com.caucho.v5.websocket.io.CloseReason;
-import com.caucho.v5.websocket.io.FrameInputStream;
+import com.caucho.v5.websocket.io.FrameIn;
 import com.caucho.v5.websocket.io.FrameListener;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
@@ -74,7 +74,7 @@ public class ClientBartenderWebSocket
 
   private ClientContext _context;
   
-  private FrameInputStream _frameIs;
+  private FrameIn _frameIs;
   //private ClientEndpointConfig _config;
   
   private final AtomicLong _connId = new AtomicLong();

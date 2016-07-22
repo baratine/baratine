@@ -56,9 +56,9 @@ public class WebSocketInputStream extends InputStream
 {
   private static final L10N L = new L10N(WebSocketInputStream.class);
   
-  private final FrameInputStream _is;
+  private final FrameIn _is;
 
-  public WebSocketInputStream(FrameInputStream is)
+  public WebSocketInputStream(FrameIn is)
   {
     _is = is;
   }

@@ -45,6 +45,6 @@ package com.caucho.v5.websocket.io;
  *   8 - close
  * </pre></code>
  */
-public class FrameInputStreamUnmasked extends FrameInputStream
+public class FrameInUnmasked extends FrameIn
 {
 }

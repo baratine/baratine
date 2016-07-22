@@ -58,7 +58,7 @@ import com.caucho.v5.util.Utf8Util;
 import com.caucho.v5.web.webapp.RequestBaratine;
 import com.caucho.v5.web.webapp.RequestBaratineImpl;
 import com.caucho.v5.websocket.io.Frame;
-import com.caucho.v5.websocket.io.FrameInputStream;
+import com.caucho.v5.websocket.io.FrameIn;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 
@@ -226,9 +226,9 @@ public class WebSocketBartender<T,S>
 
   public void connect(RequestBaratineImpl req)
   {
-    FrameInputStream fIs;
+    FrameIn fIs;
 
-    fIs = new FrameInputStream();
+    fIs = new FrameIn();
 
     // _fIs = fIs;
 
@@ -645,7 +645,7 @@ public class WebSocketBartender<T,S>
 
   private static interface InWebSocket
   {
-    void read(FrameInputStream fIs)
+    void read(FrameIn fIs)
       throws IOException;
 
   }
@@ -653,7 +653,7 @@ public class WebSocketBartender<T,S>
   private static class InWebSocketSkip implements InWebSocket
   {
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       fIs.skipToFrameEnd();
@@ -672,7 +672,7 @@ public class WebSocketBartender<T,S>
     }
 
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       Buffer buffer = Buffers.factory().create();
@@ -695,7 +695,7 @@ public class WebSocketBartender<T,S>
     }
 
     @Override
-    public void read(FrameInputStream fIs)
+    public void read(FrameIn fIs)
       throws IOException
     {
       int op = fIs.getOpcode();

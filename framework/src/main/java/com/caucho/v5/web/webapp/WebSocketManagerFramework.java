@@ -42,6 +42,7 @@ import com.caucho.v5.vfs.TempCharBuffer;
 
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;
+import io.baratine.web.WebSocketClose;
 
 /**
  * Reads and writes websockets.
@@ -49,7 +50,7 @@ import io.baratine.web.WebSocket;
 public class WebSocketManagerFramework extends WebSocketManager
 {
   private JsonFactory _serializer = new JsonFactory();
-  
+
   @Override
   public <S> void serialize(WebSocket<S> ws, S value)
     throws IOException
@@ -58,10 +59,10 @@ public class WebSocketManagerFramework extends WebSocketManager
       ws.write((String) value);
       return;
     }
-    
+
     try (WriterWs writer = new WriterWs(ws)) {
       SerializerJson<S> ser = (SerializerJson) _serializer.serializer(value.getClass());
-      
+
       try (JsonWriterImpl jsOut = _serializer.out(writer)) {
         ser.writeTop(jsOut, value);
       }
@@ -73,15 +74,15 @@ public class WebSocketManagerFramework extends WebSocketManager
                    ServiceWebSocket<T, S> service)
   {
     SerializerJson ser = _serializer.serializer(type);
-    
-    return new ServiceWebSocketJson<T,S>(ser, service); 
+
+    return new ServiceWebSocketJson<T,S>(ser, service);
   }
-  
+
   private class ServiceWebSocketJson<T,S> implements ServiceWebSocket<String,S>
   {
     private ServiceWebSocket<T,S> _service;
     private SerializerJson _ser;
-    
+
     ServiceWebSocketJson(SerializerJson ser,
                          ServiceWebSocket<T,S> service)
     {
@@ -90,18 +91,58 @@ public class WebSocketManagerFramework extends WebSocketManager
     }
 
     @Override
+    public void open(WebSocket<S> ws)
+      throws Exception
+    {
+      _service.open(ws);
+    }
+
+    @Override
     public void next(String data, WebSocket<S> webSocket) throws Exception
     {
       try (StringReader reader = new StringReader(data)) {
         try (JsonReaderImpl in = _serializer.in(reader)) {
           T value = (T) _ser.read(in);
-          
+
           _service.next(value, webSocket);
         }
       }
     }
+
+    public void ping(String value, WebSocket<S> webSocket)
+      throws Exception
+    {
+      _service.ping(value, webSocket);
+    }
+
+    public void pong(String value, WebSocket<S> webSocket)
+      throws Exception
+    {
+      _service.pong(value, webSocket);
+    }
+
+    @Override
+    public void close(WebSocketClose code,
+                      String msg,
+                      WebSocket<S> webSocket)
+     throws Exception
+   {
+     _service.close(code, msg, webSocket);
+   }
+
+    @Override
+    public void close(WebSocket<S> webSocket)
+    {
+      _service.close(webSocket);
+    }
+
+    @Override
+    public String toString()
+    {
+      return getClass().getSimpleName() + "[" + _service + "]";
+    }
   }
-  
+
   private class WriterWs extends Writer
   {
     private WebSocket<?> _webSocket;
@@ -110,11 +151,11 @@ public class WebSocketManagerFramework extends WebSocketManager
     private char []_buffer;
     private int _offset;
     private boolean _isClose;
-    
+
     WriterWs(WebSocket<?> webSocket)
     {
       _webSocket = webSocket;
-      
+
       _tBuf = TempCharBuffer.allocate();
       _buffer = _tBuf.buffer();
     }
@@ -124,14 +165,14 @@ public class WebSocketManagerFramework extends WebSocketManager
     {
       char []buffer = _buffer;
       int offset = _offset;
-      
+
       if (buffer.length <= offset) {
         _webSocket.writePart(new String(_buffer, 0, _offset));
         offset = 0;
       }
-      
+
       buffer[offset++] = (char) ch;
-      
+
       _offset = offset;
     }
 
@@ -141,14 +182,14 @@ public class WebSocketManagerFramework extends WebSocketManager
       while (len > 0) {
         char []tBuffer = _buffer;
         int tOffset = _offset;
-        
+
         int sublen = Math.min(tBuffer.length - tOffset, len);
         System.arraycopy(cbuf, off, tBuffer, tOffset, sublen);
-        
+
         len -= sublen;
         off += sublen;
         _offset = tOffset + sublen;
-      
+
         if (len > 0) {
           _webSocket.writePart(new String(_buffer, 0, _offset));
           _offset = 0;
@@ -174,13 +215,13 @@ public class WebSocketManagerFramework extends WebSocketManager
     {
       _isClose = true;
       flush();
-      
+
       TempCharBuffer tBuf = _tBuf;
       _tBuf = null;
       _buffer = null;
-      
+
       tBuf.freeSelf();
     }
-    
+
   }
 }

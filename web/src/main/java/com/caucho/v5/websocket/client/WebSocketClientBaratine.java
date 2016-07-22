@@ -49,7 +49,7 @@ import com.caucho.v5.tcp.TcpConnection;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.websocket.WebSocketClient;
-import com.caucho.v5.websocket.io.FrameInputStream;
+import com.caucho.v5.websocket.io.FrameIn;
 import com.caucho.v5.websocket.io.WebSocketConstants;
 import com.caucho.v5.websocket.io.WebSocketProtocolException;
 
@@ -89,7 +89,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   private ThreadClientTask _threadTask;
   private ConnectionWebSocketJni _jniTask;
 
-  private FrameInputStream _frameIs;
+  private FrameIn _frameIs;
 
   private HashMap<String,String> _headers = new HashMap<String,String>();
 
@@ -438,7 +438,7 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
     //_webSocket = new WebSocketImplClient(_uri.getPath(), os);
 
 
-    FrameInputStream fIs = new FrameInputStream();
+    FrameIn fIs = new FrameIn();
     fIs.init(null, is);
 
     //Objects.requireNonNull(_frameIs);

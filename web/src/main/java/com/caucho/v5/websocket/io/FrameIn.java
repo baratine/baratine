@@ -49,7 +49,7 @@ import io.baratine.io.Buffer;
  * +-+------+---------+-+---------+
  * |F|xxx(3)|opcode(4)|R|len(7)   |
  * +-+------+---------+-+---------+
- * 
+ *
  * OPCODES
  *   0 - cont
  *   1 - close
@@ -59,45 +59,45 @@ import io.baratine.io.Buffer;
  *   5 - binary
  * </pre></code>
  */
-public class FrameInputStream
+public class FrameIn
   implements WebSocketConstants
 {
-  private static final Logger log = Logger.getLogger(FrameInputStream.class.getName());
-  private static final L10N L = new L10N(FrameInputStream.class);
-  
+  private static final Logger log = Logger.getLogger(FrameIn.class.getName());
+  private static final L10N L = new L10N(FrameIn.class);
+
   private static final char UTF8_ERROR = 0xfeff;
-  
+
   private FrameListener _listener;
   //private WebSocketReader _textIn;
   private WebSocketInputStream _binaryIn;
-  
+
   private ReadStream _is;
-  
+
   /*
   private byte []_byteBuffer;
   private int _bufferOffset;
   private int _bufferLength;
   */
-  
+
   private int _op;
   private long _length;
   private boolean _isFinal;
-  
+
   private final byte []_mask = new byte[4];
   private boolean _isMask;
   private int _maskOffset;
-  
+
   private final char []_charBuffer = new char[1];
   private int _frameOp;
   private int _frameOpInit;
   private CloseReason _closeReason;
-  
+
   public void init(FrameListener listener, ReadStream is)
   {
     Objects.requireNonNull(is);
-    
+
     _listener = listener;
-    
+
     _is = is;
     /*
     _byteBuffer = is.getBuffer();
@@ -105,12 +105,12 @@ public class FrameInputStream
     _bufferLength = is.getLength();
     */
   }
-  
+
   public FrameListener getListener()
   {
     return _listener;
   }
-  
+
   public int getOpcode()
   {
     return _op;
@@ -125,17 +125,17 @@ public class FrameInputStream
   {
     return _length;
   }
-  
+
   public boolean isFinal()
   {
     return _isFinal;
   }
-  
+
   public byte []getMask()
   {
     return _mask;
   }
-  
+
   /*
   public WebSocketReader initReader()
     throws IOException
@@ -145,11 +145,11 @@ public class FrameInputStream
     }
 
     _textIn.init();
-    
+
     return _textIn;
   }
   */
-  
+
   public WebSocketInputStream initBinary()
     throws IOException
   {
@@ -158,7 +158,7 @@ public class FrameInputStream
     }
 
     _binaryIn.init();
-    
+
     return _binaryIn;
   }
 
@@ -168,28 +168,28 @@ public class FrameInputStream
     if (_is.available() <= 0) {
       return false;
     }
-    
+
     /*
     _byteBuffer = _is.getBuffer();
     _bufferOffset = _is.getOffset();
     _bufferLength = _is.getLength();
     */
-    
+
     long length = length();
 
     if (length > 0) {
       throw new IllegalStateException(L.l("new frame, but old frame is unfinished"));
     }
-    
+
     readFrameHeaderImpl();
-    
+
     /*
     _is.setOffset(_bufferOffset);
     _is.setLength(_bufferLength);
     */
-    
+
     return true;
-    
+
     /*
     while (true) {
       if (! readFrameHeaderImpl()) {
@@ -218,21 +218,21 @@ public class FrameInputStream
 
     boolean isFinal = (frame1 & FLAG_FIN) == FLAG_FIN;
     int op = frame1 & 0xf;
-    
+
     if (op != 0) {
       _op = op;
       _frameOp = op;
     }
-      
+
     int rsv = frame1 & 0x70;
-      
+
     if (rsv != 0) {
       fail(CloseCodes.PROTOCOL_ERROR, "illegal request");
       return false;
     }
 
     _isFinal = isFinal;
-    
+
     long length = frame2 & 0x7f;
 
     if (length < 0x7e) {
@@ -255,23 +255,23 @@ public class FrameInputStream
       mask[1] = (byte) _is.read();
       mask[2] = (byte) _is.read();
       mask[3] = (byte) _is.read();
-        
+
       _maskOffset = 0;
-        
+
       fillMask();
     }
-    
+
     return true;
   }
-  
+
   private void fail(CloseCodes protocolError, String string)
   {
     log.warning("WebSocket fail: " + protocolError + " " + string);
-    
+
     _op = OP_CLOSE;
     _closeReason = new CloseReason(protocolError, string);
   }
-  
+
   public CloseReason closeReason()
   {
     return _closeReason;
@@ -283,22 +283,22 @@ public class FrameInputStream
     switch (getOpcode()) {
     case OP_PING:
       return handlePing();
-      
+
     case OP_PONG:
       return handlePong();
-  
+
     case OP_CLOSE:
       return handleClose();
     }
 
     return true;
   }
-  
+
   private boolean handlePing()
     throws IOException
   {
     long length = length();
-    
+
     if (! isFinal()) {
       closeError(CloseCodes.PROTOCOL_ERROR, "ping must be final");
       return true;
@@ -307,18 +307,18 @@ public class FrameInputStream
       closeError(CloseCodes.PROTOCOL_ERROR, "ping length must be less than 125");
       return true;
     }
-  
+
     byte []value = new byte[(int) length];
-  
+
     for (int i = 0; i < length; i++) {
       value[i] = (byte) readBinary();
     }
 
     getListener().onPing(value, 0, value.length);
-    
+
     return false;
   }
-  
+
   private boolean handlePong()
       throws IOException
   {
@@ -330,19 +330,19 @@ public class FrameInputStream
       closeError(CloseCodes.PROTOCOL_ERROR, "pong must be less than 125");
       return true;
     }
-  
+
     long length = length();
     byte []value = new byte[(int) length];
-  
+
     for (int i = 0; i < length; i++) {
       value[i] = (byte) readBinary();
     }
-    
+
     getListener().onPong(value, 0, value.length);
-    
+
     return false;
   }
-  
+
   private boolean handleClose()
       throws IOException
   {
@@ -379,7 +379,7 @@ public class FrameInputStream
         while ((ch = readText()) >= 0) {
           sb.append((char) ch);
         }
-        
+
         switch (code) {
         case 1000:
         case 1001:
@@ -412,7 +412,7 @@ public class FrameInputStream
       //closeError(closeCode, closeMessage);
     }
   }
-  
+
   public int readText()
       throws IOException
   {
@@ -425,7 +425,7 @@ public class FrameInputStream
       return _charBuffer[0];
     }
   }
-    
+
   /**
    * Reads a buffer of text from the current message, returning -1 when the
    * message ends.
@@ -445,26 +445,26 @@ public class FrameInputStream
       byteOffset = _is.offset();
       byteLength = _is.length();
     }
-    
+
     int charEnd = charOffset + charLength;
     int i = charOffset;
-    
+
     int byteBegin = byteOffset;
     int byteEnd = (int) Math.min(byteLength, byteOffset + length());
-    
+
     while (i < charEnd && byteOffset < byteEnd) {
       int d1 = byteBuffer[byteOffset++] & 0xff;
-      
+
       char ch;
-      
+
       if (d1 < 0x80) {
         ch = (char) d1;
       }
       else if ((d1 & 0xe0) == 0xc0) {
         int d2 = byteBuffer[byteOffset++] & 0xff;
-      
+
         ch = (char) (((d1 & 0x1f) << 6) + (d2 & 0x3f));
-        
+
         if (d2 < 0) {
           closeError(CloseCodes.NOT_CONSISTENT, "illegal utf-8");
           ch = UTF8_ERROR;
@@ -481,8 +481,8 @@ public class FrameInputStream
       else if ((d1 & 0xf0) == 0xe0){
         int d2 = byteBuffer[byteOffset++] & 0xff;
         int d3 = byteBuffer[byteOffset++] & 0xff;
-        
-        ch = (char) (((d1 & 0x0f) << 12) + ((d2 & 0x3f) << 6) + (d3 & 0x3f)); 
+
+        ch = (char) (((d1 & 0x0f) << 12) + ((d2 & 0x3f) << 6) + (d3 & 0x3f));
 
         if (d3 < 0) {
           closeError(CloseCodes.NOT_CONSISTENT, "illegal utf-8");
@@ -509,20 +509,20 @@ public class FrameInputStream
         int d2 = byteBuffer[byteOffset++] & 0xff;
         int d3 = byteBuffer[byteOffset++] & 0xff;
         int d4 = byteBuffer[byteOffset++] & 0xff;
-        
+
         int cp = (((d1 & 0x7) << 18)
                    + ((d2 & 0x3f) << 12)
                    + ((d3 & 0x3f) << 6)
                    + ((d4 & 0x3f)));
-        
+
         cp -= 0x10000;
-        
+
         char h = (char) (0xd800 + ((cp >> 10) & 0x3ff));
-        
+
         charBuffer[i++] = h;
-        
+
         ch = (char) (0xdc00 + (cp & 0x3ff));
-        
+
         if (d4 < 0) {
           closeError(CloseCodes.NOT_CONSISTENT, "illegal utf-8");
           ch = UTF8_ERROR;
@@ -550,19 +550,19 @@ public class FrameInputStream
       }
       else {
         closeError(CloseCodes.NOT_CONSISTENT, "illegal utf-8");
-        
+
         ch = UTF8_ERROR;
       }
 
       charBuffer[i++] = ch;
     }
-    
+
     _is.offset(byteOffset);
     _length -= (byteOffset - byteBegin);
-    
+
     return i - charOffset;
   }
-  
+
   public void skipToMessageEnd()
     throws IOException
   {
@@ -570,7 +570,7 @@ public class FrameInputStream
       skipBinary(length());
     }
   }
-  
+
   public void skipToFrameEnd()
     throws IOException
   {
@@ -578,7 +578,23 @@ public class FrameInputStream
       _is.skip(length());
     }
   }
-  
+
+  public int readClose()
+    throws IOException
+  {
+    if (_length == 0) {
+      return CloseReason.CloseCodes.NORMAL_CLOSURE.getCode();
+    }
+    else {
+      int c1 = readBinary();
+      int c2 = readBinary();
+
+      int code = (c1 << 8) + c2;
+
+      return code;
+    }
+  }
+
   public int readBinary()
     throws IOException
   {
@@ -601,10 +617,10 @@ public class FrameInputStream
 
     _is.offset(bufferOffset);
     _length = frameLength - 1;
-    
+
     return value;
   }
-  
+
   public int readBinary(byte []buffer, int offset, int length)
     throws IOException
   {
@@ -634,7 +650,7 @@ public class FrameInputStream
 
     return sublen;
   }
-  
+
   public boolean readBuffer(Buffer buffer)
     throws IOException
   {
@@ -645,7 +661,7 @@ public class FrameInputStream
 
     while (true) {
       int sublen = (int) Math.min(bufferLength - bufferOffset, frameLength);
-      
+
       if (sublen > 0) {
         buffer.write(frameBuffer, bufferOffset, sublen);
         bufferOffset += sublen;
@@ -653,11 +669,11 @@ public class FrameInputStream
       }
       else if (frameLength > 0) {
         _is.offset(bufferOffset);
-        
+
         if (_is.fillBuffer() <= 0) {
           throw new IOException("unexpected eof in websocket");
         }
-        
+
         bufferOffset = _is.offset();
         bufferLength = _is.length();
       }
@@ -665,12 +681,12 @@ public class FrameInputStream
         _is.offset(bufferOffset);
 
         _length = 0;
-        
+
         return _isFinal;
       }
     }
   }
-  
+
   public boolean readText(StringBuilder sb)
     throws IOException
   {
@@ -681,20 +697,20 @@ public class FrameInputStream
 
     while (true) {
       int sublen = (int) Math.min(bufferLength - bufferOffset, frameLength);
-      
+
       if (sublen > 0) {
         Utf8Util.read(sb, frameBuffer, bufferOffset, sublen);
-        
+
         bufferOffset += sublen;
         frameLength -= sublen;
       }
       else if (frameLength > 0) {
         _is.offset(bufferOffset);
-        
+
         if (_is.fillBuffer() <= 0) {
           throw new IOException("unexpected eof in websocket");
         }
-        
+
         bufferOffset = _is.offset();
         bufferLength = _is.length();
       }
@@ -702,30 +718,30 @@ public class FrameInputStream
         _is.offset(bufferOffset);
 
         _length = 0;
-        
+
         return _isFinal;
       }
     }
   }
-  
+
   public long skipBinary(long length)
     throws IOException
   {
     long skipLength = 0;
-   
+
     do {
       int sublen = skipImpl(length);
 
       if (sublen <= 0) {
         return skipLength > 0 ? skipLength : sublen;
       }
-      
+
       skipLength += sublen;
     } while (skipLength < length);
-    
+
     return skipLength;
   }
-  
+
   private int skipImpl(long length)
     throws IOException
   {
@@ -755,7 +771,7 @@ public class FrameInputStream
     return sublen;
     */
   }
-  
+
   private boolean fillFrameBuffer()
     throws IOException
   {
@@ -763,18 +779,18 @@ public class FrameInputStream
       if (isFinal()) {
         return false;
       }
-      
+
       if (! readFrameHeader()) {
         close();
         return false;
       }
       else if (! handleFrame()) {
-        
+
       }
       else if (getOpcode() != OP_CONT) {
         close();
         closeError(CloseCodes.PROTOCOL_ERROR, "illegal fragment");
-        
+
         throw new IOException(L.l("received illegal fragment"));
         // return false;
       }
@@ -782,50 +798,50 @@ public class FrameInputStream
         return true;
       }
     }
-    
+
     if (_is.fillBuffer() <= 0) {
       close();
       return false;
     }
-    
+
     if (_isMask) {
       fillMask();
     }
-      
+
     return true;
   }
-  
+
   private void fillMask()
   {
     byte []buffer = _is.buffer();
     int byteOffset = _is.offset();
     int byteLength = _is.length();
-    
+
     int sublen = Math.min((int) _length, byteLength - byteOffset);
-    
+
     byte []mask = getMask();
     int maskOffset = _maskOffset;
-    
+
     for (int i = 0; i < sublen; i++) {
       buffer[byteOffset + i] ^= mask[(maskOffset + i) & 0x3];
     }
-    
+
     _maskOffset = (maskOffset + sublen) & 0x3;
   }
-  
+
   private int readShort()
     throws IOException
   {
     InputStream is = _is;
-    
+
     return ((is.read() << 8) + is.read());
   }
-  
+
   private int readLong()
     throws IOException
   {
     InputStream is = _is;
-    
+
     return ((is.read() << 56L)
         + (is.read() << 48L)
         + (is.read() << 40L)
@@ -846,15 +862,15 @@ public class FrameInputStream
   {
     getListener().onClose(new CloseReason(code, message));
   }
-  
-  
+
+
 
   public void close()
   {
     ReadStream is = _is;
     _is = null;
   }
-  
+
   public interface OutputStreamVisitor
   {
     void write(byte []buffer, int offset, int length)
