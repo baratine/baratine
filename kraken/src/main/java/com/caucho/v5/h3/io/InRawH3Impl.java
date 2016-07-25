@@ -396,7 +396,7 @@ public class InRawH3Impl implements InRawH3
         | ((long) read() << 48)
         | ((long) read() << 40)
         | ((long) read() << 32)
-        | (read() << 24)
+        | ((long) read() << 24)
         | (read() << 16)
         | (read() << 8)
         | (read()));
@@ -856,6 +856,7 @@ public class InRawH3Impl implements InRawH3
       if (offset < length) {
         int value = buffer[offset] & 0xff;
         _offset = offset + 1;
+        
         return value;
       }
 
