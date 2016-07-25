@@ -48,11 +48,7 @@ import io.baratine.web.WebSocketClose.WebSocketCloses;
  */
 public interface WebSocket<T> extends Pipe<T>
 {
-  String uri();
-
-  String path();
-
-  String pathInfo();
+  RequestWeb request();
 
   @Override
   void next(T data);

@@ -142,7 +142,7 @@ public class BootFile
   {
     Supplier<InputStream> factory = ()->new BootInputStream("top", _bootMap, 0, _bootSize);
     
-    try (BootZipScanner scanner = new BootZipScanner(factory, _bootSize)) {
+    try (BootZipScanner scanner = new BootZipScanner("top", factory, _bootSize)) {
       if (! scanner.open()) {
         throw new IllegalStateException();
       }
@@ -269,7 +269,9 @@ public class BootFile
     @Override
     public long skip(long n)
     {
-      _buffer.position((int) (_buffer.position() + n));
+      long tail = Math.min(_buffer.limit(), _buffer.position() + n);
+      
+      _buffer.position((int) tail);
       
       return n;
     }
@@ -394,7 +396,7 @@ public class BootFile
       Supplier<InputStream> factory
         = ()->new BootInputStream(name(), _bootMap, dataPos, sizeCompressed());
 
-      try (BootZipScanner scanner = new BootZipScanner(factory, sizeCompressed())) {
+      try (BootZipScanner scanner = new BootZipScanner(name(), factory, sizeCompressed())) {
         scanner.open();
         
         while (scanner.next()) {

@@ -71,14 +71,23 @@ public final class BootZipScanner implements AutoCloseable
    *
    * @param path canonical path
    */
-  public BootZipScanner(Supplier<InputStream> streamFactory,
+  public BootZipScanner(String fileName,
+                        Supplier<InputStream> streamFactory,
                         int fileLength)
   {
     _streamFactory = streamFactory;
     
     try (InputStream is = streamFactory.get()) {
+      if (fileName == null) {
+        fileName = String.valueOf(is);
+      }
+      
       int length = fileLength;
-
+      
+      if (length < 22 + 7) {
+        return;
+      }
+      
       // PACK200 is a standard comment, so try skipping it first
       is.skip(length - 22 - 7);
 
@@ -108,8 +117,8 @@ public final class BootZipScanner implements AutoCloseable
       log().log(Level.FINER, e.toString(), e);
     } finally {
       if (! _isValid) {
-        System.out.println("INVALID: " + _entries);
-        Thread.dumpStack();
+        log().fine("Invalid Zip scan for " + fileName + " " + _entries);
+        //Thread.dumpStack();
       }
     }
   }

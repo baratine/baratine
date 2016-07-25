@@ -29,19 +29,16 @@
 
 package com.caucho.v5.websocket.client;
 
-import java.io.InputStream;
-import java.io.Reader;
 import java.util.Objects;
 
 import com.caucho.v5.http.websocket.WebSocketBase;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
-import com.caucho.v5.websocket.io.Frame;
 
 import io.baratine.io.Buffer;
 import io.baratine.pipe.Pipe;
+import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocket;
 
@@ -95,24 +92,9 @@ public class WebSocketImplClient<T,S> extends WebSocketBase<T,S>
   }
 
   @Override
-  public String uri()
+  public RequestWeb request()
   {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String path()
-  {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String pathInfo()
-  {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException(getClass().getName());
   }
 
   @Override

@@ -41,15 +41,14 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.http.protocol.OutHttpTcp;
-import com.caucho.v5.http.protocol.OutHttpProxy;
 import com.caucho.v5.http.protocol.OutHttpApp;
+import com.caucho.v5.http.protocol.OutHttpProxy;
+import com.caucho.v5.http.protocol.OutHttpTcp;
 import com.caucho.v5.http.websocket.ConnectionWebSocketBaratine;
 import com.caucho.v5.http.websocket.WebSocketBase;
 import com.caucho.v5.http.websocket.WebSocketManager;
 import com.caucho.v5.io.TempBuffer;
 import com.caucho.v5.io.WriteStream;
-import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.Hex;
 import com.caucho.v5.util.L10N;
@@ -67,6 +66,7 @@ import io.baratine.io.Buffers;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpStatus;
+import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWebSocket;
 
 /**
@@ -288,21 +288,9 @@ public class WebSocketBartender<T,S>
   }
 
   @Override
-  public String uri()
+  public RequestWeb request()
   {
-    return _request.uri();
-  }
-
-  @Override
-  public String path()
-  {
-    return _request.path();
-  }
-
-  @Override
-  public String pathInfo()
-  {
-    return _request.pathInfo();
+    return _request;
   }
 
   @Override

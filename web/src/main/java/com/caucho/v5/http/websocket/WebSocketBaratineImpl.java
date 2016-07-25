@@ -41,12 +41,10 @@ import com.caucho.v5.http.protocol.ConnectionHttp;
 import com.caucho.v5.http.protocol.OutHttpProxy;
 import com.caucho.v5.http.protocol.OutHttpTcp;
 import com.caucho.v5.io.WriteStream;
-import com.caucho.v5.network.port.StateConnection;
 import com.caucho.v5.util.Base64Util;
 import com.caucho.v5.util.L10N;
 import com.caucho.v5.web.webapp.RequestBaratine;
 import com.caucho.v5.web.webapp.RequestBaratineImpl;
-import com.caucho.v5.websocket.io.Frame;
 import com.caucho.v5.websocket.io.FrameIn;
 import com.caucho.v5.websocket.io.WebSocketBaratine;
 import com.caucho.v5.websocket.io.WebSocketConstants;
@@ -54,6 +52,7 @@ import com.caucho.v5.websocket.io.WebSocketConstants;
 import io.baratine.io.Buffer;
 import io.baratine.service.ServiceRef;
 import io.baratine.web.HttpStatus;
+import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWebSocket;
 
 /**
@@ -122,30 +121,12 @@ public class WebSocketBaratineImpl<T,S>
   }
 
   /**
-   * HTTP uri for the websocket
-   */
-  @Override
-  public String uri()
-  {
-    return _request.uri();
-  }
-
-  /**
    * HTTP path for the websocket
    */
   @Override
-  public String path()
+  public RequestWeb request()
   {
-    return _request.path();
-  }
-
-  /**
-   * HTTP pathInfo for the websocket
-   */
-  @Override
-  public String pathInfo()
-  {
-    return _request.pathInfo();
+    return _request;
   }
   
   /**

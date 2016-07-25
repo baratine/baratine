@@ -55,6 +55,7 @@ import io.baratine.io.Buffers;
 import io.baratine.pipe.Credits;
 import io.baratine.pipe.Pipe;
 import io.baratine.service.ServiceRef;
+import io.baratine.web.RequestWeb;
 import io.baratine.web.ServiceWebSocket;
 import io.baratine.web.WebSocketClose;
 import io.baratine.web.WebSocketClose.WebSocketCloses;
@@ -131,21 +132,9 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   }
 
   @Override
-  public String uri()
+  public RequestWeb request()
   {
-    return _request.uri();
-  }
-
-  @Override
-  public String path()
-  {
-    return _request.path();
-  }
-
-  @Override
-  public String pathInfo()
-  {
-    return _request.pathInfo();
+    return _request;
   }
 
   @Override
@@ -569,7 +558,7 @@ abstract public class WebSocketBase<T,S> implements WebSocketBaratine<S>
   @Override
   public String toString()
   {
-    return getClass().getSimpleName() + "[" + uri() + "]";
+    return getClass().getSimpleName() + "[" + request().uri() + "]";
   }
 
   //
