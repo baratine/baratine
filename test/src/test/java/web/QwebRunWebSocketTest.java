@@ -31,13 +31,17 @@ package web;
 
 import java.io.IOException;
 
+import io.baratine.service.Session;
+import io.baratine.web.Path;
+import io.baratine.web.RequestWeb;
+import io.baratine.web.ServiceWebSocket;
+import io.baratine.web.WebSocket;
+import io.baratine.web.WebSocketPath;
+
 import com.caucho.junit.ServiceTest;
 import com.caucho.junit.State;
 import com.caucho.junit.WebRunnerBaratine;
-import io.baratine.service.Service;
-import io.baratine.web.Path;
-import io.baratine.web.ServiceWebSocket;
-import io.baratine.web.WebSocket;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,7 +66,7 @@ public class QwebRunWebSocketTest
 
     Thread.sleep(100);
 
-    System.out.println("state: " + State.state());
+    Assert.assertEquals("\n  server close", State.state());
   }
 
   public static class Q_client implements ServiceWebSocket<String,String>
@@ -100,9 +104,17 @@ public class QwebRunWebSocketTest
     }
   }
 
-  @Service("session:")
-  @Path("/test")
+  @Session
   public static class Q_basicService
+  {
+    @WebSocketPath("/test")
+    public void update(RequestWeb request)
+    {
+      request.upgrade(new Q_basicWebsocket());
+    }
+  }
+
+  public static class Q_basicWebsocket
     implements ServiceWebSocket<String,String>
   {
     @Override
