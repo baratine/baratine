@@ -48,17 +48,17 @@ import io.baratine.service.ResultImpl.ResultThenFuture;
 public interface ResultChain<T>
 {
   void ok(T result);
-  
+
   void fail(Throwable exn);
 
   /**
    * Creates a chained result.
-   * 
+   *
    * <pre><code>
    * void myMiddle(Result&lt;String&gt; result)
    * {
    *   MyLeafService leaf = ...;
-   *   
+   *
    *   leaf.myLeaf(result.of());
    * }
    * </code></pre>
@@ -72,12 +72,12 @@ public interface ResultChain<T>
    * Creates a composed result that will receive its completed value from
    * a function. The function's value will become the
    * result's complete value.
-   * 
+   *
    * <pre><code>
    * void myMiddle(Result&lt;String&gt; result)
    * {
    *   MyLeafService leaf = ...;
-   *   
+   *
    *   leaf.myLeaf(result.of(v-&gt;"Leaf: " + v));
    * }
    * </code></pre>
@@ -91,17 +91,17 @@ public interface ResultChain<T>
    * Creates a composed result that will receive its completed value from
    * a function. The function's value will become the
    * result's complete value.
-   * 
+   *
    * <pre><code>
    * void myMiddle(Result&lt;String&gt; result)
    * {
    *   MyLeafService leaf = ...;
-   *   
+   *
    *   leaf.myLeaf(result.then(v-&gt;"Leaf: " + v));
    * }
    * </code></pre>
    */
-  static <R,T,C extends ResultChain<T>> 
+  static <R,T,C extends ResultChain<T>>
   Result<R> then(C result, Function<R,T> fun)
   {
     if (result.isFuture()) {
@@ -116,13 +116,13 @@ public interface ResultChain<T>
    * Creates a composed result that will receive its completed value from
    * a function. The function's value will become the
    * result's complete value.
-   * 
+   *
    * <pre><code>
    * void myMiddle(Result&lt;String&gt; result)
    * {
    *   MyLeafService leaf = ...;
-   *   
-   *   leaf.myLeaf(result.then(v-&gt;"Leaf: " + v, 
+   *
+   *   leaf.myLeaf(result.then(v-&gt;"Leaf: " + v,
    *                         (e,r)-&gt;{ e.printStackTrace(); r.fail(e); }));
    * }
    * </code></pre>
@@ -139,17 +139,17 @@ public interface ResultChain<T>
       return new ChainResultFunExn<>(next, fun, exnHandler);
     }
   }
-  
+
   /**
    * Creates a chained result for calling an internal
    * service from another service. The lambda expression will complete
    * the original result.
-   * 
+   *
    * <pre><code>
    * void myMiddle(Result&lt;String&gt; result)
    * {
    *   MyLeafService leaf = ...;
-   *   
+   *
    *   leaf.myLeaf(result.then((v,r)-&gt;r.ok("Leaf: " + v)));
    * }
    * </code></pre>
@@ -164,7 +164,7 @@ public interface ResultChain<T>
       return new ResultThen<>(next, consumer);
     }
   }
-  
+
   //
   // internal methods for managing future results
   //
@@ -173,77 +173,82 @@ public interface ResultChain<T>
   {
     return false;
   }
-  
+
   default void completeFuture(T value)
   {
     throw new IllegalStateException(getClass().getName());
   }
-  
+
   default <R> void completeFuture(ResultChain<R> result, R value)
   {
     throw new IllegalStateException(getClass().getName());
   }
-  
+
   public interface ForkChain<R,T,C extends ResultChain<T>>
   {
     <V extends R> Result<V> branch();
-    
+
     ForkChain<R,T,C> fail(TriConsumer<List<R>,List<Throwable>,C> fails);
-    
+
     void join(Function<List<R>,T> combiner);
-    
+
     void join(BiConsumer<List<R>,C> combiner);
   }
-  
+
   abstract public class WrapperChain<T,U,R extends ResultChain<U>>
     implements Result<T>
   {
     private final R _delegate;
-  
+
     protected WrapperChain(R delegate)
     {
       Objects.requireNonNull(delegate);
-      
+
       _delegate = delegate;
     }
-    
+
     @Override
     public boolean isFuture()
     {
       return _delegate.isFuture();
     }
-    
+
     abstract public void ok(T value);
-    
+
     @Override
     public <V> void completeFuture(ResultChain<V> result, V value)
     {
       _delegate.completeFuture(result, value);
     }
-    
+
     @Override
     public void completeFuture(T value)
     {
       ok(value);
     }
-    
+
     @Override
     public final void handle(T value, Throwable exn)
     {
-      throw new UnsupportedOperationException(getClass().getName());
+      if (exn != null) {
+        fail(exn);
+      }
+      else {
+        ok(value);
+      }
     }
-    
+
     @Override
     public void fail(Throwable exn)
     {
       delegate().fail(exn);
     }
-    
+
     protected R delegate()
     {
       return _delegate;
     }
-  
+
     @Override
     public String toString()
     {

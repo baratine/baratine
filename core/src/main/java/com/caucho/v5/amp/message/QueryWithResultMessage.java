@@ -51,11 +51,11 @@ public class QueryWithResultMessage<T>
   extends QueryMessageBase<T>
   implements Result<T>
 {
-  private static final Logger log 
+  private static final Logger log
     = Logger.getLogger(QueryWithResultMessage.class.getName());
-  
+
   private final ResultChain<T> _result;
-  
+
   /*
   public QueryWithResultMessage(ServiceRefAmp serviceRef,
                                 MethodAmp method,
@@ -63,13 +63,13 @@ public class QueryWithResultMessage<T>
                                 Result<T> result)
   {
     super(serviceRef, method, expires);
-    
+
     Objects.requireNonNull(result);
-    
+
     _result = result;
   }
   */
-  
+
   public QueryWithResultMessage(OutboxAmp outboxCaller,
                                 ServiceRefAmp serviceRef,
                                 MethodAmp method,
@@ -77,12 +77,12 @@ public class QueryWithResultMessage<T>
                                 ResultChain<T> result)
   {
     super(outboxCaller, serviceRef, method, expires);
-    
+
     Objects.requireNonNull(result);
-    
+
     _result = result;
   }
-  
+
   public QueryWithResultMessage(OutboxAmp outboxCaller,
                                 HeadersAmp headers,
                                 ServiceRefAmp serviceRef,
@@ -91,50 +91,50 @@ public class QueryWithResultMessage<T>
                                 ResultChain<T> result)
   {
     super(outboxCaller, headers, serviceRef, method, expires);
-    
+
     Objects.requireNonNull(result);
-    
+
     _result = result;
   }
-  
+
   @Override
   public void okShim(Object value)
   {
     ok((T) method().shim(value));
   }
-  
+
   /* baratine/11h0, baratine/119d */
   /* XXX: Issues with async/future that are chained */
   @Override
   public boolean isFuture()
   {
     ResultChain<T> result = _result;
-    
+
     return result.isFuture() && method().isDirect();
   }
-  
+
   @Override
   public <U> void completeFuture(ResultChain<U> result, U value)
   {
     _result.completeFuture(result, value);
   }
-  
+
   @Override
   public void completeFuture(T value)
   {
     //_result.completeAsync(value);
-    
+
     //OutboxAmp outbox = getOutboxCaller();
     OutboxAmp outbox = OutboxAmp.current();
     boolean isNew = false;
-    
+
     if (outbox == null) {
       outbox = OutboxAmpFactory.newFactory().get();
       outbox.message(this);
       // OutboxThreadLocal.setCurrent(outbox);
       isNew = true;
     }
-    
+
     InboxAmp oldInbox = outbox.inbox();
 
     /*
@@ -143,14 +143,14 @@ public class QueryWithResultMessage<T>
       Thread.dumpStack();
     }
     */
-    
+
     try {
       outbox.inbox(inboxCaller());
-      
+
       _result.completeFuture(value);
     } finally {
       outbox.inbox(oldInbox);
-      
+
       if (isNew) {
         outbox.close();
         // OutboxThreadLocal.setCurrent(null);
@@ -162,7 +162,7 @@ public class QueryWithResultMessage<T>
   protected void offerQuery(long timeout)
   {
     MethodAmp method = method();
-    
+
     if (method.isDirect() && serviceRef().stub().isStarted()) {
       try (OutboxAmp outbox = OutboxAmp.currentOrCreate(serviceRef().services())) {
         offerDirect(outbox);
@@ -172,46 +172,46 @@ public class QueryWithResultMessage<T>
       super.offerQuery(timeout);
     }
   }
-  
+
   private void offerDirect(OutboxAmp outbox)
   {
     outbox.flush();
-  
+
     InboxAmp inbox = inboxTarget();
-  
+
     Object oldContext = outbox.getAndSetContext(inbox);
-    
+
     try {
       invoke(inbox, inbox.stubDirect());
     } finally {
       outbox.getAndSetContext(oldContext);
     }
   }
-  
+
   private void offerDirectSystem()
   {
     //OutboxAmpBase outbox = new OutboxAmpBase();
     //outbox.setInbox(getInboxTarget());
     //outbox.setMessage(this);
-    
+
     try {
       //OutboxThreadLocal.setCurrent(outbox);
-      
+
       InboxAmp inbox = inboxTarget();
-      
+
       invoke(inbox, inbox.stubDirect());
-      
+
       //outbox.flush();
     } finally {
       //OutboxThreadLocal.setCurrent(null);
     }
   }
-  
+
   @Override
   protected void offerResult(long timeout)
   {
     ResultChain<T> result = _result;
-    
+
     if (result.isFuture()) {
       sendReplyAsync(result);
     }
@@ -225,13 +225,13 @@ public class QueryWithResultMessage<T>
   {
     return stubDeliver.ok(_result, (T) getReply());
   }
-  
+
   @Override
   protected boolean invokeFail(StubAmp stubDeliver)
   {
     return stubDeliver.fail(_result, fail());
   }
-  
+
   protected String getLocation()
   {
     return null;
@@ -240,29 +240,34 @@ public class QueryWithResultMessage<T>
   @Override
   public void handle(T value, Throwable fail) throws Exception
   {
-    throw new UnsupportedOperationException(getClass().getName());
+    if (fail != null) {
+      fail(fail);
+    }
+    else {
+      ok(value);
+    }
   }
-  
+
   @Override
   public String toString()
   {
     String toAddress = null;
-    
+
     if (inboxTarget() != null && inboxTarget().serviceRef() != null) {
       toAddress = inboxTarget().serviceRef().address();
     }
-    
+
     String callbackName = _result.getClass().getName();
-    
+
     String loc = getLocation();
-    
+
     if (loc != null) {
       loc = ",@" + loc;
     }
     else {
       loc = "";
     }
-    
+
     return (getClass().getSimpleName()
         + "[" + method().name()
         + ",to=" + toAddress
@@ -270,6 +275,6 @@ public class QueryWithResultMessage<T>
         + ",result=" + callbackName
         + loc
         + "]");
-    
+
   }
 }
