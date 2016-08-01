@@ -29,7 +29,10 @@
 
 package com.caucho.v5.jdbc;
 
+import java.sql.Connection;
+import java.util.LinkedHashMap;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +56,7 @@ public class JdbcServiceImpl implements JdbcService
 
   @Inject
   private Config _config;
+  private JdbcConfig _jdbcConfig;
 
   @Id
   private String _id;
@@ -60,63 +64,39 @@ public class JdbcServiceImpl implements JdbcService
 
   private JdbcConnectionImpl _conn;
 
-  @OnInit
-  public void onInit(Result<Void> result)
-  {
-    _url = ServiceRef.current().address() + _id;
-    JdbcConfig c = JdbcConfig.from(_config, _url);
+  // stats
+  private long _totalQueryCount;
+  private long _failedQueries;
 
-    _logger.log(Level.INFO, "onInit: id=" + _id + ", service url=" + _url + ", config=" + c);
+  private LinkedHashMap<Long,QueryResult> _outstandingQueryMap = new LinkedHashMap<>();
+
+  @OnInit
+  public void onInit()
+    throws Exception
+  {
+    String address = ServiceRef.current().address() + _id;
+
+    _jdbcConfig = JdbcConfig.from(_config, address);
+
+    _logger.log(Level.INFO, "onInit: id=" + _id + ", service url=" + _url + ", config=" + _jdbcConfig);
 
     Properties props = new Properties();
 
-    if (c.user() != null) {
-      props.setProperty("user", c.user());
+    if (_jdbcConfig.user() != null) {
+      props.setProperty("user", _jdbcConfig.user());
 
-      if (c.pass() != null) {
-        props.setProperty("password", c.pass());
+      if (_jdbcConfig.pass() != null) {
+        props.setProperty("password", _jdbcConfig.pass());
       }
     }
 
     Supplier<JdbcConnectionImpl> supplier
-      = new ConnectionSupplier(c.url(), props, c.testQueryBefore(), c.testQueryAfter());
+      = new ConnectionSupplier(_jdbcConfig.url(), props, _jdbcConfig.testQueryBefore(), _jdbcConfig.testQueryAfter());
 
     ServiceBuilder builder = _manager.newService(JdbcConnectionImpl.class, supplier);
-    ServiceRef ref = builder.workers(c.poolSize()).start();
+    ServiceRef ref = builder.workers(_jdbcConfig.poolSize()).start();
 
     _conn = ref.as(JdbcConnectionImpl.class);
-
-    result.ok(null);
-  }
-
-  @Override
-  public void execute(Result<Integer> result, String sql, Object ... params)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "execute: " + toDebugSafe(sql));
-    }
-
-    _conn.execute(result , sql, params);
-  }
-
-  @Override
-  public void executeBatch(Result<Integer[]> result, String sql, Object[] ... params)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "executeBatch: " + toDebugSafe(sql));
-    }
-
-    _conn.executeBatch(result, sql, params);
-  }
-
-  @Override
-  public void executeBatch(Result<Integer[]> result, String[] sqlList, Object[] ... params)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "executeBatch: " + sqlList.length);
-    }
-
-    _conn.executeBatch(result, sqlList, params);
   }
 
   @Override
@@ -126,27 +106,33 @@ public class JdbcServiceImpl implements JdbcService
       _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
     }
 
+    result = new QueryResult<>(result, sql);
+
     _conn.query(result, sql, params);
   }
 
   @Override
-  public void queryBatch(Result<JdbcResultSet[]> result, String sql, Object[] ... paramsList)
+  public <T> void query(Result<T> result, SqlFunction<T> fun)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryBatch: " + toDebugSafe(sql));
+      _logger.log(Level.FINER, "query: " + fun);
     }
 
-    _conn.queryBatch(result, sql, paramsList);
+    result = new QueryResult<>(result, fun);
+
+    _conn.query(result, fun);
   }
 
   @Override
-  public void queryBatch(Result<JdbcResultSet[]> result, String[] sqlList, Object[] ... paramsList)
+  public void query(Result<JdbcResultSet> result, QueryBuilder builder)
   {
     if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryBatch: " + sqlList.length);
+      _logger.log(Level.FINER, "query: " + builder);
     }
 
-    _conn.queryBatch(result, sqlList, paramsList);
+    result = new QueryResult<>(result, builder);
+
+    _conn.query(result, builder);
   }
 
   private String toDebugSafe(String str)
@@ -179,6 +165,46 @@ public class JdbcServiceImpl implements JdbcService
     {
       return JdbcConnectionImpl.create(_count++, _url, _props,
                                        _testQueryBefore, _testQueryAfter);
+    }
+  }
+
+  class AfterQueryFun<T> implements Function<T,T> {
+    public T apply(T value)
+    {
+      return value;
+    }
+  }
+
+  class QueryResult<T> implements Result<T> {
+    private Result<T> _result;
+    private long _id;
+
+    private QueryStat _stat;
+
+    public QueryResult(Result<T> result, Object query)
+    {
+      _result = result;
+      _id = _totalQueryCount++;
+      _stat = new QueryStat(query.toString(), System.currentTimeMillis());
+
+      _outstandingQueryMap.put(_id, this);
+    }
+
+    @Override
+    public void handle(T value, Throwable fail) throws Exception
+    {
+      if (fail != null) {
+        _failedQueries++;
+      }
+
+      _outstandingQueryMap.remove(_id);
+
+      _result.handle(value, fail);
+    }
+
+    public QueryStat stat()
+    {
+      return _stat;
     }
   }
 }

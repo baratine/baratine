@@ -29,15 +29,11 @@
 
 package com.caucho.v5.jdbc;
 
-import java.util.List;
-
 public interface JdbcServiceSync extends JdbcService
 {
-  Integer execute(String sql, Object ... params);
-  Integer[] executeBatch(String sql, Object[] ... paramsList);
-  Integer[] executeBatch(String[] sqlList, Object[] ... paramsList);
-
   JdbcResultSet query(String sql, Object ... params);
-  List<JdbcResultSet> queryBatch(String sql, Object[] ... paramsList);
-  List<JdbcResultSet> queryBatch(String[] sqlList, Object[] ... paramsList);
+
+  <T> T query(SqlFunction<T> fun);
+
+  JdbcResultSet query(QueryBuilder builder);
 }

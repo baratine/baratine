@@ -29,15 +29,28 @@
 
 package com.caucho.v5.jdbc;
 
-import io.baratine.service.Result;
-import io.baratine.service.Service;
+import java.util.function.Function;
 
-@Service
-public interface JdbcService
+import com.caucho.v5.jdbc.QueryBuilderImpl.QueryBuilderAutoCommitOff;
+import com.caucho.v5.jdbc.QueryBuilderImpl.QueryBuilderCommit;
+
+public interface QueryBuilder
 {
-  void query(Result<JdbcResultSet> result, String sql, Object ... params);
+  public static QueryBuilder query(String query)
+  {
+    QueryBuilderAutoCommitOff builder = new QueryBuilderAutoCommitOff();
 
-  <T> void query(Result<T> result, SqlFunction<T> fun);
+    builder.then(query).append(new QueryBuilderCommit());
 
-  void query(Result<JdbcResultSet> result, QueryBuilder builder);
+    return builder;
+  }
+
+  QueryBuilder withParams(Object ... params);
+  QueryBuilder withParams(Function<JdbcResultSet,Object[]> fun);
+
+  QueryBuilder then(String sql);
+  QueryBuilder then(Function<JdbcResultSet,String> fun);
+
+  QueryBuilder commitThen(String sql);
+  QueryBuilder commitThen(Function<JdbcResultSet,String> fun);
 }

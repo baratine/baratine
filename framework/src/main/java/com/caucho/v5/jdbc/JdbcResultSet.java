@@ -43,13 +43,18 @@ public class JdbcResultSet implements Iterable<Map<String,Object>>
   private List<String> _nameList = new ArrayList<>();
   private List<Map<String,Object>> _rows = new ArrayList<>();
 
-  public JdbcResultSet()
+  private int _updateCount;
+
+  public JdbcResultSet(int updateCount)
   {
+    _updateCount = updateCount;
   }
 
-  public JdbcResultSet(ResultSet rs)
+  public JdbcResultSet(int updateCount, ResultSet rs)
     throws SQLException
   {
+    _updateCount = updateCount;
+
     ResultSetMetaData md = rs.getMetaData();
 
     int count = md.getColumnCount();
@@ -71,6 +76,11 @@ public class JdbcResultSet implements Iterable<Map<String,Object>>
 
       _rows.add(map);
     }
+  }
+
+  public int getUpdateCount()
+  {
+    return _updateCount;
   }
 
   public List<String> getColumnNames()

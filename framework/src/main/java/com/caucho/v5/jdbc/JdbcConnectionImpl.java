@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,7 +48,6 @@ import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 
-@Service
 public class JdbcConnectionImpl implements JdbcService
 {
   private static Logger _logger = Logger.getLogger(JdbcConnectionImpl.class.toString());
@@ -116,128 +116,9 @@ public class JdbcConnectionImpl implements JdbcService
   {
     _logger.log(Level.FINE, "connect: id=" + _id + ", url=" + toDebugSafe(_url));
 
-    _conn = DriverManager.getConnection(_url, _props);
-  }
+    Connection conn = DriverManager.getConnection(_url, _props);
 
-  @Override
-  public void execute(Result<Integer> result, String sql, Object ... params)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "execute: id=" + _id + ", sql=" + toDebugSafe(sql));
-    }
-
-    testQueryBefore();
-
-    try {
-      int updateCount = execute(sql, params);
-
-      result.ok(updateCount);
-
-      testQueryAfter();
-    }
-    catch (SQLException e) {
-      reconnect();
-
-      result.fail(e);
-    }
-  }
-
-  @Override
-  public void executeBatch(Result<Integer[]> result, String sql, Object[] ... paramsList)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "executeBatch: id=" + _id + ", sql=" + toDebugSafe(sql));
-    }
-
-    testQueryBefore();
-
-    Integer[] updateCounts = new Integer[paramsList.length];
-
-    try {
-      for (int i = 0; i < paramsList.length; i++) {
-        Object[] params = paramsList[i];
-
-        int updateCount = execute(sql, params);
-
-        updateCounts[i] = updateCount;
-      }
-
-      result.ok(updateCounts);
-
-      testQueryAfter();
-    }
-    catch (SQLException e) {
-      reconnect();
-
-      result.fail(e);
-    }
-  }
-
-  @Override
-  public void executeBatch(Result<Integer[]> result, String[] sqlList, Object[] ... paramsList)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "executeBatch: id=" + _id);
-    }
-
-    testQueryBefore();
-
-    Integer[] updateCounts = new Integer[sqlList.length];
-
-    try {
-      for (int i = 0; i < sqlList.length; i++) {
-        String sql = sqlList[i];
-
-        Object[] params = paramsList[i];
-
-        int updateCount = execute(sql, params);
-
-        updateCounts[i] = updateCount;
-      }
-
-      result.ok(updateCounts);
-
-      testQueryAfter();
-    }
-    catch (SQLException e) {
-      reconnect();
-
-      result.fail(e);
-    }
-  }
-
-  private int execute(String sql)
-    throws SQLException
-  {
-    Statement stmt = null;
-
-    try {
-      stmt = _conn.createStatement();
-
-      stmt.execute(sql);
-
-      return stmt.getUpdateCount();
-    }
-    finally {
-      IoUtil.close(stmt);
-    }
-  }
-
-  private int execute(String sql, Object... params)
-    throws SQLException
-  {
-    if (params.length == 0) {
-      return execute(sql);
-    }
-    else {
-      ArrayList<Object> list = new ArrayList<>();
-
-      for (Object param : params) {
-        list.add(param);
-      }
-
-      return execute(sql, list);
-    }
+    _conn = new ConnectionWrapper(conn);
   }
 
   @Override
@@ -247,120 +128,190 @@ public class JdbcConnectionImpl implements JdbcService
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
     }
 
+    QueryFunction fun = new QueryFunction(sql, params);
+
+    queryImpl(result, fun);
+  }
+
+  @Override
+  public <T> void query(Result<T> result, SqlFunction<T> fun)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + fun);
+    }
+
+    queryImpl(result, fun);
+  }
+
+  @Override
+  public void query(Result<JdbcResultSet> result, QueryBuilder builder)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + builder);
+    }
+
+    QueryBuilderImpl builderImpl = (QueryBuilderImpl) builder;
+
     testQueryBefore();
 
-    PreparedStatement stmt = null;
+    try {
+      JdbcResultSet rs = builderImpl.executeAll(this);
+
+      result.ok(rs);
+    }
+    catch (SQLException e) {
+      _logger.log(Level.FINER, e.getMessage(), e);
+
+      reconnect();
+
+      result.fail(e);
+    }
+  }
+
+  private <T> void queryImpl(Result<T> result, SqlFunction<T> fun)
+  {
+    testQueryBefore();
 
     try {
-      stmt = _conn.prepareStatement(sql);
+      T value = doQuery(fun);
 
-      for (int i = 0; i < params.length; i++) {
-        stmt.setObject(i + 1, params[i]);
+      result.ok(value);
+
+      fun.close();
+
+      testQueryAfter();
+    }
+    catch (SQLException e) {
+      _logger.log(Level.FINER, e.getMessage(), e);
+
+      reconnect();
+
+      result.fail(e);
+    }
+  }
+
+  public JdbcResultSet doQuery(String sql, Object ... params)
+    throws SQLException
+  {
+    QueryFunction fun = new QueryFunction(sql, params);
+
+    return doQuery(fun);
+  }
+
+  public <T> T doQuery(SqlFunction<T> fun)
+    throws SQLException
+  {
+    return fun.applyException(_conn);
+  }
+
+  public static class ExecuteFunction implements SqlFunction<JdbcResultSet> {
+    private String _sql;
+    private Object[] _params;
+
+    private PreparedStatement _stmt;
+
+    public ExecuteFunction(String sql)
+    {
+      this(sql, null);
+    }
+
+    public ExecuteFunction(String sql, Object[] params)
+    {
+      _sql = sql;
+      _params = params;
+    }
+
+    public JdbcResultSet applyException(Connection conn) throws SQLException
+    {
+      _stmt = conn.prepareStatement(_sql);
+
+      if (_params != null) {
+        for (int i = 0; i < _params.length; i++) {
+          _stmt.setObject(i + 1, _params[i]);
+        }
       }
 
-      boolean isResultSet = stmt.execute();
+      int updateCount = _stmt.executeUpdate();
+
+      JdbcResultSet rs = new JdbcResultSet(updateCount);
+
+      return rs;
+    }
+
+    @Override
+    public void close()
+    {
+      IoUtil.close(_stmt);
+    }
+  }
+
+  public static class QueryFunction implements SqlFunction<JdbcResultSet> {
+    private String _sql;
+    private Object[] _params;
+
+    private PreparedStatement _stmt;
+
+    public QueryFunction(String sql)
+    {
+      this(sql, null);
+    }
+
+    public QueryFunction(String sql, Object[] params)
+    {
+      _sql = sql;
+      _params = params;
+    }
+
+    public JdbcResultSet applyException(Connection conn) throws SQLException
+    {
+      _stmt = conn.prepareStatement(_sql);
+
+      if (_params != null) {
+        for (int i = 0; i < _params.length; i++) {
+          _stmt.setObject(i + 1, _params[i]);
+        }
+      }
+
+      boolean isResultSet = _stmt.execute();
 
       JdbcResultSet rs;
 
       if (isResultSet) {
-        rs = new JdbcResultSet(stmt.getResultSet());
+        rs = new JdbcResultSet(_stmt.getUpdateCount(), _stmt.getResultSet());
       }
       else {
-        rs = new JdbcResultSet();
+        rs = new JdbcResultSet(_stmt.getUpdateCount());
       }
 
-      result.ok(rs);
-
-      testQueryAfter();
+      return rs;
     }
-    catch (SQLException e) {
-      reconnect();
 
-      result.fail(e);
-    }
-    finally {
-      IoUtil.close(stmt);
+    @Override
+    public void close()
+    {
+      IoUtil.close(_stmt);
     }
   }
 
-  @Override
-  public void queryBatch(Result<JdbcResultSet[]> result, String sql, Object[] ... paramsList)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + toDebugSafe(sql));
-    }
+  public static class AutoCommitOffFunction implements SqlFunction<Void> {
+    public Void applyException(Connection conn) throws SQLException
+    {
+      conn.setAutoCommit(false);
 
-    testQueryBefore();
-
-    PreparedStatement stmt = null;
-    JdbcResultSet[] resultList = new JdbcResultSet[paramsList.length];
-
-    try {
-      stmt = _conn.prepareStatement(sql);
-
-      for (int i = 0; i < paramsList.length; i++) {
-        Object[] params = paramsList[i];
-
-        JdbcResultSet rs = query(stmt, params);
-
-        resultList[i] = rs;
-      }
-
-      result.ok(resultList);
-
-      testQueryAfter();
-    }
-    catch (SQLException e) {
-      reconnect();
-
-      result.fail(e);
-    }
-    finally {
-      IoUtil.close(stmt);
+      return null;
     }
   }
 
-  @Override
-  public void queryBatch(Result<JdbcResultSet[]> result, String[] sqlList, Object[] ... paramsList)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "queryBatch: id=" + _id + ", sql=" + sqlList.length);
+  public static class CommitFunction implements SqlFunction<Void> {
+    public Void applyException(Connection conn) throws SQLException
+    {
+      conn.commit();
+
+      return null;
     }
-
-    testQueryBefore();
-
-    PreparedStatement stmt = null;
-    JdbcResultSet[] resultList = new JdbcResultSet[sqlList.length];
-
-    try {
-      for (int i = 0; i < sqlList.length; i++) {
-        String sql = sqlList[i];
-
-        Object[] params = paramsList[i++];
-
-        stmt = _conn.prepareStatement(sql);
-
-        JdbcResultSet rs = query(stmt, params);
-
-        stmt.close();
-
-        resultList[i] = rs;
-      }
-
-      testQueryAfter();
-    }
-    catch (SQLException e) {
-      reconnect();
-
-      result.fail(e);
-    }
-    finally {
-      IoUtil.close(stmt);
-    }
-
-    result.ok(resultList);
   }
 
+  /*
   private JdbcResultSet query(PreparedStatement stmt, Object[] params)
     throws SQLException
   {
@@ -379,6 +330,7 @@ public class JdbcConnectionImpl implements JdbcService
       return new JdbcResultSet();
     }
   }
+  */
 
   private void testQueryBefore()
   {
@@ -391,7 +343,9 @@ public class JdbcConnectionImpl implements JdbcService
     }
 
     try {
-      execute(_testQueryBefore);
+      QueryFunction fun = new QueryFunction(_testQueryBefore);
+
+      doQuery(fun);
     }
     catch (SQLException e) {
       if (_logger.isLoggable(Level.FINER)) {
@@ -413,7 +367,9 @@ public class JdbcConnectionImpl implements JdbcService
     }
 
     try {
-      execute(_testQueryAfter);
+      QueryFunction fun = new QueryFunction(_testQueryAfter);
+
+      doQuery(fun);
     }
     catch (SQLException e) {
       if (_logger.isLoggable(Level.FINER)) {

@@ -39,24 +39,23 @@ public class JdbcConfig
   private String _user;
   private String _pass;
 
-  private int _poolSize;
+  private int _poolSize = 1;
 
   private String _testQueryBefore;
   private String _testQueryAfter;
 
-  public static JdbcConfig from(Config config, String url)
+  public static JdbcConfig from(Config config, String id)
+    throws Exception
   {
-    JdbcConfig c = new JdbcConfig();
-    c.poolSize(config.get(url, Integer.class, 64));
+    JdbcConfig jdbcConfig = new JdbcConfig();
 
-    c.url(config.get(url + ".url"));
-    c.user(config.get(url + ".user"));
-    c.pass(config.get(url + ".pass"));
+    config.inject(jdbcConfig, id);
 
-    c.testQueryBefore(config.get(url + ".testQueryBefore"));
-    c.testQueryAfter(config.get(url + ".testQueryAfter"));
+    if (jdbcConfig.url() == null) {
+      throw new Exception(id + ".url is not set");
+    }
 
-    return c;
+    return jdbcConfig;
   }
 
   public JdbcConfig url(String url)
