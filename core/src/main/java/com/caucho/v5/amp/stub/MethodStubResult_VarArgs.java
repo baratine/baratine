@@ -51,14 +51,14 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
 {
   private static final Logger log
     = Logger.getLogger(MethodStubResult_VarArgs.class.getName());
-  
+
   MethodStubResult_VarArgs(ServicesAmp ampManager,
                            Method method)
     throws IllegalAccessException
   {
     super(ampManager, method);
   }
-  
+
   @Override
   protected MethodHandle initMethodHandle(ServicesAmp ampManager,
                                           Method method)
@@ -66,13 +66,13 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
   {
     Class<?> []paramTypes = method.getParameterTypes();
     int paramLen = paramTypes.length;
-    int resultOffset = findResultOffset(paramTypes);
+    int resultOffset = findResultOffset(method, paramTypes);
 
     method.setAccessible(true);
     MethodHandle mh = MethodHandles.lookup().unreflect(method);
-    
+
     int []permute = new int[paramLen + 1];
-    
+
     permute[0] = 0;
     for (int i = 0; i < resultOffset; i++) {
       permute[i + 1] = i + 2;
@@ -81,26 +81,26 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
       permute[i + 1] = i + 1;
     }
     permute[resultOffset + 1] = 1;
-    
+
     MethodType type = MethodType.genericMethodType(paramLen + 1);
     type = type.changeReturnType(void.class);
 
     mh = mh.asFixedArity();
     mh = mh.asType(type);
-    
+
     mh = MethodHandles.permuteArguments(mh, type, permute);
-    
+
     mh = mh.asSpreader(Object[].class, paramTypes.length - 1);
-    
-    type = MethodType.methodType(void.class, 
+
+    type = MethodType.methodType(void.class,
                                  Object.class,
                                  Result.class,
                                  Object[].class);
 
     return mh.asType(type);
   }
-  
-  private int findResultOffset(Class<?> []paramTypes)
+
+  private int findResultOffset(Method method, Class<?> []paramTypes)
   {
     for (int i = 0; i < paramTypes.length; i++) {
       if (Result.class.equals(paramTypes[i])) {
@@ -110,8 +110,8 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
         return i;
       }
     }
-    
-    throw new IllegalStateException();
+
+    throw new IllegalStateException(method.toString());
   }
 
   @Override
@@ -127,7 +127,7 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
 
     try {
       Result<?> result = null;
-      
+
       //_methodHandle.invokeExact(bean, cmpl, args);
       methodHandle().invoke(bean, result, args);
     } catch (Throwable e) {
@@ -147,7 +147,7 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
       log.finest("amp-query " + name() + "[" + bean + "] " + toList(args)
           + "\n  " + result);
     }
-    
+
     try {
       //_methodHandle.invokeExact(bean, result, args);
       methodHandle().invoke(bean, result, args);
@@ -155,26 +155,26 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
       String msg = bean + "." + method().getName() + ": " + e.getMessage();
 
       log.log(Level.FINE, msg, e);
-      
+
       RuntimeException exn = new ServiceExceptionIllegalArgument(msg, e);
-      
+
       result.fail(exn);
     } catch (ArrayIndexOutOfBoundsException e) {
       if (args.length + 1 != method().getParameterTypes().length) {
         String msg = bean + "." + method().getName() + ": " + e.getMessage();
 
         log.log(Level.FINE, msg, e);
-        
+
         RuntimeException exn = new ServiceExceptionIllegalArgument(msg, e);
-        
+
         result.fail(exn);
       }
       else {
         log.log(Level.FINEST, bean + ": " + e.toString(), e);
-        
+
         result.fail(e);
       }
-      
+
     } catch (Throwable e) {
       log.log(Level.FINEST, bean + ": " + e.toString(), e);
 
