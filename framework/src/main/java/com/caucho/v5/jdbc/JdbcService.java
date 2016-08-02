@@ -32,12 +32,146 @@ package com.caucho.v5.jdbc;
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 
+/**
+ * A service to execute SQL queries on a JDBC database.  See
+ * {@link JdbcServiceSync} for the synchronous interface.  Before using this
+ * service, you must configure the JDBC URL with either of the following two
+ * methods:
+ *
+ * <ol>
+ * <p><li> During setup of the server:</p>
+ * <pre><code>
+ * String jdbcUrl = "jdbc:///foo";
+ * Web.property(jdbcUrl + ".url", "jdbc:mysql://localhost/myDb");
+ * </code></pre>
+ *
+ * <p><b>Note</b>: <code>.url</code> is a config field defined in
+ * {@link JdbcConfig}.</p>
+ * </li>
+ *
+ * <p><li>Or in a config .yaml file:</p>
+ * <pre>
+ * "jdbc:///foo".url : jdbc:mysql://localhost/myDb
+ * </pre>
+ *
+ *
+ * <p>Then pass in the file via the command-line:</p>
+ *
+ * <pre>$ java -jar myapp.jar --conf myconfig.yaml</pre>
+ *
+ * <p>Where the main() method passes the args to <code>{@link io.baratine.web.Web.start Web.start(args)}</code>:</p>
+ *
+ * <pre><code>
+ * public static void main(String[] args) throws Exception {
+ *   Web.include(...);
+ *
+ *   Web.start(args);
+ * }
+ * </code></pre>
+ *
+ * </li>
+ *
+ * </ol>
+ *
+ * <p>Once configured, the service is available for injection:
+ *
+ * <pre><code>
+ * {@literal @}{@link javax.inject.Inject Inject} {@literal @}{@link Service}("jdbc:///foo")
+ * private JdbcService _jdbc;
+ * </code></pre>
+ *
+ * <p>Or programmatically:</p>
+ *
+ * <pre></code>
+ * JdbcService jdbc = Services().{@link io.baratine.service.Services#service service}("jdbc:///foo").as(JdbcService.class);
+ * </code></pre>
+ */
 @Service
 public interface JdbcService
 {
+  /**
+   * Executes the SQL with the given params.
+   *
+   * <pre>
+   * <code>
+   * query(
+   *   (rs, e) -> {
+   *       System.out.println(rs);
+   *   },
+   *   "SELECT * FROM test"
+   * );
+   * </code>
+   * </pre>
+   *
+   * @param result
+   * @param sql
+   * @param params optional query positional parameters
+   */
   void query(Result<JdbcResultSet> result, String sql, Object ... params);
 
+  /**
+   * Executes on the SQL function on the {@link java.sql.Connection}.  After
+   * completion, any opened {@link java.sql.Statement Statement}s are automatically closed.
+   *
+   * <pre>
+   * <code>
+   * jdbcService.query(
+   *   (rs, e) -> {
+   *       System.out.println(rs);
+   *   },
+   *   (conn) -> {
+   *       Statement stmt = conn.createStatement();
+   *
+   *       stmt.execute("SELECT * FROM test");
+   *
+   *       return stmt.getUpdateCount();
+   *   }
+   * );
+   * </code>
+   * </pre>
+   *
+   * @param result
+   * @param fun query function to run on the {@link java.sql.Connection}
+   */
   <T> void query(Result<T> result, SqlFunction<T> fun);
 
+  /**
+   * Executes the query DSL.  This allows you to execute multiple queries
+   * within a transaction.  Auto-commit is turned off and the queries are
+   * automatically committed at the end.
+   *
+   * <pre>
+   * <code>
+   * {@link QueryBuilder} builder
+   *   = QueryBuilder.query("SELECT * FROM test")
+   *                 .then("UPDATE FROM test SET a=? WHERE a=?")
+   *                 .withParams((rs) -> {
+   *                     {@code Map<String,Object>} row = rs.getFirstRow();
+   *
+   *                     String aVal = row.get("a").toString();
+   *
+   *                     return new Object[] { aVal + "Changed", aVal };
+   *                 }
+   * );
+   *
+   * jdbcService.query(
+   *   (rs, e) -> {
+   *       System.out.println(rs);
+   *   },
+   *   builder
+   * );
+   * </code>
+   * </pre>
+   *
+   * @param result
+   * @param builder
+   */
   void query(Result<JdbcResultSet> result, QueryBuilder builder);
+
+  /**
+   * Returns the real-time statistics for this connection.
+   *
+   * @param result the {@link JdbcStat} for this connection
+   */
+  void stats(Result<JdbcStat> result);
 }

@@ -29,26 +29,69 @@
 
 package com.caucho.v5.jdbc;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.function.Function;
-
-@FunctionalInterface
-public interface SqlFunction<R> extends Function<Connection,R>
+public class WrappedValue<T>
 {
-  R applyException(Connection t) throws Exception;
+  private T _value;
+  private Exception _exception;
 
-  default R apply(Connection t)
+  private long _startTimeMs;
+  private long _endTimeMs;
+
+  public WrappedValue()
   {
-    try {
-      return applyException(t);
-    }
-    catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
-  default void close()
+  public T value()
   {
+    return _value;
+  }
+
+  public WrappedValue<T> value(T value)
+  {
+    _value = value;
+
+    return this;
+  }
+
+  public Exception exception()
+  {
+    return _exception;
+  }
+
+  public WrappedValue<T> exception(Exception e)
+  {
+    _exception = e;
+
+    return this;
+  }
+
+  public long startTimeMs()
+  {
+    return _startTimeMs;
+  }
+
+  public WrappedValue<T> startTimeMs(long time)
+  {
+    _startTimeMs = time;
+
+    return this;
+  }
+
+  public long endTimeMs()
+  {
+    return _endTimeMs;
+  }
+
+  public WrappedValue<T> endTimeMs(long time)
+  {
+    _endTimeMs = time;
+
+    return this;
+  }
+
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _value + "," + _exception + "," + (_endTimeMs - _startTimeMs) + "ms" + "]";
   }
 }

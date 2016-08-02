@@ -31,26 +31,70 @@ package com.caucho.v5.jdbc;
 
 import java.util.function.Function;
 
-import com.caucho.v5.jdbc.QueryBuilderImpl.QueryBuilderAutoCommitOff;
-import com.caucho.v5.jdbc.QueryBuilderImpl.QueryBuilderCommit;
-
+/**
+ * Builds chainable queries under one or more transactions.
+ *
+ */
 public interface QueryBuilder
 {
+  /**
+   * Creates a new chainable query.
+   *
+   * @param query
+   * @return
+   */
   public static QueryBuilder query(String query)
   {
-    QueryBuilderAutoCommitOff builder = new QueryBuilderAutoCommitOff();
-
-    builder.then(query).append(new QueryBuilderCommit());
+    QueryBuilderImpl builder = new QueryBuilderImpl(query);
 
     return builder;
   }
 
+  /**
+   * Specifies the query parameters for the current query.
+   *
+   * @param params
+   * @return this
+   */
   QueryBuilder withParams(Object ... params);
+
+  /**
+   * Specifies the query parameters for the current query.
+   *
+   * @param params
+   * @return this
+   */
   QueryBuilder withParams(Function<JdbcResultSet,Object[]> fun);
 
+  /**
+   * Appends a new query to this transaction.
+   *
+   * @param params
+   * @return this
+   */
   QueryBuilder then(String sql);
+
+  /**
+   * Appends a new query to this transaction.
+   *
+   * @param params
+   * @return this
+   */
   QueryBuilder then(Function<JdbcResultSet,String> fun);
 
+  /**
+   * Commits the transaction then creates a new query.
+   *
+   * @param sql
+   * @return this
+   */
   QueryBuilder commitThen(String sql);
+
+  /**
+   * Commits the transaction then creates a new query.
+   *
+   * @param fun
+   * @return this
+   */
   QueryBuilder commitThen(Function<JdbcResultSet,String> fun);
 }

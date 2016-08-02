@@ -29,17 +29,31 @@
 
 package com.caucho.v5.jdbc;
 
-import java.util.Map;
-
 import io.baratine.config.Config;
 
+/**
+ * <p>Config for JdbcService.  Field names of this class (with the underscore
+ * prefix stripped out) are the config options.  Only the <i>url</i> option is
+ * required.</p>
+ *
+ * <pre><code>
+ * String jdbcUrl = "jdbc:///foo";
+ *
+ * Web.property(jdbcUrl + ".url", "jdbc:mysql://localhost/myDb");
+ * Web.property(jdbcUrl + ".user", "root");
+ * Web.property(jdbcUrl + ".pass", "mypassword");
+ * Web.property(jdbcUrl + ".poolSize", "64");
+ * Web.property(jdbcUrl + ".testQueryBefore", "SELECT 1");
+ * </code></pre>
+ *
+ */
 public class JdbcConfig
 {
   private String _url;
   private String _user;
   private String _pass;
 
-  private int _poolSize = 1;
+  private int _poolSize = 128;
 
   private String _testQueryBefore;
   private String _testQueryAfter;

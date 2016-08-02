@@ -29,6 +29,19 @@
 
 package com.caucho.v5.jdbc;
 
+/**
+ * <p>Synchronous interface for JdbcService, primarily for testing.</p>
+ *
+ * <p><b>Note</b>: using a synchronous interface will block the caller, which
+ * is generally a bad idea because it will block single-threaded services.</p>
+ *
+ * <pre></code>
+ * {@literal @}Inject @Service("jdbc:///foo")
+ * private JdbcServiceSync _service;
+ * </code></pre>
+ *
+ * @see JdbcService
+ */
 public interface JdbcServiceSync extends JdbcService
 {
   JdbcResultSet query(String sql, Object ... params);
@@ -36,4 +49,6 @@ public interface JdbcServiceSync extends JdbcService
   <T> T query(SqlFunction<T> fun);
 
   JdbcResultSet query(QueryBuilder builder);
+
+  JdbcStat stats();
 }

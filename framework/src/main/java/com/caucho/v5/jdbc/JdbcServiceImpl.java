@@ -29,8 +29,8 @@
 
 package com.caucho.v5.jdbc;
 
-import java.sql.Connection;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -62,19 +62,23 @@ public class JdbcServiceImpl implements JdbcService
   private String _id;
   private String _url;
 
-  private JdbcConnectionImpl _conn;
+  private JdbcConnection _conn;
 
   // stats
   private long _totalQueryCount;
-  private long _failedQueries;
+  private long _totalFailedCount;
 
-  private LinkedHashMap<Long,QueryResult> _outstandingQueryMap = new LinkedHashMap<>();
+  private LinkedHashMap<Long,QueryResult<?>> _outstandingQueryMap = new LinkedHashMap<>();
+
+  private LinkedList<QueryStat> _recentQueryList = new LinkedList<>();
+  private LinkedList<QueryStat> _recentFailedList = new LinkedList<>();
 
   @OnInit
   public void onInit()
     throws Exception
   {
     String address = ServiceRef.current().address() + _id;
+    JdbcServiceImpl me = Services.current().service(address).as(JdbcServiceImpl.class);
 
     _jdbcConfig = JdbcConfig.from(_config, address);
 
@@ -90,13 +94,13 @@ public class JdbcServiceImpl implements JdbcService
       }
     }
 
-    Supplier<JdbcConnectionImpl> supplier
-      = new ConnectionSupplier(_jdbcConfig.url(), props, _jdbcConfig.testQueryBefore(), _jdbcConfig.testQueryAfter());
+    Supplier<JdbcConnection> supplier
+      = new ConnectionSupplier(me, _jdbcConfig.url(), props, _jdbcConfig.testQueryBefore(), _jdbcConfig.testQueryAfter());
 
-    ServiceBuilder builder = _manager.newService(JdbcConnectionImpl.class, supplier);
+    ServiceBuilder builder = _manager.newService(JdbcConnection.class, supplier);
     ServiceRef ref = builder.workers(_jdbcConfig.poolSize()).start();
 
-    _conn = ref.as(JdbcConnectionImpl.class);
+    _conn = ref.as(JdbcConnection.class);
   }
 
   @Override
@@ -106,9 +110,9 @@ public class JdbcServiceImpl implements JdbcService
       _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
     }
 
-    result = new QueryResult<>(result, sql);
+    QueryResult<JdbcResultSet> qResult = new QueryResult<>(result, sql);
 
-    _conn.query(result, sql, params);
+    _conn.query(qResult, sql, params);
   }
 
   @Override
@@ -118,9 +122,9 @@ public class JdbcServiceImpl implements JdbcService
       _logger.log(Level.FINER, "query: " + fun);
     }
 
-    result = new QueryResult<>(result, fun);
+    QueryResult<T> qResult = new QueryResult<>(result, fun);
 
-    _conn.query(result, fun);
+    _conn.query(qResult, fun);
   }
 
   @Override
@@ -130,19 +134,46 @@ public class JdbcServiceImpl implements JdbcService
       _logger.log(Level.FINER, "query: " + builder);
     }
 
-    result = new QueryResult<>(result, builder);
+    QueryResult<JdbcResultSet> qResult = new QueryResult<>(result, builder);
 
-    _conn.query(result, builder);
+    _conn.query(qResult, builder);
+  }
+
+  @Override
+  public void stats(Result<JdbcStat> result)
+  {
+    JdbcStat stat = new JdbcStat();
+
+    stat.totalQueryCount(_totalQueryCount);
+    stat.totalFailedCount(_totalFailedCount);
+
+    for (QueryResult<?> qResult : _outstandingQueryMap.values()) {
+      QueryStat qStat = qResult.stat();
+
+      stat.outstandingQuery(qStat);
+    }
+
+    for (QueryStat qStat : _recentQueryList) {
+      stat.recentQuery(qStat);
+    }
+
+    for (QueryStat qStat : _recentFailedList) {
+      stat.recentFailed(qStat);
+    }
+
+    result.ok(stat);
   }
 
   private String toDebugSafe(String str)
   {
     int len = Math.min(32, str.length());
 
-    return str.substring(0, len);
+    return str.substring(0, len) + "...";
   }
 
-  static class ConnectionSupplier implements Supplier<JdbcConnectionImpl> {
+  static class ConnectionSupplier implements Supplier<JdbcConnection> {
+    private JdbcServiceImpl _parentRef;
+
     private String _url;
     private Properties _props;
 
@@ -151,7 +182,8 @@ public class JdbcServiceImpl implements JdbcService
 
     private int _count;
 
-    public ConnectionSupplier(String url, Properties props,
+    public ConnectionSupplier(JdbcServiceImpl parentRef,
+                              String url, Properties props,
                               String testQueryBefore, String testQueryAfter)
     {
       _url = url;
@@ -159,12 +191,15 @@ public class JdbcServiceImpl implements JdbcService
 
       _testQueryBefore = testQueryBefore;
       _testQueryAfter = testQueryAfter;
+
+      _parentRef = parentRef;
     }
 
-    public JdbcConnectionImpl get()
+    public JdbcConnection get()
     {
-      return JdbcConnectionImpl.create(_count++, _url, _props,
-                                       _testQueryBefore, _testQueryAfter);
+      return JdbcConnection.create(_parentRef,
+                                   _count++, _url, _props,
+                                   _testQueryBefore, _testQueryAfter);
     }
   }
 
@@ -175,31 +210,85 @@ public class JdbcServiceImpl implements JdbcService
     }
   }
 
-  class QueryResult<T> implements Result<T> {
+  class QueryResult<T> implements Result<WrappedValue<T>> {
     private Result<T> _result;
-    private long _id;
+    private long _queryId;
 
     private QueryStat _stat;
 
     public QueryResult(Result<T> result, Object query)
     {
       _result = result;
-      _id = _totalQueryCount++;
-      _stat = new QueryStat(query.toString(), System.currentTimeMillis());
+      _queryId = _totalQueryCount++;
+      _stat = new QueryStat(query.toString());
 
-      _outstandingQueryMap.put(_id, this);
+      _stat.enqueueStartTimeMs(System.currentTimeMillis());
+
+      _outstandingQueryMap.put(_queryId, this);
     }
 
     @Override
-    public void handle(T value, Throwable fail) throws Exception
+    public void handle(WrappedValue<T> value, Throwable fail) throws Exception
     {
-      if (fail != null) {
-        _failedQueries++;
+      _outstandingQueryMap.remove(_queryId);
+
+      if (fail == null) {
+        fail = value.exception();
       }
 
-      _outstandingQueryMap.remove(_id);
+      try {
+        if (value != null) {
+          _stat.enqueueEndTimeMs(value.startTimeMs());
+          _stat.startTimeMs(value.startTimeMs());
+          _stat.endTimeMs(value.endTimeMs());
+        }
+        else {
+          _stat.endTimeMs(System.currentTimeMillis());
+        }
 
-      _result.handle(value, fail);
+        _recentQueryList.addLast(_stat);
+
+        if (_recentQueryList.size() > 512) {
+          _recentQueryList.removeFirst();
+        }
+
+        if (fail != null) {
+          if (_logger.isLoggable(Level.FINER)) {
+            _logger.log(Level.FINER, "query failed: id=" + _queryId
+                                                         + ", time=" + (_stat.endTimeMs() - _stat.startTimeMs()) + "ms"
+                                                         + ", query=" + _stat.query()
+                                                         + ", exception=" + fail);
+          }
+
+          _totalFailedCount++;
+          _recentFailedList.addLast(_stat);
+
+          if (_recentFailedList.size() > 512) {
+            _recentFailedList.removeFirst();
+          }
+
+          _stat.exception(fail);
+
+          _result.fail(fail);
+        }
+        else {
+          _logger.log(Level.FINER, "query completed: id=" + _queryId
+                                                          + ", time=" + (_stat.endTimeMs() - _stat.startTimeMs()) + "ms"
+                                                          + ", query=" + _stat.query());
+        }
+
+        _result.ok(value.value());
+      }
+      catch (Throwable e) {
+        e.printStackTrace();
+
+        _result.fail(e);
+      }
+    }
+
+    public long queryId()
+    {
+      return _queryId;
     }
 
     public QueryStat stat()

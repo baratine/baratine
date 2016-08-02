@@ -93,6 +93,10 @@ public class JdbcResultSet implements Iterable<Map<String,Object>>
     return _rows.size();
   }
 
+  /**
+   *
+   * @return first row as a map, or null if no rows
+   */
   public Map<String,Object> getFirstRow()
   {
     if (_rows.size() > 0) {

@@ -44,17 +44,30 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+
+import com.caucho.v5.io.IoUtil;
 
 public class ConnectionWrapper implements Connection
 {
   private Connection _conn;
 
+  private List<Statement> _openStatementList = new ArrayList<Statement>();
+
   public ConnectionWrapper(Connection conn)
   {
     _conn = conn;
+  }
+
+  public void closeStatements()
+  {
+    for (Statement stmt : _openStatementList) {
+      IoUtil.close(stmt);
+    }
   }
 
   @Override

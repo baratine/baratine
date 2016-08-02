@@ -32,8 +32,8 @@ package com.caucho.v5.jdbc;
 import java.sql.SQLException;
 import java.util.function.Function;
 
-import com.caucho.v5.jdbc.JdbcConnectionImpl.AutoCommitOffFunction;
-import com.caucho.v5.jdbc.JdbcConnectionImpl.CommitFunction;
+import com.caucho.v5.jdbc.JdbcConnection.AutoCommitOffFunction;
+import com.caucho.v5.jdbc.JdbcConnection.CommitFunction;
 
 public class QueryBuilderImpl implements QueryBuilder
 {
@@ -142,7 +142,7 @@ public class QueryBuilderImpl implements QueryBuilder
     return append(commit).then(fun);
   }
 
-  public JdbcResultSet execute(JdbcConnectionImpl conn, JdbcResultSet rs) throws SQLException
+  public JdbcResultSet execute(JdbcConnection conn, JdbcResultSet rs) throws Exception
   {
     String sql = _queryFun.apply(rs);
     Object[] params = null;
@@ -154,7 +154,7 @@ public class QueryBuilderImpl implements QueryBuilder
     return conn.doQuery(sql, params);
   }
 
-  public JdbcResultSet executeAll(JdbcConnectionImpl conn) throws SQLException
+  public JdbcResultSet executeAll(JdbcConnection conn) throws Exception
   {
     QueryBuilderImpl current = this;
 
@@ -170,7 +170,7 @@ public class QueryBuilderImpl implements QueryBuilder
   }
 
   static class QueryBuilderAutoCommitOff extends QueryBuilderImpl {
-    public JdbcResultSet execute(JdbcConnectionImpl conn, JdbcResultSet rs) throws SQLException
+    public JdbcResultSet execute(JdbcConnection conn, JdbcResultSet rs) throws Exception
     {
       conn.doQuery(new AutoCommitOffFunction());
 
@@ -179,7 +179,7 @@ public class QueryBuilderImpl implements QueryBuilder
   }
 
   static class QueryBuilderCommit extends QueryBuilderImpl {
-    public JdbcResultSet execute(JdbcConnectionImpl conn, JdbcResultSet rs) throws SQLException
+    public JdbcResultSet execute(JdbcConnection conn, JdbcResultSet rs) throws Exception
     {
       conn.doQuery(new CommitFunction());
 

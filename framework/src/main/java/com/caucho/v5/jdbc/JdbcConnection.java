@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
@@ -34,10 +33,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Properties;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,36 +42,40 @@ import com.caucho.v5.io.IoUtil;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
-import io.baratine.service.Service;
 
-public class JdbcConnectionImpl implements JdbcService
+public class JdbcConnection
 {
-  private static Logger _logger = Logger.getLogger(JdbcConnectionImpl.class.toString());
+  private static Logger _logger = Logger.getLogger(JdbcConnection.class.toString());
 
   private String _url;
   private Properties _props;
 
-  private Connection _conn;
+  private ConnectionWrapper _conn;
 
   private int _id;
   private String _testQueryBefore;
   private String _testQueryAfter;
 
-  public static JdbcConnectionImpl create(int id, String url, Properties props,
-                                          String testQueryBefore, String testQueryAfter)
+  private JdbcServiceImpl _parent;
+
+  public static JdbcConnection create(JdbcServiceImpl parent,
+                                      int id, String url, Properties props,
+                                      String testQueryBefore, String testQueryAfter)
   {
-    JdbcConnectionImpl conn = new JdbcConnectionImpl();
+    JdbcConnection conn = new JdbcConnection();
 
     if (_logger.isLoggable(Level.FINE)) {
       _logger.log(Level.FINE, "create: id=" + id + ", url=" + toDebugSafe(url));
     }
+
+    conn._parent = parent;
 
     conn._id = id;
     conn._url = url;
     conn._props = props;
 
     conn._testQueryBefore = testQueryBefore;
-    conn._testQueryBefore = testQueryAfter;
+    conn._testQueryAfter = testQueryAfter;
 
     return conn;
   }
@@ -121,8 +121,7 @@ public class JdbcConnectionImpl implements JdbcService
     _conn = new ConnectionWrapper(conn);
   }
 
-  @Override
-  public void query(Result<JdbcResultSet> result, String sql, Object ... params)
+  public void query(Result<WrappedValue<JdbcResultSet>> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
@@ -133,8 +132,7 @@ public class JdbcConnectionImpl implements JdbcService
     queryImpl(result, fun);
   }
 
-  @Override
-  public <T> void query(Result<T> result, SqlFunction<T> fun)
+  public <T> void query(Result<WrappedValue<T>> result, SqlFunction<T> fun)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + fun);
@@ -143,65 +141,89 @@ public class JdbcConnectionImpl implements JdbcService
     queryImpl(result, fun);
   }
 
-  @Override
-  public void query(Result<JdbcResultSet> result, QueryBuilder builder)
+  public void query(Result<WrappedValue<JdbcResultSet>> result, QueryBuilder builder)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + builder);
     }
+
+    WrappedValue<JdbcResultSet> wrapper = new WrappedValue<>();
+    wrapper.startTimeMs(System.currentTimeMillis());
 
     QueryBuilderImpl builderImpl = (QueryBuilderImpl) builder;
 
     testQueryBefore();
 
     try {
+      _conn.setAutoCommit(false);
+
       JdbcResultSet rs = builderImpl.executeAll(this);
 
-      result.ok(rs);
+      _conn.commit();
+
+      wrapper.value(rs);
     }
-    catch (SQLException e) {
+    catch (Exception e) {
       _logger.log(Level.FINER, e.getMessage(), e);
 
       reconnect();
 
-      result.fail(e);
+      wrapper.exception(e);
     }
+
+    wrapper.endTimeMs(System.currentTimeMillis());
+
+    result.ok(wrapper);
   }
 
-  private <T> void queryImpl(Result<T> result, SqlFunction<T> fun)
+  private <T> void queryImpl(Result<WrappedValue<T>> result, SqlFunction<T> fun)
   {
+    WrappedValue<T> wrapper = new WrappedValue<>();
+    wrapper.startTimeMs(System.currentTimeMillis());
+
     testQueryBefore();
 
     try {
+      _conn.setAutoCommit(false);
+
       T value = doQuery(fun);
 
-      result.ok(value);
+      _conn.commit();
+
+      wrapper.value(value);
 
       fun.close();
 
       testQueryAfter();
     }
-    catch (SQLException e) {
+    catch (Exception e) {
       _logger.log(Level.FINER, e.getMessage(), e);
 
       reconnect();
 
-      result.fail(e);
+      wrapper.exception(e);
     }
+
+    wrapper.endTimeMs(System.currentTimeMillis());
+
+    result.ok(wrapper);
   }
 
-  public JdbcResultSet doQuery(String sql, Object ... params)
-    throws SQLException
+  public JdbcResultSet doQuery(String sql, Object ... params) throws Exception
   {
     QueryFunction fun = new QueryFunction(sql, params);
 
     return doQuery(fun);
   }
 
-  public <T> T doQuery(SqlFunction<T> fun)
-    throws SQLException
+  public <T> T doQuery(SqlFunction<T> fun) throws Exception
   {
-    return fun.applyException(_conn);
+    try {
+      return fun.applyException(_conn);
+    }
+    finally {
+      _conn.closeStatements();
+    }
   }
 
   public static class ExecuteFunction implements SqlFunction<JdbcResultSet> {
@@ -291,6 +313,12 @@ public class JdbcConnectionImpl implements JdbcService
     {
       IoUtil.close(_stmt);
     }
+
+    @Override
+    public String toString()
+    {
+      return getClass().getSimpleName() + "[" + toDebugSafe(_sql) + "]";
+    }
   }
 
   public static class AutoCommitOffFunction implements SqlFunction<Void> {
@@ -311,27 +339,6 @@ public class JdbcConnectionImpl implements JdbcService
     }
   }
 
-  /*
-  private JdbcResultSet query(PreparedStatement stmt, Object[] params)
-    throws SQLException
-  {
-    int i = 0;
-
-    for (Object param : params) {
-      stmt.setObject(++i, param);
-    }
-
-    boolean isResultSet = stmt.execute();
-
-    if (isResultSet) {
-      return new JdbcResultSet(stmt.getResultSet());
-    }
-    else {
-      return new JdbcResultSet();
-    }
-  }
-  */
-
   private void testQueryBefore()
   {
     if (_testQueryBefore == null) {
@@ -347,7 +354,7 @@ public class JdbcConnectionImpl implements JdbcService
 
       doQuery(fun);
     }
-    catch (SQLException e) {
+    catch (Exception e) {
       if (_logger.isLoggable(Level.FINER)) {
         _logger.log(Level.FINER, "testQueryBefore failed: id=" + _id + ", " + e.getMessage(), e);
       }
@@ -371,7 +378,7 @@ public class JdbcConnectionImpl implements JdbcService
 
       doQuery(fun);
     }
-    catch (SQLException e) {
+    catch (Exception e) {
       if (_logger.isLoggable(Level.FINER)) {
         _logger.log(Level.FINER, "testQueryAfter failed: id=" + _id + ", " + e.getMessage(), e);
       }
@@ -388,15 +395,12 @@ public class JdbcConnectionImpl implements JdbcService
   }
 
   @OnDestroy
-  public void onDestroy(Result<Void> result)
+  public void onDestroy()
   {
     try {
       _conn.close();
-
-      result.ok(null);
     }
-    catch (SQLException e) {
-      result.fail(e);
+    catch (Exception e) {
     }
   }
 }
