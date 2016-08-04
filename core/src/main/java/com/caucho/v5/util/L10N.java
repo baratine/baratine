@@ -43,22 +43,22 @@ public class L10N
     = new HashMap<>();
 
   private Class<?> _cl;
-  
+
   private Boolean _isMessageFileAvailable;
   private Boolean _isStringFileAvailable;
-  
+
   private Properties _messages;
   private Properties _strings;
-  
+
   public L10N(Class<?> cl)
   {
     _cl = cl;
   }
-  
+
   public String l(String msg)
   {
     msg = getTranslated(msg);
-    
+
     StringBuilder cb = new StringBuilder();
 
     int length = msg.length();
@@ -73,7 +73,7 @@ public class L10N
       }
       else {
         ch = msg.charAt(i + 1);
-        
+
         if (ch == '{') {
           cb.append('{');
           i += 2;
@@ -87,15 +87,20 @@ public class L10N
         }
       }
     }
-    
+
     return cb.toString();
   }
-  
+
   public String l(String msg, long l)
   {
     return l(msg, String.valueOf(l));
   }
-  
+
+  public String l(String msg, char ch)
+  {
+    return l(msg, String.valueOf(ch));
+  }
+
   public String l(String msg, Object o)
   {
     msg = getTranslated(msg);
@@ -114,7 +119,7 @@ public class L10N
       }
       else {
         ch = msg.charAt(i + 1);
-        
+
         if (ch == '{') {
           cb.append('{');
           i += 2;
@@ -132,14 +137,14 @@ public class L10N
         }
       }
     }
-    
+
     return cb.toString();
   }
-  
+
   public String l(String msg, Object o1, Object o2)
   {
     msg = getTranslated(msg);
-    
+
     StringBuilder cb = new StringBuilder();
 
     int length = msg.length();
@@ -154,7 +159,7 @@ public class L10N
       }
       else {
         ch = msg.charAt(i + 1);
-        
+
         if (ch == '{') {
           cb.append('{');
           i += 2;
@@ -176,7 +181,7 @@ public class L10N
         }
       }
     }
-    
+
     return cb.toString();
   }
 
@@ -191,11 +196,11 @@ public class L10N
     return l(msg, String.valueOf(i1), String.valueOf(i2));
   }
   */
-  
+
   public String l(String msg, Object o1, Object o2, Object o3)
   {
     msg = getTranslated(msg);
-    
+
     StringBuilder cb = new StringBuilder();
 
     int length = msg.length();
@@ -210,7 +215,7 @@ public class L10N
       }
       else {
         ch = msg.charAt(i + 1);
-        
+
         if (ch == '{') {
           cb.append('{');
           i += 2;
@@ -236,14 +241,14 @@ public class L10N
         }
       }
     }
-    
+
     return cb.toString();
   }
-  
+
   public String l(String msg, Object o1, Object o2, Object o3, Object o4)
   {
     msg = getTranslated(msg);
-    
+
     StringBuilder cb = new StringBuilder();
 
     int length = msg.length();
@@ -258,7 +263,7 @@ public class L10N
       }
       else {
         ch = msg.charAt(i + 1);
-        
+
         if (ch == '{') {
           cb.append('{');
           i += 2;
@@ -288,15 +293,15 @@ public class L10N
         }
       }
     }
-    
+
     return cb.toString();
   }
-  
+
   public String l(String msg, Object o1, Object o2,
                   Object o3, Object o4, Object o5)
   {
     msg = getTranslated(msg);
-    
+
     StringBuilder cb = new StringBuilder();
 
     int length = msg.length();
@@ -311,7 +316,7 @@ public class L10N
       }
       else {
         ch = msg.charAt(i + 1);
-        
+
         if (ch == '{') {
           cb.append('{');
           i += 2;
@@ -345,15 +350,15 @@ public class L10N
         }
       }
     }
-    
+
     return cb.toString();
   }
-  
+
   public String l(String msg, Object o1, Object o2,
                   Object o3, Object o4, Object o5, Object o6)
   {
     msg = getTranslated(msg);
-    
+
     StringBuilder cb = new StringBuilder();
 
     int length = msg.length();
@@ -368,7 +373,7 @@ public class L10N
       }
       else {
         ch = msg.charAt(i + 1);
-        
+
         if (ch == '{') {
           cb.append('{');
           i += 2;
@@ -406,23 +411,23 @@ public class L10N
         }
       }
     }
-    
+
     return cb.toString();
   }
-  
+
   public String l(String msg, Object ...objects)
   {
     msg = getTranslated(msg);
 
     return fillMessage(getStringMap(), msg, objects);
   }
-  
+
   public static String fillMessage(String msg,
                                    Object ...objects)
   {
     return fillMessage(null, msg, objects);
   }
-    
+
   public static String fillMessage(Properties stringMap,
                                    String msg,
                                    Object ...objects)
@@ -441,21 +446,21 @@ public class L10N
       }
       else {
         ch = msg.charAt(i + 1);
-        
+
         if (ch == '{') {
           cb.append('{');
           i += 2;
         }
         else if ('0' <= ch && ch <= '9') {
           int index = ch - '0';
-          
+
           Object value = objects[index];
-          
+
           if (value != null && (value instanceof Object[]))
             cb.append(Arrays.asList((Object[]) value));
           else
             cb.append(objects[index]);
-          
+
           i += 3;
         }
         else if (ch == '{') {
@@ -467,20 +472,20 @@ public class L10N
         }
       }
     }
-    
+
     return cb.toString();
   }
 
-  private int parseString(String msg, 
-                          int i, 
+  private int parseString(String msg,
+                          int i,
                           StringBuilder sb)
   {
     return parseString(msg, i, sb, getStringMap());
   }
 
-  private static int parseString(String msg, 
-                                 int i, 
-                                 StringBuilder sb, 
+  private static int parseString(String msg,
+                                 int i,
+                                 StringBuilder sb,
                                  Properties stringMap)
   {
     StringBuilder arg = new StringBuilder();
@@ -504,18 +509,18 @@ public class L10N
 
     sb.append('{');
     sb.append(arg);
-    
+
     return i;
   }
 
   private String getTranslated(String msg)
   {
     Properties messages = getMessageMap();
-    
+
     if (messages == null) {
       return msg;
     }
-    
+
     String translated = (String) messages.get(msg);
 
     if (translated == null) {
@@ -529,10 +534,10 @@ public class L10N
   {
     if (_messages != null)
       return _messages;
-    
+
     if (Boolean.FALSE.equals(_isMessageFileAvailable))
       return null;
-    
+
     String name = _cl.getName().replace('.', '/');
     int p = name.lastIndexOf('/');
 
@@ -545,7 +550,7 @@ public class L10N
 
     if (_messages != null) {
       _isMessageFileAvailable = Boolean.TRUE;
-      
+
       return _messages;
     }
 
@@ -566,10 +571,10 @@ public class L10N
   {
     if (_strings != null)
       return _strings;
-    
+
     if (Boolean.FALSE.equals(_isStringFileAvailable))
       return null;
-    
+
     String name = _cl.getName().replace('.', '/');
     int p = name.lastIndexOf('/');
 
@@ -582,7 +587,7 @@ public class L10N
 
     if (_strings != null) {
       _isStringFileAvailable = Boolean.TRUE;
-      
+
       return _strings;
     }
 
@@ -602,7 +607,7 @@ public class L10N
   private Properties loadProperties(String name)
   {
     name = name + ".properties";
-    
+
     try (InputStream is = _cl.getClassLoader().getResourceAsStream(name)) {
       if (is != null) {
         Properties messages = new Properties();

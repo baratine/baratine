@@ -39,53 +39,53 @@ public class JsonJacksonConfig
   private boolean _enabled;
 
   // SerializationFeature
-  private boolean WRITE_DATES_AS_TIMESTAMPS = true;
-  private boolean INDENT_OUTPUT = false;
-  private boolean FAIL_ON_EMPTY_BEANS = true;
-  private boolean CLOSE_CLOSEABLE = false;
-  private boolean WRITE_BIGDECIMAL_AS_PLAIN = false;
-  private boolean WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS = false;
-  private boolean WRITE_ENUMS_USING_TO_STRING = false;
-  private boolean WRITE_ENUMS_USING_INDEX = false;
-  private boolean WRITE_NULL_MAP_VALUES = true;
-  private boolean WRAP_ROOT_VALUE = false;
-  private boolean FLUSH_AFTER_WRITE_VALUE = true;
-  private boolean WRITE_EMPTY_JSON_ARRAYS = true;
-  private boolean WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED = true;
-  //private boolean WRITE_NULL_PROPERTIES = true;
+  public boolean WRITE_DATES_AS_TIMESTAMPS = true;
+  public boolean INDENT_OUTPUT = false;
+  public boolean FAIL_ON_EMPTY_BEANS = true;
+  public boolean CLOSE_CLOSEABLE = false;
+  public boolean WRITE_BIGDECIMAL_AS_PLAIN = false;
+  public boolean WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS = false;
+  public boolean WRITE_ENUMS_USING_TO_STRING = false;
+  public boolean WRITE_ENUMS_USING_INDEX = false;
+  public boolean WRITE_NULL_MAP_VALUES = true;
+  public boolean WRAP_ROOT_VALUE = false;
+  public boolean FLUSH_AFTER_WRITE_VALUE = true;
+  public boolean WRITE_EMPTY_JSON_ARRAYS = true;
+  public boolean WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED = true;
+  //public boolean WRITE_NULL_PROPERTIES = true;
 
   // DeserializationFeature
-  private boolean USE_BIG_DECIMAL_FOR_FLOATS = false;
-  private boolean USE_BIG_INTEGER_FOR_INTS = false;
-  private boolean READ_ENUMS_USING_TO_STRING = false;
-  private boolean ACCEPT_EMPTY_STRING_AS_NULL_OBJECT = false;
-  private boolean ACCEPT_SINGLE_VALUE_AS_ARRAY = false;
-  private boolean USE_JAVA_ARRAY_FOR_JSON_ARRAY = false;
+  public boolean USE_BIG_DECIMAL_FOR_FLOATS = false;
+  public boolean USE_BIG_INTEGER_FOR_INTS = false;
+  public boolean READ_ENUMS_USING_TO_STRING = false;
+  public boolean ACCEPT_EMPTY_STRING_AS_NULL_OBJECT = false;
+  public boolean ACCEPT_SINGLE_VALUE_AS_ARRAY = false;
+  public boolean USE_JAVA_ARRAY_FOR_JSON_ARRAY = false;
 
-  private boolean FAIL_ON_UNKNOWN_PROPERTIES = true;
-  private boolean FAIL_ON_NULL_FOR_PRIMITIVES = false;
-  private boolean FAIL_ON_NUMBERS_FOR_ENUMS = false;
-  private boolean FAIL_ON_INVALID_SUBTYPE = true;
+  public boolean FAIL_ON_UNKNOWN_PROPERTIES = true;
+  public boolean FAIL_ON_NULL_FOR_PRIMITIVES = false;
+  public boolean FAIL_ON_NUMBERS_FOR_ENUMS = false;
+  public boolean FAIL_ON_INVALID_SUBTYPE = true;
 
   // MapperFeature
-  private boolean USE_ANNOTATIONS = true;
+  public boolean USE_ANNOTATIONS = true;
 
-  private boolean AUTO_DETECT_CREATORS = true;
-  private boolean AUTO_DETECT_FIELDS = true;
-  private boolean AUTO_DETECT_GETTERS = true;
-  private boolean AUTO_DETECT_IS_GETTERS = true;
-  private boolean AUTO_DETECT_SETTERS = true;
-  private boolean REQUIRE_SETTERS_FOR_GETTERS = false;
-  private boolean USE_GETTERS_AS_SETTERS = true;
-  private boolean CAN_OVERRIDE_ACCESS_MODIFIERS = true;
-  private boolean INFER_PROPERTY_MUTATORS = true;
-  private boolean ALLOW_FINAL_FIELDS_AS_MUTATORS = true;
+  public boolean AUTO_DETECT_CREATORS = true;
+  public boolean AUTO_DETECT_FIELDS = true;
+  public boolean AUTO_DETECT_GETTERS = true;
+  public boolean AUTO_DETECT_IS_GETTERS = true;
+  public boolean AUTO_DETECT_SETTERS = true;
+  public boolean REQUIRE_SETTERS_FOR_GETTERS = false;
+  public boolean USE_GETTERS_AS_SETTERS = true;
+  public boolean CAN_OVERRIDE_ACCESS_MODIFIERS = true;
+  public boolean INFER_PROPERTY_MUTATORS = true;
+  public boolean ALLOW_FINAL_FIELDS_AS_MUTATORS = true;
 
-  private boolean SORT_PROPERTIES_ALPHABETICALLY = false;
-  private boolean USE_WRAPPER_NAME_AS_PROPERTY_NAME = false;
+  public boolean SORT_PROPERTIES_ALPHABETICALLY = false;
+  public boolean USE_WRAPPER_NAME_AS_PROPERTY_NAME = false;
 
-  private boolean USE_STATIC_TYPING = true;
-  private boolean DEFAULT_VIEW_INCLUSION = true;
+  public boolean USE_STATIC_TYPING = true;
+  public boolean DEFAULT_VIEW_INCLUSION = true;
 
   public boolean enabled()
   {

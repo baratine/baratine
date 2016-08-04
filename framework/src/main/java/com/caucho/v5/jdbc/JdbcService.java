@@ -51,15 +51,14 @@ import io.baratine.service.Service;
  *
  * <p><li>Or in a config .yaml file:</p>
  * <pre>
- * "jdbc:///foo".url : jdbc:mysql://localhost/myDb
+ * "jdbc:///foo.url" : jdbc:mysql://localhost/myDb
  * </pre>
- *
  *
  * <p>Then pass in the file via the command-line:</p>
  *
- * <pre>$ java -jar myapp.jar --conf myconfig.yaml</pre>
+ * <pre>$ java -jar myapp.jar --conf jdbc.yaml</pre>
  *
- * <p>Where the main() method passes the args to <code>{@link io.baratine.web.Web.start Web.start(args)}</code>:</p>
+ * <p>Where the main() method sends the args to <code>{@link io.baratine.web.Web.start Web.start(args)}</code>:</p>
  *
  * <pre><code>
  * public static void main(String[] args) throws Exception {
@@ -77,7 +76,7 @@ import io.baratine.service.Service;
  *
  * <pre><code>
  * {@literal @}{@link javax.inject.Inject Inject} {@literal @}{@link Service}("jdbc:///foo")
- * private JdbcService _jdbc;
+ * private JdbcService jdbc;
  * </code></pre>
  *
  * <p>Or programmatically:</p>

@@ -44,6 +44,9 @@ import io.baratine.config.Config;
  * Web.property(jdbcUrl + ".pass", "mypassword");
  * Web.property(jdbcUrl + ".poolSize", "64");
  * Web.property(jdbcUrl + ".testQueryBefore", "SELECT 1");
+ *
+ * Web.start();
+ *
  * </code></pre>
  *
  */
