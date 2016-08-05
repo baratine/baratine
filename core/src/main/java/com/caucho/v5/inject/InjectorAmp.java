@@ -41,6 +41,7 @@ import io.baratine.config.Config;
 import io.baratine.inject.Binding;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.spi.ServiceManagerProvider;
 
 /**
@@ -70,23 +71,24 @@ public interface InjectorAmp extends Injector
   }
 
   <T> Iterable<Binding<T>> bindings(Class<T> type);
-  
+
   Config config();
-  
+
   // <S,T> Convert<S, T> converter(Class<S> source, Class<T> target);
-  
-  String property(String key);
-  
+
   public interface InjectBuilderAmp extends InjectorBuilder
   {
     InjectBuilderAmp context(boolean isContext);
-    
+
     <U> void include(Key<U> keyParent, Method method);
-    
+
     @Override
     InjectorAmp get();
+
+    @Override
+    InjectBuilderAmp property(String key, String value);
   }
- 
+
   //
   // XXX: implementation
   //

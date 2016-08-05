@@ -229,7 +229,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
   }
 
   @Override
-  public InjectorBuilder property(String var, String value)
+  public InjectorBuilderImpl property(String var, String value)
   {
     _config.add(var, value);
 

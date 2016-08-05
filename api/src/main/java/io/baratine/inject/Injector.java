@@ -85,9 +85,14 @@ public interface Injector
   <T> List<Binding<T>> bindings(Key<T> key);
 
   /**
-   * Returns the configuration
+   * Returns the configuration.
    */
   Config config();
+
+  /**
+   * Returns the config property.
+   */
+  String property(String key);
 
   /**
    * Returns the type converter from a source class to a target class.
