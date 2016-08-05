@@ -83,8 +83,6 @@ public interface InjectorAmp extends Injector
     
     <U> void include(Key<U> keyParent, Method method);
     
-    InjectBuilderAmp property(String key, String value);
-
     @Override
     InjectorAmp get();
   }

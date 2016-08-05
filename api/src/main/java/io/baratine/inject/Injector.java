@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 1998-2015 Caucho Technology -- all rights reserved
+ * Copyright (c) 1998-2016 Caucho Technology -- all rights reserved
  *
- * This file is part of Baratine(TM)(TM)
+ * This file is part of Baratine(TM)
  *
  * Each copy or derived work must preserve the copyright notice and this
  * notice unmodified.
@@ -51,12 +51,12 @@ public interface Injector
    * a Type with &64;Qualifier annotations.
    */
   <T> Provider<T> provider(Key<T> key);
-  
+
   /**
    * Returns an instance provider for the given InjectionPoint.
    */
   <T> Provider<T> provider(InjectionPoint<T> atPoint);
-  
+
   /**
    * Returns an injected instance for the given type. The instance returned
    * depends on the bindings of the inject manager.
@@ -68,12 +68,12 @@ public interface Injector
    * a type with annotations.
    */
   <T> T instance(Key<T> key);
-  
+
   /**
    * Returns an injected instance for the given InjectionPoint.
    */
   <T> T instance(InjectionPoint<T> ip);
-  
+
   /**
    * Consumer for injecting dependencies.
    */
@@ -83,12 +83,12 @@ public interface Injector
    * Returns the bindings associated with a key.
    */
   <T> List<Binding<T>> bindings(Key<T> key);
-  
+
   /**
    * Returns the configuration
    */
   Config config();
-  
+
   /**
    * Returns the type converter from a source class to a target class.
    */
@@ -108,28 +108,30 @@ public interface Injector
   {
     return newManager(Thread.currentThread().getContextClassLoader());
   }
-  
+
   public interface InjectorBuilder
   {
     default InjectorBuilder include(Class<?> includeClass)
     {
       throw new UnsupportedOperationException(getClass().getName());
     }
-    
+
     <T> BindingBuilder<T> bean(Class<T> impl);
     <T> BindingBuilder<T> bean(T instance);
-    
+
     <T> BindingBuilder<T> provider(Provider<T> provider);
-    
+
     //<T,X> BindingBuilder<T> function(Function<InjectionPoint<X>,T> function);
-    
+
     <T,U> BindingBuilder<T> provider(Key<U> parent, Method m);
-    
+
     InjectorBuilder autoBind(InjectAutoBind autoBind);
-    
+
+    InjectorBuilder property(String key, String value);
+
     Injector get();
   }
-  
+
   public interface BindingBuilder<T>
   {
     BindingBuilder<T> to(Class<? super T> api);
@@ -138,16 +140,16 @@ public interface Injector
     BindingBuilder<T> priority(int priority);
     BindingBuilder<T> scope(Class<? extends Annotation> scopeType);
   }
-  
+
   public interface IncludeInject extends IncludeGenerator<InjectorBuilder>
   {
   }
-  
+
   public interface InjectAutoBind
   {
     <T> Provider<T> provider(Injector manager, Key<T> key);
-    
-    default <T> Provider<T> provider(Injector injector, 
+
+    default <T> Provider<T> provider(Injector injector,
                                      InjectionPoint<T> ip)
     {
       return provider(injector, ip.key());
