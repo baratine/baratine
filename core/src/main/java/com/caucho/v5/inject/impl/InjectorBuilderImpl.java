@@ -115,7 +115,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     // _qualifierSet.add(Lookup.class);
 
     _autoBindList.add(new ConvertAutoBind());
-    _autoBindList.add(new ConfigAutoBind(_config));
+    //_autoBindList.add(new ConfigAutoBind(_config));
   }
 
   ClassLoader getClassLoader()
