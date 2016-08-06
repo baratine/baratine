@@ -27,31 +27,27 @@
  * @author Nam Nguyen
  */
 
-package com.caucho.v5.config;
+package com.caucho.v5.jdbc;
 
-import javax.inject.Provider;
+import io.baratine.service.ServiceInitializer;
+import io.baratine.service.Services.ServicesBuilder;
 
-import io.baratine.config.Config;
-import io.baratine.config.Config.ConfigBuilder;
-import io.baratine.inject.Injector;
-import io.baratine.inject.Key;
-import io.baratine.inject.Injector.InjectAutoBind;
-
-public class ConfigAutoBind implements InjectAutoBind
+/**
+ * Binding of "jdbc:" to JdbcService.
+ */
+public class ServiceInitJdbc implements ServiceInitializer
 {
-  private ConfigBuilder _config;
-
-  public ConfigAutoBind(ConfigBuilder config)
+  @Override
+  public void init(ServicesBuilder manager)
   {
-    _config = config;
+    manager.service(JdbcVault.class)
+           .address("jdbc:")
+           .ref();
   }
 
   @Override
-  public <T> Provider<T> provider(Injector manager, Key<T> key) {
-    if (! Config.class.equals(key.rawClass())) {
-      return null;
-    }
-
-    return () -> (T) _config.get();
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[]";
   }
 }

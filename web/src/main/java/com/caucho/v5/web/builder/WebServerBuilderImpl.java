@@ -112,27 +112,27 @@ import io.baratine.web.WebServerBuilder;
 public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
 {
   private static final L10N L = new L10N(WebServerBuilderImpl.class);
-  
+
   private static final Logger log
     = Logger.getLogger(WebServerBuilderImpl.class.getName());
-  
+
   private ClassLoader _parentClassLoader;
-  
+
   private String _name = "baratine";
-  
-  private Config.ConfigBuilder _configBuilder = Configs.config();
-  
+
+  private Config.ConfigBuilder _configBuilder;
+
   private ArrayList<IncludeWebAmp> _includes = new ArrayList<>();
-  
+
   private ArrayList<ServiceBuilderWebImpl> _services = new ArrayList<>();
-  
+
   //private ArrayList<InjectBuilderWebImpl<?>> _bindings = new ArrayList<>();
-  
+
   private InjectBuilderAmp _injectServer = InjectorAmp.manager();
-  
+
   private final ArrayList<IncludeInject> _bindings = new ArrayList<>();
   //private final ArrayList<IncludeWeb> _includes = new ArrayList<>();
-  
+
   private WebServerValidator _validator = new WebServerValidator();
 
   private WebServerImpl _server;
@@ -142,10 +142,10 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   private SystemManager _systemManager;
 
   private ArrayList<Runnable> _initList = new ArrayList<>();
-  
+
   private boolean _isEmbedded;
   private boolean _isWatchdog;
-  
+
   // private final StatProbeManager _statProbeManager;
 
   //private HeapDump _heapDump;
@@ -154,7 +154,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   private String[]_heapDumpArgs;
 
   private long _shutdownWaitTime = 60000L;
-  
+
   private boolean _isSSL;
   private int _portBartender = -1;
   private int _dynamicDataIndex = -1;
@@ -172,55 +172,57 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public WebServerBuilderImpl()
   {
     _startTime = CurrentTime.currentTime();
-    
+
     _parentClassLoader = Thread.currentThread().getContextClassLoader();
-    
+
     _name = EnvLoader.getId(_parentClassLoader);
-    
+
+    _configBuilder = _injectServer.config();
+
     try {
       Vfs.initJNI();
     } catch (Throwable e) {
     }
-    
+
     //_configBuilder.add(Configs.system());
-    
+
     initLogs();
-    
+
     addConfigsDefault();
   }
-  
+
   private void initLogs()
   {
     Logger logRoot = Logger.getLogger("");
-    
+
     for (Handler handler : logRoot.getHandlers()) {
       logRoot.removeHandler(handler);
     }
-    
+
     //PathHandler pathHandler = new PathHandler();
     //pathHandler.setPath(Vfs.path("stdout:"));
     //pathHandler.init();
-    
+
     StreamHandler streamHandler = new StreamHandler(System.out);
     streamHandler.init();
     //pathHandler.setPath(Vfs.path("stdout:"));
     //streamHandler.init();
-    
+
     logRoot.addHandler(streamHandler);
-    
+
     Logger.getLogger("java.management").setLevel(Level.INFO);
   }
-  
+
   public String name()
   {
     return _name;
   }
-  
+
   private ClassLoader parentClassLoader()
   {
     return _parentClassLoader;
   }
-  
+
   private WebServerValidator validator()
   {
     return _validator;
@@ -230,11 +232,11 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public WebServerBuilderImpl scan(Package pkg)
   {
     ScanManager manager = new ScanManager();
-    
+
     manager.scan(x->onScanClass(x))
            .basePackage(pkg)
            .go();
-           
+
     return this;
   }
 
@@ -242,11 +244,11 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public WebServerBuilder scanAutoconf()
   {
     ScanManager manager = new ScanManager();
-    
+
     manager.scan(x->onScanClass(x))
            .classNameTest(className->className.indexOf(".autoconf.") >= 0)
            .go();
-           
+
     return this;
   }
 
@@ -258,52 +260,52 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     }
 
     _args = createArgs(argv);
-    
+
     //_args.commandDefault(config().get("baratine.command", "start-console"));
-    
+
     _args.parse();
-    
+
     _configBuilder.add(_args.config());
 
     addConfigsArgs();
-    
+
     return this;
   }
-  
+
   private void addConfigsDefault()
   {
     addConfigFile("classpath:META-INF/baratine-default.yml");
     addConfigFile("classpath:/baratine.yml");
-    
+
     _configBuilder.add(Configs.system());
   }
-  
+
   private void addConfigsArgs()
   {
     String config = _args.getArg("conf");
-    
+
     if (config != null) {
       addConfigFile(config);
     }
   }
-  
+
   private void addConfigFile(String pathName)
   {
     String stage;
-    
+
     if (_args != null) {
       stage = _args.getArg("stage", "main");
-    } 
+    }
     else {
       stage = "main";
     }
-    
+
     Path path = Vfs.path(pathName);
 
     try {
       if (Files.isReadable(path)) {
         List<Config> configList = YamlParser.parse(path);
-        
+
         _configBuilder.add(findStage(configList, stage));
       }
     } catch (Exception e) {
@@ -311,7 +313,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       throw new IllegalStateException(e);
     }
   }
-  
+
   private Config findStage(List<Config> list, String stage)
   {
     for (Config config : list) {
@@ -322,37 +324,37 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
         return config;
       }
     }
-    
+
     return list.get(0);
   }
-  
+
   protected ArgsBase args()
   {
     if (_args == null) {
       _args = createArgs(new String[0]);
-      
+
       //_args.commandDefault(config().get("baratine.command", "start-console"));
-      
+
       _args.parse();
     }
-    
+
     return _args;
   }
-  
+
   protected ArgsBase createArgs(String []argv)
   {
     return new ArgsWeb(argv);
   }
-  
+
   private void onScanClass(Class<?> type)
   {
     try {
       for (Annotation ann : type.getAnnotations()) {
         if (ann instanceof IncludeOnClass) {
           IncludeOnClass annOnClass = (IncludeOnClass) ann;
-          
+
           Class<?> value = annOnClass.value();
-          
+
           if (value == null) {
             return;
           }
@@ -362,7 +364,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       log.log(Level.FINEST, e.toString(), e);
       return;
     }
-    
+
     if (IncludeWeb.class.isAssignableFrom(type)) {
       include(type);
     }
@@ -373,20 +375,20 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       service(type);
     }
   }
-  
+
   @Override
   public WebServerBuilderImpl port(int port)
   {
     _configBuilder.add("server.port", port);
-    
+
     return this;
   }
-  
+
   @Override
   public SslBuilder ssl()
   {
     _configBuilder.add("server.ssl", true);
-    
+
     return new SslBuilderImpl();
   }
 
@@ -395,7 +397,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     _configBuilder.converter(converter());
 
     Config config = _configBuilder.get();
-    
+
     return config;
   }
 
@@ -405,31 +407,31 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     return _configBuilder;
   }
   */
-  
+
   private ConvertFrom<String> converter()
   {
     ConvertFromBuilder<String> builder = ConvertStringDefault.build();
-    
+
     builder.add(new ConvertStringToPath());
-    
+
     return builder.get();
   }
-  
+
   //
   // injection configuration
   //
-  
+
   @Override
   public <T> BindingBuilder<T> bean(Class<T> type)
   {
     Objects.requireNonNull(type);
-    
+
 
     InjectBuilderWebImpl<T> binding
       = new InjectBuilderWebImpl<>(_injectServer, type);
-    
+
     _includes.add(binding);
-    
+
     return binding;
   }
 
@@ -437,12 +439,12 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public <T> BindingBuilder<T> bean(T bean)
   {
     Objects.requireNonNull(bean);
-    
+
     InjectBuilderWebImpl<T> binding
       = new InjectBuilderWebImpl<>(_injectServer, bean);
-  
+
     _includes.add(binding);
-  
+
     return binding;
   }
 
@@ -450,7 +452,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public <T> BindingBuilder<T> beanProvider(Provider<T> provider)
   {
     Objects.requireNonNull(provider);
-    
+
     return _injectServer.provider(provider);
   }
 
@@ -459,12 +461,12 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public <T,X> BindingBuilder<T> beanFunction(Function<X,T> function)
   {
     Objects.requireNonNull(function);
-    
+
     InjectBuilderWebImpl<T> binding
       = new InjectBuilderWebImpl<>(_injectServer, function);
-  
+
     _includes.add(binding);
-  
+
     return binding;
   }
   */
@@ -475,7 +477,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     Objects.requireNonNull(parent);
     Objects.requireNonNull(m);
-    
+
     return _injectServer.provider(parent, m);
   }
   */
@@ -484,31 +486,31 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public <T> ServiceRef.ServiceBuilder service(Class<T> serviceClass)
   {
     Objects.requireNonNull(serviceClass);
-    
+
     validator().serviceClass(serviceClass);
-    
+
     Key<?> key = Key.of(serviceClass, ServiceImpl.class);
-    
+
     ServiceBuilderWebImpl service
       = new ServiceBuilderWebImpl(this, key, serviceClass);
-    
+
     _includes.add(service);
-    
+
     return service;
   }
 
   @Override
-  public ServiceRef.ServiceBuilder service(Key<?> key, 
+  public ServiceRef.ServiceBuilder service(Key<?> key,
                                                Class<?> serviceClass)
   {
     Objects.requireNonNull(key);
     Objects.requireNonNull(serviceClass);
-    
+
     ServiceBuilderWebImpl service
       = new ServiceBuilderWebImpl(this, key, serviceClass);
-    
+
     _includes.add(service);
-    
+
     return service;
   }
 
@@ -517,15 +519,15 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
                                                Supplier<? extends T> supplier)
   {
     Objects.requireNonNull(supplier);
-    
+
     ServiceBuilderWebImpl service
       = new ServiceBuilderWebImpl(this, serviceClass, supplier);
-    
+
     _includes.add(service);
-    
+
     return service;
   }
-  
+
   public ArrayList<ServiceBuilderWebImpl> services()
   {
     return _services;
@@ -535,28 +537,28 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public WebServerBuilder include(Class<?> includeClass)
   {
     Objects.requireNonNull(includeClass);
-    
+
     validator().includeClass(includeClass);
-    
+
     include(new IncludeWebClass(includeClass));
 
     return this;
   }
-  
+
   @Override
   public RouteBuilderImpl route(HttpMethod method, String path)
   {
     Objects.requireNonNull(method);
     Objects.requireNonNull(path);
-    
+
     return new RouteBuilderImpl(this, method, path);
   }
-  
+
   @Override
   public WebSocketBuilderImpl websocket(String path)
   {
     Objects.requireNonNull(path);
-    
+
     return new WebSocketBuilderImpl(this, path);
   }
 
@@ -580,26 +582,26 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     _includes.add(routeGen);
   }
-  
+
   public ArrayList<IncludeWebAmp> includes()
   {
     return _includes;
   }
-  
+
   @Override
   public synchronized WebServer start(String ...argv)
   {
     args(argv);
-    
+
     if (_server == null || _server.isClosed()) {
       _server = webServerFactory().build(this);
     }
-    
+
     _server.start();
-    
+
     return _server;
   }
-  
+
   //@Override
   public synchronized WebServer doStart()
   {
@@ -608,22 +610,22 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     }
 
     _server.start();
-    
+
     return _server;
   }
-  
+
   @Override
   public void go(String ...argv)
   {
     args(argv);
-    
+
     ArgsBase args = args();
-    
+
     args.env().put(WebServerBuilderImpl.class, this);
-    
+
     args.doCommand();
   }
-  
+
   private WebServerFactory webServerFactory()
   {
     try {
@@ -634,7 +636,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     } catch (Exception e) {
       log.log(Level.WARNING, e.toString(), e);
     }
-    
+
     return this;
   }
 
@@ -643,9 +645,9 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public void join()
   {
     start();
-    
+
     WebServerImpl server = _server;
-    
+
     if (server != null) {
       server.join();
     }
@@ -656,7 +658,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public ServerBuilderBaratine serverBuilder()
   {
     Objects.requireNonNull(_serverBuilder);
-    
+
     return _serverBuilder;
   }
   */
@@ -664,17 +666,17 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public void serverBuilder(ServerBuilderBaratine builder)
   {
     Objects.requireNonNull(builder);
-    
+
     _serverBuilder = builder;
   }
 
   public void bind(IncludeInject binding)
   {
     Objects.requireNonNull(binding);
-    
+
     _bindings.add(binding);
   }
-  
+
   public Iterable<IncludeInject> bindings()
   {
     return _bindings;
@@ -683,7 +685,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public void service(ServiceBuilderWebImpl service)
   {
     Objects.requireNonNull(service);
-    
+
     throw new UnsupportedOperationException();
   }
 
@@ -691,11 +693,11 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public void include(IncludeWeb route)
   {
     Objects.requireNonNull(route);
-    
+
     _includes.add(route);
   }
   */
-  
+
   /*
   @Override
   protected ServerBase build(SystemManager systemManager,
@@ -710,12 +712,12 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public WebServerImpl build(WebServerBuilderImpl builder)
   {
     _serverBuilder = newServerBuilder();
-    
+
     build();
-    
+
     return new WebServerImpl(this);
   }
-  
+
   protected ServerBuilderBaratine newServerBuilder()
   {
     return new ServerBuilderBaratine(config());
@@ -724,16 +726,16 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public SystemManager systemManager()
   {
     Objects.requireNonNull(_systemManager);
-    
+
     return _systemManager;
   }
-  
+
   public synchronized void stop()
   {
     WebServerImpl server = _server;
-    
+
     _server = null;
-    
+
     if (server != null) {
       server.close();
     }
@@ -749,10 +751,10 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public WebServerBuilder property(String key, String value)
   {
     _configBuilder.add(key, value);
-    
+
     return this;
   }
-  
+
   /*
   public ServerBuilder(String []argv)
   {
@@ -766,7 +768,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     return new BootConfigParser();
   }
   */
-  
+
   /*
   protected ArgsServerBase getArgs()
   {
@@ -787,23 +789,23 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     //return _args.getPingSocket();
   }
   */
-  
+
   public void init(Runnable init) // Consumer<ServerBuilder> init)
   {
     Objects.requireNonNull(init);
-    
+
     _initList.add(init);
   }
-  
+
   public void init(ServerBase server)
   {
     /*
     if (HeapDump.isAvailable()) {
       _heapDump = HeapDump.create();
     }
-    
+
     _mbeanServer = JmxUtil.getMBeanServer();
-    
+
     try {
       _hotSpotName = new ObjectName("com.sun.management:type=HotSpotDiagnostic");
       _heapDumpArgs = new String[] { String.class.getName(), boolean.class.getName() };
@@ -829,14 +831,14 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     return "cluster";
   }
-  
+
   /*
   String getClusterId()
   {
     return _serverConfig.getCluster().getId();
   }
   */
-  
+
   /*
   protected RootConfigBoot getRootConfig()
   {
@@ -850,16 +852,16 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     return _args.getHomeDirectory();
   }
   */
-  
+
   Path getRootDirectory()
   {
-    Path rawRoot = config().get("baratine.root", Path.class, 
+    Path rawRoot = config().get("baratine.root", Path.class,
                                 Paths.get("/tmp/baratine"));
 
     //String name = getClusterId() + '-' + _serverConfig.getPort();
-    
+
     //return rawRoot.lookup(name);
-    
+
     return rawRoot;
   }
 
@@ -872,7 +874,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     _shutdownWaitTime = period;
   }
-  
+
   public long getShutdownWaitTime()
   {
     return _shutdownWaitTime;
@@ -881,14 +883,14 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public ServerBartender serverSelf()
   {
     Objects.requireNonNull(_serverSelf);
-    
+
     return _serverSelf;
   }
 
   public void serverSelf(ServerBartender serverSelf)
   {
     Objects.requireNonNull(serverSelf);
-    
+
     _serverSelf = serverSelf;
   }
 
@@ -915,18 +917,18 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   public WebServerImpl build()
   {
     EnvLoader.init();
-    
+
     _systemManager = createSystemManager();
-    
+
     Thread thread = Thread.currentThread();
     ClassLoader oldLoader = thread.getContextClassLoader();
-    
+
     boolean isValid = false;
     try {
       thread.setContextClassLoader(_systemManager.getClassLoader());
-      
+
       Vfs.setPwd(getRootDirectory());
-      
+
       /*
       if (! isEmbedded()) {
         logCopyright();
@@ -935,16 +937,16 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       logCopyright();
 
       preConfigureInit();
-      
+
       configureRootDirectory();
-      
+
       _serverSelf = initNetwork();
       Objects.requireNonNull(_serverSelf);
-      
+
       addServices(); // _serverSelf);
 
       initHttpSystem(_systemManager, _serverSelf);
-      
+
       WebServerImpl server = new WebServerImpl(this);
       /*
       build(systemManager,
@@ -952,11 +954,11 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
             */
 
       // init(server);
-      
+
       isValid = true;
-      
+
       _systemManager.start();
-      
+
       return server;
     } catch (RuntimeException e) {
       throw e;
@@ -964,7 +966,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       throw ConfigException.wrap(e);
     } finally {
       thread.setContextClassLoader(oldLoader);
-      
+
       if (! isValid) {
         _systemManager.shutdown(ShutdownModeAmp.IMMEDIATE);
       }
@@ -975,13 +977,13 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     return _serverSelf != null;
   }
-  
+
   private void logCopyright()
   {
     if (CurrentTime.isTest() || config().get("quiet",boolean.class,false)) {
       return;
     }
-    
+
     System.out.println(Version.getFullVersion());
     System.out.println(Version.getCopyright());
     System.out.println();
@@ -1046,7 +1048,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     */
 
     InjectorAmp.create();
-    
+
     //initCdiEnvironment();
 
     // readUserProperties();
@@ -1074,14 +1076,14 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     return ServerBuilder.create(this);
   }
   */
-  
+
   private String getServerIdVar()
   {
     String serverId = config().get("server.id");
-    
+
     if (serverId == null) {
       int port = portServer();
-      
+
       if (port > 0) { // && ! _serverConfig.isEphemeral()) {) {
         serverId = "embed-" + port;
       }
@@ -1089,7 +1091,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
         serverId = "embed";
       }
     }
-    
+
     return serverId;
   }
 
@@ -1098,14 +1100,14 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
   }
   */
-  
+
   /*
   protected void addChampSystem(ServerBartender selfServer)
   {
     // ChampSystem.createAndAddSystem(selfServer);
   }
   */
-  
+
   protected void addJournalSystem()
   {
     //JournalSystem.createAndAddSystem();
@@ -1119,13 +1121,13 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     throws IOException
   {
     //RootConfigBoot rootConfig = getRootConfig();
-    
+
     String clusterId = selfServer.getClusterId();
-    
+
     //ClusterConfigBoot clusterConfig = rootConfig.findCluster(clusterId);
-    
+
     String serverHeader = config().get("server.header");
-    
+
     if (serverHeader != null) {
     }
     else if (! CurrentTime.isTest()) {
@@ -1134,7 +1136,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     else {
       serverHeader = getProgramName() + "/1.1";
     }
-    
+
     // XXX: need cleaner config class names (root vs cluster at minimum)
     /*
     ServerContainerConfig serverConfig
@@ -1142,7 +1144,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       */
 
     // rootConfig.getProgram().configure(serverConfig);
-    
+
     //clusterConfig.getProgram().configure(serverConfig);
 
     /*
@@ -1163,19 +1165,19 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     // _bootServerConfig.getServerProgram().configure(config);
 
     // serverConfig.init();
-    
+
     //int port = getServerPort();
 
     HttpContainerBuilder httpBuilder
       = createHttpBuilder(selfServer, serverHeader);
-    
+
     // serverConfig.getProgram().configure(httpBuilder);
 
     //httpBuilder.init();
-    
+
     //PodSystem.createAndAddSystem(httpBuilder);
     HttpSystem.createAndAddSystem(httpBuilder);
-    
+
     //return http;
   }
 
@@ -1184,11 +1186,11 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     HttpBaratineBuilder builder
       = new HttpBaratineBuilder(config(), selfServer, serverHeader);
-    
+
     for (IncludeWebAmp include : _includes) {
       builder.include(include);
     }
-    
+
     return builder;
   }
 
@@ -1197,12 +1199,12 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     _isEmbedded = isEmbedded;
   }
-  
+
   public boolean isEmbedded()
   {
     return _isEmbedded;
   }
-  
+
   protected boolean isWatchdog()
   {
     return _isWatchdog;
@@ -1230,14 +1232,14 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   protected Path getDataDirectory()
   {
     Objects.requireNonNull(_dataDirectory);
-    
+
     return _dataDirectory;
   }
-  
+
   private Path calculateDataDirectory()
   {
     Path root = getRootDirectory();
-    
+
     Path path;
     /* XXX:
     if (_resinDataDirectory != null)
@@ -1252,7 +1254,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       path = root.lookup("baratine-data");
     }
     */
-    
+
     int serverPort = portServer();
 
     /*
@@ -1260,20 +1262,20 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       root = WorkDir.getTmpWorkDir().lookup("qa");
     }
     */
-    
+
     boolean isRemoveOnStart
       = config().get("baratine.server.remove-data-on-start", boolean.class, false);
-    
+
     if (serverPort > 0 && ! isEphemeral()) {
       path = root.resolve("data-" + serverPort);
-      
+
       if (isRemoveOnStart) {
         removeDataDirectory(path);
       }
     }
     else if (serverPort < 0 && ! isEphemeral()) {
       path = root.resolve("data-embed");
-      
+
       if (isRemoveOnStart) {
         removeDataDirectory(path);
       }
@@ -1284,7 +1286,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
 
     return path;
   }
-  
+
   private boolean isEphemeral()
   {
     // TODO Auto-generated method stub
@@ -1294,31 +1296,31 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   private Path openDynamicDataDirectory(Path root)
   {
     cleanDynamicDirectory(root);
-    
+
     for (int i = 0; i < 10000; i++) {
       Path dir = root.resolve("data-dyn-" + i);
-      
+
       if (! Files.exists(dir) || RootDirectorySystem.isFree(dir)) {
         try {
           Files.createDirectories(dir);
         } catch (Exception e) {
           log.log(Level.FINER, e.toString(), e);
         }
-        
+
         _dynamicDataIndex  = i;
-        
+
         return dir;
       }
     }
-    
+
     throw new IllegalStateException(L.l("Can't create working directory."));
   }
-  
+
   private void cleanDynamicDirectory(Path root)
   {
     /*
     String []list;
-    
+
     try {
       list = root.list();
     } catch (Exception e) {
@@ -1326,13 +1328,13 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       return;
     }
     */
-    
+
     try (DirectoryStream<Path> dirIter = Files.newDirectoryStream(root)) {
       for (Path dir : dirIter) {
         if (! dir.getFileName().toString().startsWith("data-dyn-")) {
           continue;
         }
-        
+
         if (! RootDirectorySystem.isFree(dir)) {
           continue;
         }
@@ -1345,45 +1347,45 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       log.log(Level.FINER, e.toString(), e);
     }
   }
-  
+
   private void removeDataDirectory(Path path)
   {
     String name = "data-" + portServer();
-    
+
     if (! path.getFileName().toString().equals(name)) {
       return;
     }
-    
+
     if (! RootDirectorySystem.isFree(path)) {
       return;
     }
-    
+
     try {
       IoUtil.removeAll(path);
     } catch (Exception e) {
       log.log(Level.FINER, e.toString(), e);
     }
   }
-  
+
   protected ServerBartender initNetwork()
     throws Exception
   {
     SystemManager systemManager = SystemManager.getCurrent();
-    
+
     /*
     if (getClusterSystemKey() != null) {
       SecuritySystem security = SecuritySystem.getCurrent();
       security.setSignatureSecret(getClusterSystemKey());
     }
     */
-    
+
     ServerSocketBar ss = null;
-    
+
     if (portServer() == 0) {
       //ss = _serverConfig.getServerSocket();
       //ss = openEphemeralServerSocket();
       ss = null;
-      
+
       if (true) throw new UnsupportedOperationException();
 
       if (ss != null) {
@@ -1393,7 +1395,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
         throw new IllegalStateException(L.l("server-port 0 requires an ephemeral port"));
       }
     }
-    
+
     ServerBartender serverSelf = initBartender();
     NetworkSystem networkSystem = NetworkSystem.createAndAddSystem(systemManager,
                                                                    serverSelf,
@@ -1406,15 +1408,15 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     /*
     else if (getServerPort() > 0) {
       int serverPort = getServerPort();
-      
+
       PortTcpBuilder tcpBuilder = new PortTcpBuilder(env());
       tcpBuilder.portName("server");
       tcpBuilder.protocol(new HttpProtocol());
-      
+
       networkSystem.addPort(tcpBuilder.get());
     }
     */
-    
+
     //int serverPort = getServerPort();
 
     /*
@@ -1426,32 +1428,32 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       }
     }
     */
-    
+
     // DeploySystem.createAndAddSystem();
     //DeploySystem2.createAndAddSystem();
-    
+
     return serverSelf;
   }
-  
+
   /*
   private QServerSocket openEphemeralServerSocket()
   {
     int port = getServerPort();
-    
+
     if (port != 0) {
       throw new IllegalStateException();
     }
-    
+
     try {
       QServerSocket ss = QJniServerSocket.create(0, 0);
-      
+
       _serverPort = ss.getLocalPort();
-      
+
       ServerConfigBoot serverConfig = getServerConfig();
-      
+
       serverConfig.setPort(_serverPort);
       serverConfig.setEphemeral(true);;
-      
+
       return ss;
     } catch (Exception e) {
       throw ConfigException.create(e);
@@ -1462,62 +1464,62 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   protected void addServices()
   {
     TempStoreSystem.createAndAddSystem();
-    
+
     // XXX: KrakenSystem.createAndAddSystem(selfServer);
-    
+
     // XXX: BartenderFileSystem.createAndAddSystem();
-    
+
     for (Runnable init : _initList) {
       init.run(); // accept(this);
     }
-    
+
     addJournalSystem();
   }
 
   /**
    * Configures the selected server from the boot config.
-   * @return 
+   * @return
    */
   protected ServerBartender initBartender()
   {
     // BootResinConfig bootResin = _bootResinConfig;
 
     // XXX: _clusterSystemKey = _bootConfig.getClusterSystemKey(_args);
-    
+
     return new ServerBartenderSelf(addressServer(), portServer());
   }
-  
+
   protected ServerBartender initBartenderCluster()
   {
     // BootResinConfig bootResin = _bootResinConfig;
 
     // XXX: _clusterSystemKey = _bootConfig.getClusterSystemKey(_args);
-    
+
     int machinePort = portServer();
-    
+
     if (_dynamicDataIndex >= 0) {
       machinePort = _dynamicDataIndex;
     }
-    
+
     int portBartender = getPortBartender();
     /*
     ServerHeartbeatBuilder selfBuilder = new ServerHeartbeatBuilder();
-    
+
     if (_config.get("client", boolean.class, false)) {
       selfBuilder.pod("client");
     }
     */
-    
+
     /* XXX:
     for (String pod : _args.getArgList("pod")) {
       selfBuilder.pod(pod);
     }
-    
+
     if (_args.getArgFlag("pod-any")) {
       selfBuilder.podAny(true);
     }
     */
-    
+
     /*
     String clusterId = "cluster";
 
@@ -1534,16 +1536,16 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
                                       */
 
     //initTopologyStatic(builder);
-    
+
     //BartenderSystem system = builder.build();
-    
+
     /*
-    initTopology(builder, 
+    initTopology(builder,
                  getServerId(),
-                 _serverConfig.getCluster().getId(), 
+                 _serverConfig.getCluster().getId(),
                  _serverConfig.getPort());
                  */
-    
+
     //return system.serverSelf();
     return null;
   }
@@ -1569,15 +1571,15 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     /*
     RootDirectorySystem rootService
       = server.getSystemManager().getSystem(RootDirectorySystem.class);
-    
+
     if (rootService != null && _mbeanServer != null) {
       try {
         String pathName = rootService.getDataDirectory().lookup("resin.hprof").getNativePath();
 
-        _mbeanServer.invoke(_hotSpotName, "dumpHeap", 
+        _mbeanServer.invoke(_hotSpotName, "dumpHeap",
                             new Object[] { pathName, true },
                             _heapDumpArgs);
-        
+
         log.warning("Java Heap dumped to " + pathName);
       } catch (Exception e) {
         log.log(Level.FINER, e.toString(), e);
@@ -1599,47 +1601,47 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   }
 
   /**
-   * 
+   *
    */
   protected void addPreTopologyServices()
   {
     WarningSystem.createAndAddSystem();
-    
+
     //ShutdownSystem.createAndAddSystem(isEmbedded());
     boolean isEmbedded = true;
     ShutdownSystem.createAndAddSystem(isEmbedded);
-    
+
     AmpSystem.createAndAddSystem(getServerId());
     //DeploySystem.createAndAddSystem();
     DeploySystem2.createAndAddSystem();
 
     /*
     SecuritySystem security = SecuritySystem.createAndAddSystem();
-    
+
     String clusterKey = config().get("baratine.cluster.key");
-    
+
     security.setSignatureSecret(clusterKey);
     */
-    
+
     // HealthStatusService.createAndAddService();
-    
+
     // BlockManagerSubSystem.createAndAddService();
 
     //createKrakenStoreSystem();
-      
+
     // ShutdownSystem.getCurrent().addMemoryFreeTask(new BlockManagerMemoryFreeTask());
-    
+
     /*
     if (! isWatchdog()) {
       HealthSubSystem health = HealthSubSystem.createAndAddSystem();
-      
+
       if (isEmbedded()) {
         health.setEnabled(false);
       }
     }
     */
   }
-  
+
   protected String getDynamicServerAddress()
   {
     return  null;
@@ -1681,9 +1683,9 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     }
 
     //int port = _serverConfig.getPortBartender();
-    
+
     int port = config().get("bartender.port", int.class, 0);
-      
+
     if (port > 0) {
       return port;
     }
@@ -1691,14 +1693,14 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     try {
       SocketSystem socketSystem = SocketSystem.current();
       //JniServerSocketFactory ssFactory = new JniServerSocketFactory();
-      
+
       _ssBartender = socketSystem.openServerSocket(0);
-    
+
       //_serverConfig.setSocketBartender(ssBartender);
       //_serverConfig.setBartenderPort(ssBartender.getLocalPort());
-    
+
       //return _serverConfig.getPortBartender();
-      
+
       return 0;
     } catch (Exception e) {
       throw ConfigException.wrap(e);
@@ -1710,8 +1712,8 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     // address needs to be internal address, not the configured external one.
     // The external address will be discovered by the join protocol.
     String address = SocketSystem.current().getHostAddress();
-    
-    return address; 
+
+    return address;
   }
 
   protected String getServerDisplayName()
@@ -1723,29 +1725,29 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   protected String getServerId()
   {
     String sid = null;//_serverConfig.getId();
-    
+
     if (sid != null && ! "".equals(sid)) {
       return sid;
     }
-    
+
     sid = config().get("server.id");
-    
+
     if (sid != null && ! "".equals(sid)) {
       return sid;
     }
-    
+
     int port = portServer();
-    
+
     if (port <= 0) {
       return clusterId() + "-embed";
     }
-    
+
     String address = addressServer();
-    
+
     if ("".equals(address)) {
       address = SocketSystem.current().getHostAddress();
     }
-    
+
     // return getClusterId() + '-' + _serverConfig.getPort();
     return address + ":" + port;
   }
@@ -1758,7 +1760,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   SystemManager createSystemManager()
   {
     String serverId = getServerId();
-    
+
     return new SystemManager(serverId, parentClassLoader());
   }
 
@@ -1767,16 +1769,16 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     return getClass().getSimpleName() + "[" + _name + "]";
   }
-  
+
   private static class ServerBartenderSelf extends ServerBartender
   {
     private ClusterBartender _cluster = new ClusterBartenderSelf();
-    
+
     ServerBartenderSelf(String address, int port)
     {
       super(address, port);
     }
-    
+
     @Override
     public String getDisplayName()
     {
@@ -1794,9 +1796,9 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
     {
       return ServerBartenderState.up;
     }
-    
+
   }
-  
+
   private static class ClusterBartenderSelf extends ClusterBartender
   {
     ClusterBartenderSelf()
@@ -1816,15 +1818,15 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       throw new UnsupportedOperationException();
     }
   }
-  
+
   private static class ViewGen implements IncludeWebAmp
   {
     private ViewRender<?> _view;
-    
+
     ViewGen(ViewRender<?> view)
     {
       Objects.requireNonNull(view);
-      
+
       _view = view;
     }
 
@@ -1834,15 +1836,15 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       builder.view(_view);
     }
   }
-  
+
   private static class ViewClass implements IncludeWebAmp
   {
     private Class<? extends ViewRender<?>> _viewClass;
-    
+
     ViewClass(Class<? extends ViewRender<?>> viewClass)
     {
       Objects.requireNonNull(viewClass);
-      
+
       _viewClass = viewClass;
     }
 
@@ -1858,7 +1860,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
   {
     throw new UnsupportedOperationException();
   }
-  
+
   private static class ConvertStringToPath
     implements Convert<String,Path>
   {
@@ -1868,7 +1870,7 @@ public class WebServerBuilderImpl implements WebServerBuilder, WebServerFactory
       return Vfs.path(source);
     }
   }
-  
+
   class SslBuilderImpl implements SslBuilder
   {
   }

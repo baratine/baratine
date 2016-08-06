@@ -50,7 +50,7 @@ import javax.inject.Qualifier;
 import javax.inject.Scope;
 import javax.inject.Singleton;
 
-import com.caucho.v5.config.ConfigAutoBind;
+import com.caucho.v5.config.AutoBindConfig;
 import com.caucho.v5.config.Configs;
 import com.caucho.v5.config.Priority;
 import com.caucho.v5.convert.ConvertAutoBind;
@@ -62,6 +62,7 @@ import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
 
 import io.baratine.config.Config;
+import io.baratine.config.Config.ConfigBuilder;
 import io.baratine.inject.New;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector;
@@ -115,7 +116,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     // _qualifierSet.add(Lookup.class);
 
     _autoBindList.add(new ConvertAutoBind());
-    //_autoBindList.add(new ConfigAutoBind(_config));
+    _autoBindList.add(new AutoBindConfig(_config));
   }
 
   ClassLoader getClassLoader()
@@ -236,9 +237,9 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
     return this;
   }
 
-  Config config()
+  public ConfigBuilder config()
   {
-    return _config.get();
+    return _config;
   }
 
   @Override

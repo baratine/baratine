@@ -113,7 +113,7 @@ public class WebAppBuilder
 
   private ArrayList<RouteWebApp> _routes = new ArrayList<>();
   private ArrayList<ViewRef<?>> _views = new ArrayList<>();
-  
+
   private ArrayList<FilterFactory<ServiceWeb>> _filtersBeforeWebApp
     = new ArrayList<>();
   private ArrayList<FilterFactory<ServiceWeb>> _filtersAfterWebApp
@@ -204,12 +204,15 @@ public class WebAppBuilder
   {
     OutboxAmp outbox = OutboxAmp.current();
 
-    _configBuilder = Configs.config();
-    _configBuilder.add(_factory.config());
+    //_configBuilder = Configs.config();
+    //_configBuilder.add(_factory.config());
 
     _injectBuilder = InjectorAmp.manager(classLoader());
 
     _injectBuilder.include(BaratineProducer.class);
+
+    _configBuilder = _injectBuilder.config();
+    _configBuilder.add(_factory.config());
 
     _serviceBuilder = ServicesAmp.newManager();
     _serviceBuilder.name("webapp");
@@ -288,7 +291,7 @@ public class WebAppBuilder
     _injectBuilder.autoBind(_autoBind);
     _injectBuilder.include(ValidatorProviderDefault.class);
 
-    _injectBuilder.provider(()->webApp.config()).to(Config.class);
+    //_injectBuilder.provider(()->webApp.config()).to(Config.class);
     _injectBuilder.provider(()->webApp.inject()).to(Injector.class);
     _injectBuilder.provider(()->webApp.services()).to(Services.class);
 
@@ -765,9 +768,9 @@ public class WebAppBuilder
     private HttpMethod _method;
     private String _path;
     private ServiceWeb _service;
-    
+
     private ArrayList<Predicate<RequestWeb>> _predicateList = new ArrayList<>();
-    
+
     private ArrayList<FilterFactory<ServiceWeb>> _filtersBefore
       = new ArrayList<>();
     private ArrayList<FilterFactory<ServiceWeb>> _filtersAfter
@@ -783,11 +786,11 @@ public class WebAppBuilder
 
       _filtersBefore.addAll(_filtersBeforeWebApp);
     }
-    
+
     protected void predicate(Predicate<RequestWeb> predicate)
     {
       Objects.requireNonNull(predicate);
-      
+
       _predicateList.add(predicate);
     }
 
@@ -813,13 +816,13 @@ public class WebAppBuilder
     public RoutePath ifAnnotation(Method method)
     {
       IfContentType contentTypeAnn = method.getAnnotation(IfContentType.class);
-      
+
       if (contentTypeAnn != null) {
         for (String contentType : contentTypeAnn.value()) {
           predicate(req->contentType.equals(req.header("content-type")));
         }
       }
-      
+
       return this;
     }
 
@@ -985,11 +988,11 @@ public class WebAppBuilder
 
       return list;
     }
-    
+
     private Predicate<RequestWeb> buildPredicate(HttpMethod method)
     {
       Predicate<RequestWeb> predicate = _methodMap.get(method);
-      
+
       if (_predicateList.size() > 0) {
         return new PredicateList(predicate, _predicateList);
       }
@@ -1010,18 +1013,18 @@ public class WebAppBuilder
     }
   */
   }
-  
+
   static class PredicateList implements Predicate<RequestWeb>
   {
     private final Predicate<RequestWeb> []_predicateList;
-    
+
     PredicateList(Predicate<RequestWeb> predicate,
                   ArrayList<Predicate<RequestWeb>> predicateList)
     {
       _predicateList = new Predicate[predicateList.size() + 1];
-      
+
       _predicateList[0] = predicate;
-      
+
       for (int i = 0; i < predicateList.size(); i++) {
         _predicateList[i + 1] = predicateList.get(i);
       }
@@ -1048,7 +1051,7 @@ public class WebAppBuilder
     WebSocketPath(String path)
     {
       super(HttpMethod.GET, path);
-      
+
       predicate(req->"WebSocket".equals(req.header("upgrade")));
     }
   }

@@ -52,15 +52,11 @@ public class JdbcServiceImpl implements JdbcService
   private static Logger _logger = Logger.getLogger(JdbcServiceImpl.class.toString());
 
   @Inject
-  private Services _manager;
-
-  @Inject
   private Config _config;
   private JdbcConfig _jdbcConfig;
 
   @Id
   private String _id;
-  private String _url;
 
   private JdbcConnection _conn;
 
@@ -78,11 +74,14 @@ public class JdbcServiceImpl implements JdbcService
     throws Exception
   {
     String address = ServiceRef.current().address() + _id;
+
+    _logger.log(Level.INFO, "onInit: id=" + _id + ", service address=" + address);
+
     JdbcServiceImpl me = Services.current().service(address).as(JdbcServiceImpl.class);
 
     _jdbcConfig = JdbcConfig.from(_config, address);
 
-    _logger.log(Level.INFO, "onInit: id=" + _id + ", service url=" + _url + ", config=" + _jdbcConfig);
+    _logger.log(Level.INFO, "onInit: config=" + _jdbcConfig);
 
     Properties props = new Properties();
 
@@ -97,7 +96,7 @@ public class JdbcServiceImpl implements JdbcService
     Supplier<JdbcConnection> supplier
       = new ConnectionSupplier(me, _jdbcConfig.url(), props, _jdbcConfig.testQueryBefore(), _jdbcConfig.testQueryAfter());
 
-    ServiceBuilder builder = _manager.newService(JdbcConnection.class, supplier);
+    ServiceBuilder builder = Services.current().newService(JdbcConnection.class, supplier);
     ServiceRef ref = builder.workers(_jdbcConfig.poolSize()).start();
 
     _conn = ref.as(JdbcConnection.class);

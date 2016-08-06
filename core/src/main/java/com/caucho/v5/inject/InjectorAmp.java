@@ -38,6 +38,7 @@ import javax.inject.Provider;
 import com.caucho.v5.inject.impl.InjectorImpl;
 
 import io.baratine.config.Config;
+import io.baratine.config.Config.ConfigBuilder;
 import io.baratine.inject.Binding;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Key;
@@ -81,6 +82,8 @@ public interface InjectorAmp extends Injector
     InjectBuilderAmp context(boolean isContext);
 
     <U> void include(Key<U> keyParent, Method method);
+
+    ConfigBuilder config();
 
     @Override
     InjectorAmp get();
