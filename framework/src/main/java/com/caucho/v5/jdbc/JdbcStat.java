@@ -83,7 +83,7 @@ public class JdbcStat
   }
 
   /**
-   * Returns recent queries, included failed ones.
+   * Returns recent queries, including failed ones.
    *
    * @return
    */

@@ -29,6 +29,7 @@
 
 package com.caucho.v5.jdbc;
 
+import java.sql.ResultSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -77,8 +78,6 @@ public class JdbcServiceImpl implements JdbcService
 
     _logger.log(Level.INFO, "onInit: id=" + _id + ", service address=" + address);
 
-    JdbcServiceImpl me = Services.current().service(address).as(JdbcServiceImpl.class);
-
     _jdbcConfig = JdbcConfig.from(_config, address);
 
     _logger.log(Level.INFO, "onInit: config=" + _jdbcConfig);
@@ -94,7 +93,7 @@ public class JdbcServiceImpl implements JdbcService
     }
 
     Supplier<JdbcConnection> supplier
-      = new ConnectionSupplier(me, _jdbcConfig.url(), props, _jdbcConfig.testQueryBefore(), _jdbcConfig.testQueryAfter());
+      = new ConnectionSupplier(_jdbcConfig.url(), props, _jdbcConfig.testQueryBefore(), _jdbcConfig.testQueryAfter());
 
     ServiceBuilder builder = Services.current().newService(JdbcConnection.class, supplier);
     ServiceRef ref = builder.workers(_jdbcConfig.poolSize()).start();
@@ -103,13 +102,25 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void query(Result<JdbcResultSet> result, String sql, Object ... params)
+  public void execute(Result<Integer> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
     }
 
-    QueryResult<JdbcResultSet> qResult = new QueryResult<>(result, sql);
+    QueryResult<Integer> qResult = new QueryResult<>(result, sql);
+
+    _conn.execute(qResult, sql, params);
+  }
+
+  @Override
+  public void query(Result<ResultSet> result, String sql, Object ... params)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
+    }
+
+    QueryResult<ResultSet> qResult = new QueryResult<>(result, sql);
 
     _conn.query(qResult, sql, params);
   }
@@ -124,18 +135,6 @@ public class JdbcServiceImpl implements JdbcService
     QueryResult<T> qResult = new QueryResult<>(result, fun);
 
     _conn.query(qResult, fun);
-  }
-
-  @Override
-  public void query(Result<JdbcResultSet> result, QueryBuilder builder)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "query: " + builder);
-    }
-
-    QueryResult<JdbcResultSet> qResult = new QueryResult<>(result, builder);
-
-    _conn.query(qResult, builder);
   }
 
   @Override
@@ -181,8 +180,7 @@ public class JdbcServiceImpl implements JdbcService
 
     private int _count;
 
-    public ConnectionSupplier(JdbcServiceImpl parentRef,
-                              String url, Properties props,
+    public ConnectionSupplier(String url, Properties props,
                               String testQueryBefore, String testQueryAfter)
     {
       _url = url;
@@ -190,14 +188,11 @@ public class JdbcServiceImpl implements JdbcService
 
       _testQueryBefore = testQueryBefore;
       _testQueryAfter = testQueryAfter;
-
-      _parentRef = parentRef;
     }
 
     public JdbcConnection get()
     {
-      return JdbcConnection.create(_parentRef,
-                                   _count++, _url, _props,
+      return JdbcConnection.create(_count++, _url, _props,
                                    _testQueryBefore, _testQueryAfter);
     }
   }

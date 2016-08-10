@@ -29,6 +29,8 @@
 
 package com.caucho.v5.jdbc;
 
+import java.sql.ResultSet;
+
 /**
  * <p>Synchronous interface for JdbcService, primarily for testing.</p>
  *
@@ -44,11 +46,11 @@ package com.caucho.v5.jdbc;
  */
 public interface JdbcServiceSync extends JdbcService
 {
-  JdbcResultSet query(String sql, Object ... params);
+  int execute(String sql, Object ... params);
+
+  ResultSet query(String sql, Object ... params);
 
   <T> T query(SqlFunction<T> fun);
-
-  JdbcResultSet query(QueryBuilder builder);
 
   JdbcStat stats();
 }

@@ -32,10 +32,13 @@ package com.caucho.v5.jdbc;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.sun.rowset.CachedRowSetImpl;
 
 import com.caucho.v5.io.IoUtil;
 
@@ -43,6 +46,7 @@ import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 
+@SuppressWarnings("restriction")
 public class JdbcConnection
 {
   private static Logger _logger = Logger.getLogger(JdbcConnection.class.toString());
@@ -56,10 +60,7 @@ public class JdbcConnection
   private String _testQueryBefore;
   private String _testQueryAfter;
 
-  private JdbcServiceImpl _parent;
-
-  public static JdbcConnection create(JdbcServiceImpl parent,
-                                      int id, String url, Properties props,
+  public static JdbcConnection create(int id, String url, Properties props,
                                       String testQueryBefore, String testQueryAfter)
   {
     JdbcConnection conn = new JdbcConnection();
@@ -67,8 +68,6 @@ public class JdbcConnection
     if (_logger.isLoggable(Level.FINE)) {
       _logger.log(Level.FINE, "create: id=" + id + ", url=" + toDebugSafe(url));
     }
-
-    conn._parent = parent;
 
     conn._id = id;
     conn._url = url;
@@ -121,7 +120,18 @@ public class JdbcConnection
     _conn = new ConnectionWrapper(conn);
   }
 
-  public void query(Result<WrappedValue<JdbcResultSet>> result, String sql, Object ... params)
+  public void execute(Result<WrappedValue<Integer>> result, String sql, Object ... params)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
+    }
+
+    ExecuteFunction fun = new ExecuteFunction(sql, params);
+
+    queryImpl(result, fun);
+  }
+
+  public void query(Result<WrappedValue<ResultSet>> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
@@ -139,41 +149,6 @@ public class JdbcConnection
     }
 
     queryImpl(result, fun);
-  }
-
-  public void query(Result<WrappedValue<JdbcResultSet>> result, QueryBuilder builder)
-  {
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + builder);
-    }
-
-    WrappedValue<JdbcResultSet> wrapper = new WrappedValue<>();
-    wrapper.startTimeMs(System.currentTimeMillis());
-
-    QueryBuilderImpl builderImpl = (QueryBuilderImpl) builder;
-
-    testQueryBefore();
-
-    try {
-      _conn.setAutoCommit(false);
-
-      JdbcResultSet rs = builderImpl.executeAll(this);
-
-      _conn.commit();
-
-      wrapper.value(rs);
-    }
-    catch (Exception e) {
-      _logger.log(Level.FINER, e.getMessage(), e);
-
-      reconnect();
-
-      wrapper.exception(e);
-    }
-
-    wrapper.endTimeMs(System.currentTimeMillis());
-
-    result.ok(wrapper);
   }
 
   private <T> void queryImpl(Result<WrappedValue<T>> result, SqlFunction<T> fun)
@@ -209,7 +184,7 @@ public class JdbcConnection
     result.ok(wrapper);
   }
 
-  public JdbcResultSet doQuery(String sql, Object ... params) throws Exception
+  public ResultSet doQuery(String sql, Object ... params) throws Exception
   {
     QueryFunction fun = new QueryFunction(sql, params);
 
@@ -226,7 +201,7 @@ public class JdbcConnection
     }
   }
 
-  public static class ExecuteFunction implements SqlFunction<JdbcResultSet> {
+  public static class ExecuteFunction implements SqlFunction<Integer> {
     private String _sql;
     private Object[] _params;
 
@@ -243,7 +218,7 @@ public class JdbcConnection
       _params = params;
     }
 
-    public JdbcResultSet applyException(Connection conn) throws SQLException
+    public Integer applyException(Connection conn) throws SQLException
     {
       _stmt = conn.prepareStatement(_sql);
 
@@ -255,9 +230,7 @@ public class JdbcConnection
 
       int updateCount = _stmt.executeUpdate();
 
-      JdbcResultSet rs = new JdbcResultSet(updateCount);
-
-      return rs;
+      return updateCount;
     }
 
     @Override
@@ -267,7 +240,7 @@ public class JdbcConnection
     }
   }
 
-  public static class QueryFunction implements SqlFunction<JdbcResultSet> {
+  public static class QueryFunction implements SqlFunction<ResultSet> {
     private String _sql;
     private Object[] _params;
 
@@ -284,7 +257,7 @@ public class JdbcConnection
       _params = params;
     }
 
-    public JdbcResultSet applyException(Connection conn) throws SQLException
+    public ResultSet applyException(Connection conn) throws SQLException
     {
       _stmt = conn.prepareStatement(_sql);
 
@@ -296,16 +269,17 @@ public class JdbcConnection
 
       boolean isResultSet = _stmt.execute();
 
-      JdbcResultSet rs;
-
       if (isResultSet) {
-        rs = new JdbcResultSet(_stmt.getUpdateCount(), _stmt.getResultSet());
+        ResultSet rs = _stmt.getResultSet();
+
+        CachedRowSetImpl cRs = new CachedRowSetImpl();
+        cRs.populate(rs);
+
+        return cRs;
       }
       else {
-        rs = new JdbcResultSet(_stmt.getUpdateCount());
+        return null;
       }
-
-      return rs;
     }
 
     @Override

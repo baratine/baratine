@@ -29,6 +29,8 @@
 
 package com.caucho.v5.jdbc;
 
+import java.sql.ResultSet;
+
 import io.baratine.service.Result;
 import io.baratine.service.Service;
 
@@ -64,7 +66,7 @@ import io.baratine.service.Service;
  * public static void main(String[] args) throws Exception {
  *   Web.include(...);
  *
- *   Web.start(args);
+ *   Web.go(args);
  * }
  * </code></pre>
  *
@@ -94,6 +96,27 @@ public interface JdbcService
    * <pre>
    * <code>
    * query(
+   *   (updateCount, e) -> {
+   *       System.out.println(updateCount);
+   *   },
+   *   "UPDATE FROM test WHERE id=111"
+   * );
+   * </code>
+   * </pre>
+   *
+   * @param result
+   * @param sql
+   * @param params optional query positional parameters
+   */
+  void execute(Result<Integer> result, String sql, Object ... params);
+
+
+  /**
+   * Executes the SQL with the given params.
+   *
+   * <pre>
+   * <code>
+   * query(
    *   (rs, e) -> {
    *       System.out.println(rs);
    *   },
@@ -106,7 +129,7 @@ public interface JdbcService
    * @param sql
    * @param params optional query positional parameters
    */
-  void query(Result<JdbcResultSet> result, String sql, Object ... params);
+  void query(Result<ResultSet> result, String sql, Object ... params);
 
   /**
    * Executes on the SQL function on the {@link java.sql.Connection}.  After
@@ -133,39 +156,6 @@ public interface JdbcService
    * @param fun query function to run on the {@link java.sql.Connection}
    */
   <T> void query(Result<T> result, SqlFunction<T> fun);
-
-  /**
-   * Executes the query DSL.  This allows you to execute multiple queries
-   * within a transaction.  Auto-commit is turned off and the queries are
-   * automatically committed at the end.
-   *
-   * <pre>
-   * <code>
-   * {@link QueryBuilder} builder
-   *   = QueryBuilder.query("SELECT * FROM test")
-   *                 .then("UPDATE FROM test SET a=? WHERE a=?")
-   *                 .withParams((rs) -> {
-   *                     {@code Map<String,Object>} row = rs.getFirstRow();
-   *
-   *                     String aVal = row.get("a").toString();
-   *
-   *                     return new Object[] { aVal + "Changed", aVal };
-   *                 }
-   * );
-   *
-   * jdbcService.query(
-   *   (rs, e) -> {
-   *       System.out.println(rs);
-   *   },
-   *   builder
-   * );
-   * </code>
-   * </pre>
-   *
-   * @param result
-   * @param builder
-   */
-  void query(Result<JdbcResultSet> result, QueryBuilder builder);
 
   /**
    * Returns the real-time statistics for this connection.
