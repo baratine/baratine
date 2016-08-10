@@ -91,7 +91,7 @@ import io.baratine.service.Service;
 public interface JdbcService
 {
   /**
-   * Executes the SQL with the given params.
+   * Executes the SQL with the given params and returns the update count.
    *
    * <pre>
    * <code>
@@ -104,7 +104,7 @@ public interface JdbcService
    * </code>
    * </pre>
    *
-   * @param result
+   * @param result update count
    * @param sql
    * @param params optional query positional parameters
    */
@@ -112,7 +112,7 @@ public interface JdbcService
 
 
   /**
-   * Executes the SQL with the given params.
+   * Executes the SQL with the given params and returns the offline ResultSet.
    *
    * <pre>
    * <code>
@@ -125,7 +125,7 @@ public interface JdbcService
    * </code>
    * </pre>
    *
-   * @param result
+   * @param result ResultSet
    * @param sql
    * @param params optional query positional parameters
    */
