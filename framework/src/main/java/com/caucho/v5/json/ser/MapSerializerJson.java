@@ -38,71 +38,71 @@ import com.caucho.v5.json.io.JsonReaderImpl;
 import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.util.L10N;
 
-public class MapSerializerJson<K,V> 
+public class MapSerializerJson<K,V>
   extends JsonObjectSerializerBase<Map<K, V>>
 {
   private static final L10N L = new L10N(MapSerializerJson.class);
-  
+
   private final SerializerJson<K> _keyDeser;
   private final SerializerJson<V> _valueDeser;
   private final Supplier<? extends Map<K,V>> _factory;
-  
+
   MapSerializerJson(TypeRef typeRef,
                     JsonFactory factory,
                     Supplier<? extends Map<K,V>> supplier)
   {
     TypeRef mapRef = typeRef.to(Map.class);
-    
+
     TypeRef keyRef = mapRef.param(0);
     TypeRef valueRef = mapRef.param(1);
-    
+
     _keyDeser = factory.serializer(keyRef.type());
     _valueDeser = factory.serializer(valueRef.type());
-    
+
     _factory = supplier;
   }
 
   @Override
-  public void write(JsonWriterImpl out, 
+  public void write(JsonWriterImpl out,
                     Map<K, V> value)
   {
     out.writeStartObject();
-    
+
     for (Map.Entry<K,V> entry : value.entrySet()) {
       out.writeKey(String.valueOf(entry.getKey()));
       out.write(entry.getValue());
     }
-    
-    out.writeEndArray();
+
+    out.writeEndObject();
   }
 
   @Override
   public Map<K,V> read(JsonReaderImpl in)
   {
     Event event = in.next();
-    
+
     if (event == null || event == Event.VALUE_NULL) {
       return null;
     }
-    
+
     if (event != Event.START_OBJECT) {
       throw new JsonException(L.l("expected object at {0}", event));
     }
-    
+
     Map<K,V> map = (Map) _factory.get();
-    
+
     while ((event = in.peek()) == Event.KEY_NAME) {
       in.next();
-      
+
       String key = in.getString();
 
       V value = _valueDeser.read(in);
-      
+
       map.put((K) key, value);
     }
-    
+
     in.next();
-    
+
     return map;
   }
 }
