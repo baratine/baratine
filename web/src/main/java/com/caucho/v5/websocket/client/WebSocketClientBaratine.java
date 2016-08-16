@@ -553,9 +553,8 @@ public class WebSocketClientBaratine<T,S> extends WebSocketBase<T,S>
   @Override
   public void close()
   {
-    close(WebSocketCloses.NORMAL_CLOSURE, "ok");
-    //public void close(WebSocketClose reason, String text)
-    
+    close(WebSocketCloses.NORMAL_CLOSURE, null);
+
     //disconnect();
   }
 
