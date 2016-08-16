@@ -36,12 +36,12 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface SqlFunction<R> extends Function<Connection,R>
 {
-  R applyException(Connection t) throws Exception;
+  R applyWithException(Connection t) throws Exception;
 
   default R apply(Connection t)
   {
     try {
-      return applyException(t);
+      return applyWithException(t);
     }
     catch (Exception e) {
       throw new RuntimeException(e);

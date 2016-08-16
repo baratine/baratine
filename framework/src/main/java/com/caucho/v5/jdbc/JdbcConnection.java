@@ -194,7 +194,7 @@ public class JdbcConnection
   public <T> T doQuery(SqlFunction<T> fun) throws Exception
   {
     try {
-      return fun.applyException(_conn);
+      return fun.applyWithException(_conn);
     }
     finally {
       _conn.closeStatements();
@@ -218,7 +218,7 @@ public class JdbcConnection
       _params = params;
     }
 
-    public Integer applyException(Connection conn) throws SQLException
+    public Integer applyWithException(Connection conn) throws SQLException
     {
       _stmt = conn.prepareStatement(_sql);
 
@@ -257,7 +257,7 @@ public class JdbcConnection
       _params = params;
     }
 
-    public ResultSet applyException(Connection conn) throws SQLException
+    public ResultSet applyWithException(Connection conn) throws SQLException
     {
       _stmt = conn.prepareStatement(_sql);
 
@@ -296,7 +296,7 @@ public class JdbcConnection
   }
 
   public static class AutoCommitOffFunction implements SqlFunction<Void> {
-    public Void applyException(Connection conn) throws SQLException
+    public Void applyWithException(Connection conn) throws SQLException
     {
       conn.setAutoCommit(false);
 
@@ -305,7 +305,7 @@ public class JdbcConnection
   }
 
   public static class CommitFunction implements SqlFunction<Void> {
-    public Void applyException(Connection conn) throws SQLException
+    public Void applyWithException(Connection conn) throws SQLException
     {
       conn.commit();
 
