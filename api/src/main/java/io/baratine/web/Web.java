@@ -41,21 +41,21 @@ import io.baratine.web.WebServerBuilder.SslBuilder;
 
 /**
  * Web provides static methods to build a web server in a main() class.
- * 
+ *
  * <pre><code>
  * import static io.baratine.web.Web.*;
- * 
+ *
  * public class MyMain
  * {
  *   public static void main(String []argv)
  *   {
  *     get("/test", req-&gt;req.ok("hello, world"));
- *     
+ *
  *     start();
  *   }
  * }
  * </code></pre>
- * 
+ *
  * @see RequestWeb
  */
 public interface Web
@@ -83,7 +83,7 @@ public interface Web
   {
     return builder().ssl();
   }
-  
+
   //
   // routing
   //
@@ -100,7 +100,7 @@ public interface Web
   {
     return builder().include(type);
   }
-  
+
   //
   // view
   //
@@ -157,7 +157,7 @@ public interface Web
   {
     return builder().view(view);
   }
-  
+
   //
   // configuration
   //
@@ -168,9 +168,9 @@ public interface Web
    * If an @IncludeOn annotation is present and the specified in @IncludeOn
    * annotation class is present the class is tested for @Include annotation.
    *
-   * If an @Include annotation is present the class is included using #include method.
+   * If an @Include annotation is present the class is included using {@link #include} method.
    *
-   * If a @Service annotation is present the class is included using #service method.
+   * If a @Service annotation is present the class is included using {@link #service} method.
    *
    * If type extends {@code IncludeWeb} the class is instantiated and used to
    * generate services or includes.
@@ -185,7 +185,7 @@ public interface Web
 
   /**
    * Auto discovers all classes in packages named *.autoconf.* and enlists
-   * all classes annotated ith @Include and @IncludeOn annotations.
+   * all classes annotated with @Include and @IncludeOn annotations.
    *
    * @return
    */
@@ -219,36 +219,36 @@ public interface Web
   {
     Objects.requireNonNull(name);
     Objects.requireNonNull(value);
-    
+
     return builder().property(name, value);
   }
-  
+
   //
   // injection
   //
-  
+
   /**
    * Registers a bean for injection.
-   * 
+   *
    * @param type instance class of the bean
    */
   static <T> Injector.BindingBuilder<T> bean(Class<T> type)
   {
     Objects.requireNonNull(type);
-    
+
     return builder().bean(type);
   }
-  
+
   /**
    * Registers a bean instance for injection.
    */
   static <T> Injector.BindingBuilder<T> bean(T bean)
   {
     Objects.requireNonNull(bean);
-    
+
     return builder().bean(bean);
   }
-  
+
   //
   // services
   //
@@ -256,7 +256,7 @@ public interface Web
   static <T> ServiceBuilder service(Supplier<? extends T> supplier)
   {
     Objects.requireNonNull(supplier);
-    
+
     //return BaratineWebProvider.builder().service(supplier);
     return null;
   }
@@ -271,10 +271,10 @@ public interface Web
   static ServiceRef.ServiceBuilder service(Class<?> serviceClass)
   {
     Objects.requireNonNull(serviceClass);
-    
+
     return builder().service(serviceClass);
   }
-  
+
   //
   // routes
   //
@@ -385,7 +385,7 @@ public interface Web
   {
     return builder().websocket(path);
   }
-  
+
   //
   // lifecycle
   //
@@ -404,7 +404,7 @@ public interface Web
   {
     builder().go(args);
   }
-  
+
   /*
   static void join(String ...args)
   {
