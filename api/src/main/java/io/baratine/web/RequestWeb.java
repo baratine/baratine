@@ -78,7 +78,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * @return
    */
   String uri();
-  
+
   String uriRaw();
 
   /**
@@ -283,12 +283,12 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * @param contentType
    * @return
    */
-  RequestWeb encoding(String contentType);
+  RequestWeb encoding(String encoding);
 
   void upgrade(Object service);
 
   /**
-   * Completes processing with emtpy result
+   * Completes processing with empty result
    */
   void ok();
 
@@ -415,44 +415,44 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   Buffers buffers();
   RequestWeb write(Buffer buffer);
   RequestWeb write(byte []buffer, int offset, int length);
-  
+
   RequestWeb write(String value);
   RequestWeb write(char []buffer, int offset, int length);
-  
+
   RequestWeb flush();
-  
+
   Writer writer();
-  
+
   OutputStream output();
 
   Credits credits();
   RequestWeb push(OutFilterWeb outFilter);
-  
+
   //void halt();
   //void halt(HttpStatus status);
-  
+
   //void fail(Throwable exn);
-  
+
   public interface OutFilterWeb
   {
     default void header(RequestWeb request, String key, String value)
     {
       request.header(key, value);
     }
-    
+
     default void type(RequestWeb request, String type)
     {
       request.type(type);
     }
-    
+
     default void length(RequestWeb request, long length)
     {
       request.length(length);
     }
-    
+
     void write(RequestWeb out, Buffer buffer);
     void ok(RequestWeb out);
-    
+
     default Credits credits(RequestWeb out)
     {
       return out.credits();
@@ -484,7 +484,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
     CookieBuilder path(String path);
 
     CookieBuilder domain(String domain);
-    
+
     CookieBuilder maxAge(long time, TimeUnit unit);
   }
 }
