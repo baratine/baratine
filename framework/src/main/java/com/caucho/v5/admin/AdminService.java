@@ -149,11 +149,9 @@ public class AdminService implements IncludeWeb, ServiceWeb {
 
   private void appendConfig(StringBuilder sb)
   {
-    Config config = Services.current().injector().config();
-
     ArrayList<String> keyList = new ArrayList<>();
 
-    for (Map.Entry<String,String> entry : config.entrySet()) {
+    for (Map.Entry<String,String> entry : _config.entrySet()) {
       keyList.add(entry.getKey());
     }
 
@@ -165,7 +163,7 @@ public class AdminService implements IncludeWeb, ServiceWeb {
     sb.append("\n");
 
     for (String key : keyList) {
-      String value = config.get(key).replace("\n", "\\n").replace("\r", "\\r");
+      String value = _config.get(key).replace("\n", "\\n").replace("\r", "\\r");
 
       sb.append("<tr>");
 
