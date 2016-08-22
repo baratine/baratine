@@ -71,7 +71,7 @@ import io.baratine.service.Services;
 
 /**
  * Builder for a ServiceManager.
- * 
+ *
  * <pre><code>
  * ServiceManager manager = ServiceManager.newManager().start();
  * </code></pre>
@@ -81,11 +81,11 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   private static final L10N L = new L10N(ServicesBuilderImpl.class);
   private static final Logger log
     = Logger.getLogger(ServicesBuilderImpl.class.getName());
-  
-  
+
+
   private String _name;
   private String _debugId;
-  
+
   private ProxyFactoryAmp _proxyFactory;
   private JournalDriverAmp _journalDriver;
   private EnsureDriverAmp _ensureDriver;
@@ -93,81 +93,81 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   private boolean _isContextManager = true;
   private ServiceNode _podNode;
   private ClassLoader _loader = Thread.currentThread().getContextClassLoader();
-  
+
   private InjectorBuilder _injector;
-  
+
   private Holder<ServicesAmp> _holder;
-  
+
   private boolean _isAutoStart = true;
-  
+
   private boolean _isAutoServices;
-  
+
   private boolean _isDebug;
   private long _debugQueryTimeout;
   private Supplier<Executor> _systemExecutor;
-  
+
   private ArrayList<ServiceBuilderStart<?>> _services = new ArrayList<>();
 
   //private ServiceManagerBuildTemp _buildManager;
 
   private ServicesAmp _manager;
-  
+
   private ConcurrentArrayList<StubGenerator> _stubGenerators
     = new ConcurrentArrayList<>(StubGenerator.class);
-  
+
   private long _journalDelay;
-  
+
   public ServicesBuilderImpl()
   {
     name("system");
-    
+
     journalDriver(new JournalDriverNull());
     ensureDriver(new EnsureDriverNull());
-    
+
     if (log.isLoggable(Level.FINER)) {
       debug(true);
     }
-    
+
     stubGenerator(new StubGeneratorService());
     stubGenerator(new StubGeneratorSession());
     stubGenerator(new StubGeneratorVault());
-    
+
     _holder = new Holder<>(()->raw());
   }
-  
+
   @Override
   public ServicesBuilderImpl name(String name)
   {
     _name = name;
-    
+
     return this;
   }
-  
+
   @Override
   public String name()
   {
     return _name;
   }
-  
-  @Override 
+
+  @Override
   public ServicesBuilderImpl classLoader(ClassLoader loader)
   {
     _loader = loader;
-    
+
     return this;
   }
-  
-  @Override 
+
+  @Override
   public ClassLoader classLoader()
   {
     return _loader;
   }
-  
+
   public void debugId(String debugId)
   {
     _debugId = debugId;
   }
-  
+
   @Override
   public String debugId()
   {
@@ -208,18 +208,18 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
 
     return this;
   }
-  
+
   @Override
   public ServiceNode podNode()
   {
     return _podNode;
   }
-  
+
   @Override
   public ServicesBuilderImpl podNode(ServiceNode podNode)
   {
     _podNode = podNode;
-    
+
     return this;
   }
 
@@ -257,7 +257,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
 
   /**
    * Sets the journal maxCount default value, which itself defaults to 0.
-   * 
+   *
    * maxCount is used to limit journal flushes, so checkpoints are
    * issued after maxCount requests.
    */
@@ -284,49 +284,49 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   {
     return _journalDelay;
   }
-  
+
   @Override
   public ServiceManagerBuilderAmp queueFullHandler(QueueFullHandler handler)
   {
     _queueFullHandler = handler;
-    
+
     return this;
   }
-  
+
   @Override
   public QueueFullHandler queueFullHandler()
   {
     return _queueFullHandler;
   }
-  
+
   @Override
   public ServiceManagerBuilderAmp contextManager(boolean isContextManager)
   {
     _isContextManager = isContextManager;
-    
+
     return this;
   }
-  
+
   @Override
   public boolean isContextManager()
   {
     return _isContextManager;
   }
-  
+
   @Override
   public ServicesBuilderImpl autoStart(boolean isAutoStart)
   {
     _isAutoStart = isAutoStart;
-    
+
     return this;
   }
-  
+
   @Override
   public boolean isAutoStart()
   {
     return _isAutoStart;
   }
-  
+
   /**
    * Auto services scans META-INF/services for built-in services.
    */
@@ -334,41 +334,41 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   public ServicesBuilderImpl autoServices(boolean isAutoServices)
   {
     _isAutoServices = isAutoServices;
-    
+
     return this;
   }
-  
+
   @Override
   public boolean isAutoServices()
   {
     return _isAutoServices;
   }
-  
+
   @Override
   public boolean isDebug()
   {
     return _isDebug;
   }
-  
+
   @Override
   public ServicesBuilderImpl debug(boolean isDebug)
   {
     _isDebug = isDebug;
-    
+
     return this;
   }
-  
+
   @Override
   public long debugQueryTimeout()
   {
     return _debugQueryTimeout;
   }
-  
+
   @Override
   public ServicesBuilderImpl debugQueryTimeout(long timeout)
   {
     _debugQueryTimeout = timeout;
-    
+
     return this;
   }
 
@@ -376,27 +376,27 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   public ServicesBuilderImpl systemExecutor(Supplier<Executor> supplier)
   {
     Objects.requireNonNull(supplier);
-    
+
     _systemExecutor = supplier;
-    
+
     return this;
   }
-  
+
   @Override
   public Supplier<Executor> systemExecutor()
   {
     return _systemExecutor;
   }
-  
+
   @Override
   public ServicesBuilderImpl stubGenerator(StubGenerator factory)
   {
     Objects.requireNonNull(factory);
     _stubGenerators.add(factory);
-        
+
     return this;
   }
-  
+
   @Override
   public StubGenerator []stubGenerators()
   {
@@ -411,14 +411,14 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   {
     if (_injector == null) {
       InjectBuilderAmp builder;
-      
+
       builder = InjectorAmp.manager();
-      // XXX: 
-      builder.autoBind(new InjectAutoBindService(_holder.get()));
+      // XXX:
+      builder.autoBind(new InjectAutoBindService(_holder));
 
       builder.provider(()->_holder.get()).to(Services.class);
       builder.provider(()->_holder.get()).to(ServicesAmp.class);
-      
+
       _injector = builder;
     }
 
@@ -429,52 +429,52 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   public ServiceManagerBuilderAmp injector(InjectBuilderAmp injector)
   {
     Objects.requireNonNull(this);
-    
+
     _injector = injector;
 
     return this;
   }
-  
+
   @Override
   public ServicesAmp start()
   {
     ServicesAmp manager = get();
 
     manager.start();
-    
+
     return manager;
   }
-  
+
   @Override
   public ServicesAmp raw()
   {
     ServicesAmp manager = _manager;
-    
+
     if (manager == null) {
       manager = _manager = newManager();
-    
+
       if (isContextManager()) {
         initAutoServices(manager);
       }
-      
+
       _holder.close();
     }
-    
+
     return manager;
   }
-  
+
   @Override
   public ServicesAmp get()
   {
     ServicesAmp manager = raw();
-    
+
     ArrayList<ServiceBuilderStart<?>> services = new ArrayList<>(_services);
     _services.clear();
 
     boolean isAutoStart = manager.isAutoStart();
     try {
       manager.autoStart(false);
-      
+
       for (ServiceBuilderStart<?> service : services) {
         service.ref();
       }
@@ -484,7 +484,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     } finally {
       manager.autoStart(isAutoStart);
     }
-    
+
     return manager;
   }
 
@@ -503,7 +503,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     else if (_buildManager == null) {
       _buildManager = new ServiceManagerBuildTemp(this);
     }
-    
+
     return _buildManager;
   }
   */
@@ -512,7 +512,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   public <T> ServiceBuilder service(Class<T> type)
   {
     Key<?> key = Key.of(type, ServiceImpl.class);
-    
+
     return service(key, type);
   }
 
@@ -521,11 +521,11 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   {
     Objects.requireNonNull(key);
     Objects.requireNonNull(type);
-    
+
     ServiceBuilderStart service = new ServiceBuilderStart(key, type);
-    
+
     _services.add(service);
-    
+
     return service;
   }
 
@@ -533,11 +533,11 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   public <T> ServiceBuilder service(Class<T> type, Supplier<? extends T> supplier)
   {
     Objects.requireNonNull(supplier);
-    
+
     ServiceBuilderStart service = new ServiceBuilderStart(type, supplier);
-    
+
     _services.add(service);
-    
+
     return service;
   }
 
@@ -545,22 +545,22 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   public <T> ServiceBuilder service(T value)
   {
     Objects.requireNonNull(value);
-    
+
     Class<T> type = (Class) value.getClass();
-    
+
     ServiceBuilderStart service = new ServiceBuilderStart(type, value);
-    
+
     _services.add(service);
-    
+
     return service;
   }
-  
+
   protected void initAutoServices(ServicesAmp manager)
   {
     if (! isAutoServices()) {
       return;
     }
-    
+
     ArrayList<ServiceInitializer> providerList = new ArrayList<>();
 
     Iterator<ServiceInitializer> iter;
@@ -583,7 +583,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
 
     Collections.sort(providerList, (a,b)->
         a.getClass().getSimpleName().compareTo(b.getClass().getSimpleName()));
-    
+
     for (ServiceInitializer provider : providerList) {
       try {
         provider.init(this); // manager);
@@ -611,11 +611,11 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
   //
   // internal classes
   //
-  
+
   /**
    * Service registered by the builder.
    */
-  
+
   private class ServiceBuilderStart<T> implements ServiceRef.ServiceBuilder
   {
     private Key<?> _key;
@@ -626,27 +626,27 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     private int _workers = -1;
     private boolean _isAddressAuto = true;
     private ServiceRefAmp _ref;
-    
+
     ServiceBuilderStart(Key<?> key, Class<T> type)
     {
       _key = key;
       _type = type;
     }
-    
+
     ServiceBuilderStart(Class<T> type, Supplier<? extends T> supplier)
     {
       Objects.requireNonNull(type);
       Objects.requireNonNull(supplier);
-      
+
       _type = type;
       _supplier = supplier;
     }
-    
+
     ServiceBuilderStart(Class<T> type, T value)
     {
       Objects.requireNonNull(type);
       Objects.requireNonNull(value);
-      
+
       _type = type;
       _supplier = ()->value;
     }
@@ -655,9 +655,9 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     public ServiceBuilder api(Class<?> api)
     {
       Objects.requireNonNull(api);
-      
+
       _api = api;
-      
+
       return this;
     }
 
@@ -665,7 +665,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     public ServiceBuilder address(String address)
     {
       _address = address;
-      
+
       return this;
     }
 
@@ -673,7 +673,7 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
     public ServiceBuilder auto()
     {
       _isAddressAuto = true;
-      
+
       return this;
     }
 
@@ -691,9 +691,9 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
       if (_ref != null) {
         return _ref;
       }
-      
+
       ServiceBuilderAmp builder;
-      
+
       ServicesAmp manager = _manager;
 
       if (_supplier != null) {
@@ -702,24 +702,24 @@ public class ServicesBuilderImpl implements ServiceManagerBuilderAmp
       else {
         builder = manager.service(_key, _type);
       }
-      
+
       if (_api != null) {
         builder.api(_api);
       }
-      
+
       if (_address != null && ! _address.isEmpty()) {
         builder.address(_address);
       }
       else if (_isAddressAuto) {
         builder.auto();
       }
-      
+
       if (_workers >= 0) {
         builder.workers(_workers);
       }
-      
+
       _ref = builder.ref();
-      
+
       return _ref;
     }
   }
