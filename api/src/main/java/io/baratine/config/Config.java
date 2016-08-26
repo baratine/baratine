@@ -37,9 +37,9 @@ import io.baratine.convert.ConvertFrom;
  * Config is the configuration environment, which contains a
  * read-only properties map.
  *
- * Config is specified using --conf &lth;file> as arguments to {@code Web.start(..)}
- * or {@Web.go(...)}.
- *
+ * Config is specified using --conf &lt;file&gt; as arguments to {@code Web.start(..)}
+ * or {@code Web.go(...)}.
+ * <p>
  * Config file must be a valid YAML file.
  *
  * e.g.
@@ -47,12 +47,12 @@ import io.baratine.convert.ConvertFrom;
  *     "key": value
  * </pre></blockquote>
  *
- * Instance of Config can be obtained with &#64Inject as so:
+ * Instance of Config can be obtained with &#64;Inject as so:
  *
  * <blockquote><pre>
- *   &#64Service
+ *   &#64;Service
  *   public class MyService {
- *     &#64Inject
+ *     &#64;Inject
  *     Config _config;
  *   }
  * </pre></blockquote>
@@ -66,7 +66,7 @@ public interface Config extends Map<String,String>
    *
    * @param key property key
    * @param defaultValue default value
-   * @return
+   * @return property value
    */
   String get(String key, String defaultValue);
 
@@ -74,15 +74,15 @@ public interface Config extends Map<String,String>
    * Returns converted to specified type property value for a given key or default value
    * if property is not set.
    *
-   * <bockquote><pre>
+   * <blockquote><pre>
    *   int value = config.get("key", int.class, 5);
-   * </pre></bockquote>
+   * </pre></blockquote>
    *
    * @param key property key
    * @param type target type for conversion
    * @param defaultValue default value to use when property is not set
-   * @param <T>
-   * @return
+   * @param <T> type of property value
+   * @return property value
    */
   <T> T get(String key, Class<T> type, T defaultValue);
 
@@ -93,8 +93,8 @@ public interface Config extends Map<String,String>
    * @param key property key
    * @param type target type for conversion
    * @param defaultValue default value in string representation
-   * @param <T>
-   * @return
+   * @param <T> type of property value
+   * @return property value
    */
   <T> T get(String key, Class<T> type, String defaultValue);
 
@@ -121,7 +121,7 @@ public interface Config extends Map<String,String>
    *
    * @see Var
    * @param bean bean to inject from configuration
-   * @param <T>
+   * @param <T> type of bean
    */
   <T> void inject(T bean);
 
@@ -150,8 +150,8 @@ public interface Config extends Map<String,String>
    *   </pre>
    * </blockquote>
    * @param bean bean to inject from configuration
-   * @param prefix
-   * @param <T>
+   * @param prefix property prefix
+   * @param <T> type of bean
    */
   <T> void inject(T bean, String prefix);
 

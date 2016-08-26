@@ -29,23 +29,56 @@
 
 package io.baratine.config;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * @Var marks a field or type for config lookup.
+ * Annotation Var marks a field for injecting value from configuration.
+ * e.g. injecting a single value:
+ * <blockquote><pre>
+ *  &#64;Inject &#64;Var("key")
+ *  String value;
+ * </pre></blockquote>
+ * e.g. inject a bean
+ * conf.yml
+ * <blockquote><pre>
+ * bean.foo: Foo-Value
+ * bean.bar: Bar-Value
+ * </pre></blockquote>
+ * <blockquote><pre>
+ * public class MyBean {
+ *   String foo;
+ *   int bar;
+ * }
+ * public class MyBeanClient {
+ *   &#64;Inject &#64;Var("bean")
+ *   MyBean _bean;
+ * }
+ * </pre></blockquote>
+ *
+ * @see Config
  */
 @Documented
 @Retention(RUNTIME)
-@Target({FIELD,TYPE})
+@Target({FIELD, TYPE})
 public @interface Var
 {
+  /**
+   * Specifies key for the property
+   *
+   * @return
+   */
   String value() default "";
 
+  /**
+   * Specifies default value represented as String
+   *
+   * @return
+   */
   String defaultValue() default "";
 }
