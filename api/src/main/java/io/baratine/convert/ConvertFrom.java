@@ -38,8 +38,20 @@ import io.baratine.service.Result;
  */
 public interface ConvertFrom<S>
 {
+  /**
+   * Returns type of the source object
+   *
+   * @return class
+   */
   Class<S> sourceType();
-  
+
+  /**
+   * Returns converter supporting conversion to type &lt;T&gt;
+   *
+   * @param target target conversion type
+   * @param <T> target type
+   * @return converter for &lt;S&gt; to &lt;T&gt; convertion
+   */
   <T> Convert<S, T> converter(Class<T> target);
   
   /**
@@ -47,7 +59,7 @@ public interface ConvertFrom<S>
    * 
    * @param targetType the expected type of the target
    * @param source the source value
-   * 
+   * @param <T> target type
    * @return the converted value
    */
   default <T> T convert(Class<T> targetType, S source)

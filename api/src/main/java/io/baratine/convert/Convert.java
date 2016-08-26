@@ -35,26 +35,25 @@ import io.baratine.service.Result;
  * Convert from source to target.
  * <p>
  * Async converters must be called with the Result api. Converters that could
- * potentially block must true with isAsync method.
+ * potentially block must return true with isAsync method.
  * method.
  * <p>
  * e.g.
- * <p>
  * <pre>
  *   <code>
- *   public class StringToMyBeanConverter implements Convert&lth;String,MyBean> {
+ *   public class StringToMyBeanConverter implements Convert&lt;String,MyBean&gt; {
  *     public MyBean convert(String value)
  *     {
  *       return new MyBean(value);
  *     }
  *   }
  *
- *   Web.bean(StringToMyBeanConverter.class).to(new Key&lth;Convert&lth;String, MyBean>>());>
+ *   Web.bean(StringToMyBeanConverter.class).to(new Key&lt;Convert&lt;String, MyBean&gt;&gt;());&gt;
  *
- *   @Service
+ *   &#64;Service
  *   class MyBeanService {
- *     @Get
- *     public void toMyBean(@Query("v") MyBean bean, Result&lth;String> result) {
+ *     &#64;Get
+ *     public void toMyBean(@Query("v") MyBean bean, Result&lt;String&gt; result) {
  *       result.ok(bean.toString());
  *     }
  *   }
@@ -66,15 +65,15 @@ import io.baratine.service.Result;
 public interface Convert<S, T>
 {
   /**
-   * Converts from &lth;S> to &lth;T>
-   * @param source
-   * @return
+   * Converts from &lt;S&gt; to &lt;T&gt;
+   * @param source object to convert
+   * @return converted to type T instance
    */
   T convert(S source);
 
   /**
    * Tests if converter should be invoked by the framework asynchronously
-   * @return
+   * @return true if converter should be called asynchronously, false otherwise
    */
   default boolean isAsync()
   {
@@ -82,9 +81,9 @@ public interface Convert<S, T>
   }
 
   /**
-   * Converts from <S> to <T> asynchronously.
-   * @param source
-   * @param result
+   * Converts from &lt;S&gt; to &lt;T&gt; asynchronously.
+   * @param source object to convert
+   * @param result converted object
    */
   default void convert(S source, Result<T> result)
   {

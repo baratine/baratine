@@ -38,17 +38,28 @@ import io.baratine.service.Result;
  */
 public interface ConvertTo<T>
 {
+  /**
+   * Target type of this ConvertTo
+   *
+   * @return target type
+   */
   Class<T> targetType();
-  
+
+  /**
+   * Obtaines coverter capable of converting to &lt;S&gt;
+   * @param target coversion target type
+   * @param <S> conversion source type
+   * @return Convert instance
+   */
   <S> Convert<S, T> converter(Class<S> target);
   
   /**
    * Convert using only sync converters
-   * 
-   * @param targetType the expected type of the target
-   * @param source the source value
-   * 
-   * @return the converted value
+   *
+   * @param sourceType type of the source
+   * @param source instance to convert
+   * @param <S> source type
+   * @return converted instance
    */
   default <S> T convert(Class<S> sourceType, S source)
   {
