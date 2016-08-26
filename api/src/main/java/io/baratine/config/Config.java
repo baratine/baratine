@@ -34,19 +34,125 @@ import java.util.Map;
 import io.baratine.convert.ConvertFrom;
 
 /**
- * ConfigEnv is the configuration environment, which contains a
+ * Config is the configuration environment, which contains a
  * read-only properties map.
+ *
+ * Config is specified using --conf &lth;file> as arguments to {@code Web.start(..)}
+ * or {@Web.go(...)}.
+ *
+ * Config file must be a valid YAML file.
+ *
+ * e.g.
+ * <blockquote><pre>
+ *     "key": value
+ * </pre></blockquote>
+ *
+ * Instance of Config can be obtained with &#64Inject as so:
+ *
+ * <blockquote><pre>
+ *   &#64Service
+ *   public class MyService {
+ *     &#64Inject
+ *     Config _config;
+ *   }
+ * </pre></blockquote>
+ *
+ * @see Var
  */
 public interface Config extends Map<String,String>
 {
+  /**
+   * Returns property value for a key or default if property is not set
+   *
+   * @param key property key
+   * @param defaultValue default value
+   * @return
+   */
   String get(String key, String defaultValue);
 
+  /**
+   * Returns converted to specified type property value for a given key or default value
+   * if property is not set.
+   *
+   * <bockquote><pre>
+   *   int value = config.get("key", int.class, 5);
+   * </pre></bockquote>
+   *
+   * @param key property key
+   * @param type target type for conversion
+   * @param defaultValue default value to use when property is not set
+   * @param <T>
+   * @return
+   */
   <T> T get(String key, Class<T> type, T defaultValue);
 
+  /**
+   * Returns converted to specified type property value for a given key or converted
+   * from default value.
+   *
+   * @param key property key
+   * @param type target type for conversion
+   * @param defaultValue default value in string representation
+   * @param <T>
+   * @return
+   */
   <T> T get(String key, Class<T> type, String defaultValue);
 
+  /**
+   * Injects fields of a given bean with values from configuration:
+   * conf.yml:
+   * <blockquote><pre>
+   *   greeting: Hello World!
+   * </pre></blockquote>
+   *
+   *
+   * <blockquote><pre>
+   *   public class MyBean {
+   *     String greeting;
+   *   }
+   * </pre></blockquote>
+   *
+   * <blockquote>
+   *   <pre>
+   *     MyBean bean = new MyBean();
+   *     Config.inject(bean);
+   *   </pre>
+   * </blockquote>
+   *
+   * @see Var
+   * @param bean bean to inject from configuration
+   * @param <T>
+   */
   <T> void inject(T bean);
 
+  /**
+   * Injects fields of a given bean with values from configuration using prefix
+   * and field name as a a key.
+   * conf.yml:
+   * <blockquote><pre>
+   *   bean1.greeting: Hello World!
+   *   bean2.greeting: Hello World 2!
+   * </pre></blockquote>
+   *
+   * <blockquote><pre>
+   *   public class MyBean {
+   *     String greeting;
+   *   }
+   * </pre></blockquote>
+   *
+   * <blockquote>
+   *   <pre>
+   *     MyBean bean1 = new MyBean();
+   *     Config.inject(bean1, "bean1");
+   *
+   *     MyBean bean2 = new MyBean();
+   *     Config.inject(bean2, "bean2");
+   *   </pre>
+   * </blockquote>
+   * @param bean bean to inject from configuration
+   * @param prefix
+   * @param <T>
+   */
   <T> void inject(T bean, String prefix);
 
   ConfigBuilder newChild();
