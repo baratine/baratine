@@ -64,14 +64,14 @@ public interface Timers
    * 
    * The task implements {@code Consumer} to accept a cancel.
    *
-   * <pre>
+   * <blockquote><pre>
    *     // run 5 seconds from now
    *     timers.runAt(task, System.currentTimeMillis() + 5000);
-   * </pre>
+   * </pre></blockquote>
    *
    * @param task the task to execute
    * @param time millisecond time since epoch to run
-   * @param result holder for the cancel result
+   * @param result cancel handler
    */
   void runAt(@Pin Consumer<? super Cancel> task, 
              long time,
@@ -89,8 +89,8 @@ public interface Timers
    *
    * @param task the executable timer task
    * @param delay time to delay in units
-   * @param unit timeunit to delay
-   * @param result holder for the timer 
+   * @param unit unit type specifier
+   * @param result cancel handler
    */
   void runAfter(@Pin Consumer<? super Cancel> task, 
                 long delay, 
@@ -107,9 +107,10 @@ public interface Timers
    *     timers.runEvery(task, 10, TimeUnit.SECONDS);
    * </pre>
    *
-   * @param task
-   * @param delay
-   * @param unit
+   * @param task task to execute
+   * @param delay run period
+   * @param unit run period time units
+   * @param result cancel handler
    */
   void runEvery(@Pin Consumer<? super Cancel> task, 
                 long delay, 
@@ -118,20 +119,16 @@ public interface Timers
 
   /**
    * Schedule a <code>Runnable</code> where scheduling is controlled by a
-   * scheduler.  {@link TimerScheduler#nextRunTime(long)} is run first
+   * scheduler.  {@link LongUnaryOperator#applyAsLong(long)}} is run first
    * to determine the initial execution of the task.
    *
    * <p> <b>Run every 2 seconds, starting 2 seconds from now:</b>
-   * <pre>
-   *     timerService.schedule(task, new TimerScheduler() {
-   *         public long nextRunTime(long now) {
-   *           return now + 2000;
-   *         }
-   *     };
-   * </pre>
+   * <blockquote><pre>
+   *     timerService.schedule(task, (t) -&gt; t + 2000, Result.ignore());
+   * </pre></blockquote>
    *
    * <p> <b>Run exactly 5 times, then unregister this task:</b>
-   * <pre>
+   * <blockquote><pre>
    *     timerService.schedule(task, new LongUnaryOperator() {
    *         int count = 0;
    *
@@ -143,35 +140,15 @@ public interface Timers
    *             return now + 2000;
    *           }
    *         }
-   *     };
-   * </pre>
+   *     }, Result.ignore());
+   * </pre></blockquote>
    *
-   * @param task
-   * @param scheduler
+   * @param task task to execute
+   * @param nextTime specifies next time function
+   * @param result Cancel handler for the task
    */
   void schedule(@Pin Consumer<? super Cancel> task, 
                 LongUnaryOperator nextTime,
                 Result<? super Cancel> result);
 
-  /**
-   * Schedule a <code>Runnable</code> that is controlled by a cron scheduler.
-   *
-   * <p> <b>Run every 2 seconds:</b>
-   * <pre>
-   *     timerService.cron(task, "*&#47;2 * * *");
-   * </pre>
-   *
-   * <p> <b>Run on the 5th second of the 6th minute of the 7th hour everyday:</b>
-   * <pre>
-   *     timerService.cron(task, "5 6 7 *");
-   * </pre>
-   *
-   * @param task
-   * @param cron basic cron syntax
-   */
-  /*
-  void cron(@Pin Consumer<? super Cancel> task, 
-            String cron,
-            Result<? super Cancel> result);
-            */
 }

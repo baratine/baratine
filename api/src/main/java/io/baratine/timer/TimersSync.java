@@ -41,13 +41,13 @@ import io.baratine.service.Pin;
  * injection (CDI):
  *
  * <pre>
- *     &#64;Inject &#64;Lookup("timer:") TimerServicer _timer;
+ *     &#64;Inject &#64;Service("timer:") Timers _timer;
  * </pre>
  *
  * <p> or with the <code>{@link io.baratine.service.Services}</code>:
  *
  * <pre>
- *     ServiceManager.current().lookup("timer:").as(TimerService.class);
+ *     Services.current().service("timer:").as(Timers.class);
  * </pre>
  *
  * <p> Service name: "timer:"
@@ -57,50 +57,55 @@ import io.baratine.service.Pin;
 public interface TimersSync extends Timers
 {
   /**
-   * Run the <code>Runnable</code> at the given time.
+   * Run the task at the given time.
    *
-   * <pre>
+   * The task implements {@code Consumer} to accept a cancel.
+   *
+   * <blockquote><pre>
    *     // run 5 seconds from now
-   *     timeService.runAt(task, System.currentTimeMillis() + 5000);
-   * </pre>
+   *     timers.runAt(task, System.currentTimeMillis() + 5000);
+   * </pre></blockquote>
    *
-   * @param task
-   * @param time
+   * @param task the task to execute
+   * @param time millisecond time since epoch to run
+   * @return cancel handler
    */
   Cancel runAt(@Pin Consumer<? super Cancel> task, 
                long time);
 
   /**
-   * Run the <code>Runnable</code> <b>once</b> after the given delay.
+   * Run the task <b>once</b> after the given delay.
    *
    * <pre>
    *     MyRunnable task = new MyRunnable();
    *
    *     // run once 10 seconds from now
-   *     timerService.runAfter(task, 10, TimeUnit.SECONDS);
+   *     timers.runAfter(task, 10, TimeUnit.SECONDS);
    * </pre>
    *
-   * @param task
-   * @param delay
-   * @param unit
+   * @param task the executable timer task
+   * @param delay time to delay in units
+   * @param unit unit type specifier
+   * @return cancel handler
    */
   Cancel runAfter(@Pin Consumer<? super Cancel> task, 
                   long delay, 
                   TimeUnit unit);
 
   /**
-   * Run the <code>Runnable</code> periodically after the given delay.
+   * Run the task periodically after the given delay.
    *
    * <pre>
    *     MyRunnable task = new MyRunnable();
    *
    *     // run every 10 seconds
-   *     timerService.runEvery(task, 10, TimeUnit.SECONDS);
+   *     timers.runEvery(task, 10, TimeUnit.SECONDS);
    * </pre>
    *
-   * @param task
-   * @param delay
-   * @param unit
+   * @param task task to execute
+   * @param delay run period
+   * @param unit run period time units
+   * @return cancel handler
    */
   Cancel runEvery(@Pin Consumer<? super Cancel> task, 
                   long delay, 
@@ -108,24 +113,20 @@ public interface TimersSync extends Timers
 
   /**
    * Schedule a <code>Runnable</code> where scheduling is controlled by a
-   * scheduler.  {@link TimerScheduler#nextRunTime(long)} is run first
+   * scheduler.  {@link LongUnaryOperator#applyAsLong(long)}} is run first
    * to determine the initial execution of the task.
    *
    * <p> <b>Run every 2 seconds, starting 2 seconds from now:</b>
-   * <pre>
-   *     timerService.schedule(task, new TimerScheduler() {
-   *         public long nextRunTime(long now) {
-   *           return now + 2000;
-   *         }
-   *     };
-   * </pre>
+   * <blockquote><pre>
+   *     timerService.schedule(task, (t) -&gt; t + 2000, Result.ignore());
+   * </pre></blockquote>
    *
    * <p> <b>Run exactly 5 times, then unregister this task:</b>
-   * <pre>
-   *     timerService.schedule(task, new TimerScheduler() {
+   * <blockquote><pre>
+   *     timerService.schedule(task, new LongUnaryOperator() {
    *         int count = 0;
    *
-   *         public long nextRunTime(long now) {
+   *         public long applyAsLong(long now) {
    *           if (count++ &gt;= 5) {
    *             return -1; // negative value to cancel
    *           }
@@ -133,33 +134,13 @@ public interface TimersSync extends Timers
    *             return now + 2000;
    *           }
    *         }
-   *     };
-   * </pre>
+   *     }, Result.ignore());
+   * </pre></blockquote>
    *
-   * @param task
-   * @param scheduler
+   * @param task task to execute
+   * @param nextTime specifies next time function
+   * @return result Cancel handler for the task
    */
-  Cancel schedule(@Pin Consumer<? super Cancel> task, 
+  Cancel schedule(@Pin Consumer<? super Cancel> task,
                         LongUnaryOperator nextTime);
-
-  /**
-   * Schedule a <code>Runnable</code> that is controlled by a cron scheduler.
-   *
-   * <p> <b>Run every 2 seconds:</b>
-   * <pre>
-   *     timerService.cron(task, "*&#47;2 * * *");
-   * </pre>
-   *
-   * <p> <b>Run on the 5th second of the 6th minute of the 7th hour everyday:</b>
-   * <pre>
-   *     timerService.cron(task, "5 6 7 *");
-   * </pre>
-   *
-   * @param task
-   * @param cron basic cron syntax
-   */
-  /*
-  Cancel cron(@Pin Consumer<? super Cancel> task, 
-                    String cron);
-                    */
 }

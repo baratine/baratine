@@ -48,7 +48,7 @@ public interface Injector
 {
   /**
    * Returns an instance provider for the given Key, which combines
-   * a Type with &64;Qualifier annotations.
+   * a Type with &#64;Qualifier annotations.
    */
   <T> Provider<T> provider(Key<T> key);
 

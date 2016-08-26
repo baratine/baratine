@@ -37,29 +37,28 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation @Session specifies that an annotated service is a Session service, i.e.
+ * Annotation Session specifies that an annotated service is a Session service, i.e.
  * that each client is designated a unique instance of a service.
  *
  * Client's instance of Session service has a unique id which can be injected into
- * a service with an @Id annotated field of type String.
+ * a service with an &#64;Id annotated field of type String.
  *
  * Baratine uses JSESSIONID cookie to store session id value.
  *
  * e.g.
- *
+ * <blockquote>
  * <pre>
- *   <code>
- *     @Session
- *     public class MySession {
- *       @Id String id;
+ * &#64;Session
+ * public class MySession {
+ *   &#64;Id String id;
  *
- *       @Get
- *       public void get(Result<String> result) {
- *         result.ok(id);
- *       }
- *     }
- *   </code>
+ *   &#64;Get
+ *   public void get(Result&lt;String&gt; result) {
+ *     result.ok(id);
+ *   }
+ * }
  * </pre>
+ * </blockquote>
  */
 @Documented
 @Retention(RUNTIME)

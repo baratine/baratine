@@ -39,24 +39,24 @@ import io.baratine.service.Service;
  * <p>
  * Example: publisher / producer
  * <p>
- * <code>
+ * <blockquote>
  * <pre>
- * @Service
- * @Startup
+ * &#64;Service
+ * &#64;Startup
  * public class Publisher
  * {
- *   private Pipe<String> _pipe;
+ *   private Pipe&lt;String&gt; _pipe;
  *
- *   @Inject @Service("pipe:///test")
- *   Pipes<String> _pipes;
+ *   &#64;Inject &#64;Service("pipe:///test")
+ *   Pipes&lt;String&gt; _pipes;
  *
- *   @OnInit
+ *   &#64;OnInit
  *   public void init()
  *   {
  *     //request Pipes to create a Pipe instance at "pipe:///test"
  *     //callback {@code ready} receives an initialized Pipe instance
  *     //available to send messages
- *     _pipes.publish((out,e)->ready(out));
+ *     _pipes.publish((out,e)-&gt;ready(out));
  *   }
  *
  *   //method for sending the messages
@@ -70,29 +70,29 @@ import io.baratine.service.Service;
  *
  *   //callback {@code ready} is called by the Pipes when a Pipe is established
  *   //argument pipe can be used to publish messages
- *   public void ready(Pipe<String> pipe)
+ *   public void ready(Pipe&lt;String&gt; pipe)
  *   {
  *     _pipe = pipe;
  *   }
  * }
  * </pre>
- * </code>
+ * </blockquote>
  * <p>
  * Example: client / subscriber ( sink )
  * <p>
- * <code>
+ * <blockquote>
  * <pre>
- * @Service
- * @Startup
+ * &#64;Service
+ * &#64;Startup
  * public class Consumer
  * {
- *   @Inject @Service("pipe:///test")
- *   Pipes<String> _pipes;
+ *   &#64;Inject &#64;Service("pipe:///test")
+ *   Pipes&lt;String&gt; _pipes;
  *
- *   @OnInit
+ *   &#64;OnInit
  *   public void init()
  *   {
- *     _pipes.consume((message, exception, fail) -> next(message));
+ *     _pipes.consume((message, exception, fail) -&gt; next(message));
  *   }
  *
  *   public void next(String message)
@@ -101,7 +101,7 @@ import io.baratine.service.Service;
  *   }
  * }
  * </pre>
- * </code>
+ * </blockquote>
  *
  * @see PipePub
  * @see PipeSub

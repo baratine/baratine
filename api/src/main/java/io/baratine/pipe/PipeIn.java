@@ -41,24 +41,28 @@ import io.baratine.service.OnInit;
  * annotation's value.
  * <p>
  * Example:
- * <code>
+ * <blockquote>
  * <pre>
- * @Service
+ * &#64;Service
  * public class MessageListener {
  *
- *   @PipeIn("pipe:///test")
+ *   &#64;PipeIn("pipe:///test")
  *   private void onMessage(String message)
  *   {
  *     System.out.println("message received");
  *   }
  * }
  * </pre>
- * </code>
+ * </blockquote>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @OnInit
 public @interface PipeIn
 {
+  /**
+   * Pipe url e.g. "pipe:///foo"
+   * @return pipe url
+   */
   String value() default "";
 }
