@@ -29,17 +29,23 @@
 
 package io.baratine.config;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * @Include marks a class for configuration inclusion during scanning.
+ * Annotation Include marks a class for configuration inclusion during scanning.
+ * <br>
+ * Scanning in Baratine must be requested explicitly via a call {@code Web.scan()}
+ * and {@code Web.scanAutoConf()} methods.
+ *
+ * @see io.baratine.web.Web#scanAutoConf()
+ * @see io.baratine.web.Web#scan(Package)
  */
-@Documented  
+@Documented
 @Retention(RUNTIME)
 @Target({TYPE})
 public @interface Include

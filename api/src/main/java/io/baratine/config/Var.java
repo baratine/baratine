@@ -44,7 +44,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *  &#64;Inject &#64;Var("key")
  *  String value;
  * </pre></blockquote>
- * e.g. inject a bean
+ * e.g. inject a bean <br>
  * conf.yml
  * <blockquote><pre>
  * bean.foo: Foo-Value
@@ -52,11 +52,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * </pre></blockquote>
  * <blockquote><pre>
  * public class MyBean {
- *   String foo;
- *   int bar;
+ *   String foo; //uses value from bean.foo key
+ *   int bar; //uses value from bean.bar key
  * }
+ * <br>
  * public class MyBeanClient {
- *   &#64;Inject &#64;Var("bean")
+ *   &#64;Inject
+ *   &#64;Var("bean") //specifies values to be filled from "bean.*" keys
  *   MyBean _bean;
  * }
  * </pre></blockquote>
@@ -71,14 +73,14 @@ public @interface Var
   /**
    * Specifies key for the property
    *
-   * @return
+   * @return key name
    */
   String value() default "";
 
   /**
    * Specifies default value represented as String
    *
-   * @return
+   * @return default value
    */
   String defaultValue() default "";
 }
