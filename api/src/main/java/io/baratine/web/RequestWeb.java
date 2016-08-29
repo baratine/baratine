@@ -54,31 +54,36 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns protocol scheme (http vs. https)
    *
-   * @return
+   * @return scheme used for request
    */
   String scheme();
 
   /**
    * Returns protocol version HTTP/1.1, HTTP/1.0 or HTTP/2.0
    *
-   * @return
+   * @return protocol version used for request
    */
   String version();
 
   /**
    * Return HTTP method e.g. POST
    *
-   * @return
+   * @return http method
    */
   String method();
 
   /**
    * Returns request URI
    *
-   * @return
+   * @return request uri
    */
   String uri();
 
+  /**
+   * Returns raw request URI
+   *
+   * @return raw request uri
+   */
   String uriRaw();
 
   /**
@@ -96,21 +101,19 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * e.g. request /get/foo to service mapped at /get/{id} will return 'foo' for
    * path 'id'
    * <p>
-   * <pre>
-   *   <code>
+   * <blockquote><pre>
    *  public static class TestService
    *  {
-   *    @Get("/get/{id}")
+   *    &#64;Get("/get/{id}")
    *    public void get(RequestWeb r)
    *   {
    *     r.ok(r.path("id"));
    *   }
    * }
-   *   </code>
-   * </pre>
+   * </pre></blockquote>
    *
    * @param string
-   * @return
+   * @return value matching named pattern
    */
   String path(String string);
 
@@ -119,7 +122,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns query string
    *
-   * @return
+   * @return query string
    */
   String query();
 
@@ -127,14 +130,15 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * Returns query parameter value for a specified query parameter name
    *
    * @param key
-   * @return
+   * @return query parameter value
    */
   String query(String key);
 
   /**
    * Returns map of query parameter name to parameter values
    *
-   * @return
+   * @return parsed query as a {@code MultiMap}
+   * @see MultiMap
    */
   MultiMap<String,String> queryMap();
 
@@ -142,14 +146,14 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * Returns value of a specified header
    *
    * @param string
-   * @return
+   * @return header value
    */
   String header(String string);
 
   /**
    * Returns map of header name to header values
    *
-   * @return
+   * @return headers' names and values as a {@code MultiMap}
    */
   MultiMap<String,String> headerMap();
 
@@ -157,28 +161,28 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * Returns cookie value of a matching cookie
    *
    * @param name
-   * @return
+   * @return cookie value
    */
   String cookie(String name);
 
   /**
    * Returns map of cookie name to cookie values
    *
-   * @return
+   * @return cookies's names a values as a {@code MultiMap}
    */
   Map<String,String> cookieMap();
 
   /**
    * Returns value of a 'Host' header
    *
-   * @return
+   * @return Host header value
    */
   String host();
 
   /**
    * Returns server port
    *
-   * @return
+   * @return server port
    */
   int port();
 
@@ -192,33 +196,60 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns local address (server ip)
    *
-   * @return
+   * @return server's {@code InetSocketAddress}
    */
   InetSocketAddress ipLocal();
 
   /**
    * Returns remote address as a string
    *
-   * @return
+   * @return unresolved client ip
    */
   String ip();
 
   /**
    * Returns SSL information for a request or null if request is not secure
    *
-   * @return
+   * @return client's SSL
    */
   SecureWeb secure();
 
+  /**
+   * Retrieves attribute from the request. Attributes are set using
+   * overloaded attribute method.
+   *
+   * @param key class of the attribute to retrieve
+   * @param <X> type
+   * @return value of the attribute or null if no value is set
+   */
   <X> X attribute(Class<X> key);
 
+  /**
+   * Sets a request attribute. RequestWeb keeps attributes in a map
+   * keyed by attribute's class.
+   *
+   * @param value an attribute object
+   * @param <X> type
+   */
   <X> void attribute(X value);
 
+  /**
+   * Returns ServiceRef handle of an associated session
+   *
+   * @param name session service name
+   * @return SessionRef handle or null
+   */
   ServiceRef session(String name);
 
+  /**
+   * Instantiates session of specified and binds it to the request.
+   * Subsequent requests share the instantiated session.
+   *
+   * @param type class specifying the session service
+   * @param <X> type
+   * @return session
+   */
   <X> X session(Class<X> type);
-
-  //<X> X body(Class<X> type);
 
   <X> void body(Class<X> type,
                 Result<X> result);
@@ -228,8 +259,6 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   {
     body(type, then(after));
   }
-
-  //<X> void body(Class<X> type, BiConsumer<X,RequestWeb> completion);
 
   //
   // response
@@ -280,7 +309,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Sets response encoding e.g. 'UTF-8'
    *
-   * @param contentType
+   * @param encoding
    * @return
    */
   RequestWeb encoding(String encoding);

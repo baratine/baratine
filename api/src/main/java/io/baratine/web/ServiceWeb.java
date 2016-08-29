@@ -37,29 +37,33 @@ package io.baratine.web;
  * <p>
  * e.g.
  * <p>
- * <pre>
- *   <code>
- *     Web.get("/hello").to(HelloService.class);
+ * <blockquote><pre>
+ *   Web.get("/hello").to(HelloService.class);
  *
- *     class HelloService implements ServiceWeb {
- *        @Override
- *        public void service(RequestWeb request)
- *        {
- *          request.ok("hello");
- *        }
+ *   class HelloService implements ServiceWeb {
+ *     &#64;Override
+ *     public void service(RequestWeb request)
+ *     {
+ *       request.ok("hello");
  *     }
- *   </code>
- * </pre>
+ *   }
+ * </pre></blockquote>
  *
  * @see FilterBefore
  * @see FilterAfter
- * @see RouteBuilder#before(Class)
- * @see RouteBuilder#to(Class)
- * @see RouteBuilder#after(Class)
+ * @see io.baratine.web.WebBuilder.RouteBuilder#before(Class)
+ * @see io.baratine.web.WebBuilder.RouteBuilder#to(Class)
+ * @see io.baratine.web.WebBuilder.RouteBuilder#after(Class)
  */
 @FunctionalInterface
 public interface ServiceWeb
 {
+  /**
+   * service method invoked on the ServiceWeb implementation
+   *
+   * @param request client request
+   * @throws Exception processing exception
+   */
   void service(RequestWeb request)
     throws Exception;
 }

@@ -44,18 +44,18 @@ import java.util.Arrays;
  * <p>
  * IdAsset is meant be used as a primary key for an asset.
  * e.g.
- * <code>
+ * <blockquote>
  * <pre>
- * @Asset
+ * &#64;Asset
  * public class Book {
- *   @Id
+ *   &#64;Id
  *   private IdAsset id;
  *   private String title;
  *   private String author;
  *   ...
  * }
  * </pre>
- * </code>
+ * </blockquote>
  *
  * @see Asset
  */

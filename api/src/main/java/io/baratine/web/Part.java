@@ -38,68 +38,66 @@ import java.util.Collection;
  *
  * e.g.
  *
- * <pre>
- *   <code>
- *     @Post
- *     public void (@Body Part[] parts, Result<String> result)
- *     {
- *       result.ok("received " + parts.length + " parts");
- *     }
- *   </code>
- * </pre>
+ * <blockquote><pre>
+ *   &#64;Post
+ *   public void (&#64;Body Part[] parts, Result&lt;String&gt; result)
+ *   {
+ *     result.ok("received " + parts.length + " parts");
+ *   }
+ * </pre></blockquote>
  */
 public interface Part
 {
   /**
    * Content-Type header of the part
-   * @return
+   * @return content type of the part
    */
   String contentType();
 
   /**
-   * An arbitrary header
+   * Returns header value for specified header name
    *
    * @param name
-   * @return
+   * @return header string value
    */
   String header(String name);
 
   /**
    * All header values matching header name
    * @param name
-   * @return
+   * @return {@code Collection} of header values
    */
   Collection<String> headers(String name);
 
   /**
    * All header names
-   * @return
+   * @return {@code Collection} of header names
    */
   Collection<String> headerNames();
 
   /**
    * Name of the part
-   * @return
+   * @return name
    */
   String name();
 
   /**
    * Client submitted file name of the part
    *
-   * @return
+   * @return file name
    */
   String getFileName();
 
   /**
    * Size of the part
-   * @return
+   * @return size of the part
    */
   long size();
 
   /**
-   * InputStream with part's data
+   * {@code InputStream} with part's data
    *
-   * @return
+   * @return {@code InputStream} containing part's data.
    * @throws IOException
    */
   InputStream data() throws IOException;
