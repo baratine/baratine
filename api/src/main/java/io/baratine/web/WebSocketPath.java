@@ -41,17 +41,15 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * Annotation WebSocketPath binds a method capable of upgrading HTTP protocol
  * to a WebSocket Protocol
  *
- * <pre>
- *   <code>
- *     @Session
- *     public class UserSession {
- *       @WebSocketPath("/updates")
- *       public void registerForUpdates(RequestWeb request) {
- *         request.upgrade(new StockTickerServiceWebSocket());
- *       }
+ * <blockquote><pre>
+ *   &#64;Session
+ *   public class UserSession {
+ *     &#64;WebSocketPath("/updates")
+ *     public void registerForUpdates(RequestWeb request) {
+ *       request.upgrade(new StockTickerServiceWebSocket());
  *     }
- *   </code>
- * </pre>
+ *   }
+ * </pre></blockquote>
  *
  * @see ServiceWebSocket
  */

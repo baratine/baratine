@@ -54,8 +54,8 @@ public interface WebBuilder
    * Adds a class for binding as a service. The class should be a valid service
    * class.
    *
-   * @param type
-   * @return
+   * @param type type to include
+   * @return instance of {@code WebBuilder}
    */
   WebBuilder include(Class<?> type);
   
@@ -68,7 +68,7 @@ public interface WebBuilder
    *
    * @param impl
    * @param <T>
-   * @return
+   * @return instance of {@code BindingBuilder}
    */
   <T> BindingBuilder<T> bean(Class<T> impl);
 
@@ -77,16 +77,16 @@ public interface WebBuilder
    *
    * @param instance
    * @param <T>
-   * @return
+   * @return instance of {@code BindingBuilder}
    */
   <T> BindingBuilder<T> bean(T instance);
 
   /**
-   * Adds a bean provider for type &lth;T>
+   * Adds a bean provider for type &lt;T&gt;
    *
    * @param provider
    * @param <T>
-   * @return
+   * @return instance of {@code BindingBuilder}
    */
   <T> BindingBuilder<T> beanProvider(Provider<T> provider);
   //<T,X> BindingBuilder<T> beanFunction(Function<X,T> function);
@@ -103,14 +103,14 @@ public interface WebBuilder
    *
    * @param method
    * @param path
-   * @return
+   * @return instance of {@code BindingBuilder}
    */
   RouteBuilder route(HttpMethod method, String path);
 
   /**
    * Configures route builder for a HTTP DELETE method at a specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   default RouteBuilder delete(String path)
   {
@@ -120,7 +120,7 @@ public interface WebBuilder
   /**
    * Configures route builder for HTTP GET method at specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   default RouteBuilder get(String path)
   {
@@ -130,7 +130,7 @@ public interface WebBuilder
   /**
    * Configures route builder for HTTP OPTIONS method at specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   default RouteBuilder options(String path)
   {
@@ -140,7 +140,7 @@ public interface WebBuilder
   /**
    * Configures route buidler for HTTP PATCH method at specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   default RouteBuilder patch(String path)
   {
@@ -150,7 +150,7 @@ public interface WebBuilder
   /**
    * Configures RouteBuilder for HTTP POST method at specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   default RouteBuilder post(String path)
   {
@@ -160,7 +160,7 @@ public interface WebBuilder
   /**
    * Configures RouteBuilder for HTTP PUT method at specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   default RouteBuilder put(String path)
   {
@@ -170,7 +170,7 @@ public interface WebBuilder
   /**
    * Configures RouteBuilder for HTTP TRACE method for specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   default RouteBuilder trace(String path)
   {
@@ -180,7 +180,7 @@ public interface WebBuilder
   /**
    * Configures generic RouteBuilder for a specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   default RouteBuilder path(String path)
   {
@@ -190,28 +190,28 @@ public interface WebBuilder
   /**
    * Configures WebSocketBuilder for a specified path
    * @param path
-   * @return
+   * @return instance of {@code RouteBuilder}
    */
   RouteBuilder websocket(String path);
 
   /**
    * Adds an instance of a ViewRender to the list of available view renders.
-   * A view render is selected based on &lth;T> type of object
+   * A view render is selected based on &lt;T&gt; type of object
    * supplied with {@code RequestWeb#ok()}
    *
    * @param view
    * @param <T>
-   * @return
+   * @return instance of {@code WebBuilder}
    */
   <T> WebBuilder view(ViewRender<T> view);
 
   /**
    * Adds a ViewRender to the list of available view renders.
-   * A view render is selected based on &lth;T> type of object
+   * A view render is selected based on &lt;T&gt; type of object
    * supplied with {@code RequestWeb#ok()}
    * @param view
    * @param <T>
-   * @return
+   * @return instance of {@code WebBuilder}
    */
   <T> WebBuilder view(Class<? extends ViewRender<T>> view);
 

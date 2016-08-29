@@ -40,7 +40,7 @@ import java.io.IOException;
  * <blockquote><pre>
  *   &#64;Path("/stock-updates")
  *   public class StockTicker implements ServiceWebSocket&lt;String, Quote&gt; {
- *     private WebSocket<Quote> _ws;
+ *     private WebSocket&lt;Quote&gt; _ws;
  *
  *     &#64;Override
  *      public void open(WebSocket&lt;Quote&gt; ws)

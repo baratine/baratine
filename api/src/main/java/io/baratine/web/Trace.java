@@ -38,21 +38,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation @Trace makes service method accessible via HTTP for TRACE requests.
+ * Annotation Trace makes service method accessible via HTTP for TRACE requests.
  *
  * By default the URI is inferred from the method name but can be overridden
- * using @Trace's value() attribute.
+ * using Trace's value() attribute.
  *
  * e.g.
  *
- * <pre>
- *   <code>
- *     @Trace
- *     public void trace(@Query("v") String value, Result<Void> result) {
- *       result.ok(value);
- *     }
- *   </code>
- * </pre>
+ * <blockquote><pre>
+ *   &#64;Trace
+ *   public void trace(&#64;Query("v") String value, Result&lt;Void&gt; result) {
+ *     result.ok(value);
+ *   }
+ * </pre></blockquote>
  *
  * The above maps TRACE requests to /trace URI to method trace().
  */
