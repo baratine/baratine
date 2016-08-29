@@ -155,7 +155,10 @@ public interface Config extends Map<String,String>
 
   ConfigBuilder newChild();
 
-  public interface ConfigBuilder
+  /**
+   * Provides methods to build a {@code Config} object.
+   */
+  interface ConfigBuilder
   {
     ConfigBuilder add(String key, String value);
 
