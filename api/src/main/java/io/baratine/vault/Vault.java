@@ -37,13 +37,10 @@ package io.baratine.vault;
  * <p>
  * Example: BookVault, which hosts Services of type Book keyed by id of type
  * IdAsset.
- * <code>
- * <pre>
- * public interface BookVault implements Vault&lth;IdAsset, Book> {
- *
+ * <blockquote><pre>
+ * public interface BookVault implements Vault&lt;IdAsset, Book&gt; {
  * }
- * </pre>
- * </code>
+ * </pre></blockquote>
  * <p>
  *
  * Vaults provide methods for creating, finding and deleting assets.
@@ -54,22 +51,22 @@ package io.baratine.vault;
  * must have the same signature. Note: for the purpose of making sure that signature
  * is the same an interface that defines that signature can be created.
  * Example.
- * <code>
+ * <blockquote>
  * <pre>
- * public interface BookVault implements Vault&lth;IdAsset, Book>
+ * public interface BookVault implements Vault&lt;IdAsset, Book&gt;
  * {
- *   public void create(String title, String author, Result&lth;IdAsset> result);
+ *   public void create(String title, String author, Result&lt;IdAsset&gt; result);
  * }
  *
- * @Asset
+ * &#64;Asset
  * public class Book
  * {
- *   @Id
+ *   &#64;Id
  *   private IdAsset id;
  *   private String title, author;
  *
- *   @Modify
- *   public void create(String title, String author, Result&lth;IdAsset> result)
+ *   &#64;Modify
+ *   public void create(String title, String author, Result&lt;IdAsset&gt; result)
  *   {
  *     this.title = title;
  *     this.author = author;
@@ -78,15 +75,15 @@ package io.baratine.vault;
  * }
  *
  * public class BookStoreClerk {
- *   @Inject @Service BookVault books;
+ *   &#64;Inject &#64;Service BookVault books;
  *
- *   public IdAsset addBook(String title, String author, Result&lth;IdAsset> result)
+ *   public IdAsset addBook(String title, String author, Result&lt;IdAsset&gt; result)
  *   {
  *     this.books.create(title, author, result.of());
  *   }
  * }
  * </pre>
- * </code>
+ * </blockquote>
  *
  * <b>Finding assets</b><br>
  * Vault can be queried for assets using finder methods. Finder are defined with
@@ -95,43 +92,43 @@ package io.baratine.vault;
  * findByField1AndField2 e.g. findByTitleAndAuthor
  * findByField1OrField2 e.g. findByTitleOrAuthor
  *
- * <code>
+ * <blockquote>
  *   <pre>
- *     public void findByTitle(String title, Result&lth;Book> result);
+ *     public void findByTitle(String title, Result&lt;Book&gt; result);
  *   </pre>
- * </code>
+ * </blockquote>
  *
  * The type of the return value expected is defined by a Result parameter. Expecting
- * one Book (the first found) is specified with Result&lth;Book>. A list of books
- * can be specified with Result&lth;List&lth;Book>>.
+ * one Book (the first found) is specified with Result&lt;Book&gt;. A list of books
+ * can be specified with Result&lt;List&lt;Book&gt;&gt;.
  *
  * Example: BookStore with finders
- * <code>
+ * <blockquote>
  * <pre>
- * public interface BookVault implements Vault&lth;IdAsset, Book>
+ * public interface BookVault implements Vault&lt;IdAsset, Book&gt;
  * {
- *   public void create(String title, String author, Result&lth;IdAsset> result);
+ *   public void create(String title, String author, Result&lt;IdAsset&gt; result);
  *
  *   //return books written by an author
- *   public void findByAuthor(String author, Result&lth;List&lth;Book>> result);
+ *   public void findByAuthor(String author, Result&lt;List&lt;Book&gt;&gt; result);
  *
  *   //return book matching a title
- *   public void findByTitle(String title, Result&lth;Book> result);
+ *   public void findByTitle(String title, Result&lt;Book&gt;&gt; result);
  *
  *   //return book matching a title written by an author
- *   public void findByTitleAndAuthor(String title, String author, Result&lth;Book> result);
+ *   public void findByTitleAndAuthor(String title, String author, Result&lt;Book&gt;&gt; result);
  * }
  *
  * public class BookStoreClerk {
- *   @Inject @Service BookVault books;
+ *   &#64;Inject &#64;Service BookVault books;
  *
- *   public IdAsset addBook(String title, String author, Result&lth;IdAsset> result)
+ *   public IdAsset addBook(String title, String author, Result&lt;IdAsset&gt; result)
  *   {
  *     this.books.create(title, author, result.of());
  *   }
  * }
  * </pre>
- * </code>
+ * </blockquote>
  *
  *
  * @param <ID> the type of the id/key

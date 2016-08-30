@@ -37,12 +37,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation @Cookie is used to assign a value from a Cookie header to a service method parameter.
+ * Annotation Cookie is used to assign a value from a Cookie header to a service
+ * method parameter.
  *
  * e.g.
  * <pre>
  *   <code>
- *     @Get
+ *     &#64;Get
  *     void service(Cookie("user") String user) {};
  *   </code>
  * </pre>

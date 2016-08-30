@@ -41,20 +41,18 @@ import io.baratine.web.WebServerBuilder.SslBuilder;
 
 /**
  * Web provides static methods to build a web server in a main() class.
- *
- * <pre><code>
+ * <p>
+ * <blockquote><pre>
  * import static io.baratine.web.Web.*;
- *
  * public class MyMain
  * {
  *   public static void main(String []argv)
  *   {
  *     get("/test", req-&gt;req.ok("hello, world"));
- *
  *     start();
  *   }
  * }
- * </code></pre>
+ * </pre></blockquote>
  *
  * @see RequestWeb
  */
@@ -68,16 +66,17 @@ public interface Web
    * Specifies http port (defaults to 8080)
    *
    * @param port
-   * @return
+   * @return instance of {@code WebServerBuilder}
    */
   static WebServerBuilder port(int port)
   {
     return builder().port(port);
   }
 
-  /** Obtains SslBuilder allowing specifying SSL options.
+  /**
+   * Obtains SslBuilder allowing specifying SSL options for the server
    *
-   * @return
+   * @return instance of SslBuilder
    */
   static SslBuilder ssl()
   {
@@ -89,12 +88,12 @@ public interface Web
   //
 
   /**
-   * Enlists class for automatic service discovery. An inlcuded class
+   * Enlists class for automatic service discovery. An included class
    * must be annotated with one of Baratine service annotations such as
-   * @Service, @Path, @Get or @Post, etc.
+   * &#64;Service, &#64;Path, &#64;Get or &#64;Post, etc.
    *
-   * @param type
-   * @return
+   * @param type service to include
+   * @return instance of {@code WebServerBuilder}
    */
   static WebServerBuilder include(Class<?> type)
   {
@@ -106,24 +105,21 @@ public interface Web
   //
 
   /**
-   * Registers ViewRenderer that will be used to render objects for type &lth;T>
+   * Registers ViewRenderer that will be used to render objects for type &lt;T&gt;
    * e.g.
-   * <pre>
-   *   <code>
-   *   class MyBeanRender extends ViewRender&lth;MyBean>{
+   * <blockquote><pre>
+   *   class MyBeanRender extends ViewRender&lt;MyBean&gt;{
    *     void render(RequestWeb req, MyBean value) {
    *       req.write(value.toString());
    *       req.ok();
    *     }
    *   }
-   *
    *   Web.view(new MyBeanRender());
-   *   </code>
-   * </pre>
-   * @param view
-   * @param <T>
-   * @return
+   * </pre></blockquote>
    *
+   * @param view instance of a {@code ViewRender}
+   * @param <T>  type of the supported by the renderer value
+   * @return instance of the {@code WebServerBuilder}
    * @see ViewRender
    */
   static <T> WebServerBuilder view(ViewRender<T> view)
@@ -132,11 +128,10 @@ public interface Web
   }
 
   /**
-   * Registers ViewRenderer that will be used to render objects for type &lth;T>
+   * Registers ViewRenderer that will be used to render objects for type &lt;T&gt;
    * e.g.
-   * <pre>
-   *   <code>
-   *   class MyBeanRender extends ViewRender&lth;MyBean>{
+   * <blockquote><pre>
+   *   class MyBeanRender extends ViewRender&lt;MyBean&gt;{
    *     void render(RequestWeb req, MyBean value) {
    *       req.write(value.toString());
    *       req.ok();
@@ -144,12 +139,11 @@ public interface Web
    *   }
    *
    *   Web.view(MyBeanRender.class);
-   *   </code>
-   * </pre>
-   * @param view
-   * @param <T>
-   * @return
+   * </pre></blockquote>
    *
+   * @param view class of the {@code ViewRender}
+   * @param <T>  type of values supported by this renderer
+   * @return instance of {@code WebServerBuilder}
    * @see #view(ViewRender)
    * @see ViewRender
    */
@@ -164,19 +158,19 @@ public interface Web
 
   /**
    * Adds class to WebServerBuilder in one of the following ways.
-   *
-   * If an @IncludeOn annotation is present and the specified in @IncludeOn
-   * annotation class is present the class is tested for @Include annotation.
-   *
-   * If an @Include annotation is present the class is included using {@link #include} method.
-   *
-   * If a @Service annotation is present the class is included using {@link #service} method.
-   *
+   * <p>
+   * If an IncludeOnClass annotation is present and the specified in IncludeOnClass
+   * annotation class is present the class is included.
+   * <p>
+   * If an Include annotation is present the class is included using {@link #include} method.
+   * <p>
+   * If a Service annotation is present the class is included using {@link #service} method.
+   * <p>
    * If type extends {@code IncludeWeb} the class is instantiated and used to
    * generate services or includes.
    *
-   * @param type
-   * @return
+   * @param pkg package to scan
+   * @return instance of {@code WebServerBuilder}
    */
   static WebServerBuilder scan(Package pkg)
   {
@@ -185,35 +179,27 @@ public interface Web
 
   /**
    * Auto discovers all classes in packages named *.autoconf.* and enlists
-   * all classes annotated with @Include and @IncludeOn annotations.
+   * all classes annotated with Include and @IncludeOnClass annotations.
    *
-   * @return
+   * @return instance of {@code WebServerBuilder}
    */
   static WebServerBuilder scanAutoConf()
   {
     return builder().scanAutoconf();
   }
 
-  /*
-  static WebServerBuilder args(String []args)
-  {
-    return builder().args(args);
-  }
-  */
-
   /**
-   * Specifies server property.
-   *
+   * Specifies configuration property. The specified property becomes available
+   * via the {@code Config} instance.
+   * <p>
    * e.g.
-   * <pre>
-   *   <code>
-   *     Web.property("server.http", "8080");
-   *   </code>
-   * </pre>
+   * <blockquote><pre>
+   *   Web.property("server.http", "8080");
+   * </pre></blockquote>
    *
-   * @param name
-   * @param value
-   * @return
+   * @param name  property name
+   * @param value property value
+   * @return instance of {@code WebServerBuilder}
    */
   static WebServerBuilder property(String name, String value)
   {
@@ -284,8 +270,7 @@ public interface Web
    *
    * @param path
    * @return
-   * @see #get;
-   *
+   * @see #get(String) ;
    */
   static RouteBuilder delete(String path)
   {
@@ -294,16 +279,14 @@ public interface Web
 
   /**
    * Configures a route corresponding ot HTTP GET method
-   *
+   * <p>
    * e.g.
-   * <pre>
-   *   <code>
-   *     Web.get("/hello").to(req->{ req.ok("hello world"); });
-   *   </code>
-   * </pre>
+   * <blockquote><pre>
+   *   Web.get("/hello").to(req-&gt;{ req.ok("hello world"); });
+   * </pre></blockquote>
    *
-   * @param path
-   * @return
+   * @param path specifies path
+   * @return instance of {@code RouteBuilder} for GET method at path URI
    */
   static RouteBuilder get(String path)
   {
@@ -313,8 +296,8 @@ public interface Web
   /**
    * Configures a route corresponding to HTTP OPTIONS method
    *
-   * @param path
-   * @return
+   * @param path specifies path
+   * @return instance of {@code RouteBuilder} for GET method at path URI
    */
   static RouteBuilder options(String path)
   {
@@ -324,8 +307,8 @@ public interface Web
   /**
    * Configures a route corresponding to HTTP PATCH method
    *
-   * @param path
-   * @return
+   * @param path specifies path
+   * @return instance of {@code RouteBuilder} for GET method at path URI
    */
   static RouteBuilder patch(String path)
   {
@@ -335,8 +318,8 @@ public interface Web
   /**
    * Configures a route corresponding to HTTP POST method
    *
-   * @param path
-   * @return
+   * @param path specifies path
+   * @return instance of {@code RouteBuilder} for GET method at path URI
    */
   static RouteBuilder post(String path)
   {
@@ -346,8 +329,8 @@ public interface Web
   /**
    * Configures a route corresponding to HTTP PUT method
    *
-   * @param path
-   * @return
+   * @param path specifies path
+   * @return instance of {@code RouteBuilder} for GET method at path URI
    */
   static RouteBuilder put(String path)
   {
@@ -356,8 +339,9 @@ public interface Web
 
   /**
    * Configures a route corresponding to HTTP trace method
-   * @param path
-   * @return
+   *
+   * @param path specifies path
+   * @return instance of {@code RouteBuilder} for GET method at path URI
    */
   static RouteBuilder trace(String path)
   {
@@ -367,8 +351,8 @@ public interface Web
   /**
    * Configures a 'catch all' route
    *
-   * @param path
-   * @return
+   * @param path specifies path
+   * @return instance of {@code RouteBuilder} for GET method at path URI
    */
   static RouteBuilder path(String path)
   {
@@ -392,15 +376,16 @@ public interface Web
 
   /**
    * Creates an instance of a server and starts it, returning the instance.
+   *
    * @param args
    * @return
    */
-  static WebServer start(String ...args)
+  static WebServer start(String... args)
   {
     return builder().start(args);
   }
 
-  static void go(String ...args)
+  static void go(String... args)
   {
     builder().go(args);
   }

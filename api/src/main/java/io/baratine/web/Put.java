@@ -38,22 +38,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation @Put makes service method accessible via HTTP for POST requests.
+ * Annotation Put makes service method accessible via HTTP for POST requests.
  *
  * By default the URI is inferred from the method name but can be overridden
- * using @Put's value() attribute.
+ * using Put's value() attribute.
  *
  * e.g.
  *
- * <pre>
- *   <code>
- *     @Put
- *     public void put(@Body Form form, Result<Void> result) {
- *       //process form
- *       result.ok(null);
- *     }
- *   </code>
- * </pre>
+ * <blockquote><pre>
+ *   &#64;Put
+ *   public void put(@Body Form form, Result&lt;Void&gt; result) {
+ *     //process form
+ *     result.ok(null);
+ *   }
+ * </pre></blockquote>
  *
  * The above maps PUT requests to /put URI to method put().
  */

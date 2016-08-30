@@ -37,14 +37,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation @Header maps service method parameter to a header value.
+ * Annotation Header maps service method parameter to a header value.
  *
  * e.g.
  *
  * <pre>
  *   <code>
- *     @Get
- *     public void foo(@Header("Content-Type") String type, Result<List<String>> result) {}
+ *     &#64;Get
+ *     public void foo(&#64;Header("Content-Type") String type, Result&lt;List&lt;String&#64;&#64; result) {}
  *   </code>
  * </pre>
  *
@@ -56,7 +56,7 @@ import java.lang.annotation.Target;
 public @interface Header
 {
   /**
-   * Query to be assigned to the parameter.
+   * Header to be assigned to the parameter.
    */
   String value();
 }

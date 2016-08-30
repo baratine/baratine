@@ -140,15 +140,13 @@ public interface Config extends Map<String,String>
    *   }
    * </pre></blockquote>
    *
-   * <blockquote>
-   *   <pre>
-   *     MyBean bean1 = new MyBean();
-   *     Config.inject(bean1, "bean1");
+   * <blockquote><pre>
+   *   MyBean bean1 = new MyBean();
+   *   Config.inject(bean1, "bean1");
    *
-   *     MyBean bean2 = new MyBean();
-   *     Config.inject(bean2, "bean2");
-   *   </pre>
-   * </blockquote>
+   *   MyBean bean2 = new MyBean();
+   *   Config.inject(bean2, "bean2");
+   * </pre></blockquote>
    * @param bean bean to inject from configuration
    * @param prefix property prefix
    * @param <T> type of bean
@@ -157,7 +155,10 @@ public interface Config extends Map<String,String>
 
   ConfigBuilder newChild();
 
-  public interface ConfigBuilder
+  /**
+   * Provides methods to build a {@code Config} object.
+   */
+  interface ConfigBuilder
   {
     ConfigBuilder add(String key, String value);
 

@@ -76,37 +76,39 @@ import io.baratine.service.Service;
  * Lifecycle of an asset can be made accessible internally to the asset using
  * a field of type {@code StateAsset}. This field will be managed internally and
  * it's values are meant for reading only.
- * <code>
- * <pre>
- * @Asset
+ * <blockquote><pre>
+ * &#64;Asset
  * public class Book
  * {
- *   @Id
+ *   &#64;Id
  *   private IdAsset id;
  *
  *   private String title;
  *   private String author;
  *
- *   @Modify
- *   public void create(String title, String author, Result<IdAsset> result) {
+ *   &#64;Modify
+ *   public void create(String title, String author, Result&lt;IdAsset&gt; result) {
  *     this.title = title;
  *     this.author = author;
  *
  *     result.ok(id);
  *   }
  * }
- * </pre>
- * </code>
+ * </pre></blockquote>
  *
  * @see Vault
  * @see Id
  * @see IdAsset
- * @see StateAsset
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Service
 public @interface Asset
 {
+  /**
+   * Specifies table name for the asset.
+   *
+   * @return table name
+   */
   String value() default "";
 }

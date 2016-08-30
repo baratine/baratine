@@ -42,21 +42,19 @@ import java.lang.annotation.Target;
  * It is used when one path needs to bind to two or more different methods based on
  * the value of the Content-Type request header.
  * e.g.
- * <pre>
- *   <code>
- *   @Get("/get")
- *   @IfContentType("text/plain")
- *   public void getTxt(Result&lth;String> result) {
+ * <blockquote><pre>
+ *   &#64;Get("/get")
+ *   &#64;IfContentType("text/plain")
+ *   public void getTxt(Result&lt;String&gt; result) {
  *     result.ok("hello");
  *   }
  *
- *   @Get("/get")
- *   @IfContentType("text/xml")
- *   public void getTxt(Result<String> result) {
- *     result.ok("<msg>hello</msg>");
+ *   &#64;Get("/get")
+ *   &#64;IfContentType("text/xml")
+ *   public void getTxt(Result&lt;String&gt; result) {
+ *     result.ok("&lt;msg&gt;hello&lt;/msg&gt;");
  *   }
- *   </code>
- * </pre>
+ * </pre></blockquote>
  */
 @Documented
 @Retention(RUNTIME)
