@@ -5,7 +5,7 @@ mainClassName = 'com.caucho.v5.cli.baratine.BaratineCommandLine'
 allprojects {
   group="io.baratine"
   
-  version=System.properties['version'] ?: "0.11-SNAPSHOT"
+  version=System.properties['version'] ?: "1.0.0-SNAPSHOT"
   
   apply plugin: 'java'
   apply plugin: 'eclipse'
@@ -31,6 +31,14 @@ allprojects {
   eclipse.classpath {
     defaultOutputDir = file('build/classes/main')
   }
+}
+
+javadoc {
+  options.links("http://docs.oracle.com/javase/8/docs/api/");
+  options.addStringOption('Xdoclint:none', '-quiet')
+  
+  source = subprojects.sourceSets.main.allJava
+  title = 'Baratine ' + version
 }
 
 apply from: 'maven.gradle'
