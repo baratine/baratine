@@ -41,7 +41,7 @@ import io.baratine.web.WebBuilder.RouteBuilder;
  *   &#64;Override
  *   public void build()
  *   {
- *     get("/hello").to(requestWeb -> requestWeb.ok("hello world!"));
+ *     get("/hello").to(requestWeb -&gt; requestWeb.ok("hello world!"));
  *   }
  * }
  * </pre></blockquote>
@@ -117,7 +117,7 @@ abstract public class IncludeWebBase implements IncludeWeb
    *   public void build() {
    *     //define route for HTTP "GET" method
    *     get("/hello").to(request-&gt;request.ok("hello world"));
-   * <p>
+   *     //
    *     //define route for methods other than the "GET" method
    *     route("/hello").to(request-&gt;request.ok("hello world"));
    *   }
