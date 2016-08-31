@@ -29,6 +29,9 @@
 
 package io.baratine.web;
 
+/**
+ * Enum for HTTP methods.
+ */
 public enum HttpMethod
 {
   UNKNOWN, // other method than listed here

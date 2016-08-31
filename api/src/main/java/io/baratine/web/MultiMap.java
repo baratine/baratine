@@ -32,8 +32,22 @@ package io.baratine.web;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class MultipMap maps a key to a list of values. Baratine uses MultiMap
+ * for HTTP request headers and query parameters.
+ *
+ * @param <K> type of key
+ * @param <V> type of value
+ */
 public interface MultiMap<K,V> extends Map<K,List<V>>
 {
+  /**
+   * Returns first value out of a list for the key or null when list contains
+   * no values or when list is null
+   *
+   * @param key Map's key
+   * @return first value or null
+   */
   default V first(String key)
   {
     List<V> list = get(key);

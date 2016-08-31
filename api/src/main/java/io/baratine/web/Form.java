@@ -30,7 +30,21 @@
 package io.baratine.web;
 
 /**
- * Form handling.
+ * Class Form is used to present data for processing form submission. The
+ * submitted form is required to have content type
+ * 'application/x-www-form-urlencoded'
+ * <p>
+ * e.g.
+ * <blockquote><pre>
+ * &#64;Service
+ * public class FormProcessor {
+ *   &#64;Post
+ *   public void postForm(&#64;Body Form form, Result&lt;Boolean&gt; result) {
+ *     //process form
+ *     result.ok(true);
+ *   }
+ * }
+ * </pre></blockquote>
  */
 public interface Form extends MultiMap<String,String>
 {

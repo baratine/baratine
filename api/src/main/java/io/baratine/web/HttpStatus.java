@@ -29,6 +29,9 @@
 
 package io.baratine.web;
 
+/**
+ * Enum for HTTP status codes
+ */
 public enum HttpStatus
 {
   CONTINUE(100),
