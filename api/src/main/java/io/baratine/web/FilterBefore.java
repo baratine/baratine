@@ -40,16 +40,54 @@ import java.lang.annotation.Target;
 /**
  * Annotation FilterBefore used to declare a RequestWeb filter.
  *
- * Can be used as a meta annotation for annotating filter annotations
+ * e.g.
+ * <blockquote><pre>
+ * //define filter
+ * public class MyBeforeFilter implements ServiceWeb
+ * {
+ *   &#64;Override
+ *   public void service(RequestWeb requestWeb) throws Exception
+ *   {
+ *     //do filter processing
+ *     requestWeb.ok(); // required to allow processing continue
+ *   }
+ * }
+ *
+ * //invoke filter before request
+ * &#64;Service
+ * public class MyService {
+ *   &#64;Get
+ *   &#64;BeforeFilter(MyBeforeFilter.class)
+ *   public void data(Result&lt;String&gt; result) {
+ *     result.ok("Hello World");
+ *   }
+ * }
+ * </pre></blockquote>
+ *
+ * Filter can apply to a method or a class. When it applies to a class the filter
+ * will be invoked for all web requests dispatched to methods of this class.
+ *
+ * Can be used as a meta annotation for annotating filter annotations, for example
+ * see {@code io.baratine.web.cors.CrossOrigin} annotation.
  *
  * @see ServiceWeb
+ *
  */
 @Retention(RUNTIME)
 @Target({METHOD,TYPE})
 @Repeatable(FiltersBefore.class)
 public @interface FilterBefore
 {
+  /**
+   * Specifies filter implementation class
+   *
+   * @return filter class
+   */
   Class<? extends ServiceWeb> value();
-  
+
+  /** Specifies filter name
+   *
+   * @return name
+   */
   String name() default "";
 }

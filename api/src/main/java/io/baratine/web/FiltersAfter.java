@@ -36,9 +36,32 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation FiltersAfter allows defining multiple 'after' filters for a
+ * resource. e.g.
+ *
+ * <blockquote><pre>
+ * &#64;Service
+ * public class MyService {
+ *   &#64;Get
+ *   &#64;FiltersBefore(&#64;FilterBefore(MyFilterBefore1.class), &#64;FilterBefore(MyFilterBefore2.class))
+ *   public void get(Result&lt;String&gt; result) {
+ *     result.ok("hello world");
+ *   }
+ * }
+ * </pre></blockquote>
+ *
+ * FiltersAfter can apply to a method or a class. When it applies to a class the
+ * specified filters will be invoked for all web requests dispatched to methods
+ * of this class.
+ */
 @Retention(RUNTIME)
 @Target({METHOD,TYPE})
 public @interface FiltersAfter
 {
+  /**
+   * Specifies filters
+   * @return filters
+   */
   FilterAfter []value();
 }

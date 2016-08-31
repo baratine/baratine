@@ -29,20 +29,63 @@
 
 package io.baratine.web;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+/**
+ * Annotation FilterAfter used to declare a RequestWeb filter.
+ * <p>
+ * <blockquote><pre>
+ * //define filter
+ * public class MyAfterFilter implements ServiceWeb
+ * {
+ *   &#64;Override
+ *   public void service(RequestWeb requestWeb) throws Exception
+ *   {
+ *     //do filter processing
+ *     requestWeb.ok(); // required to allow processing finish
+ *   }
+ * }
+ *
+ * //invoke filter after request
+ * &#64;Service
+ * public class MyService {
+ *   &#64;Get
+ *   &#64;AfterFilter(MyAfterFilter.class)
+ *   public void data(Result&lt;String&gt; result) {
+ *     result.ok("Hello World");
+ *   }
+ * }
+ * </pre></blockquote>
+ *
+ * Filter can apply to a method or a class. When it applies to a class the filter
+ * will be invoked for all web requests dispatched to methods of this class.
+ *
+ * Can be used as a meta annotation for annotating filter annotations, for example
+ * see {@code io.baratine.web.cors.CrossOrigin} annotation.
+ *
+ * @see ServiceWeb
+ */
 @Retention(RUNTIME)
 @Target({METHOD,TYPE})
 @Repeatable(FiltersAfter.class)
 public @interface FilterAfter
 {
+  /**
+   * Specifies filter implementation class
+   *
+   * @return filter class
+   */
   Class<? extends ServiceWeb> value();
-  
+
+  /** Specifies filter name
+   *
+   * @return name
+   */
   String name() default "";
 }
