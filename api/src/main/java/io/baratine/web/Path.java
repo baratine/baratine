@@ -29,18 +29,69 @@
 
 package io.baratine.web;
 
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+/**
+ * Depending on the use context annotation Path is used to bind URI to Service or
+ * bind service method parameter to a named URI part.
+ * <p>
+ * <b>Binding URI to a service</b>
+ * <blockquote><pre>
+ * &#64;Service
+ * &#64;Path("/hello-module")
+ * public class MyService {
+ *   &#64;Get("/hello")
+ *   public void hello(RequestWeb request) {
+ *     request.ok("Hello");
+ *   }
+ * }
+ * </pre></blockquote>
+ * <p>
+ * When MyService is deployed 'hello' method is exposed at '/hello-module/hello'.
+ * <p>
+ * <b>Specifying Asset base URI</b>
+ * <p>
+ * When annotation Path is used on an Asset, the annotation specifies
+ * base URI at which Assets of that type are accessible.
+ * <p>
+ * e.g.
+ * <blockquote><pre>
+ * &#64;Asset
+ * &#64;Path("/items")
+ * public class MyItem {
+ * &#64;Id private _id;
+ * }
+ * </pre></blockquote>
+ * The above makes Assets MyItem available at /items/{id}
+ * <p>
+ * <b>Injecting parameter into service method</b>
+ * <p>
+ * When method needs a parameter encoded in URI's path it can be injected using
+ * path template as so.
+ * <p>
+ * <blockquote><pre>
+ * &#64;Service
+ * public class MyService {
+ *   &#64;Get("/hello/{subj}")
+ *   public void hello(@Path String subj, RequestWeb request) {
+ *     request.ok("Hello " + subj);
+ *   }
+ * }
+ * </pre></blockquote>
+ * <p>
+ * When method is invoked subj expands to the matching part of the request URI:
+ * <p>
+ * e.g. request below will output 'Hello World'<br>
+ * curl http://localhost:8080/hello/World?bogus=focus
+ */
 @Documented
 @Retention(RUNTIME)
-@Target({TYPE,METHOD,PARAMETER})
+@Target({TYPE, METHOD, PARAMETER})
 public @interface Path
 {
   /**

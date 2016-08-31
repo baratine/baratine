@@ -37,6 +37,26 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation Options makes service method accessible via HTTP for OPTIONS requests.
+ *
+ * By default the URI is inferred from the method name but can be overridden
+ * using Options's value() attribute.
+ *
+ * e.g.
+ *
+ * <pre>
+ *   <code>
+ *     &#64;Options
+ *     public void options(RequestWeb request) {
+ *       request.header("Allow", "GET");
+ *       request.ok();
+ *     }
+ *   </code>
+ * </pre>
+ *
+ * The above Options annotation maps requests to /options URI to method options().
+ */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
