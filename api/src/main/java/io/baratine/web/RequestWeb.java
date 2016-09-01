@@ -344,7 +344,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   RequestWeb length(long length);
 
   /**
-   * Sets response 'Content-Type' parameter
+   * Sets response 'Content-Type' response header
    *
    * @param contentType
    * @return
@@ -551,29 +551,85 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   RequestWeb push(OutFilterWeb outFilter);
 
   /**
+   * Interface OutFilterWeb defines contract for response filters.
    *
+   * Response filters can be used to modify response headers and body.
+   *
+   * For example, response filter could be used to compress the response.
    */
-  public interface OutFilterWeb
+  interface OutFilterWeb
   {
+    /**
+     * Calls header method on the supplied in 'request' parameter instance
+     * of RequestWeb.
+     *
+     * Method header sets response header.
+     *
+     * @param request request object
+     * @param key header name
+     * @param value header value
+     */
     default void header(RequestWeb request, String key, String value)
     {
       request.header(key, value);
     }
 
+    /**
+     * Delegates to RequestWeb.type(String) method of the supplied in
+     * 'request' parameter instance of RequestWeb.
+     *
+     * Method type sets "Content-Type" header.
+     *
+     * @param request request object
+     * @param type content type of the response
+     */
     default void type(RequestWeb request, String type)
     {
       request.type(type);
     }
 
+    /**
+     * Delegates to RequestWeb.length(long) method of the supplied in
+     * 'request' parameter instance of RequestWeb.
+     *
+     * Method length sets "Content-Length" header.
+     *
+     * @param request request object
+     * @param length content length
+     */
     default void length(RequestWeb request, long length)
     {
       request.length(length);
     }
 
+    /**
+     * Intercepts response's write method.
+     *
+     * At this point the custom method should
+     * process the 'buffer' and write to RequestWeb specified as 'out' parameter
+     * results of its processing. E.g. gzip compressed buffer
+     *
+     * @param out request object
+     * @param buffer data
+     */
     void write(RequestWeb out, Buffer buffer);
 
+    /**
+     * Intercepts ok call to RequestWeb.
+     *
+     * Custom filter might make use of this method to do additional logging
+     * or modify the response.
+     *
+     * @param out request object
+     */
     void ok(RequestWeb out);
 
+    /**
+     * Delegates to RequestWeb.credits() method returning instance of Credits.
+     *
+     * @param out request object
+     * @return credits
+     */
     default Credits credits(RequestWeb out)
     {
       return out.credits();
@@ -589,23 +645,76 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
     return ResultChain.then(this, after);
   }
 
-  public interface SecureWeb
+  /**
+   * Interface SecureWeb provides access to secure protocol configuration of the
+   * connection established with the client.
+   */
+  interface SecureWeb
   {
+    /**
+     * Returns protocol name. E.g. 'TLS1.2'
+     *
+     * @return protocol name
+     */
     String protocol();
 
+    /**
+     * Cipher suite used for the secure connection
+     *
+     * @return cipher suite name
+     */
     String cipherSuite();
   }
 
-  public interface CookieBuilder
+  /**
+   * Interface CookieBuilder provides methods to build a cookie.
+   *
+   * E.g.
+   * <blockquote><pre>
+   *   requestWeb.cookie("preferences", "value").secure(true).domain("baratine.io");
+   * </pre></blockquote>
+   */
+  interface CookieBuilder
   {
+    /**
+     * Makes cookie HttpOnly
+     *
+     * @param isHttpOnly true if cookie should be HttpOnly false otherwise
+     * @return builder instance for call chaining
+     */
     CookieBuilder httpOnly(boolean isHttpOnly);
 
+    /**
+     * Makes cookie Secure
+     *
+     * @param isSecure true if cookie should be secure, false otherwise
+     * @return builder instance for call chaining
+     */
     CookieBuilder secure(boolean isSecure);
 
+    /**
+     * Sets cookie's path attribute
+     *
+     * @param path cookie path E.g. "/MyService"
+     * @return builder instance for call chaining
+     */
     CookieBuilder path(String path);
 
+    /**
+     * Sets cookie's domain
+     *
+     * @param domain cookie domain value e.g. "baratine.io"
+     * @return builder instance for call chaining
+     */
     CookieBuilder domain(String domain);
 
+    /**
+     * Sets cookie expiry
+     *
+     * @param time desired expiry value e.g. 30
+     * @param unit using specified TimeUnit e.g. TimeUnit.MINUTES
+     * @return builder instance for call chaining
+     */
     CookieBuilder maxAge(long time, TimeUnit unit);
   }
 }
