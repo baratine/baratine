@@ -48,6 +48,17 @@ import io.baratine.service.Services;
 
 /**
  * Interface RequestWeb provides methods to access information in http request.
+ * <p>
+ * e.g.
+ * <blockquote><pre>
+ *   &#64;Service
+ *   public class MyService {
+ *     &#64;Get
+ *     public void now(RequestWeb request) {
+ *      request.ok(new java.util.Date());
+ *     }
+ *   }
+ * </pre></blockquote>
  */
 public interface RequestWeb extends ResultChain<Object> // OutWeb
 {
@@ -117,6 +128,22 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    */
   String path(String string);
 
+  /**
+   * Returns Map which path name parts and their corresponding values parsed from
+   * the URI.
+   * <p>
+   * e.g.
+   * <blockquote><pre>
+   * @Get("/map/{x}/{y}/{z}")
+   * public void map(RequestWeb request)
+   * {
+   *   // curl http://localhost:8080/map/XV/YV/ZV
+   *   request.ok(request.pathMap()); // {x=XV, y=XV, z=ZV}
+   * }
+   * </pre></blockquote>
+   *
+   * @return Map of part names to part values
+   */
   Map<String,String> pathMap();
 
   /**
@@ -129,7 +156,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns query parameter value for a specified query parameter name
    *
-   * @param key
+   * @param key query parameter name
    * @return query parameter value
    */
   String query(String key);
@@ -145,10 +172,10 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns value of a specified header
    *
-   * @param string
+   * @param key header name
    * @return header value
    */
-  String header(String string);
+  String header(String key);
 
   /**
    * Returns map of header name to header values
@@ -160,7 +187,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns cookie value of a matching cookie
    *
-   * @param name
+   * @param name cookie name
    * @return cookie value
    */
   String cookie(String name);
@@ -229,7 +256,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * keyed by attribute's class.
    *
    * @param value an attribute object
-   * @param <X> type
+   * @param <X>   type
    */
   <X> void attribute(X value);
 
@@ -246,14 +273,32 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * Subsequent requests share the instantiated session.
    *
    * @param type class specifying the session service
-   * @param <X> type
+   * @param <X>  type
    * @return session
    */
   <X> X session(Class<X> type);
 
+  /**
+   * Converts request body to requested in 'type' parameter object.
+   * The supported types are InputStream, Reader, Form and a JavaBean(POJO).
+   * Form requires that the content be encoded using 'application/x-www-form-urlencoded'.
+   * JavaBean convertion is supported for Content type 'application/json'
+   *
+   * @param type   target type for conversion
+   * @param result async holder for conversion result
+   * @param <X>    type
+   */
   <X> void body(Class<X> type,
                 Result<X> result);
 
+  /**
+   * Wraps BiConsumer specified in the 'after' parameter into a Result
+   * and calls body(type, result).
+   *
+   * @param type  target type for conversion
+   * @param after conversion consumer
+   * @param <X>   type
+   */
   default <X> void bodyThen(Class<X> type,
                             BiConsumer<X,RequestWeb> after)
   {
@@ -314,6 +359,15 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    */
   RequestWeb encoding(String encoding);
 
+  /**
+   * Upgrades protocol to a higher level protocol such as WebSocket. Currently
+   * only WebSocket is supported.
+   * <p>
+   * Parameter service must be an instance of {@code ServiceWebSocket}
+   *
+   * @param service instance of ServiceWebSocket
+   * @see ServiceWebSocket
+   */
   void upgrade(Object service);
 
   /**
@@ -330,17 +384,9 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   void ok(Object value);
 
   /**
-   * Completes processing with a value and exception
-   *
-   * @param result
-   * @param exn
-   */
-  //void ok(Object result, Throwable exn);
-
-  /**
    * Completes processing with a fail status and exception
    *
-   * @param exn
+   * @param exn Throwable instance
    */
   @Override
   void fail(Throwable exn);
@@ -362,19 +408,6 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    */
   void redirect(String address);
 
-  /*
-  @Override
-  default void handle(Object value, Throwable exn)
-  {
-    if (exn != null) {
-      fail(exn);
-    }
-    else {
-      ok(value);
-    }
-  }
-  */
-
   //
   // resources
   //
@@ -384,7 +417,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns configuration object for web app serving this request
    *
-   * @return
+   * @return Config instance
    */
   Config config();
 
@@ -393,7 +426,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns an injector instance for web app serving this request
    *
-   * @return
+   * @return {@code Injector} instance
    */
   Injector injector();
 
@@ -402,36 +435,35 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns Services (service manager) instance for web app serving this request
    *
-   * @return
+   * @return {@code Services} manager
    */
   Services services();
 
   /**
    * Returns ServiceRef instance for service at specified address
    *
-   * @param address
-   * @return
+   * @param address service address
+   * @return ServiceRef instance
    */
   ServiceRef service(String address);
 
   /**
    * Looks up service instance for specified type
    *
-   * @param type
-   * @param <X>
-   * @return
+   * @param type type of the Service.
+   * @param <X> type
+   * @return Service instance
    */
   <X> X service(Class<X> type);
 
   /**
-   * Looks up service instance for specified type and id
+   * Looks up Asset instance for specified type and id
    *
-   * @param type
-   * @param id
-   * @param <X>
-   * @return
+   * @param type Asset type
+   * @param id Asset id
+   * @param <X> type
+   * @return Asset instance
    */
-
   <X> X service(Class<X> type, String id);
 
   // buffers
@@ -439,29 +471,88 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
   /**
    * Returns Buffers factory
    *
-   * @return
+   * @return instance of Buffers
    */
   Buffers buffers();
+
+  /**
+   * Writes contents of buffer into response
+   *
+   * @param buffer buffer with data
+   * @return instance of RequestWeb for chaining calls
+   */
   RequestWeb write(Buffer buffer);
+
+  /**
+   * Writes contents of buffer into response
+   *
+   * @param buffer buffer with data
+   * @param offset data offset
+   * @param length number of bytes to write
+   * @return instance of RequestWeb for chaining calls
+   */
   RequestWeb write(byte []buffer, int offset, int length);
 
+  /**
+   * Writes string into response
+   *
+   * @param value string to output
+   * @return instance of RequestWeb for chaining calls
+   */
   RequestWeb write(String value);
+
+  /**
+   * Writes char buffer into response
+   *
+   * @param buffer buffer with data
+   * @param offset data offset
+   * @param length number of chars to write
+   * @return instance of RequestWeb for chaining calls
+   */
   RequestWeb write(char []buffer, int offset, int length);
 
+  /**
+   * Flushes response to the client
+   *
+   * @return instance of RequestWeb for chaining calls
+   */
   RequestWeb flush();
 
+  /**
+   * Obtains response Writer
+   *
+   * @return instance of response writer
+   * @see java.io.Writer
+   */
   Writer writer();
 
+  /**
+   * Obtains response output
+   * @return instance of response output stream
+   * @see java.io.OutputStream
+   */
   OutputStream output();
 
+  /**
+   * Obtains credits used for finer flow control of data from server to client.
+   *
+   * @return instance of Credits
+   */
   Credits credits();
+
+  /**
+   * Wraps response into an instance of a Filter for finer control on response
+   * data. E.g. GzipFilter might be used to compress the output data and set
+   * appropriate headers
+   *
+   * @param outFilter instance of a filter
+   * @return
+   */
   RequestWeb push(OutFilterWeb outFilter);
 
-  //void halt();
-  //void halt(HttpStatus status);
-
-  //void fail(Throwable exn);
-
+  /**
+   *
+   */
   public interface OutFilterWeb
   {
     default void header(RequestWeb request, String key, String value)
@@ -480,6 +571,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
     }
 
     void write(RequestWeb out, Buffer buffer);
+
     void ok(RequestWeb out);
 
     default Credits credits(RequestWeb out)

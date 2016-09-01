@@ -95,7 +95,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Path
 {
   /**
-   * Path id to be assigned to the parameter.
+   * Specifies either path that Service or Asset will be made accessible at,
+   * or name of the path part for injecting as a Service method parameter.
    */
   String value();
 }
