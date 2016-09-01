@@ -134,7 +134,7 @@ public interface RequestWeb extends ResultChain<Object> // OutWeb
    * <p>
    * e.g.
    * <blockquote><pre>
-   * @Get("/map/{x}/{y}/{z}")
+   * &#64;Get("/map/{x}/{y}/{z}")
    * public void map(RequestWeb request)
    * {
    *   // curl http://localhost:8080/map/XV/YV/ZV
