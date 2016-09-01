@@ -29,26 +29,25 @@
 
 package io.baratine.web;
 
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
  * Annotation @Body is used to assign a value from POST body to a service method parameter
- *
+ * <p>
  * Body may be one of the following
  * a) a JSON formatted value with content-type 'application/json'
  * b) a form encoded with 'application/x-www-form-urlencoded'
  * c) a form encoded with 'multipart/form-data'
- *
+ * <p>
  * Parameter may be on of the following types
  * a) io.baratine.web.Form e.g. void foo(@Body Form form) {}
  * b) primitive type e.g. void foo(@Body("user") String username, ...) {}
  * c) a type for JSON conversion, e.g. UserBean
- *
  */
 @Documented
 @Retention(RUNTIME)

@@ -29,13 +29,56 @@
 
 package io.baratine.web;
 
+/**
+ * Interface ViewRender provides contract for custom renderers for values of
+ * specific type.
+ * <p>
+ * E.g.
+ * <p>
+ * <b>Creating a custom renderer</b>
+ * <blockquote><pre>
+ * public class MyBeanRender implements ViewRender&lt;MyBean&gt;
+ * {
+ *   &#64;Override
+ *   public void render(RequestWeb requestWeb, MyBean myBean)
+ *   {
+ *     requestWeb.write("&lt;to-string&gt;");
+ *     requestWeb.write(myBean.toString());
+ *     requestWeb.write("&lt;/to-string&gt;");
+ *     requestWeb.ok();
+ *   }
+ * }
+ * </pre></blockquote>
+ * <p>
+ * <b>register renderer</b>
+ * <blockquote><pre>
+ *   Web.view(new MyBeanRender());
+ * </pre></blockquote>
+ * <p>
+ * <b>use with service</b>
+ * <p>
+ * View renderer is choosen based on the type of the result passed into
+ * ok(Object) method of the RequestWeb.
+ * <p>
+ * <blockquote><pre>
+ *   &#64;Service
+ *   public class MyService {
+ *     &#64;Get
+ *     public void myBean(RequestWeb request) {
+ *       request.ok(new MyBean());
+ *     }
+ *   }
+ * </pre></blockquote>
+ *
+ * @param <T> type of value to render
+ */
 public interface ViewRender<T>
 {
   /**
-   * Processes the view, returning true if the view can handle the value.
-   * 
-   * @param req the web request
-   * @param value the value returned by the service
+   * Directly renders the value
+   *
+   * @param req   the web request
+   * @param value the value to be rendered
    */
   void render(RequestWeb req, T value);
 }
