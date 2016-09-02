@@ -34,12 +34,36 @@ allprojects {
 }
 
 javadoc {
+  title = 'Baratine ' + version
+
   options.links("http://docs.oracle.com/javase/8/docs/api/");
   options.addStringOption('Xdoclint:none', '-quiet')
-  
+
   source = subprojects.sourceSets.main.allJava
-  title = 'Baratine ' + version
 }
+
+task javadocIoBaratine(type: Javadoc) {
+  title = 'Baratine ' + version
+
+  options.links("http://docs.oracle.com/javase/8/docs/api/");
+  options.addStringOption('Xdoclint:none', '-quiet')
+
+  ArrayList mySources = new ArrayList();
+
+  subprojects.sourceSets.main.allJava.each{ sourceSet ->
+    mySources << sourceSet.filter{ file ->
+      return file.toString().contains('io/baratine');
+    }
+  }
+
+  source = mySources;
+}
+
+task javadocIoBaratineJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadocIoBaratine
+}
+
 
 apply from: 'maven.gradle'
 
