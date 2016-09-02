@@ -157,7 +157,7 @@ public interface Web
   //
 
   /**
-   * Adds class to WebServerBuilder in one of the following ways.
+   * Scans classes contained in the specified package for Services and Beans.
    * <p>
    * If an IncludeOnClass annotation is present and the specified in IncludeOnClass
    * annotation class is present the class is included.
@@ -166,11 +166,13 @@ public interface Web
    * <p>
    * If a Service annotation is present the class is included using {@link #service} method.
    * <p>
-   * If type extends {@code IncludeWeb} the class is instantiated and used to
-   * generate services or includes.
+   * If class extends {@code IncludeWeb} the class is instantiated and used to
+   * generate services or includes, via a call to its build() method.
    *
    * @param pkg package to scan
    * @return instance of {@code WebServerBuilder}
+   * @see IncludeWeb
+   * @see io.baratine.config.Include
    */
   static WebServerBuilder scan(Package pkg)
   {
@@ -179,7 +181,8 @@ public interface Web
 
   /**
    * Auto discovers all classes in packages named *.autoconf.* and enlists
-   * all classes annotated with Include and @IncludeOnClass annotations.
+   * classes annotated with Include and @IncludeOnClass annotations for
+   * deployment.
    *
    * @return instance of {@code WebServerBuilder}
    */
