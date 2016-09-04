@@ -199,11 +199,13 @@ public class FrameOut<T,S>
     buffer[1] = (byte) code;
     _payload.length(2);
 
-    int sublen = Math.min(125, data.length());
-    data.getChars(0, sublen, cBuf, 0);
+    if (data != null && data.length() > 0) {
+      int sublen = Math.min(125, data.length());
+      data.getChars(0, sublen, cBuf, 0);
 
-    // control frame payloads must not exceed 0x7d bytes
-    int cOffset = Utf8Util.write(_payload, _payload.length(), 0x7d, cBuf, 0, sublen);
+      // control frame payloads must not exceed 0x7d bytes
+      int cOffset = Utf8Util.write(_payload, _payload.length(), 0x7d, cBuf, 0, sublen);
+    }
 
     Buffer b = completeFrame(true);
     sendEnd(b);
