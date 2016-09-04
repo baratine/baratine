@@ -159,6 +159,14 @@ class MethodStubResult_VarArgs extends MethodStubResult_N
       RuntimeException exn = new ServiceExceptionIllegalArgument(msg, e);
 
       result.fail(exn);
+    } catch (AbstractMethodError e) {
+      String msg = bean + "." + method().getName() + ": " + e.getMessage();
+
+      log.log(Level.FINE, msg, e);
+
+      RuntimeException exn = new ServiceExceptionIllegalArgument(msg, e);
+
+      result.fail(exn);
     } catch (ArrayIndexOutOfBoundsException e) {
       if (args.length + 1 != method().getParameterTypes().length) {
         String msg = bean + "." + method().getName() + ": " + e.getMessage();
