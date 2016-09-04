@@ -41,6 +41,13 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 
 import io.baratine.config.Config;
+import io.baratine.jdbc.JdbcConfig;
+import io.baratine.jdbc.JdbcResultSet;
+import io.baratine.jdbc.JdbcService;
+import io.baratine.jdbc.JdbcStat;
+import io.baratine.jdbc.QueryStat;
+import io.baratine.jdbc.SqlBiFunction;
+import io.baratine.jdbc.SqlFunction;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
 import io.baratine.service.Services;
@@ -70,17 +77,21 @@ public class JdbcServiceImpl implements JdbcService
   private LinkedList<QueryStat> _recentQueryList = new LinkedList<>();
   private LinkedList<QueryStat> _recentFailedList = new LinkedList<>();
 
+  public JdbcServiceImpl()
+  {
+  }
+
   @OnInit
   public void onInit()
     throws Exception
   {
     String address = ServiceRef.current().address() + _id;
 
-    _logger.log(Level.INFO, "onInit: id=" + _id + ", service address=" + address);
+    _logger.log(Level.CONFIG, "onInit: id=" + _id + ", service address=" + address);
 
     _jdbcConfig = JdbcConfig.from(_config, address);
 
-    _logger.log(Level.INFO, "onInit: config=" + _jdbcConfig);
+    _logger.log(Level.CONFIG, "onInit: config=" + _jdbcConfig);
 
     Properties props = new Properties();
 
@@ -114,13 +125,13 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void query(Result<ResultSet> result, String sql, Object ... params)
+  public void query(Result<JdbcResultSet> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
     }
 
-    QueryResult<ResultSet> qResult = new QueryResult<>(result, sql);
+    QueryResult<JdbcResultSet> qResult = new QueryResult<>(result, sql);
 
     _conn.query(qResult, sql, params);
   }
@@ -135,6 +146,18 @@ public class JdbcServiceImpl implements JdbcService
     QueryResult<T> qResult = new QueryResult<>(result, fun);
 
     _conn.query(qResult, fun);
+  }
+
+  @Override
+  public <T> void query(Result<T> result, SqlBiFunction<T> fun, Object ... params)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "query: " + fun);
+    }
+
+    QueryResult<T> qResult = new QueryResult<>(result, fun);
+
+    _conn.query(qResult, fun, params);
   }
 
   @Override

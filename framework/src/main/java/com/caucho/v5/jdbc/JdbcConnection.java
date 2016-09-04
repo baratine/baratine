@@ -38,10 +38,11 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.rowset.CachedRowSetImpl;
-
 import com.caucho.v5.io.IoUtil;
 
+import io.baratine.jdbc.JdbcResultSet;
+import io.baratine.jdbc.SqlBiFunction;
+import io.baratine.jdbc.SqlFunction;
 import io.baratine.service.OnDestroy;
 import io.baratine.service.OnInit;
 import io.baratine.service.Result;
@@ -126,20 +127,20 @@ public class JdbcConnection
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
     }
 
-    ExecuteFunction fun = new ExecuteFunction(sql, params);
+    ExecuteBiFunction fun = new ExecuteBiFunction(sql);
 
-    queryImpl(result, fun);
+    queryImpl(result, fun, params);
   }
 
-  public void query(Result<WrappedValue<ResultSet>> result, String sql, Object ... params)
+  public void query(Result<WrappedValue<JdbcResultSet>> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
     }
 
-    QueryFunction fun = new QueryFunction(sql, params);
+    QueryBiFunction fun = new QueryBiFunction(sql);
 
-    queryImpl(result, fun);
+    queryImpl(result, fun, params);
   }
 
   public <T> void query(Result<WrappedValue<T>> result, SqlFunction<T> fun)
@@ -149,6 +150,15 @@ public class JdbcConnection
     }
 
     queryImpl(result, fun);
+  }
+
+  public <T> void query(Result<WrappedValue<T>> result, SqlBiFunction<T> fun, Object ... params)
+  {
+    if (_logger.isLoggable(Level.FINER)) {
+      _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + fun);
+    }
+
+    queryImpl(result, fun, params);
   }
 
   private <T> void queryImpl(Result<WrappedValue<T>> result, SqlFunction<T> fun)
@@ -184,11 +194,44 @@ public class JdbcConnection
     result.ok(wrapper);
   }
 
-  public ResultSet doQuery(String sql, Object ... params) throws Exception
+  private <T> void queryImpl(Result<WrappedValue<T>> result, SqlBiFunction<T> fun, Object ... params)
   {
-    QueryFunction fun = new QueryFunction(sql, params);
+    WrappedValue<T> wrapper = new WrappedValue<>();
+    wrapper.startTimeMs(System.currentTimeMillis());
 
-    return doQuery(fun);
+    testQueryBefore();
+
+    try {
+      _conn.setAutoCommit(false);
+
+      T value = doQuery(fun, params);
+
+      _conn.commit();
+
+      wrapper.value(value);
+
+      fun.close();
+
+      testQueryAfter();
+    }
+    catch (Exception e) {
+      _logger.log(Level.FINER, e.getMessage(), e);
+
+      reconnect();
+
+      wrapper.exception(e);
+    }
+
+    wrapper.endTimeMs(System.currentTimeMillis());
+
+    result.ok(wrapper);
+  }
+
+  public JdbcResultSet doQuery(String sql, Object ... params) throws Exception
+  {
+    QueryBiFunction fun = new QueryBiFunction(sql);
+
+    return doQuery(fun, params);
   }
 
   public <T> T doQuery(SqlFunction<T> fun) throws Exception
@@ -201,30 +244,33 @@ public class JdbcConnection
     }
   }
 
-  public static class ExecuteFunction implements SqlFunction<Integer> {
+  public <T> T doQuery(SqlBiFunction<T> fun, Object ... params) throws Exception
+  {
+    try {
+      return fun.applyWithException(_conn, params);
+    }
+    finally {
+      _conn.closeStatements();
+    }
+  }
+
+  public static class ExecuteBiFunction implements SqlBiFunction<Integer> {
     private String _sql;
-    private Object[] _params;
 
     private PreparedStatement _stmt;
 
-    public ExecuteFunction(String sql)
-    {
-      this(sql, null);
-    }
-
-    public ExecuteFunction(String sql, Object[] params)
+    public ExecuteBiFunction(String sql)
     {
       _sql = sql;
-      _params = params;
     }
 
-    public Integer applyWithException(Connection conn) throws SQLException
+    public Integer applyWithException(Connection conn, Object ... params) throws SQLException
     {
       _stmt = conn.prepareStatement(_sql);
 
-      if (_params != null) {
-        for (int i = 0; i < _params.length; i++) {
-          _stmt.setObject(i + 1, _params[i]);
+      if (params != null) {
+        for (int i = 0; i < params.length; i++) {
+          _stmt.setObject(i + 1, params[i]);
         }
       }
 
@@ -240,46 +286,34 @@ public class JdbcConnection
     }
   }
 
-  public static class QueryFunction implements SqlFunction<ResultSet> {
+  public static class QueryBiFunction implements SqlBiFunction<JdbcResultSet> {
     private String _sql;
-    private Object[] _params;
 
     private PreparedStatement _stmt;
 
-    public QueryFunction(String sql)
-    {
-      this(sql, null);
-    }
-
-    public QueryFunction(String sql, Object[] params)
+    public QueryBiFunction(String sql)
     {
       _sql = sql;
-      _params = params;
     }
 
-    public ResultSet applyWithException(Connection conn) throws SQLException
+    public JdbcResultSet applyWithException(Connection conn, Object ... params) throws SQLException
     {
       _stmt = conn.prepareStatement(_sql);
 
-      if (_params != null) {
-        for (int i = 0; i < _params.length; i++) {
-          _stmt.setObject(i + 1, _params[i]);
+      if (params != null) {
+        for (int i = 0; i < params.length; i++) {
+          _stmt.setObject(i + 1, params[i]);
         }
       }
 
       boolean isResultSet = _stmt.execute();
+      int updateCount = _stmt.getUpdateCount();
 
-      if (isResultSet) {
-        ResultSet rs = _stmt.getResultSet();
+      ResultSet rs = _stmt.getResultSet();
 
-        CachedRowSetImpl cRs = new CachedRowSetImpl();
-        cRs.populate(rs);
+      JdbcResultSet jdbcRs = JdbcResultSet.create(rs, updateCount);
 
-        return cRs;
-      }
-      else {
-        return null;
-      }
+      return jdbcRs;
     }
 
     @Override
@@ -295,42 +329,52 @@ public class JdbcConnection
     }
   }
 
-  public static class AutoCommitOffFunction implements SqlFunction<Void> {
-    public Void applyWithException(Connection conn) throws SQLException
-    {
-      conn.setAutoCommit(false);
-
-      return null;
-    }
-  }
-
-  public static class CommitFunction implements SqlFunction<Void> {
-    public Void applyWithException(Connection conn) throws SQLException
-    {
-      conn.commit();
-
-      return null;
-    }
-  }
-
   private void testQueryBefore()
   {
     if (_testQueryBefore == null) {
+      testIsValid();
+
       return;
     }
 
-    if (_logger.isLoggable(Level.FINER)) {
-      _logger.log(Level.FINER, "testQueryBefore: id=" + _id + ", sql=" + toDebugSafe(_testQueryBefore));
-    }
-
     try {
-      QueryFunction fun = new QueryFunction(_testQueryBefore);
+      if (_logger.isLoggable(Level.FINER)) {
+        _logger.log(Level.FINER, "testQueryBefore: id=" + _id + ", sql=" + toDebugSafe(_testQueryBefore));
+      }
+
+      QueryBiFunction fun = new QueryBiFunction(_testQueryBefore);
 
       doQuery(fun);
     }
     catch (Exception e) {
       if (_logger.isLoggable(Level.FINER)) {
         _logger.log(Level.FINER, "testQueryBefore failed: id=" + _id + ", " + e.getMessage(), e);
+      }
+
+      reconnect();
+    }
+  }
+
+  private void testIsValid()
+  {
+    boolean isValid = false;
+    Exception exception = null;
+
+    try {
+      isValid = _conn.isValid(1000 * 10);
+    }
+    catch (Exception e) {
+      exception = e;
+    }
+
+    if (! isValid) {
+      if (_logger.isLoggable(Level.FINER)) {
+        if (exception != null) {
+          _logger.log(Level.FINER, "connection is not valid: id=" + _id + "," + exception.getMessage(), exception);
+        }
+        else {
+          _logger.log(Level.FINER, "connection is not valid: id=" + _id);
+        }
       }
 
       reconnect();
@@ -348,7 +392,7 @@ public class JdbcConnection
     }
 
     try {
-      QueryFunction fun = new QueryFunction(_testQueryAfter);
+      QueryBiFunction fun = new QueryBiFunction(_testQueryAfter);
 
       doQuery(fun);
     }

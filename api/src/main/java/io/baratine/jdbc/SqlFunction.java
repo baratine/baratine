@@ -27,10 +27,9 @@
  * @author Nam Nguyen
  */
 
-package com.caucho.v5.jdbc;
+package io.baratine.jdbc;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.function.Function;
 
 @FunctionalInterface

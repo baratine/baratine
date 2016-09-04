@@ -27,7 +27,7 @@
  * @author Nam Nguyen
  */
 
-package com.caucho.v5.jdbc;
+package io.baratine.jdbc;
 
 public class QueryStat
 {

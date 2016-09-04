@@ -27,9 +27,7 @@
  * @author Nam Nguyen
  */
 
-package com.caucho.v5.jdbc;
-
-import java.sql.ResultSet;
+package io.baratine.jdbc;
 
 import io.baratine.service.Result;
 import io.baratine.service.Service;
@@ -129,11 +127,12 @@ public interface JdbcService
    * @param sql
    * @param params optional query positional parameters
    */
-  void query(Result<ResultSet> result, String sql, Object ... params);
+  void query(Result<JdbcResultSet> result, String sql, Object ... params);
 
   /**
    * Executes on the SQL function on the {@link java.sql.Connection}.  After
-   * completion, any opened {@link java.sql.Statement Statement}s are automatically closed.
+   * completion, any opened {@link java.sql.Statement Statement}s are
+   * automatically closed.
    *
    * <pre>
    * <code>
@@ -144,7 +143,7 @@ public interface JdbcService
    *   (conn) -> {
    *       Statement stmt = conn.createStatement();
    *
-   *       stmt.execute("SELECT * FROM test");
+   *       stmt.execute("INSERT INTO test VALUES (123, \"value0\")");
    *
    *       return stmt.getUpdateCount();
    *   }
@@ -154,8 +153,40 @@ public interface JdbcService
    *
    * @param result
    * @param fun query function to run on the {@link java.sql.Connection}
+   * @param params optional arguments to SqlBiFunction
    */
   <T> void query(Result<T> result, SqlFunction<T> fun);
+
+  /**
+   * Executes on the SQL function on the {@link java.sql.Connection} with
+   * parameters.  After completion, any opened
+   * {@link java.sql.Statement Statement}s are automatically closed.
+   *
+   * <pre>
+   * <code>
+   * jdbcService.query(
+   *   (rs, e) -> {
+   *       System.out.println(rs);
+   *   },
+   *   (conn, params) -> {
+   *       Statement stmt = conn.prepareStatement("SELECT * FROM test WHERE id = ?");
+   *
+   *       stmt.setString(1, params[0]);
+   *
+   *       stmt.execute();
+   *
+   *       return "done";
+   *   },
+   *   123456
+   * );
+   * </code>
+   * </pre>
+   *
+   * @param result
+   * @param fun query function to run on the {@link java.sql.Connection}
+   * @param params optional arguments to SqlBiFunction
+   */
+  <T> void query(Result<T> result, SqlBiFunction<T> fun, Object ... params);
 
   /**
    * Returns the real-time statistics for this connection.

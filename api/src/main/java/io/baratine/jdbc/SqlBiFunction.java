@@ -29,28 +29,25 @@
 
 package io.baratine.jdbc;
 
-/**
- * <p>Synchronous interface for JdbcService, primarily for testing.</p>
- *
- * <p><b>Note</b>: using a synchronous interface will block the caller, which
- * is generally a bad idea because it will block single-threaded services.</p>
- *
- * <pre></code>
- * {@literal @}Inject @Service("jdbc:///foo")
- * private JdbcServiceSync _service;
- * </code></pre>
- *
- * @see JdbcService
- */
-public interface JdbcServiceSync extends JdbcService
+import java.sql.Connection;
+import java.util.function.BiFunction;
+
+@FunctionalInterface
+public interface SqlBiFunction<R> extends BiFunction<Connection, Object[],R>
 {
-  int execute(String sql, Object ... params);
+  R applyWithException(Connection t, Object ... params) throws Exception;
 
-  JdbcResultSet query(String sql, Object ... params);
+  default R apply(Connection t, Object[] params)
+  {
+    try {
+      return applyWithException(t, params);
+    }
+    catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-  <T> T query(SqlFunction<T> fun);
-
-  <T> T query(SqlBiFunction<T> fun, Object ... params);
-
-  JdbcStat stats();
+  default void close()
+  {
+  }
 }
