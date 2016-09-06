@@ -37,20 +37,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * {@code OnActive} marks a method used to inform the service implementer that
- * the service is being started up. 
+ * {@code OnActive} is a method annotation called as the last startup lifecycle
+ * method, after all replay methods have been called. Applications that need to
+ * distinguish between normal methods and replay methods can use @OnActive to
+ * set the service into its active state.
  *
  * <p>
- * If this is a journaled service then the the marked
- * method gets called before the journal is replayed after all dependencies have been
- * resolved. The marked method would need to return true to indicate that the service
- * started successfully if it returned anything. 
- * <p>
- * This marked method would be a good time for the service provider to 
- * read its state from storage before journal playback. If reading the service state from storage
- * is an async operation or a multistep operation, then instead of returning true from this
- * method, the service provider would add a <code>Result&lt;Boolean&gt;</code> argument, and call
- * <code>Result.ok(true)</code> when the service was done reading its state.
+ * If reading the service state from storage is an async operation or a
+ * multistep operation, then instead of returning true from this method, the
+ * service provider would add a <code>Result&lt;Boolean&gt;</code> argument,
+ * and call <code>Result.ok(true)</code> when the service was done reading its
+ * state.
+ * </p>
  *
  * @see io.baratine.service.Journal
  * @see io.baratine.service.OnSave
