@@ -646,11 +646,20 @@ public class WebAppBuilder
   }
 
   @Override
-  public <T> WebBuilder view(Class<? extends ViewRender<T>> viewType)
+  public <T> WebBuilder view(Class<? extends ViewRender<T>> viewClass)
   {
-    ViewRender<?> view = injector().instance(viewType);
+    TypeRef viewType = TypeRef.of(viewClass).to(ViewRender.class);
 
-    return view(view, Key.of(viewType));
+    TypeRef typeRef = viewType.param(0);
+
+    Class renderedType = Object.class;
+
+    if (typeRef != null)
+      renderedType = typeRef.rawClass();
+
+    ViewRender<?> view = injector().instance(viewClass);
+
+    return view(view, Key.of(renderedType));
   }
 
   private <T> WebBuilder view(ViewRender<T> view, Key key)
