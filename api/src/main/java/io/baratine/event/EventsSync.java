@@ -31,24 +31,66 @@ package io.baratine.event;
 
 import io.baratine.service.Cancel;
 import io.baratine.service.Pin;
+import io.baratine.service.Result;
 import io.baratine.service.Service;
 
 /**
- * API-based event service.
+ * Synchronous interface to the Baratine Event Service.
+ * <p>
+ * See {@code Events} class for documentation
+ *
+ * @see Events
  */
 @Service("event:")
 public interface EventsSync extends Events
 {
+  /**
+   * Registers publisher at path.
+   * See Events#publisherPath(String, Class, Result) for documentation
+   *
+   * @see Events#publisherPath(String, Class, Result)
+   */
   @Pin
   <T> T publisherPath(String path, Class<T> api);
+
+  /**
+   * Registers publisher using a given api
+   * See Events#publisher(Class, Result) for documentation
+   *
+   * @see Events#publisher(Class, Result)
+   */
   @Pin
   <T> T publisher(Class<T> api);
-  
+
+  /**
+   * Registers consumer for a given path.
+   * See Events#consumer(String, Object, Result) for documentation
+   *
+   * @see Events#consumer(String, Object, Result)
+   */
   <T> Cancel consumer(String path, @Pin T consumer);
-  
+
+  /**
+   * Registers consumer using a given api
+   * See Events#consumer(Class, Object, Result) for documentation
+   *
+   * @see Events#consumer(Class, Object, Result)
+   */
   <T> Cancel consumer(Class<T> api, @Pin T consumer);
-  
+
+  /**
+   * Registers subscriber for a given path
+   * See Events#subscriber(String, Object, Result) for documentation
+   *
+   * @see Events#subscriber(String, Object, Result)
+   */
   <T> Cancel subscriber(String path, @Pin T subscriber);
-  
+
+  /**
+   * Registers subscribers using a given api
+   * See Events#subscriber(Class, Object, Result) for documentation
+   *
+   * @see Events#subscriber(Class, Object, Result)
+   */
   <T> Cancel subscriber(Class<T> api, @Pin T subscriber);
 }
