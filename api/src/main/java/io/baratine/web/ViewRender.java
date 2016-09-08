@@ -50,9 +50,12 @@ package io.baratine.web;
  * }
  * </pre></blockquote>
  * <p>
- * <b>register renderer</b>
+ * <b>register renderer in one of the following ways:</b>
  * <blockquote><pre>
+ *   //using instance
  *   Web.view(new MyBeanRender());
+ *   // or using class
+ *   Web.view(MyBeanRender.class);
  * </pre></blockquote>
  * <p>
  * <b>use with service</b>
