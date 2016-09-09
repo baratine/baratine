@@ -34,11 +34,11 @@ import java.util.function.Function;
 
 import javax.inject.Provider;
 
-import com.caucho.v5.config.Priority;
+import io.baratine.inject.Key;
+import io.baratine.inject.Priority;
+
 import com.caucho.v5.inject.BindingAmp;
 import com.caucho.v5.inject.InjectorAmp;
-
-import io.baratine.inject.Key;
 
 /**
  * A method producer that returns a new injection bean for the given type and

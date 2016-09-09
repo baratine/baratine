@@ -31,6 +31,8 @@ package com.caucho.v5.amp.session;
 
 import java.util.function.Supplier;
 
+import io.baratine.inject.Priority;
+
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.StubFactoryAmp;
@@ -38,7 +40,6 @@ import com.caucho.v5.amp.stub.StubAmpBean;
 import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
 import com.caucho.v5.amp.stub.StubGenerator;
-import com.caucho.v5.config.Priority;
 
 /**
  * Creates an stub supplier for sessions

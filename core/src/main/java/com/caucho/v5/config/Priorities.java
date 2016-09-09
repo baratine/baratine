@@ -1,5 +1,7 @@
 package com.caucho.v5.config;
 
+import io.baratine.inject.Priority;
+
 /**
  * Static methods for the &#64;Priority annotation.
  */

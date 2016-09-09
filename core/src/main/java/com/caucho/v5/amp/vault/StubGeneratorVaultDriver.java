@@ -29,7 +29,7 @@
 
 package com.caucho.v5.amp.vault;
 
-import com.caucho.v5.config.Priority;
+import io.baratine.inject.Priority;
 
 /**
  * Creates an actor supplier based on a Resource and Store.

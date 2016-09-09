@@ -1,4 +1,4 @@
-package com.caucho.v5.config;
+package io.baratine.inject;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

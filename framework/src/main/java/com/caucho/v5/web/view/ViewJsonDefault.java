@@ -34,14 +34,14 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import com.caucho.v5.config.Priority;
+import io.baratine.inject.Priority;
+import io.baratine.web.RequestWeb;
+import io.baratine.web.ViewResolver;
+
 import com.caucho.v5.json.JsonEngine;
 import com.caucho.v5.json.JsonWriter;
 import com.caucho.v5.json.io.JsonWriterImpl;
 import com.caucho.v5.json.ser.JsonFactory;
-
-import io.baratine.web.RequestWeb;
-import io.baratine.web.ViewResolver;
 
 /**
  * Default JSON render

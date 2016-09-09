@@ -35,13 +35,13 @@ import java.util.logging.Logger;
 import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
 
+import io.baratine.config.Include;
+import io.baratine.inject.Bean;
+import io.baratine.inject.Priority;
+
 import com.caucho.v5.beans.BeanValidator;
 import com.caucho.v5.beans.BeanValidatorNull;
 import com.caucho.v5.config.IncludeOnClass;
-import com.caucho.v5.config.Priority;
-
-import io.baratine.config.Include;
-import io.baratine.inject.Bean;
 
 @Include
 @IncludeOnClass(Validation.class)

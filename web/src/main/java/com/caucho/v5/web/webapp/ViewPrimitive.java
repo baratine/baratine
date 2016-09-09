@@ -29,8 +29,7 @@
 
 package com.caucho.v5.web.webapp;
 
-import com.caucho.v5.config.Priority;
-
+import io.baratine.inject.Priority;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ViewResolver;
 

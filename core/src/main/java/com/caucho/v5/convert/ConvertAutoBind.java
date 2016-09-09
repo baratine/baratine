@@ -31,12 +31,11 @@ package com.caucho.v5.convert;
 
 import javax.inject.Provider;
 
-import com.caucho.v5.config.Priority;
-
 import io.baratine.convert.ConvertManager;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.Key;
+import io.baratine.inject.Priority;
 
 /**
  * Converter auto-bind

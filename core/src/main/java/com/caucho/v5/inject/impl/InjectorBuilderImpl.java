@@ -50,9 +50,20 @@ import javax.inject.Qualifier;
 import javax.inject.Scope;
 import javax.inject.Singleton;
 
+import io.baratine.config.Config;
+import io.baratine.config.Config.ConfigBuilder;
+import io.baratine.inject.InjectionPoint;
+import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.BindingBuilder;
+import io.baratine.inject.Injector.InjectAutoBind;
+import io.baratine.inject.Injector.InjectorBuilder;
+import io.baratine.inject.Key;
+import io.baratine.inject.New;
+import io.baratine.inject.ParamInject;
+import io.baratine.inject.Priority;
+
 import com.caucho.v5.config.AutoBindConfig;
 import com.caucho.v5.config.Configs;
-import com.caucho.v5.config.Priority;
 import com.caucho.v5.convert.ConvertAutoBind;
 import com.caucho.v5.inject.BindingAmp;
 import com.caucho.v5.inject.InjectorAmp;
@@ -60,17 +71,6 @@ import com.caucho.v5.inject.InjectorAmp.InjectBuilderAmp;
 import com.caucho.v5.inject.impl.InjectorImpl.BindingSet;
 import com.caucho.v5.inject.type.TypeRef;
 import com.caucho.v5.util.L10N;
-
-import io.baratine.config.Config;
-import io.baratine.config.Config.ConfigBuilder;
-import io.baratine.inject.New;
-import io.baratine.inject.InjectionPoint;
-import io.baratine.inject.Injector;
-import io.baratine.inject.Injector.BindingBuilder;
-import io.baratine.inject.Injector.InjectAutoBind;
-import io.baratine.inject.Injector.InjectorBuilder;
-import io.baratine.inject.Key;
-import io.baratine.inject.ParamInject;
 
 /**
  * The injection manager for a given environment.

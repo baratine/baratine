@@ -34,15 +34,15 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import com.caucho.v5.config.IncludeOnClass;
-import com.caucho.v5.config.Priority;
-import com.caucho.v5.inject.impl.Opt;
-import com.caucho.v5.json.JsonEngine;
-import com.caucho.v5.json.JsonEngineDefault;
-
 import io.baratine.config.Config;
 import io.baratine.config.Include;
 import io.baratine.inject.Bean;
+import io.baratine.inject.Priority;
+
+import com.caucho.v5.config.IncludeOnClass;
+import com.caucho.v5.inject.impl.Opt;
+import com.caucho.v5.json.JsonEngine;
+import com.caucho.v5.json.JsonEngineDefault;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

@@ -40,9 +40,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.v5.config.Priority;
-
 import io.baratine.convert.Convert;
+import io.baratine.inject.Priority;
 import io.baratine.service.Result;
 
 /**

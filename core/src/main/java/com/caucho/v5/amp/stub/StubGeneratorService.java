@@ -33,14 +33,14 @@ import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import io.baratine.inject.Key;
+import io.baratine.inject.Priority;
+
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.StubFactoryAmp;
-import com.caucho.v5.config.Priority;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.util.L10N;
-
-import io.baratine.inject.Key;
 
 /**
  * Creates an stub factory for a service class.
@@ -49,7 +49,7 @@ import io.baratine.inject.Key;
 public class StubGeneratorService implements StubGenerator
 {
   private static final L10N L = new L10N(StubGeneratorService.class);
-  
+
   @Override
   public <T> StubFactoryAmp factory(Class<T> serviceClass,
                                  ServicesAmp ampManager,
@@ -63,10 +63,10 @@ public class StubGeneratorService implements StubGenerator
                                              serviceClass.getSimpleName()));
                                              */
     }
-      
+
     return createFactory(ampManager, serviceClass, supplier, config);
   }
-  
+
   private <T> StubFactoryAmp createFactory(ServicesAmp ampManager,
                                             Class<T> serviceClass,
                                             Supplier<? extends T> supplier,
@@ -75,37 +75,37 @@ public class StubGeneratorService implements StubGenerator
     if (supplier != null) {
       return new StubFactoryImpl(()->createStub(ampManager, supplier, config),
                                  config);
-      
+
     }
     // XXX: clean up
     Key<T> key = Key.of(serviceClass, ServiceImpl.class);
-    
+
     return new StubFactoryImpl(()->createStub(ampManager, key, config),
                                config);
   }
-  
+
   private static <T> StubAmp createStub(ServicesAmp ampManager,
                                          Key<T> key,
                                          ServiceConfig config)
   {
     T bean = ampManager.injector().instance(key);
-    
+
     Objects.requireNonNull(bean);
-    
+
     return ampManager.stubFactory().stub(bean, config);
   }
-  
+
   private static <T> StubAmp createStub(ServicesAmp ampManager,
                                          Supplier<? extends T> supplier,
                                          ServiceConfig config)
   {
     T bean = supplier.get();
-    
+
     Objects.requireNonNull(bean);
-    
+
     return ampManager.stubFactory().stub(bean, config);
   }
-  
+
   @Override
   public String toString()
   {

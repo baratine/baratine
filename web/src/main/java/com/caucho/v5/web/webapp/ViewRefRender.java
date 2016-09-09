@@ -31,12 +31,12 @@ package com.caucho.v5.web.webapp;
 
 import java.util.Objects;
 
-import com.caucho.v5.config.Priority;
-import com.caucho.v5.inject.type.TypeRef;
-
+import io.baratine.inject.Priority;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.ViewRender;
 import io.baratine.web.ViewResolver;
+
+import com.caucho.v5.inject.type.TypeRef;
 
 /**
  * View with associated type meta-data

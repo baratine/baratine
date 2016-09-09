@@ -29,8 +29,8 @@
 
 package com.caucho.v5.beans;
 
-import com.caucho.v5.config.Priority;
 import io.baratine.inject.Bean;
+import io.baratine.inject.Priority;
 
 public class ValidatorProviderDefault
 {

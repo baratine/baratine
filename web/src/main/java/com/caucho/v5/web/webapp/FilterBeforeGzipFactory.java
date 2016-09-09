@@ -34,14 +34,14 @@ import java.io.OutputStream;
 import java.util.zip.CRC32;
 import java.util.zip.Deflater;
 
-import com.caucho.v5.config.Priority;
-import com.caucho.v5.io.TempBuffer;
-import com.caucho.v5.util.BitsUtil;
-
+import io.baratine.inject.Priority;
 import io.baratine.io.Buffer;
 import io.baratine.web.RequestWeb;
 import io.baratine.web.RequestWeb.OutFilterWeb;
 import io.baratine.web.ServiceWeb;
+
+import com.caucho.v5.io.TempBuffer;
+import com.caucho.v5.util.BitsUtil;
 
 /**
  * View with associated type meta-data

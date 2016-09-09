@@ -115,6 +115,12 @@ public class ScanManagerByteCode {
       packagePath = packageRoot.replace('.', '/');
     }
 
+/*
+    String javahome = System.getProperty("java.home");
+    if (root.toString().contains(javahome))
+      return;
+*/
+
     if (root.toString().endsWith(".jar")) {
       JarByteCodeMatcher matcher
         = new JarByteCodeMatcher(loader, root, packageRoot, listeners);

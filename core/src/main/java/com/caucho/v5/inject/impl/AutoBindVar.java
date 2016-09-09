@@ -31,14 +31,14 @@ package com.caucho.v5.inject.impl;
 
 import javax.inject.Provider;
 
-import com.caucho.v5.config.Priority;
-import com.caucho.v5.inject.InjectorAmp;
-
 import io.baratine.config.Var;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector;
 import io.baratine.inject.Injector.InjectAutoBind;
 import io.baratine.inject.Key;
+import io.baratine.inject.Priority;
+
+import com.caucho.v5.inject.InjectorAmp;
 
 /**
  * AutoBinding for the @Var.

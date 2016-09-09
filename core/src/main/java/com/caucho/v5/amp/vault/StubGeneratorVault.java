@@ -36,6 +36,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import io.baratine.inject.Key;
+import io.baratine.inject.Priority;
+import io.baratine.vault.Asset;
+import io.baratine.vault.Vault;
+
 import com.caucho.v5.amp.ServicesAmp;
 import com.caucho.v5.amp.service.ServiceConfig;
 import com.caucho.v5.amp.service.StubFactoryAmp;
@@ -44,13 +49,8 @@ import com.caucho.v5.amp.stub.StubAmpBean;
 import com.caucho.v5.amp.stub.StubClass;
 import com.caucho.v5.amp.stub.StubFactoryImpl;
 import com.caucho.v5.amp.stub.StubGenerator;
-import com.caucho.v5.config.Priority;
 import com.caucho.v5.inject.impl.ServiceImpl;
 import com.caucho.v5.inject.type.TypeRef;
-
-import io.baratine.inject.Key;
-import io.baratine.vault.Asset;
-import io.baratine.vault.Vault;
 
 /**
  * Creates an actor supplier based on a Resource and Store.
