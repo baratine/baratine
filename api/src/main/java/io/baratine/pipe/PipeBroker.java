@@ -110,7 +110,7 @@ import io.baratine.service.Service;
 public interface PipeBroker<T>
 {
   /**
-   * Registers a message consumer.
+   * Registers a message consumer
    *
    * @param result
    */
@@ -133,6 +133,8 @@ public interface PipeBroker<T>
 
   /**
    * Convenience method for sending messages without a dedicated publisher.
+   *
+   *
    *
    * @param value
    * @param result

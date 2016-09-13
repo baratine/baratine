@@ -55,10 +55,10 @@ public interface ConvertFrom<S>
   <T> Convert<S, T> converter(Class<T> target);
   
   /**
-   * Convert using only sync converters
+   * Synchronously converts source object to an instance of a target type
    * 
    * @param targetType the expected type of the target
-   * @param source the source value
+   * @param source object to convert
    * @param <T> target type
    * @return the converted value
    */
@@ -68,17 +68,40 @@ public interface ConvertFrom<S>
   }
   
   /**
-   * Convert using sync or async converters.
+   * Asynchronously converts source object to an instance of a target type.
+   *
+   * @param targetType target type
+   * @param source object to convert
+   * @param result conversion result holder
+   * @param <T> target type
    */
   default <T> void convert(Class<T> targetType, S source, Result<T> result)
   {
     converter(targetType).convert(source, result);
   }
-  
-  public interface ConvertFromBuilder<S>
+
+  /**
+   * Interface ConvertFromBuilder adds support for converting from type specified
+   * as &lt;S&gt; to &lt;T&gt; type</>
+   *
+   * @param <S> type of an object to convert from
+   */
+  interface ConvertFromBuilder<S>
   {
+    /**
+     * Adds Convert from type &lt;S&gt; to &lt;T&gt;
+     *
+     * @param convert converter instance
+     * @param <T>
+     * @return this instance of ConvertFromBuilder for call chaining
+     */
     <T> ConvertFromBuilder<S> add(Convert<S,T> convert);
-    
+
+    /**
+     * Obtains instance of ConvertFrom of type &lt;S&gt;.
+     *
+     * @return instance of ConvertFrom
+     */
     ConvertFrom<S> get();
   }
 }

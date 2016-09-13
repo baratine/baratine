@@ -33,8 +33,8 @@ import io.baratine.service.Result;
 
 /**
  * Convert from source to target.
- * 
- * Async converters must be called with the Result api.
+ *
+ * @param <T> ConvertTo target type
  */
 public interface ConvertTo<T>
 {
@@ -46,38 +46,44 @@ public interface ConvertTo<T>
   Class<T> targetType();
 
   /**
-   * Obtaines coverter capable of converting to &lt;S&gt;
+   * Obtains convert capable of converting to &lt;S&gt;
+   *
    * @param target coversion target type
-   * @param <S> conversion source type
+   * @param <S>    conversion source type
    * @return Convert instance
    */
-  <S> Convert<S, T> converter(Class<S> target);
-  
+  <S> Convert<S,T> converter(Class<S> target);
+
   /**
-   * Convert using only sync converters
+   * Synchronously convert source object to an instance of type &lt;T&gt;
    *
    * @param sourceType type of the source
-   * @param source instance to convert
-   * @param <S> source type
+   * @param source     instance to convert
+   * @param <S>        source type
    * @return converted instance
    */
   default <S> T convert(Class<S> sourceType, S source)
   {
     return converter(sourceType).convert(source);
   }
-  
+
   /**
-   * Convert using sync or async converters.
+   * Synchronously convert source object to an instance of type &lt;T&gt;
+   *
+   * @param sourceType type of the source
+   * @param source     instance to convert
+   * @param result     convertion result holder
+   * @param <S>        source type
    */
   default <S> void convert(Class<S> sourceType, S source, Result<T> result)
   {
     converter(sourceType).convert(source, result);
   }
-  
-  public interface ConvertToBuilder<S>
+
+  interface ConvertToBuilder<S>
   {
     <T> ConvertToBuilder<S> add(Convert<S,T> convert);
-    
+
     ConvertTo<S> get();
   }
 }

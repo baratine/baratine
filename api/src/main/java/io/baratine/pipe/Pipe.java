@@ -29,11 +29,12 @@
 
 package io.baratine.pipe;
 
-import io.baratine.pipe.Pipe.PipeHandler;
 import io.baratine.pipe.PipeStatic.PipeSubHandlerImpl;
 
 /**
  * {@code Pipe} sends a sequence of values from a source to a sink.
+ *
+ *
  */
 public interface Pipe<T>
 {
@@ -83,12 +84,12 @@ public interface Pipe<T>
     return false;
   }
   
-  public static <T> Pipe<T> of(PipeHandler<T> handler)
+  static <T> Pipe<T> of(PipeHandler<T> handler)
   {
     return new PipeSubHandlerImpl<T>(handler);
   }
 
-  public interface PipeHandler<T>
+  interface PipeHandler<T>
   {
     void handle(T next, Throwable exn, boolean isCancel);
   }

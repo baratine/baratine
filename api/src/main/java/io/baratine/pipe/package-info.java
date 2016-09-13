@@ -27,19 +27,16 @@
  */
 
 /**
- * Package {@code io.baratine.pipe} provides high seed typed messaging for
+ * Package {@code io.baratine.pipe} provides high speed typed messaging for
  * Baratine.
- *
+ * <p>
  * Pipes are uni-directional named channels. Baratine uses "pipe:" scheme to
  * specify pipes.
- *
+ * <p>
  * Pipes support <b>subscribe</b> and <b>consume</b> message delivery contracts.
- *
+ * <p>
  * Pipes provide message flow control via a <b>credits</b> concept. Interface
  * {@code Credits} allows message consumer (or subscriber) to control publishing
  * rate of the publisher.
- *
- *
- *
  */
 package io.baratine.pipe;

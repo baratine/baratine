@@ -42,9 +42,6 @@ import java.util.logging.Logger;
 
 import javax.inject.Qualifier;
 
-import com.caucho.v5.inject.type.TypeRef;
-import com.caucho.v5.util.L10N;
-
 import io.baratine.convert.Convert;
 import io.baratine.inject.InjectionPoint;
 import io.baratine.inject.Injector.IncludeInject;
@@ -79,6 +76,9 @@ import io.baratine.web.Trace;
 import io.baratine.web.WebBuilder;
 import io.baratine.web.WebBuilder.RouteBuilder;
 import io.baratine.web.WebSocketPath;
+
+import com.caucho.v5.inject.type.TypeRef;
+import com.caucho.v5.util.L10N;
 
 class IncludeWebClass implements IncludeWebAmp
 {
@@ -789,6 +789,9 @@ class IncludeWebClass implements IncludeWebAmp
         }
 
         path = "/" + pathTail;
+      }
+      else if (! path.endsWith("/") && ! pathTail.startsWith("/")) {
+        path = path + '/' + pathTail;
       }
       else {
         path = path + pathTail;

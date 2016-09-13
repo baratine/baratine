@@ -46,10 +46,10 @@ import io.baratine.service.OnInit;
  * &#64;Service
  * public class MessageListener {
  *
- *   &#64;PipeIn("pipe:///test")
+ *   &#64;PipeIn("pipe:///foo")
  *   private void onMessage(String message)
  *   {
- *     System.out.println("message received");
+ *     System.out.println("message received: " + message);
  *   }
  * }
  * </pre>
@@ -62,6 +62,7 @@ public @interface PipeIn
 {
   /**
    * Pipe url e.g. "pipe:///foo"
+   *
    * @return pipe url
    */
   String value() default "";
