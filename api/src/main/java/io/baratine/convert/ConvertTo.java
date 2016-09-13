@@ -80,10 +80,12 @@ public interface ConvertTo<T>
     converter(sourceType).convert(source, result);
   }
 
+/*
   interface ConvertToBuilder<S>
   {
     <T> ConvertToBuilder<S> add(Convert<S,T> convert);
 
     ConvertTo<S> get();
   }
+*/
 }
