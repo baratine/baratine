@@ -46,7 +46,7 @@ public interface JdbcServiceSync extends JdbcService
 {
   int execute(String sql, Object ... params);
 
-  JdbcResultSet query(String sql, Object ... params);
+  JdbcRowSet query(String sql, Object ... params);
 
   <T> T query(SqlFunction<T> fun);
 

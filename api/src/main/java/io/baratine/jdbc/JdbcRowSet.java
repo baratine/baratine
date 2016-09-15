@@ -29,121 +29,121 @@
 
 package io.baratine.jdbc;
 
-public class JdbcRowSet
-{
-  private Object[] _values;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 
-  public JdbcRowSet(Object[] values)
+public class JdbcRowSet implements Iterable<JdbcRow>
+{
+  private static final String[] EMPTY = new String[0];
+
+  private ArrayList<JdbcRow> _rowList = new ArrayList<>();
+
+  private String[] _columnNames = EMPTY;
+
+  private int _updateCount;
+  private int _columnCount;
+
+  public static JdbcRowSet create(ResultSet rs, int updateCount) throws SQLException
   {
-    _values = values;
+    JdbcRowSet jdbcRs = new JdbcRowSet();
+
+    if (rs != null) {
+      ResultSetMetaData meta = rs.getMetaData();
+
+      int columnCount = meta.getColumnCount();
+      String[] columnNames = new String[columnCount];
+
+      for (int i = 0; i < columnCount; i++) {
+        columnNames[i] = meta.getColumnName(i + 1);
+      }
+
+      jdbcRs._columnNames = columnNames;
+      jdbcRs._columnCount = columnCount;
+
+      while (rs.next()) {
+        Object[] values = new Object[columnCount];
+
+        for (int i = 0; i < columnCount; i++) {
+          values[i] = rs.getObject(i + 1);
+        }
+
+        JdbcRow row = new JdbcRow(values);
+
+        jdbcRs._rowList.add(row);
+      }
+    }
+
+    jdbcRs._updateCount = updateCount;
+
+    return jdbcRs;
+  }
+
+  public String[] getColumnNames()
+  {
+    return _columnNames;
   }
 
   public int getColumnCount()
   {
-    return _values.length;
+    return _columnCount;
   }
 
-  public Class<?> getClass(int index)
+  public int getUpdateCount()
   {
-    Object value = _values[index];
-
-    if (value == null) {
-      return null;
-    }
-    else {
-      return value.getClass();
-    }
+    return _updateCount;
   }
 
-  /**
-   * Returns the column as an object without any marshaling.
-   *
-   * @param index 0-based
-   * @return column as original Object
-   */
-  public Object getObject(int index)
+  public int getRowCount()
   {
-    return _values[index];
+    return _rowList.size();
   }
 
-  /**
-   * Returns the column as a String.
-   *
-   * @param index 0-based
-   * @return column as a String
-   */
-  public String getString(int index)
+  public JdbcRow getFirstRow()
   {
-    Object value = _values[index];
-
-    if (value != null) {
-      return value.toString();
+    if (getRowCount() > 0) {
+      return _rowList.get(0);
     }
     else {
       return null;
     }
   }
 
-  /**
-   * Returns the column as a long.
-   *
-   * @param index 0-based
-   * @return column as a long
-   */
-  public long getLong(int index)
+  @Override
+  public Iterator<JdbcRow> iterator()
   {
-    Object value = _values[index];
-
-    if (value instanceof Long) {
-      return (Long) value;
-    }
-    else if (value instanceof Integer) {
-      return (Integer) value;
-    }
-    else {
-      return Long.valueOf(value.toString());
-    }
+    return _rowList.iterator();
   }
 
-  /**
-   * Returns the column as a double.
-   *
-   * @param index 0-based
-   * @return column as a double
-   */
-  public double getDouble(int index)
+  @Override
+  public String toString()
   {
-    Object value = _values[index];
+    ArrayList<ArrayList<Map.Entry<String,Object>>> list = new ArrayList<>();
 
-    if (value instanceof Double) {
-      return (Double) value;
+    for (int i = 0; i < _rowList.size(); i++) {
+      ArrayList<Map.Entry<String,Object>> row = new ArrayList<>();
+
+      JdbcRow rowSet = _rowList.get(i);
+
+      for (int j = 1; j <= rowSet.getColumnCount(); j++) {
+        String name = _columnNames[j];
+        Object value = rowSet.getObject(j);
+
+        row.add(new SimpleEntry<String,Object>(name, value));
+      }
+
+      list.add(row);
     }
-    else if (value instanceof Float) {
-      return (Float) value;
-    }
-    else if (value instanceof Number) {
-      return (Double) ((Number) value);
+
+    if (list.size() > 0) {
+      return list.toString();
     }
     else {
-      return Double.valueOf(value.toString());
-    }
-  }
-
-  /**
-   * Returns the column as a boolean.
-   *
-   * @param index 0-based
-   * @return column as a boolean
-   */
-  public boolean getBoolean(int index)
-  {
-    Object value = _values[index];
-
-    if (value instanceof Boolean) {
-      return (Boolean) value;
-    }
-    else {
-      return Boolean.valueOf(value.toString());
+      return String.valueOf(_updateCount);
     }
   }
 }

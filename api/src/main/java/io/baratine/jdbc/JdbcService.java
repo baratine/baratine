@@ -127,7 +127,7 @@ public interface JdbcService
    * @param sql
    * @param params optional query positional parameters
    */
-  void query(Result<JdbcResultSet> result, String sql, Object ... params);
+  void query(Result<JdbcRowSet> result, String sql, Object ... params);
 
   /**
    * Executes on the SQL function on the {@link java.sql.Connection}.  After

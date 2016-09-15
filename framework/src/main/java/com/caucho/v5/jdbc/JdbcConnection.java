@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 
 import com.caucho.v5.io.IoUtil;
 
-import io.baratine.jdbc.JdbcResultSet;
+import io.baratine.jdbc.JdbcRowSet;
 import io.baratine.jdbc.SqlBiFunction;
 import io.baratine.jdbc.SqlFunction;
 import io.baratine.service.OnDestroy;
@@ -132,7 +132,7 @@ public class JdbcConnection
     queryImpl(result, fun, params);
   }
 
-  public void query(Result<WrappedValue<JdbcResultSet>> result, String sql, Object ... params)
+  public void query(Result<WrappedValue<JdbcRowSet>> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: id=" + _id + ", sql=" + toDebugSafe(sql));
@@ -227,7 +227,7 @@ public class JdbcConnection
     result.ok(wrapper);
   }
 
-  public JdbcResultSet doQuery(String sql, Object ... params) throws Exception
+  public JdbcRowSet doQuery(String sql, Object ... params) throws Exception
   {
     QueryBiFunction fun = new QueryBiFunction(sql);
 
@@ -286,7 +286,7 @@ public class JdbcConnection
     }
   }
 
-  public static class QueryBiFunction implements SqlBiFunction<JdbcResultSet> {
+  public static class QueryBiFunction implements SqlBiFunction<JdbcRowSet> {
     private String _sql;
 
     private PreparedStatement _stmt;
@@ -296,7 +296,7 @@ public class JdbcConnection
       _sql = sql;
     }
 
-    public JdbcResultSet applyWithException(Connection conn, Object ... params) throws SQLException
+    public JdbcRowSet applyWithException(Connection conn, Object ... params) throws SQLException
     {
       _stmt = conn.prepareStatement(_sql);
 
@@ -311,7 +311,7 @@ public class JdbcConnection
 
       ResultSet rs = _stmt.getResultSet();
 
-      JdbcResultSet jdbcRs = JdbcResultSet.create(rs, updateCount);
+      JdbcRowSet jdbcRs = JdbcRowSet.create(rs, updateCount);
 
       return jdbcRs;
     }

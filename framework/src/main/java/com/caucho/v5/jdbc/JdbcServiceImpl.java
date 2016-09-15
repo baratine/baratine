@@ -42,7 +42,7 @@ import javax.inject.Inject;
 
 import io.baratine.config.Config;
 import io.baratine.jdbc.JdbcConfig;
-import io.baratine.jdbc.JdbcResultSet;
+import io.baratine.jdbc.JdbcRowSet;
 import io.baratine.jdbc.JdbcService;
 import io.baratine.jdbc.JdbcStat;
 import io.baratine.jdbc.QueryStat;
@@ -125,13 +125,13 @@ public class JdbcServiceImpl implements JdbcService
   }
 
   @Override
-  public void query(Result<JdbcResultSet> result, String sql, Object ... params)
+  public void query(Result<JdbcRowSet> result, String sql, Object ... params)
   {
     if (_logger.isLoggable(Level.FINER)) {
       _logger.log(Level.FINER, "query: " + toDebugSafe(sql));
     }
 
-    QueryResult<JdbcResultSet> qResult = new QueryResult<>(result, sql);
+    QueryResult<JdbcRowSet> qResult = new QueryResult<>(result, sql);
 
     _conn.query(qResult, sql, params);
   }
