@@ -34,6 +34,8 @@ import io.baratine.pipe.PipeStatic.PipeSubHandlerImpl;
 /**
  * {@code Pipe} sends a sequence of values from a source to a sink.
  *
+ *  The sink is defined with either PipeSub.
+ *
  *
  */
 public interface Pipe<T>
@@ -91,6 +93,6 @@ public interface Pipe<T>
 
   interface PipeHandler<T>
   {
-    void handle(T next, Throwable exn, boolean isCancel);
+    void handle(T value, Throwable exn, boolean isCancel);
   }
 }

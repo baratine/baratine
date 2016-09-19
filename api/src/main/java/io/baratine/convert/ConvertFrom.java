@@ -82,7 +82,7 @@ public interface ConvertFrom<S>
 
   /**
    * Interface ConvertFromBuilder adds support for converting from type specified
-   * as &lt;S&gt; to &lt;T&gt; type</>
+   * as &lt;S&gt; to &lt;T&gt; type
    *
    * @param <S> type of an object to convert from
    */

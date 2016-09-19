@@ -62,29 +62,29 @@ abstract public class PipeAsset<T> implements PipeBroker<T>
   abstract public String id();
 
   @Override
-  public void subscribe(PipeSub<T> result)
+  public void subscribe(PipeSub<T> subscriber)
   {
     initReceive();
     
-    SubscriberNode sub = new SubscriberNode(result.pipe());
+    SubscriberNode sub = new SubscriberNode(subscriber.pipe());
     
     _subscribers.add(sub);
     
-    result.pipe().credits().onAvailable(sub);
-    result.ok(null);
+    subscriber.pipe().credits().onAvailable(sub);
+    subscriber.ok(null);
   }
 
   @Override
-  public void consume(PipeSub<T> result)
+  public void consume(PipeSub<T> consumer)
   {
     initReceive();
     
-    SubscriberNode sub = new SubscriberNode(result.pipe());
+    SubscriberNode sub = new SubscriberNode(consumer.pipe());
     
     _consumers.add(sub);
     
-    result.pipe().credits().onAvailable(sub);
-    result.ok(null);
+    consumer.pipe().credits().onAvailable(sub);
+    consumer.ok(null);
   }
   
   private void unsubscribe(SubscriberNode node)
@@ -94,11 +94,11 @@ abstract public class PipeAsset<T> implements PipeBroker<T>
   }
 
   @Override
-  public void publish(PipePub<T> result)
+  public void publish(PipePub<T> publisher)
   {
     initSend();
     
-    result.ok(new PublisherNode());
+    publisher.ok(new PublisherNode());
   }
   
   @Override

@@ -33,11 +33,15 @@ import io.baratine.service.Result;
 import io.baratine.service.Service;
 
 /**
- * The Pipes service is a broker between publishers and subscribers, available
- * at the "pipe:" scheme.
+ * The {@code PipeBroker} is a manager which connect message publishers with
+ * message subscribers or consumers.
+ * <p>
+ * An addressable instance of a manager is available using "pipe:" scheme.
+ * <p>
+ * Full address of the pipe should include pipe name e.g. "pipe:///quotes"
  * <p>
  * <p>
- * Example: publisher / producer
+ * Example: message publisher
  * <p>
  * <blockquote>
  * <pre>
@@ -47,16 +51,16 @@ import io.baratine.service.Service;
  * {
  *   private Pipe&lt;String&gt; _pipe;
  *
- *   &#64;Inject &#64;Service("pipe:///test")
- *   Pipes&lt;String&gt; _pipes;
+ *   &#64;Inject &#64;Service("pipe:///quotes")
+ *   private PipeBroker&lt;String&gt; _pipes;
  *
  *   &#64;OnInit
  *   public void init()
  *   {
- *     //request Pipes to create a Pipe instance at "pipe:///test"
+ *     //request PipeBroker to create a Pipe instance at "pipe:///quotes"
  *     //callback {@code ready} receives an initialized Pipe instance
  *     //available to send messages
- *     _pipes.publish((out,e)-&gt;ready(out));
+ *     _pipes.publish((pipe,exception)-&gt; ready(pipe));
  *   }
  *
  *   //method for sending the messages
@@ -68,8 +72,8 @@ import io.baratine.service.Service;
  *     return null;
  *   }
  *
- *   //callback {@code ready} is called by the Pipes when a Pipe is established
- *   //argument pipe can be used to publish messages
+ *   //callback {@code ready} is called by the PipeBroker when Pipe is established
+ *   //argument pipe will be used for sending messages through the pipe
  *   public void ready(Pipe&lt;String&gt; pipe)
  *   {
  *     _pipe = pipe;
@@ -78,7 +82,7 @@ import io.baratine.service.Service;
  * </pre>
  * </blockquote>
  * <p>
- * Example: client / subscriber ( sink )
+ * Example: message subscriber
  * <p>
  * <blockquote>
  * <pre>
@@ -86,18 +90,25 @@ import io.baratine.service.Service;
  * &#64;Startup
  * public class Consumer
  * {
- *   &#64;Inject &#64;Service("pipe:///test")
- *   Pipes&lt;String&gt; _pipes;
+ *   &#64;Inject &#64;Service("pipe:///quotes")
+ *   PipeBroker&lt;String&gt; _pipes;
  *
  *   &#64;OnInit
  *   public void init()
  *   {
- *     _pipes.consume((message, exception, fail) -&gt; next(message));
+ *     _pipes.consume((message, exception, isClosed) -&gt; onMessage(message, exception, isClosed));
  *   }
  *
- *   public void next(String message)
+ *   public void onMessage(String message, Exception e, boolean isClosed)
  *   {
- *     System.out.println(message);
+ *     if (_isClosed) {
+ *       //handle closed
+ *     } else if (e != null) {
+ *       //handle exception
+ *     } else {
+ *       //handle message e.g.
+ *       System.out.println(message);
+ *     }
  *   }
  * }
  * </pre>
@@ -110,42 +121,73 @@ import io.baratine.service.Service;
 public interface PipeBroker<T>
 {
   /**
-   * Registers a message consumer
+   * Registers a message consumer.
+   * e.g.
+   * <blockquote><pre>
+   * &#64;&#64;Service
+   * public class MyConsumer {
+   *   &#64;Inject &#64;Service("pipe:///foo")
+   *   PipeBroker&lt;String&gt; _pipes;
+   *   //
+   *   &#64;OnInit
+   *   public void init() {
+   *     _pipes.consume((message, exception, isClosed)-&gt;{//handle the message});
+   *   }
+   * }
+   * </pre></blockquote>
    *
-   * @param result
+   * @param consumer subscriber callback for incoming messages, exceptions or close events.
    */
-  void consume(PipeSub<T> result);
+  void consume(PipeSub<T> consumer);
 
   /**
    * Registers a message subscriber. Multiple message subscribers can be
-   * registered for the same pipe
+   * registered for the same pipe.
+   * <p>
+   * <blockquote><pre>
+   * PipeBroker&lt;String&gt; pipes;
+   * //register first subscriber
+   * pipes.subscribe((message, exception, isClosed)-&gt;{ //handle the message});
+   * //register additional subscriber
+   * pipes.subscribe((message, exception, isClosed)-&gt;{ //handle the message});
+   * </pre></blockquote>
    *
-   * @param result
+   * @param subscriber subscriber callback for incoming messages, exceptions or close events
    */
-  void subscribe(PipeSub<T> result);
+  void subscribe(PipeSub<T> subscriber);
 
   /**
    * Registers a message publisher.
+   * <p>
+   * <blockquote><pre>
+   *   PipeBroker&lt;String&gt; pipes
+   *   pipes.publish((pipe, exception)-&gt;pipe.next("GOLD 1,329.00"));
+   * </pre></blockquote>
    *
-   * @param result
+   * @param publisher publisher call back for obtaining publishing end of the pipe or
+   *               exception which prevented establishing a pipe.
+   *
    */
-  void publish(PipePub<T> result);
+  void publish(PipePub<T> publisher);
 
   /**
    * Convenience method for sending messages without a dedicated publisher.
+   * <p>
+   * <blockquote>
+   * <pre>
+   * public class QuoteManager {
+   *   &#64;Inject &#64;Service("pipe:///quote")
+   *   private PipeBroker _pipe;
    *
+   *   public void publishQuote() {
+   *     _pipe.send("GOLD 1,329.00", Result.ignore());
+   *   }
+   * }
+   * </pre>
+   * </blockquote>
    *
-   *
-   * @param value
-   * @param result
+   * @param value message to send
+   * @param result asynchronous result of type Void, must be ignored.
    */
   void send(T value, Result<Void> result);
-  
-  /*
-  default void onChild(@Pin BiConsumer<String,Result<Void>> onChild, 
-                       @Pin Result<Cancel> result)
-  {
-    result.fail(new UnsupportedOperationException(getClass().getName()));
-  }
-  */
 }

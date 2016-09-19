@@ -33,8 +33,9 @@ import io.baratine.service.Service;
 
 
 /**
- * The Pipes service is a broker between publishers and subscribers, available
- * at the "pipe:" scheme.
+ * Interface PipeBrokerSync is a synchronous interface to PipeBroker
+ *
+ * @see PipeBroker
  */
 @Service("pipe:///{name}")
 public interface PipeBrokerSync<T> extends PipeBroker<T>

@@ -69,27 +69,27 @@ class PipeNode<T> implements PipeBroker<T>
   }
 
   @Override
-  public void subscribe(PipeSub<T> result)
+  public void subscribe(PipeSub<T> subscriber)
   {
-    SubscriberNode sub = new SubscriberNode(result.pipe());
+    SubscriberNode sub = new SubscriberNode(subscriber.pipe());
     
     _subscribers.add(sub);
     
-    result.pipe().credits().onAvailable(sub);
-    result.ok(null);
+    subscriber.pipe().credits().onAvailable(sub);
+    subscriber.ok(null);
     
     //init();
   }
 
   @Override
-  public void consume(PipeSub<T> result)
+  public void consume(PipeSub<T> consumer)
   {
-    SubscriberNode sub = new SubscriberNode(result.pipe());
+    SubscriberNode sub = new SubscriberNode(consumer.pipe());
     
     _consumers.add(sub);
     
-    result.pipe().credits().onAvailable(sub);
-    result.ok(null);
+    consumer.pipe().credits().onAvailable(sub);
+    consumer.ok(null);
     
     //init();
   }
@@ -101,7 +101,7 @@ class PipeNode<T> implements PipeBroker<T>
   }
 
   @Override
-  public void publish(PipePub<T> result)
+  public void publish(PipePub<T> publisher)
   {
     /*
     if (! init() && pendingPublish(result)) {
@@ -110,7 +110,7 @@ class PipeNode<T> implements PipeBroker<T>
     
     init();
     */
-    result.ok(new PublisherNode());
+    publisher.ok(new PublisherNode());
   }
   
   /*

@@ -34,25 +34,36 @@ import java.util.concurrent.TimeUnit;
 import io.baratine.service.Cancel;
 
 /**
- * {@code Credits} measures the flow control.
+ * {@code Credits} controls message flow. The methods on this interface are used
+ * to let the publisher know when consumer is able to accept more messages.
+ *
+ * This is achieved by giving credits to the publisher. The publisher should
+ * read the credits value and make sure it's greater than 0 before attempting
+ * to send a next message
  */
 public interface Credits extends Cancel
 {
   /**
-   * Returns the current credit sequence.
+   * Returns a long representing current sequence value
+   *
+   * @return current credit sequence value
    */
   long get();
 
-  int available();
-  
   /**
-   * Sets the new credit sequence when prefetch is disabled. Used by 
+   * Returns a number of messages client can accept.
+   *
+   * @return number of messages client can accept
+   */
+  int available();
+
+  /**
+   * Sets the new credit sequence when prefetch is disabled. Used by
    * applications that need finer control.
-   * 
+   * <p>
    * Applications using credit need to continually add credits.
-   * 
+   *
    * @param creditSequence next credit in the sequence
-   * 
    * @throws IllegalStateException if prefetch is used
    */
   default void set(long creditSequence)
@@ -62,7 +73,7 @@ public interface Credits extends Cancel
 
   /**
    * Adds credits.
-   * 
+   * <p>
    * Convenience method based on the {@code credits} methods.
    */
 
@@ -89,18 +100,18 @@ public interface Credits extends Cancel
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
-  
+
   /**
    * Publisher callback when more credits may be available.
    */
   public interface OnAvailable
   {
     void available();
-    
+
     default void fail(Throwable exn)
     {
     }
-    
+
     default void cancel()
     {
     }

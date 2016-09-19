@@ -40,21 +40,53 @@ import java.util.Map;
  * their own. 
  * 
  * Applications may be better served by using application-specific messages.
+ *
+ * @param <T> type of the encapsulated value
  */
 public interface Message<T>
 {
+  /**
+   * Method value returns encapsulated message value.
+   *
+   * @return encapsulated value
+   */
   T value();
-  
+
+  /**
+   * Method headers returns optional header passed with the message
+   *
+   * @return map of headers
+   */
   Map<String,Object> headers();
-  
+
+  /**
+   * Method header returns value of a header matching a key
+   *
+   * @param key header key
+   * @return header value
+   */
   Object header(String key);
-  
+
+  /**
+   * Create an instance of a MessageBuilder using passed value as an encapsulated
+   * Message value.
+   *
+   * @param value value to encapsulate in a message
+   * @param <X> type of the value
+   * @return an instance of MessageBuilder
+   */
   static <X> MessageBuilder<X> newMessage(X value)
   {
     return new MessageImpl<>(value);
   }
-  
-  public interface MessageBuilder<T> extends Message<T>
+
+  /**
+   * MessageBuilder interface allows setting properties for a Message, such as
+   * headers.
+   *
+   * @param <T> type of a value encapsulated in a Message
+   */
+  interface MessageBuilder<T> extends Message<T>
   {
     MessageBuilder<T> header(String key, Object value);
   }

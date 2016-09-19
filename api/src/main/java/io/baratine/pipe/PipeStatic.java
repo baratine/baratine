@@ -89,7 +89,7 @@ class PipeStatic<T>
     }
 
     @Override
-    public void handle(T next, Throwable fail, boolean ok)
+    public void handle(T value, Throwable fail, boolean ok)
     {
       throw new IllegalStateException(getClass().getName());
     }
@@ -377,7 +377,7 @@ class PipeStatic<T>
     // illegal state methods
 
     @Override
-    public void handle(T next, Throwable fail, boolean ok)
+    public void handle(T value, Throwable fail, boolean ok)
     {
       throw new IllegalStateException(getClass().getName());
     }
@@ -611,7 +611,7 @@ class PipeStatic<T>
     // illegal state methods
 
     @Override
-    public void handle(T next, Throwable fail, boolean ok)
+    public void handle(T value, Throwable fail, boolean ok)
     {
       throw new IllegalStateException(getClass().getName());
     }
