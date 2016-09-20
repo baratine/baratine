@@ -41,7 +41,10 @@ import io.baratine.service.Cancel;
  * read the credits value and make sure it's greater than 0 before attempting
  * to send a next message.
  * <p>
- * e.g
+ *
+ * Example below provides simplified code which demonstrates concept of granting
+ * credits. Production code should subscribe to Credits with OnAvailable callback
+ * for proper implementation.
  * <p>
  * <blockquote>
  * <pre>
@@ -50,7 +53,6 @@ import io.baratine.service.Cancel;
  *   &#64;Inject
  *   Services _services;
  *
- *   &#64;
  *   public void quotes() throws InterruptedException
  *   {
  *     QuoteServer server = _services.newService(QuoteServer.class)
