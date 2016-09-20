@@ -36,7 +36,7 @@ import io.baratine.service.Cancel;
 /**
  * {@code Credits} controls message flow. The methods on this interface are used
  * to let the publisher know when consumer is able to accept more messages.
- *
+ * <p>
  * This is achieved by giving credits to the publisher. The publisher should
  * read the credits value and make sure it's greater than 0 before attempting
  * to send a next message
@@ -75,13 +75,19 @@ public interface Credits extends Cancel
    * Adds credits.
    * <p>
    * Convenience method based on the {@code credits} methods.
+   *
+   * @param newCredits number of credits to add
    */
-
   default void add(int newCredits)
   {
     set(get() + newCredits);
   }
 
+  /**
+   * This method cancels available credits. Following the
+   * cancel call the pipe will no longer be delivering messages to the
+   * subscriber.
+   */
   @Override
   default void cancel()
   {
@@ -90,12 +96,22 @@ public interface Credits extends Cancel
 
   /**
    * Publisher callback when more credits may be available.
+   *
+   * @see OnAvailable
    */
   default void onAvailable(OnAvailable ready)
   {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
+  /**
+   * Method offerTimeout configures how long the Pipe.next() will wait for
+   * queue to accept next message before throwing an IllegalStateException
+   * with no credits available message.
+   *
+   * @param timeout timeout value
+   * @param unit    timeout unit modifier
+   */
   default void offerTimeout(long timeout, TimeUnit unit)
   {
     throw new UnsupportedOperationException(getClass().getName());
@@ -104,14 +120,23 @@ public interface Credits extends Cancel
   /**
    * Publisher callback when more credits may be available.
    */
-  public interface OnAvailable
+  interface OnAvailable
   {
+    /**
+     * Method called when more credits are available
+     */
     void available();
 
+    /**
+     * Method called when method fail is called on a publisher pipe
+     */
     default void fail(Throwable exn)
     {
     }
 
+    /**
+     * Method called
+     */
     default void cancel()
     {
     }

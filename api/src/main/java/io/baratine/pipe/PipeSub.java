@@ -45,6 +45,49 @@ import io.baratine.service.ResultChain;
  * <p>
  * To handle all of the three possible cases the PipeSub defines a handle() method
  * with three parameters &lt;T&gt;, Throwable and a boolean for pipe close event.
+ * <p>
+ * Creating a PipeSub from PipeHandler e.g.
+ * <blockquote>
+ * <pre>
+ * public class NamedQuotesPipe
+ * {
+ *   &#64;Inject
+ *   &#64;Service("pipe:///quotes")
+ *   PipeBroker _pipeBroker;
+ *
+ *   &#64;Test
+ *   public void quotes() throws InterruptedException
+ *   {
+ *     PipeSub&lt;String&gt; subscriber = PipeSub.of(this::pipeSubHandler);
+ *
+ *     PipePub&lt;String&gt; publisher = PipePub.of(this::pipePubHandle);
+ *
+ *     _pipeBroker.subscribe(subscriber);
+ *     _pipeBroker.publish(publisher);
+ *
+ *     Thread.sleep(100);
+ *   }
+ *
+ *   private void pipeSubHandler(String quote, Throwable t, boolean isClosed)
+ *   {
+ *     if (t != null) {
+ *       //handle exception
+ *     }
+ *     else if (isClosed) {
+ *       //handle close
+ *     }
+ *     else {
+ *       System.out.println("new quote: " + quote);
+ *     }
+ *   }
+ *
+ *   private void pipePubHandle(Pipe&lt;String&gt; pipe, Throwable t)
+ *   {
+ *     pipe.next("MARS 9.99");
+ *   }
+ * }
+ * </pre>
+ * </blockquote>
  */
 @FunctionalInterface
 public interface PipeSub<T> extends ResultChain<Void>
@@ -151,7 +194,7 @@ public interface PipeSub<T> extends ResultChain<Void>
    * consumer.
    *
    * @param pipe target pipe to relay messages to
-   * @param <T> type of the message
+   * @param <T>  type of the message
    * @return this instance of PipeSubBuilder for chaining calls
    */
   static <T> PipeSubBuilder<T> of(Pipe<T> pipe)
@@ -163,13 +206,13 @@ public interface PipeSub<T> extends ResultChain<Void>
    * Creates a new instance of PipeSubBuilder that will use a given consumer
    * to consume messages
    *
-   * @param next
-   * @param <T>
+   * @param consumer message consumer
+   * @param <T>      message type
    * @return this instance of PipeSubBuilder for chaining calls
    */
-  static <T> PipeSubBuilder<T> of(Consumer<T> next)
+  static <T> PipeSubBuilder<T> of(Consumer<T> consumer)
   {
-    return new PipeSubBuilderImpl<>(next);
+    return new PipeSubBuilderImpl<>(consumer);
   }
 
   /**

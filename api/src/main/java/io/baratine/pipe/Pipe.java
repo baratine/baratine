@@ -32,21 +32,36 @@ package io.baratine.pipe;
 import io.baratine.pipe.PipeStatic.PipeSubHandlerImpl;
 
 /**
- * {@code Pipe} sends a sequence of values from a source to a sink.
+ * Interface {@code Pipe} is a unidirectional queue between two services. Pipe
+ * is created by the subscriber and connects to the publishing service.
+ * <p>
+ * Register a Pipe with e.g.
+ * <p>
+ * <blockquote>
+ * <pre>
+ *   @Service
+ *   public class QuoteService {
+ *     public void connect(PipeSub<String> subscription) {
  *
- *  The sink is defined with either PipeSub.
- *
- *
+ *     }
+ *   }
+ *   </pre>
+ * </blockquote>
  */
 public interface Pipe<T>
 {
   public static final int PREFETCH_DEFAULT = 0;
   public static final int PREFETCH_DISABLE = -1;
-  
+
   public static final int CREDIT_DISABLE = -1;
-  
+
   /**
-   * Supplies the next value.
+   * Supplies the next value. Method will block if no credits are available and
+   * remain blocked until the credits are available or until timeout specified
+   * with Credits.offerTimeout expires. On expiring timeout method will throw
+   * IllegalStateException.
+   *
+   * @param value next value
    */
   void next(T value);
 
@@ -58,13 +73,17 @@ public interface Pipe<T>
 
   /**
    * Signals a failure.
-   * 
+   * <p>
    * The pipe is closed on failure.
+   *
+   * @param exn sends exception to the pipe
    */
   void fail(Throwable exn);
-  
+
   /**
    * Returns the credit sequence for the queue.
+   *
+   * @return instance of Credits
    */
   default Credits credits()
   {
@@ -73,26 +92,51 @@ public interface Pipe<T>
 
   /**
    * Subscriber callback to get the Credits for the pipe.
+   *
+   * @param credits instance of pipe's credits
    */
   default void credits(Credits credits)
   {
   }
-  
+
   /**
    * True if the pipe has been closed or cancelled.
+   *
+   * @return true if closed
    */
   default boolean isClosed()
   {
     return false;
   }
-  
+
+  /**
+   * Creates instance of a Pipe backed by a PipeHandler. Messages, exceptions and
+   * close events arriving via a pipe will relay to the supplied instance of PipeHandler.
+   *
+   * @param handler instance for handling messages and other pipe events
+   * @param <T>     type of message
+   * @return instance of a pipe
+   */
   static <T> Pipe<T> of(PipeHandler<T> handler)
   {
     return new PipeSubHandlerImpl<T>(handler);
   }
 
+  /**
+   * Interface PipeHandler provides contract for pipe message handler.
+   *
+   * @param <T>
+   */
   interface PipeHandler<T>
   {
+    /**
+     * Method handle is called when associated pipe receives new messages,
+     * exceptions or close events.
+     *
+     * @param value    message
+     * @param exn      exception e.g. pipe.fail(new RuntimeException());
+     * @param isCancel if true pipe is closed
+     */
     void handle(T value, Throwable exn, boolean isCancel);
   }
 }
