@@ -39,9 +39,9 @@ import io.baratine.pipe.PipeStatic.PipeSubHandlerImpl;
  * <p>
  * <blockquote>
  * <pre>
- *   @Service
+ *   &#64;Service
  *   public class QuoteService {
- *     public void connect(PipeSub<String> subscription) {
+ *     public void connect(PipeSub&lt;String&gt; subscription) {
  *
  *     }
  *   }

@@ -39,7 +39,103 @@ import io.baratine.service.Cancel;
  * <p>
  * This is achieved by giving credits to the publisher. The publisher should
  * read the credits value and make sure it's greater than 0 before attempting
- * to send a next message
+ * to send a next message.
+ * <p>
+ * e.g
+ * <p>
+ * <blockquote>
+ * <pre>
+ * public class TestPipesQuotes
+ * {
+ *   &#64;Inject
+ *   Services _services;
+ *
+ *   &#64;
+ *   public void quotes() throws InterruptedException
+ *   {
+ *     QuoteServer server = _services.newService(QuoteServer.class)
+ *                          .auto()
+ *                          .as(QuoteServer.class);
+ *
+ *     QuoteClient client = _services.newService(QuoteClient.class)
+ *                          .auto()
+ *                          .start()
+ *                          .as(QuoteClient.class);
+ *
+ *     State.sleep(100);  //give time for pipe to connect subscriber anc consumer
+ *     server.newQuote("MARS 9.99"); //send the first quote. It will come through
+ *                                  // and use up the only available credit
+ *
+ *     server.newQuote("MARS 9.98"); //send second quote. It will be ignored
+ *                                   //by the if statement in newQuote() because
+ *                                   //available credits is 0 at this point
+ *     Thread.sleep(100);
+ *
+ *     client.addCredit(1);          //adds a credit
+ *     Thread.sleep(10);             //time for credits to propagate
+ *
+ *     server.newQuote("MARS 9.97"); //send another quote which should now come through
+ *
+ *     State.sleep(1000);
+ *   }
+ *
+ *   &#64;Service
+ *   public static class QuoteClient
+ *   {
+ *     private Credits _credits;
+ *
+ *     &#64;OnInit
+ *     public void init()
+ *     {
+ *       PipeSub&lt;String&gt; subscriber = PipeSub.of(this::onMessage)
+ *                                          .prefetch(0)
+ *                                          .credits(1)
+ *                                          .credits(c -&gt; {
+ *                                                            _credits = c;
+ *                                                          });
+ *
+ *       Services services = Services.current();
+ *
+ *       QuoteServer server = services.service(QuoteServer.class);
+ *
+ *       server.connect(subscriber);
+ *     }
+ *
+ *     public void addCredit(int credits)
+ *     {
+ *       _credits.add(credits);
+ *     }
+ *
+ *     private void onMessage(String message)
+ *     {
+ *       System.out.println("new quote: " + message);
+ *     }
+ *   }
+ *
+ *   &#64;Service
+ *   public static class QuoteServer
+ *   {
+ *     private Pipe&lt;String&gt; _quotes;
+ *     private Credits _credits;
+ *
+ *     public void connect(PipeSub&lt;String&gt; subscription)
+ *     {
+ *       _quotes = subscription.pipe();
+ *       _credits = _quotes.credits();
+ *
+ *       subscription.ok(null);
+ *     }
+ *
+ *     public void newQuote(String quote)
+ *     {
+ *       if (_credits != null &amp;&amp; _credits.available() &gt; 0) {
+ *         _quotes.next(quote);
+ *       }
+ *     }
+ *   }
+ * }
+ *   </pre>
+ * </blockquote>
  */
 public interface Credits extends Cancel
 {
