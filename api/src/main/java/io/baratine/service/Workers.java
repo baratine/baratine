@@ -50,5 +50,10 @@ import java.lang.annotation.Target;
 @Target({TYPE,METHOD})
 public @interface Workers
 {
+  /**
+   * Specifies size of the executor pool
+   *
+   * @return size of the pool
+   */
   int value() default 0;
 }

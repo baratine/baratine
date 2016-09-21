@@ -218,6 +218,7 @@ public interface Credits extends Cancel
   /**
    * Publisher callback when more credits may be available.
    */
+  @FunctionalInterface
   interface OnAvailable
   {
     /**
