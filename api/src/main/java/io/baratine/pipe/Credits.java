@@ -64,7 +64,7 @@ import io.baratine.service.Cancel;
  *                          .start()
  *                          .as(QuoteClient.class);
  *
- *     State.sleep(100);  //give time for pipe to connect subscriber anc consumer
+ *     State.sleep(100);  //give time for pipe to connect subscriber and consumer
  *     server.newQuote("MARS 9.99"); //send the first quote. It will come through
  *                                  // and use up the only available credit
  *
