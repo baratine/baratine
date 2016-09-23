@@ -130,7 +130,7 @@ public class JdbcRowSet implements Iterable<JdbcRow>
       JdbcRow rowSet = _rowList.get(i);
 
       for (int j = 1; j <= rowSet.getColumnCount(); j++) {
-        String name = _columnNames[j];
+        String name = _columnNames[j - 1];
         Object value = rowSet.getObject(j);
 
         row.add(new SimpleEntry<String,Object>(name, value));
