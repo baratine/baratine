@@ -29,18 +29,41 @@
 
 package io.baratine.service;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * {@code @Api} marks a Service api.
+ * {@code @Api} specifies API for Service or Asset. Placing annotation on an
+ * interface that service implements marks that interface as an API.
+ * Alternatively, annotation is placed on implementation class. In that case value
+ * of the annotation should be initialized to an interface representing the API
+ * service implements.
+ * <p>
+ * <em>Annotating Interface API</em>
+ * <blockquote>
+ * <pre>
+ * &#64;Api
+ * public interface QuoteService {
+ *   public void quote(String symbol, Result&lt;String&gt; quote);
+ * }
+ * </pre>
+ * </blockquote>
+ * <p>
+ * <em>Annotating Service Implementation</em>
+ * <blockquote>
+ * <pre>
+ * &#64;Api(QuoteService.class)
+ * public class QuoteServiceImpl implements QuoteService {
+ *   public void quote(String symbol, Result&lt;String&gt; quote) {
+ *     ...
+ *   }
+ * }
+ * </pre>
+ * </blockquote>
  */
 @Documented
 @Retention(RUNTIME)
