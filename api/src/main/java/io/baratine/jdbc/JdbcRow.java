@@ -29,15 +29,29 @@
 
 package io.baratine.jdbc;
 
+/**
+ * JdbcRow class represents row filled from a query and provides getter methods to
+ * retrieve values for columns.
+ */
 public class JdbcRow
 {
   private Object[] _values;
 
+  /**
+   * Constructs a row from column values
+   *
+   * @param values column values
+   */
   public JdbcRow(Object[] values)
   {
     _values = values;
   }
 
+  /**
+   * Returns number of columns in a row
+   *
+   * @return number of columns
+   */
   public int getColumnCount()
   {
     return _values.length;

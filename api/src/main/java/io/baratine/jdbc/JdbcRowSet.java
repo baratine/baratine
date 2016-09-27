@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Class JdbcRowSet represents a set of rows filled from a query.
+ */
 public class JdbcRowSet implements Iterable<JdbcRow>
 {
   private static final String[] EMPTY = new String[0];
@@ -48,7 +51,8 @@ public class JdbcRowSet implements Iterable<JdbcRow>
   private int _updateCount;
   private int _columnCount;
 
-  public static JdbcRowSet create(ResultSet rs, int updateCount) throws SQLException
+  public static JdbcRowSet create(ResultSet rs, int updateCount)
+    throws SQLException
   {
     JdbcRowSet jdbcRs = new JdbcRowSet();
 
@@ -83,26 +87,51 @@ public class JdbcRowSet implements Iterable<JdbcRow>
     return jdbcRs;
   }
 
+  /**
+   * Returns column names for the row set
+   *
+   * @return array of column names
+   */
   public String[] getColumnNames()
   {
     return _columnNames;
   }
 
+  /**
+   * Returns number of columns
+   *
+   * @return number of columns
+   */
   public int getColumnCount()
   {
     return _columnCount;
   }
 
+  /**
+   * Returns update count value from executing original statement
+   *
+   * @return number of updates
+   */
   public int getUpdateCount()
   {
     return _updateCount;
   }
 
+  /**
+   * Returns number of rows in a row set
+   *
+   * @return
+   */
   public int getRowCount()
   {
     return _rowList.size();
   }
 
+  /**
+   * Provides access to first row
+   *
+   * @return first row or null if getRowCount() is zero
+   */
   public JdbcRow getFirstRow()
   {
     if (getRowCount() > 0) {
@@ -113,12 +142,24 @@ public class JdbcRowSet implements Iterable<JdbcRow>
     }
   }
 
+  /**
+   * Provides iterator over rows
+   *
+   * @return iterator over rows
+   */
   @Override
   public Iterator<JdbcRow> iterator()
   {
     return _rowList.iterator();
   }
 
+  /**
+   * Builds String representation of JdbcRowSet as a list of lists of Map.Entry.
+   * <p>
+   * Resulting String value my potentially be big.
+   *
+   * @return string representation of JdbcRowSet
+   */
   @Override
   public String toString()
   {

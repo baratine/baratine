@@ -32,6 +32,9 @@ package io.baratine.jdbc;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class represents real time statistics for underlying jdbc connection.
+ */
 public class JdbcStat
 {
   private long _totalQueryCount;
@@ -41,6 +44,11 @@ public class JdbcStat
   private List<QueryStat> _recentQueryList = new ArrayList<>();
   private List<QueryStat> _recentFailedList = new ArrayList<>();
 
+  /**
+   * Returns query count
+   *
+   * @return number of executed queries
+   */
   public long totalQueryCount()
   {
     return _totalQueryCount;
@@ -53,6 +61,12 @@ public class JdbcStat
     return this;
   }
 
+  /**
+   * Returns number of failed queries. Query is considered failed if exception
+   * is thrown during its execution.
+   *
+   * @return number of failed queries
+   */
   public long totalFailedCount()
   {
     return _totalFailedCount;
@@ -85,7 +99,7 @@ public class JdbcStat
   /**
    * Returns recent queries, including failed ones.
    *
-   * @return
+   * @return list of recent queries
    */
   public List<QueryStat> recentQueries()
   {
