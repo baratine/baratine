@@ -137,23 +137,22 @@ public interface JdbcService
    * <pre>
    * <code>
    * jdbcService.query(
-   *   (rs, e) -> {
-   *       System.out.println(rs);
+   *   (updateCount, e) -> {
+   *       System.out.println(updateCount); //prints updateCount
    *   },
    *   (conn) -> {
    *       Statement stmt = conn.createStatement();
    *
    *       stmt.execute("INSERT INTO test VALUES (123, \"value0\")");
    *
-   *       return stmt.getUpdateCount();
+   *       return stmt.getUpdateCount(); //returns updateCount into result
    *   }
    * );
    * </code>
    * </pre>
    *
-   * @param result
+   * @param result result future
    * @param fun query function to run on the {@link java.sql.Connection}
-   * @param params optional arguments to SqlBiFunction
    */
   <T> void query(Result<T> result, SqlFunction<T> fun);
 
@@ -165,8 +164,8 @@ public interface JdbcService
    * <pre>
    * <code>
    * jdbcService.query(
-   *   (rs, e) -> {
-   *       System.out.println(rs);
+   *   (v, e) -> {
+   *       System.out.println(v);// prints "done"
    *   },
    *   (conn, params) -> {
    *       Statement stmt = conn.prepareStatement("SELECT * FROM test WHERE id = ?");

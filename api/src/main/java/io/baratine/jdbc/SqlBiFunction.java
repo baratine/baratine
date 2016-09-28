@@ -32,9 +32,27 @@ package io.baratine.jdbc;
 import java.sql.Connection;
 import java.util.function.BiFunction;
 
+import io.baratine.service.Result;
+
+/**
+ * Represents a function to apply to a connection and array of parameters using
+ * JdbcService#query(Result, SqlBiFunction, Object...) method.
+ *
+ * @param <R> type of function result
+ * @see JdbcService#query(Result, SqlBiFunction, Object...)
+ */
+
 @FunctionalInterface
 public interface SqlBiFunction<R> extends BiFunction<Connection, Object[],R>
 {
+  /**
+   * Function method to implement.
+   *
+   * @param t JDBC Connection
+   * @param params parameters passed from JdbcService.query() method
+   * @return value of type R (result of applying the function)
+   * @throws Exception relay exception thrown during function call
+   */
   R applyWithException(Connection t, Object ... params) throws Exception;
 
   default R apply(Connection t, Object[] params)

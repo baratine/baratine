@@ -32,17 +32,32 @@ package io.baratine.jdbc;
 import java.sql.Connection;
 import java.util.function.Function;
 
+import io.baratine.service.Result;
+
+/**
+ * Represents a function to apply to a connection using
+ * JdbcService#query(Result, SqlFunction) method.
+ *
+ * @param <R> type of function result
+ * @see JdbcService#query(Result, SqlFunction)
+ */
 @FunctionalInterface
 public interface SqlFunction<R> extends Function<Connection,R>
 {
+  /**
+   * Function method to implement.
+   *
+   * @param t JDBC Connection
+   * @return value of type R (result of applying the function)
+   * @throws Exception relay exception thrown during function call
+   */
   R applyWithException(Connection t) throws Exception;
 
   default R apply(Connection t)
   {
     try {
       return applyWithException(t);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
