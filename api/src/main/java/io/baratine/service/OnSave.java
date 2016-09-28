@@ -29,26 +29,37 @@
 
 package io.baratine.service;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * {@code @OnSave} marks a method as a checkpoint listener.
- * The Service method marked with this is getting informed that now would be 
- * a good time to sync the state of the service to the async store or 
- * some other non-blocking storage mechanism.
+ * Annotation {@code @OnSave} is used to mark a method of the service responsible
+ * for saving service's state to a permanent storage. The storage can be a database
+ * or any other persistent medium.
+ * <p>
+ * When used on a Vault's Asset the {@code @OnSave} method will be called instead
+ * of the Vault provided implementation.
+ * <p>
+ * The method is called when Baratine determines that change of service state had
+ * occurred and will time the @OnSave call to its internal checkpoint, i.e.
+ * the method may not be necesseraly called on every change, it may be called for accumulated
+ * change of state.
+ * <p>
+ * It is assumed that state changes on a call to any {@code @Modify]
+ * marked method.
  *
+ * @see io.baratine.service.OnSave
  * @see io.baratine.service.Journal
  * @see io.baratine.service.Modify
- * @see io.baratine.service.OnLoad
  */
 
 @Documented
 @Retention(RUNTIME)
 @Target({METHOD})
-public @interface OnSave {
+public @interface OnSave
+{
 }

@@ -50,7 +50,6 @@ import java.lang.annotation.Target;
  * @see io.baratine.service.OnSave
  *
  */
-
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE})

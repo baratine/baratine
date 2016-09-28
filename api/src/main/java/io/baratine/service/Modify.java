@@ -37,33 +37,34 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * {@code @Modify} marks any service method that updates the state.
+ * {@code @Modify} should be used to mark any service method that updates
+ * state of the service.
  * <br>
- * <br>
- * The annotation helps Baratine optimize its performance by only storing
- * the Services' state in its database when changes occur.
- * <br>
- * <br>
+ * Annotating service methods with {@code @Modify} allows Baratine to determine
+ * when service state changes occur and enlist services for saving state when
+ * checkpoints occur.
+ * <p>
  * Sample usage:
- * <blockquote><pre>
+ * <blockquote>
+ * <pre>
  *  &#64;Service("public:///counter/{_id}")
  *  &#64;Journal
  *  public class CounterImpl
  *  {
  *    private int _id;
  *    private long _counter;
- * 
+ *
  *    &#64;Modify
  *    public long incrementAndGet()
  *    {
  *      return _counter++;
  *    }
  *  }
- * </pre></blockquote>
+ * </pre>
+ * </blockquote>
  *
  * @see io.baratine.service.Journal
  */
-
 @Documented
 @Retention(RUNTIME)
 @Target({METHOD})

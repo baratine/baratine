@@ -37,14 +37,17 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * {@code @OnLoad} marks a method used to inform the service implementer that
- * the service needs to load from it's backing store.
+ * Annotation {@code @OnLoad} is used to mark a method of the service responsible
+ * for loading its state from permanent storage. The storage can be a database
+ * or any other persistent medium.
+ *
+ * When used on a Vault's Asset the {@code @OnLoad} method will be called instead
+ * of the Vault provided implementation.
  *
  * @see io.baratine.service.OnSave
  * @see io.baratine.service.Journal
  * @see io.baratine.service.Modify
  */
-
 @Documented
 @Retention(RUNTIME)
 @Target({METHOD})
