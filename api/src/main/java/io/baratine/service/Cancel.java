@@ -30,12 +30,15 @@
 package io.baratine.service;
 
 /**
- * Handle used to cancel registered callbacks like timers.
+ * Handle used to cancel registered callbacks like timers and credits.
+ *
+ * @see io.baratine.timer.Timers
+ * @see io.baratine.pipe.Credits
  */
 public interface Cancel
 {
   /**
-   * Cancel the timer
+   * Cancel the timer or credit
    */
   void cancel();
 }

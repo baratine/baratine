@@ -58,7 +58,7 @@ import java.lang.annotation.Target;
  * <br>
  * <br>
  * Methods <code>@BeforeBatch</code>, <code>@AfterBatch</code> and Service methods
- * are called on the same <code>java.lang.Thread</code>
+ * are called on the same <code>java.lang.Thread</code>.
  * <blockquote><pre>
  *
  * &#64;BeforeBatch
@@ -69,9 +69,6 @@ import java.lang.annotation.Target;
  * }
  * </pre></blockquote>
  * <p>
- * See <a target="__new" href="https://github.com/baratine/example-update-service-with-hibernate/blob/master/src/main/java/stock/StockServiceBean.java">
- *   https://github.com/baratine/example-update-service-with-hibernate/blob/master/src/main/java/stock/StockServiceBean.java</a> for complete example.
- *
  * @see io.baratine.service.AfterBatch
  */
 

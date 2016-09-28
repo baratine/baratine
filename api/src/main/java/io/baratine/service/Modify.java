@@ -54,7 +54,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *    private long _counter;
  * 
  *    &#64;Modify
- *    public long incretementAndGet()
+ *    public long incrementAndGet()
  *    {
  *      return _counter++;
  *    }

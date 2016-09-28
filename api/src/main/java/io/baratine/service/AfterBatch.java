@@ -29,40 +29,85 @@
 
 package io.baratine.service;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
  * <code>@AfterBatch</code> marks a method as a post-process method, called after
  * messages are processed from the queue, when the queue is empty.
- * <br>
- * <br>
+ * <p>
  * This can be used to do batching operations to optimize IO throughput,
  * e.g. writing changes to a file or an external database.
- * <br>
- * <br>
+ * <p>
  * In this method can also be closed resources used by the service methods.
- * <br>
- * <br>
+ * <p>
  * Methods marked with <code>@AfterBatch</code>, <code>@BeforeBatch</code> and
- * service methods are called on the same <code>java.lang.Thread.</code>.
+ * service methods are called on the same <code>java.lang.Thread</code>.
  * <br>
  * <br>
- * <blockquote><pre>
+ * <blockquote>
+ * <pre>
  * &#64;AfterBatch
  * public void afterBatch()
  * {
  *   _hibernateSession.getTransaction().commit();
  *   _hibernateSession.close();
  * }
- * </pre></blockquote>
+ * </pre>
+ * </blockquote>
+ * <p>
+ * Example:
+ * <blockquote>
+ * <pre>
+ *
+ * &#64;Service
+ * public static class BatchAwareService
+ * {
+ *   private long counter;
+ *
+ *   &#64;BeforeBatch
+ *   public void beforeBatch()
+ *   {
+ *     System.out.println("BatchAwareService.beforeBatch: " + counter);
+ *   }
+ *
+ *   public void foo(Result<Long> result)
+ *   {
+ *     result.ok(counter++);
+ *   }
+ *
+ *   &#64;AfterBatch
+ *   public void afterBatch()
+ *   {
+ *     System.out.println("BatchAwareService.afterBatch: " + counter);
+ *   }
+ * }
+ *
+ * //when above service called with the following code
+ * <blockquote>
+ * <pre>
+ * for (int i = 0; i < 100; i++)
+ * service.foo(Result.ignore());
+ * Thread.sleep(1000);
+ *
+ * for (int i = 0; i < 100; i++)
+ * service.foo(Result.ignore());
+ * </pre>
+ * </blockquote>
+ * it will produce output similar to:
+ * <blockquote>
+ * <pre>
+ * BatchAwareService.beforeBatch: 0
+ * BatchAwareService.afterBatch: 100
+ * BatchAwareService.beforeBatch: 100
+ * BatchAwareService.afterBatch: 200
+ * </pre>
+ * </blockquote>
  * <br>
- * See <a target="__new" href="https://github.com/baratine/example-update-service-with-hibernate/blob/master/src/main/java/stock/StockServiceBean.java">
- * https://github.com/baratine/example-update-service-with-hibernate/blob/master/src/main/java/stock/StockServiceBean.java</a> for complete example.
  *
  * @see io.baratine.service.BeforeBatch
  */

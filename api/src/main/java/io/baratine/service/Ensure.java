@@ -37,7 +37,10 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * {@code @Ensure} marks a service for reliable messaging.
+ * {@code @Ensure} marks a service method for reliable calls.
+ * <p>
+ * The annotation guarantees that method calls will be delivered to the
+ * calling method at least once, even if the server crashes and restarts.
  */
 @Documented
 @Retention(RUNTIME)
