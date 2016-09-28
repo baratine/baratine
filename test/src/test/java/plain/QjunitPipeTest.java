@@ -50,7 +50,7 @@ public class QjunitPipeTest
   {
     pipes.send(Message.newMessage("hello"));
 
-    State.sleep(50);
+    State.sleep(100);
 
     assertEquals("\nonMessage(hello)", State.state());
   }
