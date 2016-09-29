@@ -29,18 +29,24 @@
 
 package io.baratine.service;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
  * {@code @OnDelete} marks a method as a delete callback for a checkpoint.
+ * <p>
+ * {@code @OnDelete} method if implemented must delete its data from persistent
+ * storage.
+ *
+ * @see io.baratine.vault.Vault
  */
 @Documented
 @Retention(RUNTIME)
 @Target({METHOD})
-public @interface OnDelete {
+public @interface OnDelete
+{
 }

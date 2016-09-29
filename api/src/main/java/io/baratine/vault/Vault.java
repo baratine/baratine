@@ -56,6 +56,7 @@ package io.baratine.vault;
  * public interface BookVault implements Vault&lt;IdAsset, Book&gt;
  * {
  *   public void create(String title, String author, Result&lt;IdAsset&gt; result);
+ *   public void delete(IdAsset id, Result<IdAsset> result);
  * }
  *
  * &#64;Asset
@@ -84,6 +85,9 @@ package io.baratine.vault;
  * }
  * </pre>
  * </blockquote>
+ *
+ * Methods for creating assets must start with "create" prefix. Delete methods
+ * must start with "delete" prefix.
  *
  * <b>Finding assets</b><br>
  * Vault can be queried for assets using finder methods. Finder are defined with
