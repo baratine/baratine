@@ -366,7 +366,7 @@ public class InjectorBuilderImpl implements InjectBuilderAmp
       ProviderMethod producer
       = new ProviderMethod(injector, priority, scope, ownerBinding, method);
 
-    injector.addProvider(producer);
+      injector.addProvider(producer);
     }
   }
 

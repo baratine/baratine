@@ -35,17 +35,38 @@ import io.baratine.pipe.PipeStatic.PipeSubHandlerImpl;
  * Interface {@code Pipe} is a unidirectional queue between two services. Pipe
  * is created by the subscriber and connects to the publishing service.
  * <p>
- * Register a Pipe with e.g.
+ * Implement and register a Pipe with a publisher service:
  * <p>
  * <blockquote>
  * <pre>
- *   &#64;Service
- *   public class QuoteService {
- *     public void connect(PipeSub&lt;String&gt; subscription) {
- *
- *     }
+ * class MyPipe implements Pipe
+ * {
+ *   &#64;Override
+ *   public void next(Object value)
+ *   {
+ *     System.out.println("quote: " + value);
  *   }
- *   </pre>
+ *   public void close() {} // supply close handler
+ *   public void fail(Throwable exn) {} supply exception handler
+ * };
+ *
+ * &#64;Service
+ * public class QuoteServer {
+ *   public void connect(PipeSub&lt;String&gt; subscription) {
+ *     subscription.pipe().next("MARS 9.99");
+ *   }
+ * }
+ *
+ * QuoteServer server =
+ *   _services.newService(QuoteServer.class).auto().as(QuoteServer.class);
+ *
+ * MyPipe pipe = new MyPipe();
+ *
+ * server.connect(PipeSub.of(pipe));
+ *
+ * Thread.sleep(100);
+ * server.newQuote("MARS 9.99");
+ * </pre>
  * </blockquote>
  */
 public interface Pipe<T>

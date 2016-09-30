@@ -98,6 +98,9 @@ public @interface Service
 {
   /**
    * Optional address of the service.
+   *
+   * If not specified the value is inherited from the name of a annotated class
+   * or an Api (if present)
    */
   String value() default "";
 }
