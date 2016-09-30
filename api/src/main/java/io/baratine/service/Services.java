@@ -32,8 +32,8 @@ package io.baratine.service;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Injector;
+import io.baratine.inject.Injector.InjectorBuilder;
 import io.baratine.inject.Key;
 import io.baratine.spi.ServiceManagerProvider;
 
@@ -108,23 +108,66 @@ public interface Services
                                            Supplier<? extends T> supplier);
 
   Injector injector();
-  
+
+  /**
+   * ServicesBuilder provides interface to building a service.
+   *
+   * @see ServiceInitializer
+   * @see io.baratine.service.ServiceRef.ServiceBuilder
+   */
   public interface ServicesBuilder
   {
     /**
      * Scans META-INF/services for built-in services.
      */
     ServicesBuilder autoServices(boolean isAutoServices);
-    
+
+    /**
+     * Creates a ServiceBuilder from a specific Service class
+     *
+     * @param type service class
+     * @param <T> service type
+     * @return instance of ServiceBuilder
+     */
     <T> ServiceRef.ServiceBuilder service(Class<T> type);
-    
+
+    /**
+     * Creates a ServiceBuilder from a specific Service class and binds it to
+     * the supplied Key
+     *
+     * @param key binding key for injecting service into Injection points
+     * @param type service class
+     * @param <T> service type
+     * @return instance of ServiceBuilder
+     */
     <T> ServiceRef.ServiceBuilder service(Key<?> key, Class<T> type);
-    
+
+    /**
+     * Creates a ServiceBuilder from a specific Type
+     *
+     * @param type Service type
+     * @param <T> type
+     * @return instance of ServiceBuilder
+     */
     <T> ServiceRef.ServiceBuilder service(T type);
-    
+
+    /**
+     * Creates a ServiceBuilder from a specific Service class and Service instance
+     * supplier.
+     *
+     * @param type service class
+     * @param supplier supplier of Service instance
+     * @param <T> service type
+     * @return instance of ServiceBuilder
+     */
     <T> ServiceRef.ServiceBuilder service(Class<T> type, 
                                           Supplier<? extends T> supplier);
-    
+
+    /**
+     * Context InjectorBuilder for configuring new Beans for injection
+     *
+     * @return instance of InjectorBuilder
+     */
     InjectorBuilder injector();
     
     /**
@@ -136,9 +179,19 @@ public interface Services
      * @param factory the supplied factory for thread execution context
      */
     ServicesBuilder systemExecutor(Supplier<Executor> factory);
-    
+
+    /**
+     * Obtains instance of Services (service manager)
+     *
+     * @return instance of Services
+     */
     Services get();
-    
+
+    /**
+     * Starts instance of Services (service manager)
+     *
+     * @return instance of Services
+     */
     Services start();
   }
 }
