@@ -29,22 +29,106 @@
 
 package io.baratine.inject;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
 
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * Default injection qualifier.
+ * Annotation {@code @Bean} is a default injection qualifier which can be used
+ * to do the following:
+ * <p>
+ * <ul>
+ * <li>Define a bean producer</li>
+ * <li>Inject value into a field</li>
+ * <li>Inject value via a method</li>
+ * <li>Inject value via a constructor</li>
+ * </ul>
+ * <p>
+ * <b>Define a producer of specific type of beans</b>
+ * <blockquote>
+ * <pre>
+ * public static class FooProducer
+ * {
+ *   &#64;Bean
+ *   public Foo produceFoo()
+ *   {
+ *     return new FooImpl();
+ *   }
+ * }
+ * </pre>
+ * </blockquote>
+ * <b>Inject into a service via {@code @Inject} field</b>
+ * <blockquote>
+ * <pre>
+ * &#64;Service
+ * public static class MyService
+ * {
+ *   &#64;Inject &#64;Bean
+ *   Foo _foo;
+ *
+ *   &#64;Get
+ *   public void test(RequestWeb request)
+ *   {
+ *     request.ok(_foo);
+ *   }
+ * }
+ * </pre>
+ * </blockquote>
+ * <b>Inject into a service via {@code @Inject} method</b>
+ * <blockquote>
+ * <pre>
+ * &#64;Service
+ * public static class MyService
+ * {
+ *   Foo _foo;
+ *
+ *   &#64;Inject
+ *   private void inject(&#64;Bean Foo foo)
+ *   {
+ *     _foo = foo;
+ *   }
+ *
+ *   &#64;Get
+ *   public void test(RequestWeb request)
+ *   {
+ *     request.ok(_foo);
+ *   }
+ * }
+ * </pre>
+ * </blockquote>
+ * <b>Inject into a service via {@code @Inject} constructor</b>
+ * <blockquote>
+ * <pre>
+ * &#64;Service
+ * public static class MyService
+ * {
+ *   Foo _foo;
+ *   public MyService()
+ *   {
+ *   }
+ *
+ *   &#64;Inject
+ *   public MyService(@Bean Foo foo)
+ *   {
+ *     _foo = foo;
+ *   }
+ *
+ *   &#64;Get
+ *   public void test(RequestWeb request)
+ *   {
+ *     request.ok(_foo);
+ *   }
+ * }
+ * </pre>
+ * </blockquote>
  */
 @Retention(RUNTIME)
-@Target({TYPE,METHOD,FIELD,PARAMETER})
+@Target({TYPE, METHOD, FIELD, PARAMETER})
 @Qualifier
-public @interface Bean {
+public @interface Bean
+{
 }

@@ -47,8 +47,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * Methods marked with <code>@AfterBatch</code>, <code>@BeforeBatch</code> and
  * service methods are called on the same <code>java.lang.Thread</code>.
- * <br>
- * <br>
+ * <p>
  * <blockquote>
  * <pre>
  * &#64;AfterBatch
@@ -60,10 +59,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * </pre>
  * </blockquote>
  * <p>
- * Example:
+ * Demonstration of effect of batching:
  * <blockquote>
  * <pre>
- *
  * &#64;Service
  * public static class BatchAwareService
  * {
@@ -75,7 +73,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *     System.out.println("BatchAwareService.beforeBatch: " + counter);
  *   }
  *
- *   public void foo(Result<Long> result)
+ *   public void foo(Result&lt;Long&gt; result)
  *   {
  *     result.ok(counter++);
  *   }
@@ -86,15 +84,17 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *     System.out.println("BatchAwareService.afterBatch: " + counter);
  *   }
  * }
+ * </pre>
+ * </blockquote>
  *
- * //when above service called with the following code
+ * When above service called with the following code
  * <blockquote>
  * <pre>
- * for (int i = 0; i < 100; i++)
+ * for (int i = 0; i &lt; 100; i++)
  * service.foo(Result.ignore());
  * Thread.sleep(1000);
  *
- * for (int i = 0; i < 100; i++)
+ * for (int i = 0; i &lt; 100; i++)
  * service.foo(Result.ignore());
  * </pre>
  * </blockquote>

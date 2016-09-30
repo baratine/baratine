@@ -49,7 +49,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * the method may not be necesseraly called on every change, it may be called for accumulated
  * change of state.
  * <p>
- * It is assumed that state changes on a call to any {@code @Modify]
+ * It is assumed that state changes on a call to any {@code @Modify}
  * marked method.
  *
  * @see io.baratine.service.OnSave

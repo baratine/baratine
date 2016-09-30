@@ -56,7 +56,7 @@ package io.baratine.vault;
  * public interface BookVault implements Vault&lt;IdAsset, Book&gt;
  * {
  *   public void create(String title, String author, Result&lt;IdAsset&gt; result);
- *   public void delete(IdAsset id, Result<IdAsset> result);
+ *   public void delete(IdAsset id, Result&lt;IdAsset&gt; result);
  * }
  *
  * &#64;Asset
