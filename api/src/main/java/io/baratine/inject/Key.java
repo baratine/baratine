@@ -139,7 +139,7 @@ public class Key<T>
    */
   public Annotation []annotations()
   {
-    return new Annotation[0];
+    return _anns;
   }
 
   /**
