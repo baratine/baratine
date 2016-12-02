@@ -166,6 +166,7 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
       }
     }
 
+    //XXX: extract into extend() method
     if (_keys.length <= size) {
       int newSize = Math.min(2 * size, _maxCapacity);
     
@@ -209,6 +210,7 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
       }
     }
 
+    //XXX: extract into extend() method
     if (_keys.length <= size) {
       int newSize = Math.min(2 * size, _maxCapacity);
 
