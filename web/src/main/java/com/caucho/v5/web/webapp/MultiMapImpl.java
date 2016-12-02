@@ -64,7 +64,7 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
   /**
    * Create the hash map impl with a specific capacity.
    *
-   * @param initialCapacity minimum capacity of the cache
+   * @param maxCapacity maximum capacity of the Map
    */
   public MultiMapImpl(int maxCapacity)
   {
@@ -156,7 +156,7 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
       return;
     }
 
-    K[] keys = _keys;
+    K []keys = _keys;
     int size = _size;
     
     for (int i = size - 1; i >= 0; i--) {
@@ -190,6 +190,50 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
     _values[size].add(value);
     
     _size = size + 1;
+  }
+
+  @Override
+  public List<V> put(K key, List<V> value)
+  {
+    if (key == null)
+      throw new IllegalArgumentException();
+
+    K []keys = _keys;
+    int size = _size;
+
+    for (int i = size - 1; i >= 0; i--) {
+      if (key.equals(keys[i])) {
+        final List<V> values = _values[i];
+        _values[i] = value;
+        return values;
+      }
+    }
+
+    if (_keys.length <= size) {
+      int newSize = Math.min(2 * size, _maxCapacity);
+
+      if (newSize <= _size) {
+        log.warning("Overflow map");
+        throw new IllegalStateException();
+      }
+
+      // forced resizing if 1/2 full
+      K []newKeys = (K []) new Object[newSize];
+      List<V> []newValues = (List<V>[]) new List[newSize];
+
+      System.arraycopy(_keys, 0, newKeys, 0, _keys.length);
+      System.arraycopy(_values, 0, newValues, 0, _values.length);
+
+      _keys = newKeys;
+      _values = newValues;
+    }
+
+    _keys[size] = key;
+    _values[size] = value;
+
+    _size = size + 1;
+
+    return null;
   }
 
   /**
