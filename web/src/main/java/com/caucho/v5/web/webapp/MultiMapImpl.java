@@ -157,7 +157,7 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
     }
 
     K []keys = _keys;
-    int size = _size;
+    final int size = _size;
     
     for (int i = size - 1; i >= 0; i--) {
       if (key.equals(keys[i])) {
@@ -166,24 +166,8 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
       }
     }
 
-    //XXX: extract into extend() method
-    if (_keys.length <= size) {
-      int newSize = Math.min(2 * size, _maxCapacity);
-    
-      if (newSize <= _size) {
-        log.warning("Overflow map");
-        return;
-      }
-    
-      // forced resizing if 1/2 full
-      K []newKeys = (K []) new Object[newSize];
-      List<V> []newValues = (List<V> []) new List[newSize];
-
-      System.arraycopy(_keys, 0, newKeys, 0, _keys.length);
-      System.arraycopy(_values, 0, newValues, 0, _values.length);
-      
-      _keys = newKeys;
-      _values = newValues;
+    if (! ensureCapacity(size)) {
+      return;
     }
     
     _keys[size] = key;
@@ -200,7 +184,7 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
       throw new IllegalArgumentException();
 
     K []keys = _keys;
-    int size = _size;
+    final int size = _size;
 
     for (int i = size - 1; i >= 0; i--) {
       if (key.equals(keys[i])) {
@@ -210,24 +194,8 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
       }
     }
 
-    //XXX: extract into extend() method
-    if (_keys.length <= size) {
-      int newSize = Math.min(2 * size, _maxCapacity);
-
-      if (newSize <= _size) {
-        log.warning("Overflow map");
-        throw new IllegalStateException();
-      }
-
-      // forced resizing if 1/2 full
-      K []newKeys = (K []) new Object[newSize];
-      List<V> []newValues = (List<V>[]) new List[newSize];
-
-      System.arraycopy(_keys, 0, newKeys, 0, _keys.length);
-      System.arraycopy(_values, 0, newValues, 0, _values.length);
-
-      _keys = newKeys;
-      _values = newValues;
+    if (! ensureCapacity(size)) {
+      return null;
     }
 
     _keys[size] = key;
@@ -236,6 +204,31 @@ public class MultiMapImpl<K,V> extends AbstractMap<K,List<V>>
     _size = size + 1;
 
     return null;
+  }
+
+  private boolean ensureCapacity(int size)
+  {
+    if (_keys.length <= size) {
+      int newSize = Math.min(2 * size, _maxCapacity);
+
+      if (newSize <= _size) {
+        log.warning("Overflow map");
+
+        return false;
+      }
+
+      // forced resizing if 1/2 full
+      K []newKeys = (K []) new Object[newSize];
+      List<V>[]newValues = (List<V> []) new List[newSize];
+
+      System.arraycopy(_keys, 0, newKeys, 0, _keys.length);
+      System.arraycopy(_values, 0, newValues, 0, _values.length);
+
+      _keys = newKeys;
+      _values = newValues;
+    }
+
+    return true;
   }
 
   /**
