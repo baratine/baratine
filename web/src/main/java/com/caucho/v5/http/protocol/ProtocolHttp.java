@@ -49,10 +49,9 @@ import com.caucho.v5.web.webapp.RequestBaratineImpl;
  */
 public class ProtocolHttp implements Protocol
 {
+  private final static L10N L = new L10N(ProtocolHttp.class);
   private final static Logger logger
     = Logger.getLogger(ProtocolHttp.class.getName());
-
-  private final L10N L = new L10N(ProtocolHttp.class);
 
   private HttpContainer _http;
   private Protocol _extensionProtocol;
