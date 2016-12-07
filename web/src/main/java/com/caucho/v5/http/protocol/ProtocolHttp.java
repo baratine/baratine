@@ -30,6 +30,7 @@ package com.caucho.v5.http.protocol;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 
 import com.caucho.v5.http.container.HttpContainer;
 import com.caucho.v5.http.container.HttpSystem;
@@ -39,6 +40,7 @@ import com.caucho.v5.network.port.Protocol;
 import com.caucho.v5.subsystem.SystemManager;
 import com.caucho.v5.util.CurrentTime;
 import com.caucho.v5.util.FreeList;
+import com.caucho.v5.util.L10N;
 import com.caucho.v5.util.Version;
 import com.caucho.v5.web.webapp.RequestBaratineImpl;
 
@@ -47,6 +49,11 @@ import com.caucho.v5.web.webapp.RequestBaratineImpl;
  */
 public class ProtocolHttp implements Protocol
 {
+  private final static Logger logger
+    = Logger.getLogger(ProtocolHttp.class.getName());
+
+  private final L10N L = new L10N(ProtocolHttp.class);
+
   private HttpContainer _http;
   private Protocol _extensionProtocol;
   private SystemManager _systemManager;
@@ -158,7 +165,7 @@ public class ProtocolHttp implements Protocol
   {
     if (request != null) {
       if (! _freeRequest.free(request)) {
-        System.out.println("Free-Failed: " + _freeRequest.size());
+        logger.warning(L.l("Free-Failed: {0}", _freeRequest.size()));
       }
     }
   }
