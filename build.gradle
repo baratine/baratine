@@ -3,6 +3,11 @@ apply plugin: 'application'
 mainClassName = 'com.caucho.v5.cli.baratine.BaratineCommandLine'
 
 allprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.fork = true
+        options.incremental = true
+    }
+
   group="io.baratine"
   
   version=System.properties['version'] ?: "1.0.2-SNAPSHOT"
